@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 
 import com.hbm.interfaces.IFluidPipeMk2;
+import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -20,6 +21,7 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 public class FFPipeNetworkMk2 implements IFluidHandler {
 
 	protected static Random rand = new Random();
+	protected int pipeTier;
 	
 	protected Fluid type;
 	protected Map<BlockPos, TileEntity> fillables = new HashMap<BlockPos, TileEntity>();
@@ -27,6 +29,11 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 
 	public FFPipeNetworkMk2(IFluidPipeMk2 te) {
 		this.type = te.getType();
+		this.pipeTier = 2;
+	}
+
+	public int getPipeTier() {
+		return pipeTier;
 	}
 
 	@Override
@@ -121,7 +128,8 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 		if(te == null)
 			return false;
 		if(te instanceof IFluidPipeMk2) {
-			if(!pipes.containsKey(te.getPos()) && ((IFluidPipeMk2) te).getType() == this.type) {
+			int tier = 2;
+			if(!pipes.containsKey(te.getPos()) && ((IFluidPipeMk2) te).getType() == this.type && tier == this.pipeTier) {
 				pipes.put(te.getPos(), (IFluidPipeMk2) te);
 				return true;
 			}
@@ -137,21 +145,15 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 	public static FFPipeNetworkMk2 mergeNetworks(FFPipeNetworkMk2 net1, FFPipeNetworkMk2 net2) {
 		if((net1 == null || net2 == null) || net1 == net2)
 			return net1;
-
-		/*net2.pipes.values().forEach(pipe -> {
-			pipe.setNetwork(net1);
-			pipe.setType(net1.type);
-		});*/
+		if(net1.pipeTier != net2.pipeTier)
+			return net1;
 		for(IFluidPipeMk2 pipe : net2.pipes.values()){
 			pipe.setNetwork(net1);
 		}
-
 		net1.fillables.putAll(net2.fillables);
 		net1.pipes.putAll(net2.pipes);
-
 		net2.fillables.clear();
 		net2.pipes.clear();
-
 		return net1;
 	}
 
@@ -162,11 +164,12 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 			if(pipe.getNetwork() != null)
 				return pipe.getNetwork();
 			Fluid type = pipe.getType();
+			int tier = 2;
 
 			Map<BlockPos, IFluidPipeMk2> pipes = new HashMap<BlockPos, IFluidPipeMk2>();
 			Map<BlockPos, TileEntity> consumers = new HashMap<BlockPos, TileEntity>();
 			List<FFPipeNetworkMk2> toMerge = new ArrayList<FFPipeNetworkMk2>();
-			iteratePipes(pipes, consumers, toMerge, te, type);
+			iteratePipes(pipes, consumers, toMerge, te, type, tier);
 
 			if(toMerge.size() > 0)
 				net = toMerge.remove(0);
@@ -181,30 +184,27 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 				
 			net.pipes.putAll(pipes);
 			net.fillables.putAll(consumers);
-			
-			
 		}
 		return net;
 	}
 
-	public static void iteratePipes(Map<BlockPos, IFluidPipeMk2> pipes, Map<BlockPos, TileEntity> consumers, List<FFPipeNetworkMk2> networks, TileEntity te, Fluid type) {
+	public static void iteratePipes(Map<BlockPos, IFluidPipeMk2> pipes, Map<BlockPos, TileEntity> consumers, List<FFPipeNetworkMk2> networks, TileEntity te, Fluid type, int tier) {
 		if(te == null)
 			return;
-
 		if(te instanceof IFluidPipeMk2) {
 			IFluidPipeMk2 pipe = (IFluidPipeMk2) te;
-			if(pipe.getType() == type && pipe.isValidForBuilding()) {
+			int pipeTier = 2;
+			if(pipe.getType() == type && pipeTier == tier && pipe.isValidForBuilding()) {
 				if(pipe.getNetwork() == null) {
 					if(!pipes.containsKey(te.getPos())) {
 						pipes.put(te.getPos(), pipe);
 						for(EnumFacing e : EnumFacing.VALUES){
 							BlockPos pos = te.getPos().offset(e);
 							if(te.getWorld().isBlockLoaded(pos))
-								iteratePipes(pipes, consumers, networks, te.getWorld().getTileEntity(pos), type);
+								iteratePipes(pipes, consumers, networks, te.getWorld().getTileEntity(pos), type, tier);
 						}
-						
 					}
-				} else if(pipe.getNetwork().type == type && !networks.contains(pipe.getNetwork())) {
+				} else if(pipe.getNetwork().type == type && pipe.getNetwork().pipeTier == tier && !networks.contains(pipe.getNetwork())) {
 					networks.add(pipe.getNetwork());
 				}
 			}

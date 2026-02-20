@@ -28,8 +28,8 @@ public class BlockConveyorChute extends BlockConveyor {
     }
 
     @Override
-    public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
-        super.onEntityCollidedWithBlock(world, pos, state, entity);
+    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        super.onEntityCollision(world, pos, state, entity);
 
         Block belowBlock = world.getBlockState(pos.down()).getBlock();
 
@@ -55,7 +55,7 @@ public class BlockConveyorChute extends BlockConveyor {
             speed *= 3.0;
         }
 
-        return super.getTravelLocation(world, x, y, z, itemPos, speed);
+        return super.getTravelLocation(world, x, y, z, itemPos, speed * 3);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class BlockConveyorChute extends BlockConveyor {
     }
 
     @Override
-    public BlockRenderLayer getBlockLayer() {
+    public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT;
     }
 

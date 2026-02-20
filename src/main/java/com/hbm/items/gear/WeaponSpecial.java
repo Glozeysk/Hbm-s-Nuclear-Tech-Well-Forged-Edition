@@ -45,7 +45,7 @@ public class WeaponSpecial extends ItemSword {
 	
 	public WeaponSpecial(ToolMaterial material, String s) {
 		super(material);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(MainRegistry.controlTab);
 		ModItems.ALL_ITEMS.add(this);
@@ -244,6 +244,10 @@ public class WeaponSpecial extends ItemSword {
     			AdvancementManager.grantAchievement(((EntityPlayer) entity), AdvancementManager.achFiend);
     		} else if(ArmorUtil.checkForFiend2((EntityPlayer) entity)) {
         		AdvancementManager.grantAchievement(((EntityPlayer) entity), AdvancementManager.achFiend2);
+        	// } else if(ArmorUtil.checkForHorizonsBonus((EntityPlayer) entity)) {
+        	// 	AdvancementManager.grantAchievement(((EntityPlayer) entity), AdvancementManager.horizonsBonus);
+        	// } else if(ArmorUtil.checkForDigammaUpOnTop((EntityPlayer) entity)) {
+        	// 	AdvancementManager.grantAchievement(((EntityPlayer) entity), AdvancementManager.digammaUpOnTop);
         	}
     	}
 	}

@@ -364,7 +364,6 @@ import com.hbm.render.item.FluidCanisterRender;
 import com.hbm.render.item.FluidTankRender;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.item.ItemRenderCell;
-import com.hbm.render.item.ItemRenderFFFluidDuct;
 import com.hbm.render.item.ItemRenderFluidIcon;
 import com.hbm.render.item.ItemRenderGasCanister;
 import com.hbm.render.item.ItemRenderLibrary;
@@ -433,6 +432,8 @@ import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
 import com.hbm.render.tileentity.*;
 import com.hbm.render.util.HmfModelLoader;
+import com.hbm.render.util.RenderInfoSystemLegacy;
+import com.hbm.render.util.RenderOverhead;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.AudioWrapperClient;
 import com.hbm.sound.AudioWrapperClientStartStop;
@@ -464,6 +465,10 @@ import com.hbm.tileentity.network.energy.TileEntityPylonLarge;
 import com.hbm.tileentity.network.energy.TileEntitySubstation;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk2;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk3;
+import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk3;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
+import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk4;
 import com.hbm.tileentity.deco.TileEntityDecoBlock;
 import com.hbm.tileentity.deco.TileEntityDecoBlockAlt;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
@@ -471,88 +476,6 @@ import com.hbm.tileentity.deco.TileEntityDecoPoleTop;
 import com.hbm.tileentity.deco.TileEntityObjTester;
 import com.hbm.tileentity.deco.TileEntitySpinnyLight;
 import com.hbm.tileentity.deco.TileEntityTestRender;
-import com.hbm.tileentity.machine.TileEntityAMSBase;
-import com.hbm.tileentity.machine.TileEntityAMSEmitter;
-import com.hbm.tileentity.machine.TileEntityAMSLimiter;
-import com.hbm.tileentity.machine.TileEntityBMPowerBox;
-import com.hbm.tileentity.machine.TileEntityBarrel;
-import com.hbm.tileentity.machine.TileEntityBlackBook;
-import com.hbm.tileentity.machine.TileEntityBlastDoor;
-import com.hbm.tileentity.machine.TileEntityBroadcaster;
-import com.hbm.tileentity.machine.TileEntityChungus;
-import com.hbm.tileentity.machine.TileEntityControlPanel;
-import com.hbm.tileentity.machine.TileEntityCore;
-import com.hbm.tileentity.machine.TileEntityCoreEmitter;
-import com.hbm.tileentity.machine.TileEntityCoreInjector;
-import com.hbm.tileentity.machine.TileEntityCoreReceiver;
-import com.hbm.tileentity.machine.TileEntityCoreStabilizer;
-import com.hbm.tileentity.machine.TileEntityDemonLamp;
-import com.hbm.tileentity.machine.TileEntityForceField;
-import com.hbm.tileentity.machine.TileEntityFurnaceIron;
-import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
-import com.hbm.tileentity.machine.TileEntityHeaterOven;
-import com.hbm.tileentity.machine.TileEntityHeaterElectric;
-import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
-import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
-import com.hbm.tileentity.machine.TileEntityHeaterRadioThermal;
-import com.hbm.tileentity.machine.TileEntityGeiger;
-import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
-import com.hbm.tileentity.machine.TileEntityITER;
-import com.hbm.tileentity.machine.TileEntityITERStruct;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
-import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
-import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
-import com.hbm.tileentity.machine.TileEntityMachineChemplant;
-import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
-import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
-import com.hbm.tileentity.machine.TileEntityDeuteriumTower;
-import com.hbm.tileentity.machine.TileEntityMachineEPress;
-import com.hbm.tileentity.machine.TileEntityMachineFENSU;
-import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
-import com.hbm.tileentity.machine.TileEntityMachineGasCent;
-import com.hbm.tileentity.machine.TileEntityMachineIGenerator;
-import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
-import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
-import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
-import com.hbm.tileentity.machine.TileEntityMachineMixer;
-import com.hbm.tileentity.machine.TileEntityMachineExcavator;
-import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
-import com.hbm.tileentity.machine.TileEntityMachineOrbus;
-import com.hbm.tileentity.machine.TileEntityMachinePlasmaHeater;
-import com.hbm.tileentity.machine.TileEntityMachinePress;
-import com.hbm.tileentity.machine.TileEntityMachinePuF6Tank;
-import com.hbm.tileentity.machine.TileEntityMachineRTG;
-import com.hbm.tileentity.machine.TileEntityMachineRadGen;
-import com.hbm.tileentity.machine.TileEntityMachineRadar;
-import com.hbm.tileentity.machine.TileEntityMachineReactor;
-import com.hbm.tileentity.machine.TileEntityMachineReactorSmall;
-import com.hbm.tileentity.machine.TileEntityMachineSatDock;
-import com.hbm.tileentity.machine.TileEntityMachineSeleniumEngine;
-import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
-import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
-import com.hbm.tileentity.machine.TileEntityMachineUUCreator;
-import com.hbm.tileentity.machine.TileEntityMicrowave;
-import com.hbm.tileentity.machine.TileEntityMultiblock;
-import com.hbm.tileentity.machine.TileEntityPlasmaStruct;
-import com.hbm.tileentity.machine.TileEntityRadioRec;
-import com.hbm.tileentity.machine.TileEntityRadiobox;
-import com.hbm.tileentity.machine.TileEntitySILEX;
-import com.hbm.tileentity.machine.TileEntityFEL;
-import com.hbm.tileentity.machine.TileEntitySiloHatch;
-import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
-import com.hbm.tileentity.machine.TileEntityHeatBoiler;
-import com.hbm.tileentity.machine.TileEntitySolarBoiler;
-import com.hbm.tileentity.machine.TileEntitySolarMirror;
-import com.hbm.tileentity.machine.TileEntitySoyuzCapsule;
-import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
-import com.hbm.tileentity.machine.TileEntitySoyuzStruct;
-import com.hbm.tileentity.machine.TileEntitySpacer;
-import com.hbm.tileentity.machine.TileEntityStorageDrum;
-import com.hbm.tileentity.machine.TileEntityStructureMarker;
-import com.hbm.tileentity.machine.TileEntityTesla;
-import com.hbm.tileentity.machine.TileEntityTowerLarge;
-import com.hbm.tileentity.machine.TileEntityTowerSmall;
-import com.hbm.tileentity.machine.TileEntityVaultDoor;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFractionTower;
@@ -649,6 +572,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -671,6 +595,7 @@ public class ClientProxy extends ServerProxy {
 	
 	//Drillgon200: This is stupid, but I'm lazy
 	public static boolean renderingConstant = false;
+	public RenderInfoSystemLegacy theInfoSystem = new RenderInfoSystemLegacy();
 	
 	public static Field partialTicksPaused;
 
@@ -682,7 +607,7 @@ public class ClientProxy extends ServerProxy {
 	
 	@Override
 	public File getDataDir() {
-		return Minecraft.getMinecraft().mcDataDir;
+		return Minecraft.getMinecraft().gameDir;
 	}
 	
 	@Override
@@ -693,6 +618,8 @@ public class ClientProxy extends ServerProxy {
 		
 		MinecraftForge.EVENT_BUS.register(new ModEventHandlerClient());
 		AdvancedModelLoader.registerModelHandler(new HmfModelLoader());
+		MinecraftForge.EVENT_BUS.register(theInfoSystem);
+        FMLCommonHandler.instance().bus().register(theInfoSystem);
 		
 		HbmShaderManager.loadShaders();
 		
@@ -786,6 +713,10 @@ public class ClientProxy extends ServerProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDecoBlockAlt.class, new RenderDecoBlockAlt());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk2.class, new RenderFluidDuctMk2<TileEntityFFFluidDuctMk2>());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidSuccMk2.class, new RenderFluidDuctMk2<TileEntityFFFluidSuccMk2>());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk3.class, new RenderFluidDuctMk3<TileEntityFFFluidDuctMk3>());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidSuccMk3.class, new RenderFluidDuctMk3<TileEntityFFFluidSuccMk3>());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk4.class, new RenderFluidDuctMk4<TileEntityFFFluidDuctMk4>());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidSuccMk4.class, new RenderFluidDuctMk4<TileEntityFFFluidSuccMk4>());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCraneSplitter.class, new RenderCraneSplitter());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBarrel.class, new RenderFluidBarrel());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTesla.class, new RenderTesla());
@@ -803,6 +734,7 @@ public class ClientProxy extends ServerProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMicrowave.class, new RenderMicrowave());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineRTG.class, new RenderRTG());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineMiniRTG.class, new RenderRTG());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFWatzCore.class, new RenderSAFECore());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityITER.class, new RenderITER());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineFENSU.class, new RenderFENSU());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePlasmaHeater.class, new RenderPlasmaHeater());
@@ -1429,7 +1361,7 @@ public class ClientProxy extends ServerProxy {
 			String mode = data.getString("mode");
 			
 			if("soyuz".equals(mode)) {
-				if(Vec3.createVectorHelper(player.posX - x, player.posY - y, player.posZ - z).lengthVector() > 350)
+				if(Vec3.createVectorHelper(player.posX - x, player.posY - y, player.posZ - z).length() > 350)
 					return;
 				
 				int count = Math.max(1, data.getInteger("count"));
@@ -1451,7 +1383,7 @@ public class ClientProxy extends ServerProxy {
 			
 			if("meteor".equals(mode)) {
 				
-				if(Vec3.createVectorHelper(player.posX - x, player.posY - y, player.posZ - z).lengthVector() > 350)
+				if(Vec3.createVectorHelper(player.posX - x, player.posY - y, player.posZ - z).length() > 350)
 					return;
 	
 				int count = Math.max(1, data.getInteger("count"));
@@ -1757,7 +1689,7 @@ public class ClientProxy extends ServerProxy {
 					newDirection.rotateAroundX((float) Math.toRadians(angles.yCoord-90));
 					newDirection.rotateAroundY((float) Math.toRadians(angles.xCoord));
 					//Multiply it by the original vector's length to ensure it has the right magnitude
-					newDirection = newDirection.mult((float) direction.lengthVector()+rand.nextFloat()*velocityRand);
+					newDirection = newDirection.mult((float) direction.length()+rand.nextFloat()*velocityRand);
 					Particle fx = new ParticleSpark(world, x, y, z, length+rand.nextFloat()*randLength, width, lifetime + rand.nextInt(randLifeTime), gravity).color(r, g, b, a).motion((float)newDirection.xCoord, (float)newDirection.yCoord, (float)newDirection.zCoord);
 					Minecraft.getMinecraft().effectRenderer.addEffect(fx);
 				}
@@ -2017,7 +1949,7 @@ public class ClientProxy extends ServerProxy {
 			String mode = data.getString("mode");
 			if("crucible".equals(name)){
 				if("equip".equals(mode)){
-					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), 1, ResourceManager.crucible_equip, new EndResult(EndType.STAY));
+					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), 1, ResourceManager.crucible_equip, new EndResult(EndType.STAY));
 				}
 				if("crucible".equals(mode)) {
 					BusAnimation animation = new BusAnimation()
@@ -2026,7 +1958,7 @@ public class ClientProxy extends ServerProxy {
 									.addKeyframe(new BusAnimationKeyframe(90, 0, 1, 800))
 									.addKeyframe(new BusAnimationKeyframe(0, 0, 1, 50)));
 
-					HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), animation);
+					HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), animation);
 				}
 				if("swing".equals(mode)){
 					BusAnimation animation = new BusAnimation()
@@ -2037,7 +1969,7 @@ public class ClientProxy extends ServerProxy {
 						HbmAnimations.hotbar[slot].animation = animation;
 						HbmAnimations.hotbar[slot].startMillis = System.currentTimeMillis();
 					} else {
-						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), animation);
+						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), animation);
 					}
 				}
 				if("cSwing".equals(mode)) {
@@ -2062,13 +1994,13 @@ public class ClientProxy extends ServerProxy {
 							HbmAnimations.hotbar[slot].animation = animation;
 							HbmAnimations.hotbar[slot].startMillis = System.currentTimeMillis();
 						} else {
-							HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), animation);
+							HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), animation);
 						}
 					}
 				}
 			} else if("hs_sword".equals(name)){
 				if("equip".equals(mode)){
-					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), 1, ResourceManager.hs_sword_equip, new EndResult(EndType.STAY));
+					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), 1, ResourceManager.hs_sword_equip, new EndResult(EndType.STAY));
 				} else if("swing".equals(mode)){
 					BusAnimation animation = new BusAnimation()
 							.addBus("SWING", new BusAnimationSequence()
@@ -2078,12 +2010,12 @@ public class ClientProxy extends ServerProxy {
 						HbmAnimations.hotbar[slot].animation = animation;
 						HbmAnimations.hotbar[slot].startMillis = System.currentTimeMillis();
 					} else {
-						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), animation);
+						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), animation);
 					}
 				}
 			} else if("hf_sword".equals(name)){
 				if("equip".equals(mode)){
-					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), 1, ResourceManager.hf_sword_equip, new EndResult(EndType.STAY));
+					HbmAnimations.hotbar[slot] = new BlenderAnimation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), 1, ResourceManager.hf_sword_equip, new EndResult(EndType.STAY));
 				} else if("swing".equals(mode)){
 					BusAnimation animation = new BusAnimation()
 							.addBus("SWING", new BusAnimationSequence()
@@ -2093,7 +2025,7 @@ public class ClientProxy extends ServerProxy {
 						HbmAnimations.hotbar[slot].animation = animation;
 						HbmAnimations.hotbar[slot].startMillis = System.currentTimeMillis();
 					} else {
-						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getUnlocalizedName(), System.currentTimeMillis(), animation);
+						HbmAnimations.hotbar[slot] = new Animation(player.getHeldItem(hand).getItem().getTranslationKey(), System.currentTimeMillis(), animation);
 					}
 				}
 			}
@@ -2140,6 +2072,15 @@ public class ClientProxy extends ServerProxy {
 			}
 			return;
 		}
+
+		if("marker".equals(type)) {
+            int color = data.getInteger("color");
+            String label = data.getString("label");
+            int expires = data.getInteger("expires");
+            double dist = data.getDouble("dist");
+
+            RenderOverhead.queuedMarkers.put(new BlockPos(x, y, z),  new RenderOverhead.Marker(color).setDist(dist).setExpire(expires > 0 ? System.currentTimeMillis() + expires : 0).withLabel(label.isEmpty() ? null : label));
+        }		
 		
 		if("sound".equals(type)){
 			String mode = data.getString("mode");
@@ -2180,6 +2121,7 @@ public class ClientProxy extends ServerProxy {
 		case JETPACK:			return Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown();
 		case TOGGLE_JETPACK:	return HbmKeybinds.jetpackKey.isKeyDown();
 		case TOGGLE_HEAD:		return HbmKeybinds.hudKey.isKeyDown();
+		case TOGGLE_GOGGLES:	return HbmKeybinds.gogglesKey.isKeyDown();
 		case RELOAD:			return HbmKeybinds.reloadKey.isKeyDown();
 		case CRANE_UP:			return HbmKeybinds.craneUpKey.isKeyDown();
 		case CRANE_DOWN:		return HbmKeybinds.craneDownKey.isKeyDown();
@@ -2331,7 +2273,6 @@ public class ClientProxy extends ServerProxy {
 		ModItems.big_sword.setTileEntityItemStackRenderer(new ItemRenderBigSword());
 		ModItems.shimmer_sledge.setTileEntityItemStackRenderer(new ItemRenderShim());
 		ModItems.shimmer_axe.setTileEntityItemStackRenderer(new ItemRenderShim());
-		ModItems.ff_fluid_duct.setTileEntityItemStackRenderer(new ItemRenderFFFluidDuct());
 		ModItems.fluid_icon.setTileEntityItemStackRenderer(new ItemRenderFluidIcon());
 		ModItems.gun_brimstone.setTileEntityItemStackRenderer(new ItemRenderObj());
 		ModItems.stopsign.setTileEntityItemStackRenderer(new ItemRenderShim());
@@ -2440,6 +2381,15 @@ public class ClientProxy extends ServerProxy {
 			msg = I18nUtil.resolveKey(msg);
 		Minecraft.getMinecraft().ingameGUI.setOverlayMessage(msg, false);
 	}
+
+	@Override
+    public void displayTooltipLegacy(String msg, int time, int id) {
+        if (id != 0)
+            RenderInfoSystemLegacy.push(new RenderInfoSystemLegacy.InfoEntry(msg, time), id);
+        else
+            RenderInfoSystemLegacy.push(new RenderInfoSystemLegacy.InfoEntry(msg, time));
+    }
+
 	
 	@SuppressWarnings("deprecation")
 	@Override

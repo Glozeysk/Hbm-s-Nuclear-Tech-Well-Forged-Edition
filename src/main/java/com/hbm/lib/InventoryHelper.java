@@ -2,6 +2,8 @@ package com.hbm.lib;
 
 import java.util.Random;
 
+import com.hbm.items.machine.ItemChemistryTemplate;
+
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -15,13 +17,30 @@ public class InventoryHelper {
 	public static final Random RANDOM = new Random();
 
 	public static void dropInventoryItems(World world, BlockPos pos, ICapabilityProvider t) {
-		if(t == null)
-			return;
-		if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
-			return;
-		IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-		for (int i = 0; i < inventory.getSlots(); ++i)
-        {
+        if(t == null)
+            return;
+        if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+            return;
+        IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        for (int i = 0; i < inventory.getSlots(); ++i) {
+            if(inventory.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate) continue;
+            ItemStack itemstack = inventory.getStackInSlot(i);
+
+            if (!itemstack.isEmpty() && (!(inventory.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate)))
+            {
+                spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
+            }
+        }
+    }
+
+    public static void dropInventoryItems(World world, BlockPos pos, ICapabilityProvider t, int from, int to) {
+        if(t == null)
+            return;
+        if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+            return;
+        IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        for (int i = 0; i < inventory.getSlots(); ++i) {
+            if(i < from || i > to) continue;
             ItemStack itemstack = inventory.getStackInSlot(i);
 
             if (!itemstack.isEmpty())
@@ -29,7 +48,24 @@ public class InventoryHelper {
                 spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
             }
         }
-	}
+    }
+
+    public static void dropInventoryItemsBan(World world, BlockPos pos, ICapabilityProvider t, int banfrom, int banto) {
+        if(t == null)
+            return;
+        if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+            return;
+        IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        for (int i = 0; i < inventory.getSlots(); ++i) {
+            if(i >= banfrom || i <= banto) continue;
+            ItemStack itemstack = inventory.getStackInSlot(i);
+
+            if (!itemstack.isEmpty())
+            {
+                spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
+            }
+        }
+    }
 	
 	public static void spawnItemStack(World worldIn, double x, double y, double z, ItemStack stack)
     {

@@ -5,7 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityDummy;
-import com.hbm.tileentity.machine.TileEntityDummyPort;
+import com.hbm.tileentity.machine.TileEntityDummyPortNew;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -62,7 +62,7 @@ public class DummyBlockMachine extends DummyOldBase {
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		return port ? new TileEntityDummyPort() : new TileEntityDummy();
+		return port ? new TileEntityDummyPortNew() : new TileEntityDummy();
 	}
 	
 	@Override

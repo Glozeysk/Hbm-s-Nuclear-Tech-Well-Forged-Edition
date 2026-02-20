@@ -69,6 +69,7 @@ public class ItemArmorMod extends ItemCustomLore {
 		case ArmorModHandler.cladding: list.add("  " + I18nUtil.resolveKey("desc.applicablecladding")); break;
 		case ArmorModHandler.kevlar: list.add("  " + I18nUtil.resolveKey("desc.applicableinsert")); break;
 		case ArmorModHandler.extra: list.add("  " + I18nUtil.resolveKey("desc.applicableextra")); break;
+		case ArmorModHandler.battery: list.add("  " + I18nUtil.resolveKey("armorMod.type.battery")); break;
 		}
 	}
 	

@@ -243,7 +243,7 @@ public class GunEnergyFactory {
 		config.hasSights = false;
 		config.reloadDuration = 20;
 		config.firingDuration = 0;
-		config.ammoCap = 40;
+		config.ammoCap = 0;
 		config.reloadType = GunConfiguration.RELOAD_NONE;
 		config.allowsInfinity = true;
 		config.crosshair = Crosshair.NONE;

@@ -18,6 +18,11 @@ public class TileEntityRBMKStorage extends TileEntityRBMKSlottedBase implements 
 	public String getName() {
 		return "container.rbmkStorage";
 	}
+
+	@Override
+	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+		return new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+	}
 	
 	@Override
 	public void update() {
@@ -56,6 +61,11 @@ public class TileEntityRBMKStorage extends TileEntityRBMKSlottedBase implements 
 	public boolean canExtractItem(int i, ItemStack itemStack, int j) {
 		return true;
 	}
+
+	// @Override
+	// public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+	// 	return new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+	// }
 
 	@Override
 	public boolean canLoad(ItemStack toLoad) {

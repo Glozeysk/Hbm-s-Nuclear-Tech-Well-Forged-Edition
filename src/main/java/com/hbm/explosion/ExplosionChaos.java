@@ -214,7 +214,7 @@ public class ExplosionChaos {
 							EntityLivingBase livi = (EntityLivingBase)entity;
 							if(livi.isPotionActive(HbmPotion.taint)) {
 								livi.removePotionEffect(HbmPotion.taint);
-								livi.addPotionEffect(new PotionEffect(HbmPotion.mutation, 1 * 60 * 60 * 20, 0, false, true));
+								livi.addPotionEffect(new PotionEffect(HbmPotion.mutation, 1 * 60 * 60 * 20 * 5, 0, false, true));
 							} else {
 								if(ArmorRegistry.hasProtection(livi, EntityEquipmentSlot.HEAD, HazardClass.BACTERIA)){
 									ArmorUtil.damageGasMaskFilter(livi, 1);

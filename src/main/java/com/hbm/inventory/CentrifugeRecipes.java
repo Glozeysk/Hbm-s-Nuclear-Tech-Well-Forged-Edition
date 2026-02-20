@@ -235,6 +235,7 @@ public class CentrifugeRecipes {
 		recipes.put(GOLD.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_gold, 2), new ItemStack(ModItems.powder_gold, 2), new ItemStack(ModItems.nugget_mercury, 1), new ItemStack(ModItems.powder_lithium_tiny, 1) });
 		recipes.put(REDSTONE.crystal(), new ItemStack[] { new ItemStack(Items.REDSTONE, 3), new ItemStack(Items.REDSTONE, 3), new ItemStack(Items.REDSTONE, 3), new ItemStack(ModItems.nugget_mercury, 3) });
 		recipes.put(LAPIS.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_lapis, 8), new ItemStack(ModItems.powder_lapis, 8), new ItemStack(ModItems.powder_cobalt, 1), new ItemStack(Blocks.GRAVEL, 1) });
+		recipes.put(QUARTZ.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_quartz, 2), new ItemStack(ModItems.powder_quartz, 2), new ItemStack(ModItems.powder_quartz, 2), new ItemStack(ModItems.powder_cobalt_tiny, 1) });
 		recipes.put(DIAMOND.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1) });
 		recipes.put(U.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_uranium, 2), new ItemStack(ModItems.powder_uranium, 2), new ItemStack(ModItems.nugget_ra226, 2), new ItemStack(ModItems.powder_lithium_tiny, 1) });
 		recipes.put(TH232.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_thorium, 2), new ItemStack(ModItems.powder_thorium, 2), new ItemStack(ModItems.powder_uranium, 1), new ItemStack(ModItems.nugget_ra226, 1) });

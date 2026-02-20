@@ -30,11 +30,11 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 	public static final ModelResourceLocation chemModel = new ModelResourceLocation(RefStrings.MODID + ":chemistry_template", "inventory");
 	
 	public ItemChemistryTemplate(String s){
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setHasSubtypes(true);
 		this.setMaxDamage(0);
-		this.setCreativeTab(MainRegistry.templateTab);
+		this.setCreativeTab(null);
 		
 		ModItems.ALL_ITEMS.add(this);
 	}
@@ -42,24 +42,24 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getUnlocalizedName() + ".name")).trim();
+		String s = ("").trim();
         String s1 = ("" + I18n.format("chem." + ChemplantRecipes.getName(stack))).trim();
 
         if (s1 != null) {
-            s = s + " " + s1;
+            s = s + "" + s1;
         }
 
         return s;
 	}
 	
-	@Override
-	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
-		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
-			for (int i: ChemplantRecipes.recipeNames.keySet()){
-	            list.add(new ItemStack(this, 1, i));
-	        }
-		}
-	}
+	// @Override
+	// public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
+	// 	if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
+	// 		for (int i: ChemplantRecipes.recipeNames.keySet()){
+	//             list.add(new ItemStack(this, 1, i));
+	//         }
+	// 	}
+	// }
 	
 	
 	@Override
@@ -72,9 +72,6 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 	    	ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(stack);
 	    	FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(stack);
 	    	int time = ChemplantRecipes.getProcessTime(stack);
-
-	    	list.add("§6" + I18nUtil.resolveKey("info.templatefolder"));
-			list.add("");
 
 	    	try {
 	    		list.add("§l" + I18nUtil.resolveKey("info.template_out_p"));

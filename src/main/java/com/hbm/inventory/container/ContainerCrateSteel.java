@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityCrateSteel;
 
+import invtweaks.api.container.ChestContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -9,6 +10,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
+@ChestContainer(rowSize = 9) //Inventory-Tweaks
 public class ContainerCrateSteel extends Container {
 	
 	private TileEntityCrateSteel diFurnace;

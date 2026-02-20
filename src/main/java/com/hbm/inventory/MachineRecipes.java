@@ -66,8 +66,8 @@ public class MachineRecipes {
 		} else if(fluid == ModForgeFluids.watz){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_solinium), 1));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_uranium), 2));
-			list.add(new GasCentOutput(5, new ItemStack(ModItems.powder_lead), 3));
-			list.add(new GasCentOutput(10, new ItemStack(ModItems.dust), 4));
+			list.add(new GasCentOutput(2, new ItemStack(ModItems.powder_lead), 3));
+			list.add(new GasCentOutput(4, new ItemStack(ModItems.dust), 4));
 			return list;
 		} else if(fluid == ModForgeFluids.sas3){
 			list.add(new GasCentOutput(4, new ItemStack(ModItems.nugget_schrabidium), 1));
@@ -93,10 +93,16 @@ public class MachineRecipes {
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 3));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 4));
 			return list;
+		} else if(fluid == ModForgeFluids.sparkfuel){
+				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_spark_mix), 1));
+				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_spark_mix), 2));
+				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_power), 3));
+				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_power), 4));
+				return list;
 		} else if(fluid == ModForgeFluids.liquid_osmiridium){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_impure_osmiridium), 1));
-			list.add(new GasCentOutput(2, new ItemStack(ModItems.powder_meteorite), 2));
-			list.add(new GasCentOutput(4, new ItemStack(ModItems.powder_meteorite_tiny), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_meteorite), 2));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_meteorite_tiny), 3));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_paleogenite_tiny), 4));
 			return list;
 		}
@@ -123,21 +129,23 @@ public class MachineRecipes {
 		else if(fluid == FluidRegistry.LAVA)
 			return 1000;
 		else if(fluid == ModForgeFluids.uf6)
-			return 100;
+			return 3600;
 		else if(fluid == ModForgeFluids.puf6)
-			return 100;
+			return 1000;
 		else if(fluid == ModForgeFluids.watz)
-			return 1000;
+			return 8000;
 		else if(fluid == ModForgeFluids.sas3)
-			return 100;
-		else if(fluid == ModForgeFluids.coolant)
-			return 2000;
-		else if(fluid == ModForgeFluids.cryogel)
 			return 1000;
+		else if(fluid == ModForgeFluids.coolant)
+			return 8000;
+		else if(fluid == ModForgeFluids.cryogel)
+			return 4000;
 		else if(fluid == ModForgeFluids.nitan)
-			return 500;
+			return 2000;
+		else if(fluid == ModForgeFluids.sparkfuel)
+			return 4000;
 		else if(fluid == ModForgeFluids.liquid_osmiridium)
-			return 1000; //whose idea was 2000 heck nah
+			return 4000; //whose idea was 2000 heck nah
 		else
 			return 0;
 	}

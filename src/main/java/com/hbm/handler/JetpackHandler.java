@@ -117,25 +117,29 @@ public class JetpackHandler {
 		if(f == null)
 			return 0;
 		if(f == ModForgeFluids.kerosene){
-			return 0.3F;
-		} else if(f == ModForgeFluids.nitan){
 			return 0.5F;
+		} else if(f == ModForgeFluids.nitan){
+			return 1.0F;
 		} else if(f == ModForgeFluids.balefire){
+			return 1.5F;
+		} else if(f == ModForgeFluids.sparkfuel){
 			return 1.5F;
 		}
 		return 0;
 	}
 	
-	public static int getDrain(Fluid f){
+	public static float getDrain(Fluid f){
 		if(f == null)
 			return 0;
 		//Drain is already scaled by thrust, which is greater with the higher tier fuels
 		if(f == ModForgeFluids.kerosene){
-			return 1;
+			return 1.0F;
 		} else if(f == ModForgeFluids.nitan){
-			return 1;
+			return 1.0F;
 		} else if(f == ModForgeFluids.balefire){
-			return 1;
+			return 1.0F;
+		} else if(f == ModForgeFluids.sparkfuel){
+			return 0.2F;
 		}
 		return 0;
 	}
@@ -143,6 +147,7 @@ public class JetpackHandler {
 	private static float[] keroseneColor = new float[]{1, 0.6F, 0.5F};
 	private static float[] nitanColor = new float[]{1F, 0.5F, 1F};
 	private static float[] bfColor = new float[]{0.4F, 1, 0.7F};
+	private static float[] sparkColor = new float[]{0.75F, 0.1F, 0.75F};
 	private static ColorGradient keroseneGradient = new ColorGradient(
 			new float[]{1, 0.918F, 0.882F, 1, 0},
 			new float[]{0.887F, 1, 0, 1, 0.177F},
@@ -161,12 +166,20 @@ public class JetpackHandler {
 			new float[]{0.013F, 1F, 0.068F, 1, 0.389F},
 			new float[]{0.2F, 1F, 0.3F, 1, 0.891F},
 			new float[]{0, 1F, 0.4F, 0, 1});
+	private static ColorGradient sparkGradient = new ColorGradient(
+			new float[]{0.845F, 0, 1F, 1, 0},
+			new float[]{1F, 0, 1F, 1, 0.122F},
+			new float[]{0.7F, 0, 1F, 1, 0.389F},
+			new float[]{0.35F, 0, 1F, 1, 0.891F},
+			new float[]{0.1F, 0, 1F, 0, 1});
 	
 	public static ColorGradient getGradientFromFuel(Fluid fuel){
 		if(fuel == ModForgeFluids.balefire){
 			return bfGradient;
 		} else if(fuel == ModForgeFluids.nitan){
 			return nitanGradient;
+		} else if(fuel == ModForgeFluids.sparkfuel){
+			return sparkGradient;
 		}
 		return keroseneGradient;
 	}
@@ -176,6 +189,8 @@ public class JetpackHandler {
 			return bfColor;
 		} else if(fuel == ModForgeFluids.nitan){
 			return nitanColor;
+		} else if(fuel == ModForgeFluids.sparkfuel){
+			return sparkColor;
 		}
 		return keroseneColor;
 	}
@@ -210,25 +225,41 @@ public class JetpackHandler {
 		}
 		hud_key_down = hudKey;
 		float thrust = info.thrust;
-		if(jetpackActive(player) && player.isInWater()){
-			info.failureTicks = 80;
-		}
+		// if(jetpackActive(player) && player.isInWater()){
+		// 	info.failureTicks = 80;
+		// }
 		if(jetpackActive(player) && !player.onGround && info.failureTicks <= 0 && fuelTank.getFluidAmount() > 0){
 			float speed = getSpeed(fuelTank.getFluid().getFluid());
 			player.capabilities.isFlying = false;
+			boolean inert = false;
 			MovementInput m = e.getMovementInput();
 			boolean sprint = Minecraft.getMinecraft().gameSettings.keyBindSprint.isKeyDown();
 			if(player.isSprinting())
 				player.setSprinting(sprint);
 			if(isHovering(player)){
+				if(m.forwardKeyDown || m.backKeyDown || m.leftKeyDown || m.rightKeyDown || m.jump || m.sneak) {
+					inert = false;
+				} else {
+					inert = true;
+				}
 				m.moveForward *= (player.isSprinting() ? 0.17 : 0.1)*speed;
 				m.moveStrafe *= 0.1F*speed;
+				if(inert) {
+				player.motionX *= 0.5;
+				player.motionZ *= 0.5;
+				player.motionY *= 0.5;
+				} else {
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
-				player.motionY *= 0.75;
-				player.motionY += 0.05;
+				}
+				if(player.motionY < -1)
+					player.motionY += 0.2D;
+				else if(player.motionY < -0.1)
+					player.motionY += 0.1D;
+				else if(player.motionY < 0)
+					player.motionY = 0;
 				float extraMY = 0;
 				if(m.jump){
 					m.jump = false;
@@ -291,7 +322,7 @@ public class JetpackHandler {
 				JetpackInfo info = e.getValue();
 				if(jetpackActive(player)){
 					FluidTank tank = getTank(player);
-					int drain = (int) Math.ceil(getDrain(tank.getFluid() == null ? null : tank.getFluid().getFluid())*info.thrust);
+					int drain = (int) Math.ceil(getDrain(tank.getFluid() == null ? null : tank.getFluid().getFluid())*info.thrust*0.3F);
 					if(info.thrust < 0.0001)
 						drain = 0;
 

@@ -1,0 +1,7 @@
+{
+	"parent": "block/cube_column",
+	"textures": {
+		"end": "hbm:blocks/waste_drum_t2",
+		"side": "hbm:blocks/waste_drum_side_t2"
+	}
+}

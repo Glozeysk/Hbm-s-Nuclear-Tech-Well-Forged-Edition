@@ -48,12 +48,12 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidHa
 
 		if(!world.isRemote) {
 
-			if((int) (this.heat) > 750) {
+			if((int) (this.heat) > 100) {
 
-				int heatProvided = (int) (this.heat - 750D);
+				int heatProvided = (int) (this.heat - 100D);
 				int cooling = Math.min(heatProvided, tank.getFluidAmount());
 
-				this.heat -= cooling;
+				this.heat -= cooling * 4;
 				this.tank.drain(cooling, true);
 
 				this.lastCooled = cooling;

@@ -8,7 +8,7 @@ package glmath.jglm;
  * @deprecated
  * @author gbarbieri
  */
-public class Mat {
+@Deprecated public class Mat {
 
 //    protected float[] matrix;
     protected int order;

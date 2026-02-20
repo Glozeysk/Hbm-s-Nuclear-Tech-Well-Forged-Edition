@@ -56,8 +56,6 @@ public class PipeUpdatePacket implements IMessage {
 				if(te instanceof TileEntityFFDuctBaseMk2){
 					switch(message.id){
 					case 0:
-						//Don't need you anymore, getActualState seems to be called when the neighbor changes.
-						//((TileEntityFFDuctBaseMk2)te).onNeighborChange();
 						break;
 					case 1:
 						TileEntityFFDuctBaseMk2.rebuildNetworks(Minecraft.getMinecraft().world, message.pos);

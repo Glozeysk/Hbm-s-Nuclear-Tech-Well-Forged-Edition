@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.hbm.util.I18nUtil;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.AnvilRecipes;
@@ -28,6 +29,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -289,11 +291,48 @@ public class GUIAnvil extends GuiContainer {
 		
 		return list;
 	}
+
+	private boolean isMouseOverSlot(Slot slot, int x, int y) {
+		int guiLeft = this.guiLeft;
+		int guiTop = this.guiTop;
+		x -= guiLeft;
+		y -= guiTop;
+		return x >= slot.xPos - 1 && x < slot.xPos + 16 + 1 && y >= slot.yPos - 1 && y < slot.yPos + 16 + 1;
+	}
+
+	private Slot getSlotAtPosition(int x, int y) {
+		for(int k = 0; k < this.inventorySlots.inventorySlots.size(); ++k) {
+			Slot slot = this.inventorySlots.inventorySlots.get(k);
+			
+
+			if(this.isMouseOverSlot(slot, x, y)) {
+				return slot;
+			}
+		}
+
+		return null;
+	}
 	
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks){
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		super.renderHoveredToolTip(mouseX, mouseY);
+
+		for(Slot obj : this.inventorySlots.inventorySlots) {
+			// if the mouse is over a slot, cancel
+			if(this.isPointInRegion(obj.xPos, obj.yPos, 16, 16, mouseX, mouseY) && obj.getHasStack()) {
+				return;
+			}
+		}
+
+		if(guiLeft <= mouseX && guiLeft + xSize > mouseX && guiTop < mouseY && guiTop + ySize >= mouseY && getSlotAtPosition(mouseX, mouseY) == null) {
+			if(!Mouse.isButtonDown(0) && !Mouse.isButtonDown(1) && Mouse.next()) {
+				int scroll = Mouse.getEventDWheel();
+
+				if(scroll > 0 && this.index > 0) this.index--;
+				if(scroll < 0 && this.index < this.size) this.index++;
+			}
+		}
 	}
 	
 	int lastSize = 1;

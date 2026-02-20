@@ -7,12 +7,14 @@ import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.util.I18nUtil;
 import com.hbm.forgefluid.FluidTypeHandler;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,38 +22,42 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 
 	public static final ModelResourceLocation identifierModel = new ModelResourceLocation(RefStrings.MODID + ":forge_fluid_identifier", "inventory");
 
 	public ItemForgeFluidIdentifier(String s) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(MainRegistry.partsTab);
 
 		ModItems.ALL_ITEMS.add(this);
 	}
 
-	@Override
-	public ItemStack getContainerItem(ItemStack itemStack) {
-		return itemStack.copy();
-	}
+	// @Override
+	// public ItemStack getContainerItem(ItemStack itemStack) {
+	// 	return itemStack.copy();
+	// }
 
-	@Override
-	public boolean hasContainerItem() {
-		return true;
-	}
+	// @Override
+	// public boolean hasContainerItem() {
+	// 	return true;
+	// }
 
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
@@ -77,13 +83,28 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 		if (stack.hasTagCompound()) {
 			f = FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype"));
 		}
-		list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("info.templatefolder"));
 		list.add("");
 		list.add(I18nUtil.resolveKey("desc.unfluidid"));
 		if (f != null)
 			list.add("   " + f.getLocalizedName(new FluidStack(f, 1000)));
 		else
-			list.add("   " + "ERROR - bad data");
+			list.add("   " + I18nUtil.resolveKey("hbmfluid.none"));
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public String getItemStackDisplayName(ItemStack stack) {
+		String s = ("" + I18n.format(this.getTranslationKey() + ".name")).trim();
+		Fluid s1 = null;
+		if (stack.hasTagCompound()) {
+			s1 = FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype"));
+		}
+
+		if (s1 != null) {
+			s = s + ": " + s1.getLocalizedName(new FluidStack(s1, 1000));
+		}
+
+		return s;
 	}
 
 	public static Fluid getType(ItemStack stack) {
@@ -128,17 +149,31 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 			duct = (TileEntityFFDuctBaseMk2) te;
 		}
 		if(duct != null){
-			if(player.isSneaking()){
-				if(null != duct.getType()){
-					spreadType(worldIn, pos, null, duct.getType(), 256);
-				}
-			}else{
-				if(getType(player.getHeldItem(hand)) != duct.getType()){
-					spreadType(worldIn, pos, getType(player.getHeldItem(hand)), duct.getType(), 256);
-				}
+			if(getType(player.getHeldItem(hand)) != duct.getType()){
+				spreadType(worldIn, pos, getType(player.getHeldItem(hand)), duct.getType(), 256);
 			}
 		}
 		return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+	}
+
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		ItemStack stack = player.getHeldItem(hand);
+
+		RayTraceResult ray = this.rayTrace(world, player, false);
+		if (ray != null && ray.typeOfHit == RayTraceResult.Type.BLOCK) {
+			BlockPos pos = ray.getBlockPos();
+			TileEntity te = world.getTileEntity(pos);
+
+			if (te instanceof TileEntityFFDuctBaseMk2) { 
+				return new ActionResult<>(EnumActionResult.FAIL, stack);
+			}
+		}
+
+		if (world.isRemote) {
+			player.openGui(MainRegistry.instance, ModItems.guiID_fluid_id, world, 0, 0, 0);
+		}
+		return new ActionResult<>(EnumActionResult.SUCCESS, stack);
 	}
 
 	@Override

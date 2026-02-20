@@ -33,17 +33,18 @@ public class TileEntitySolarBoiler extends TileEntity implements INBTPacketRecei
     public Fluid[] types = new Fluid[2];
     public int heat;
     public int heatInput;
-    public static int maxHeat = 320_000; //the heat required to turn 64k of water into steam
+    public static int maxHeat = 32_000_000; //the heat required to turn 64k of water into steam
     public static final double diffusion = 0.1D;
+    public static final int cap = 10_000_000;
 
     public TileEntitySolarBoiler() {
         super();
         tanks = new FluidTank[2];
 
-        tanks[0] = new FluidTank(FluidRegistry.WATER, 0, 16000);
+        tanks[0] = new FluidTank(FluidRegistry.WATER, 0, cap);
         types[0] = FluidRegistry.WATER;
 
-        tanks[1] = new FluidTank(ModForgeFluids.steam, 0, 1600000);
+        tanks[1] = new FluidTank(ModForgeFluids.steam, 0, cap * 100);
         types[1] = ModForgeFluids.steam;
 
     }
@@ -82,7 +83,7 @@ public class TileEntitySolarBoiler extends TileEntity implements INBTPacketRecei
 	}
 	
 	public void fillFluid(BlockPos pos, FluidTank tank) {
-		FFUtils.fillFluid(this, tank, world, pos, 1600000);
+		FFUtils.fillFluid(this, tank, world, pos, cap*100);
 	}
 
     @Override
@@ -180,6 +181,18 @@ public class TileEntitySolarBoiler extends TileEntity implements INBTPacketRecei
         }
         this.heat = nbt.getInteger("heat");
         this.heatInput = nbt.getInteger("heatInput");
+    }
+
+    public void fixTankSize(){
+        if(tanks[0].getCapacity() != cap) {
+            tanks[0].setCapacity(cap);
+            markDirty();
+        }
+        int correctSize = cap * HeatRecipes.getOutputAmountHot(types[0])/HeatRecipes.getInputAmountHot(types[0]);
+        if(correctSize > 0 && tanks[1].getCapacity() != correctSize){
+            tanks[1].setCapacity(correctSize);
+            markDirty();
+        }
     }
 
     private void setupTanks() {

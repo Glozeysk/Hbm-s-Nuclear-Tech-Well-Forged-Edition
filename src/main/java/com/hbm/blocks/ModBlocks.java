@@ -21,6 +21,9 @@ import com.hbm.blocks.bomb.CrystalPulsar;
 import com.hbm.blocks.bomb.CrystalVirus;
 import com.hbm.blocks.bomb.DetCord;
 import com.hbm.blocks.bomb.DetMiner;
+import com.hbm.blocks.bomb.DetMiner2;
+import com.hbm.blocks.bomb.DetMiner3;
+import com.hbm.blocks.bomb.DetMiner4;
 import com.hbm.blocks.bomb.DigammaFlame;
 import com.hbm.blocks.bomb.DigammaMatter;
 import com.hbm.blocks.bomb.Landmine;
@@ -134,6 +137,7 @@ import com.hbm.blocks.machine.pile.BlockGraphite;
 import com.hbm.blocks.machine.pile.BlockGraphiteFuel;
 import com.hbm.blocks.machine.pile.BlockGraphiteRod;
 import com.hbm.blocks.machine.pile.BlockGraphiteSource;
+import com.hbm.blocks.machine.rbmk.*;
 import com.hbm.blocks.machine.rbmk.RBMKAbsorber;
 import com.hbm.blocks.machine.rbmk.RBMKBlank;
 import com.hbm.blocks.machine.rbmk.RBMKBoiler;
@@ -190,11 +194,8 @@ import com.hbm.blocks.turret.TurretRocket;
 import com.hbm.blocks.turret.TurretSpitfire;
 import com.hbm.blocks.turret.TurretTau;
 import com.hbm.blocks.turret.TurretTauon;
-import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.Spaghetti;
 import com.hbm.items.special.ItemHazard;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.DoorDecl;
 
@@ -207,7 +208,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class ModBlocks {
@@ -719,7 +719,7 @@ public class ModBlocks {
 	public static final Block block_verticium = new BlockRadResistant(Material.IRON, "block_verticium").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
 	public static final Block block_unobtainium = new BlockRadResistant(Material.IRON, "block_unobtainium").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
 	public static final Block block_daffergon = new BlockRadResistant(Material.IRON, "block_daffergon").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
-	
+	public static final Block block_compressed_daffergon = new BlockRadResistant(Material.IRON, "block_compressed_daffergon").setCreativeTab(MainRegistry.blockTab).setHardness(50.0F).setResistance(1000.0F);
 	
 	public static final Block depth_brick = new BlockDepth("depth_brick").setCreativeTab(MainRegistry.blockTab);
 	public static final Block depth_tiles = new BlockDepth("depth_tiles").setCreativeTab(MainRegistry.blockTab);
@@ -804,6 +804,9 @@ public class ModBlocks {
 	
 	public static final Block det_cord = new DetCord(Material.IRON, "det_cord").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
 	public static final Block det_miner = new DetMiner(Material.IRON, "det_miner").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
+	public static final Block det_miner2 = new DetMiner2(Material.IRON, "det_miner2").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
+	public static final Block det_miner3 = new DetMiner3(Material.IRON, "det_miner3").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
+	public static final Block det_miner4 = new DetMiner4(Material.IRON, "det_miner4").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
 	public static final Block det_charge = new DetCord(Material.IRON, "det_charge").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
 	public static final Block block_semtex = new BlockSemtex(Material.TNT, "block_semtex").setSoundType(SoundType.METAL).setCreativeTab(MainRegistry.nukeTab).setHardness(2.0F).setResistance(2.0F);
 	public static final Block det_n2 = new DetCord(Material.IRON, "det_n2").setCreativeTab(MainRegistry.nukeTab).setHardness(0.1F).setResistance(0.0F);
@@ -1078,10 +1081,12 @@ public class ModBlocks {
 	public static final int guiID_rbmk_storage = 129;
 	public static final int guiID_rbmk_heater = 133;
 	public static final Block rbmk_blank = new RBMKBlank("rbmk_blank", "rbmk_blank").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block rbmk_rod = new RBMKRod(false, "rbmk_rod", "rbmk_element").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block rbmk_rod_mod = new RBMKRod(true, "rbmk_rod_mod", "rbmk_element_mod").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block rbmk_rod_reasim = new RBMKRodReaSim(false, "rbmk_rod_reasim", "rbmk_element_reasim").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block rbmk_rod_reasim_mod = new RBMKRodReaSim(true, "rbmk_rod_reasim_mod", "rbmk_element_reasim_mod").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod = new RBMKRod(false, false, "rbmk_rod", "rbmk_element").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod_mod = new RBMKRod(true, false, "rbmk_rod_mod", "rbmk_element_mod").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod_heatproof = new RBMKRod(false, true, "rbmk_rod_heatproof", "rbmk_element_heatproof").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod_mod_heatproof = new RBMKRod(true, true, "rbmk_rod_mod_heatproof", "rbmk_element_mod_heatproof").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod_reasim = new RBMKRodReaSim(false, false, "rbmk_rod_reasim", "rbmk_element_reasim").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block rbmk_rod_reasim_mod = new RBMKRodReaSim(true, false, "rbmk_rod_reasim_mod", "rbmk_element_reasim_mod").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block rbmk_control = new RBMKControl(false, "rbmk_control", "rbmk_control").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block rbmk_control_mod = new RBMKControl(true, "rbmk_control_mod", "rbmk_control_mod").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block rbmk_control_auto = new RBMKControlAuto("rbmk_control_auto", "rbmk_control_auto").setHardness(15.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
@@ -1129,6 +1134,7 @@ public class ModBlocks {
 	
 	public static final Block machine_deuterium_extractor = new MachineDeuteriumExtractor(Material.IRON, "machine_deuterium_extractor").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_deuterium_tower = new DeuteriumTower(Material.IRON, "machine_deuterium_tower").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block machine_autocrafter = new MachineAutocrafter(Material.IRON, "machine_autocrafter").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
 
 	public static final int guiID_anvil = 125;
 	public static final Block anvil_iron = new NTMAnvil(Material.IRON, 1, "anvil_iron").setCreativeTab(MainRegistry.machineTab);
@@ -1151,6 +1157,8 @@ public class ModBlocks {
 	public static final Block conveyor_lift = new BlockConveyorLift(Material.IRON, "conveyor_lift").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_ejector = new CraneExtractor(Material.IRON, "crane_ejector").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_inserter = new CraneInserter(Material.IRON, "crane_inserter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_ejector_alt = new CraneExtractorAlt(Material.IRON, "crane_ejector_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_inserter_alt = new CraneInserterAlt(Material.IRON, "crane_inserter_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_splitter = new CraneSplitter(Material.IRON, "crane_splitter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_boxer = new CraneBoxer(Material.IRON, "crane_boxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_unboxer = new CraneUnboxer(Material.IRON, "crane_unboxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
@@ -1189,9 +1197,15 @@ public class ModBlocks {
 	
 	public static final Block machine_shredder = new MachineShredder(Material.IRON, "machine_shredder").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_shredder = 34;
+
+	public static final Block machine_shreddermk2 = new MachineShreddermk2(Material.IRON, "machine_shreddermk2").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_shreddermk2 = 136;
 	
 	public static final Block machine_waste_drum = new WasteDrum(Material.IRON, "machine_waste_drum").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_waste_drum = 79;
+
+	public static final Block machine_waste_drum_t2 = new WasteDrumt2(Material.IRON, "machine_waste_drum_t2").setHardness(10.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_waste_drum_t2 = 137;
 	
 	public static final int guiID_storage_drum = 123;
 	public static final Block machine_storage_drum = new StorageDrum(Material.IRON, guiID_storage_drum, "machine_storage_drum").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
@@ -1223,6 +1237,10 @@ public class ModBlocks {
 	
 	public static final Block machine_combine_factory = new MachineCMBFactory(Material.IRON, "machine_combine_factory").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_combine_factory = 35;
+
+	public static final Block machine_difurnace_spk_on = new MachineDiFurnaceSPK(Material.IRON, "machine_difurnace_spk_on", true).setHardness(5.0F).setResistance(10.0F).setLightOpacity(15).setLightLevel(2.0F).setCreativeTab(null);
+	public static final Block machine_difurnace_spk_off = new MachineDiFurnaceSPK(Material.IRON, "machine_difurnace_spk_off", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_spk_difurnace = 135;
 	
 	public static final Block machine_teleporter = new MachineTeleporter(Material.IRON, "machine_teleporter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	// public static final int guiID_machine_teleporter = 36;
@@ -1466,8 +1484,12 @@ public class ModBlocks {
 	//Drillgon200: Removed, by order of lord Bob.
 	//Alcater: excecuting removal of classes/registry/render
 	public static final Block fluid_duct_mk2 = new BlockFluidPipeMk2(Material.IRON, "fluid_duct_mk2").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.templateTab);
+	public static final Block fluid_duct_mk3 = new BlockFluidPipeMk3(Material.IRON, "fluid_duct_mk3").setHardness(15.0F).setResistance(10000.0F).setCreativeTab(MainRegistry.templateTab);
+	public static final Block fluid_duct_mk4 = new BlockFluidPipeMk4(Material.IRON, "fluid_duct_mk4").setHardness(25.0F).setResistance(20000.0F).setCreativeTab(MainRegistry.templateTab);
 	public static final Block fluid_duct_solid = new BlockFluidPipeSolid(Material.IRON, "fluid_duct_solid").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.templateTab);
 	public static final Block fluid_duct_solid_sealed = new BlockFluidPipeSolidRadResistant(Material.IRON, "fluid_duct_solid_sealed").setHardness(15.0F).setResistance(10000.0F).setCreativeTab(MainRegistry.templateTab);
+	public static final Block fluid_duct_mk3_solid = new BlockFluidPipeMk3Solid(Material.IRON, "fluid_duct_mk3_solid").setHardness(15.0F).setResistance(10000.0F).setCreativeTab(MainRegistry.templateTab);
+	public static final Block fluid_duct_mk3_solid_sealed = new BlockFluidPipeMk3SolidRadResistant(Material.IRON, "fluid_duct_mk3_solid_sealed").setHardness(15.0F).setResistance(20000.0F).setCreativeTab(MainRegistry.templateTab);
 	
 	public static final Block chain = new BlockChain(Material.IRON, "dungeon_chain").setHardness(0.25F).setResistance(2.0F).setCreativeTab(MainRegistry.blockTab);
 	

@@ -216,6 +216,8 @@ public final class HBMSoundHandler {
 	public static SoundEvent cough;
 	public static SoundEvent ufoBeam;
 	public static SoundEvent ufoBlast;
+	public static SoundEvent nightvision_on;
+	public static SoundEvent nightvision_off;
 	
 	public static SoundEvent transitionSealOpen;
 	public static SoundEvent garage;
@@ -282,6 +284,8 @@ public final class HBMSoundHandler {
 		blockDebris = register("block.debris");
 		rbmkLid = register("block.rbmkLid");
 		syringeUse = register("item.syringe");
+		nightvision_on = register("item.nightvision_on");
+		nightvision_off = register("item.nightvision_off");
 		sparkShoot = register("weapon.sparkShoot");
 		b92Reload = register("weapon.b92Reload");
 		techBleep = register("item.techBleep");

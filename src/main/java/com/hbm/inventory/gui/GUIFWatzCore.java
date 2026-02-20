@@ -71,7 +71,7 @@ public class GUIFWatzCore extends GuiInfoContainer {
 		int k = (int)fwatz.getPowerScaled(116);
 		drawTexturedModalRect(guiLeft + 30, guiTop + 108, 0, 222, k, 16);
 		
-		if(fwatz.isRunning())
+		if(fwatz.isDoingSomething)
 			drawTexturedModalRect(guiLeft + 64, guiTop + 29, 176, 24, 48, 48);
 
 		if(fwatz.isOn)
@@ -79,6 +79,12 @@ public class GUIFWatzCore extends GuiInfoContainer {
 		
 		int m = fwatz.getSingularityType();
 		drawTexturedModalRect(guiLeft + 80, guiTop + 20, 176, 4 * m, 16, 4);
+
+		int j1 = fwatz.getProgressScaled(70);
+		if(fwatz.canGrow())
+			drawTexturedModalRect(guiLeft + 53, guiTop + 104, 0, 238, j1, 2);
+		if(fwatz.isDoingSomething && fwatz.canGrowReversed())
+			drawTexturedModalRect(guiLeft + 53, guiTop + 104, 0, 238, 70, 2);
 		
 		FFUtils.drawLiquid(fwatz.tanks[0], guiLeft, guiTop, zLevel, 68, 16, 54, 130);
 		FFUtils.drawLiquid(fwatz.tanks[1], guiLeft, guiTop, zLevel, 16, 70, 8, 116);

@@ -1,7 +1,9 @@
 package com.hbm.explosion;
 
 import com.hbm.blocks.generic.DecoBlockAlt;
+import com.hbm.blocks.ModBlocks;
 
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -25,6 +27,7 @@ public class ExplosionFleija
 	private int element;
 	public float explosionCoefficient = 1.0F;
 	public float explosionCoefficient2 = 1.0F;
+	public boolean dropblocks = false;
 	
 	public void saveToNbt(NBTTagCompound nbt, String name) {
 		nbt.setInteger(name + "posX", posX);
@@ -41,6 +44,7 @@ public class ExplosionFleija
 		nbt.setInteger(name + "element", element);
 		nbt.setFloat(name + "explosionCoefficient", explosionCoefficient);
 		nbt.setFloat(name + "explosionCoefficient2", explosionCoefficient2);
+		nbt.setBoolean(name + "dropblocks", dropblocks);
 	}
 	
 	public void readFromNbt(NBTTagCompound nbt, String name) {
@@ -58,9 +62,10 @@ public class ExplosionFleija
 		element = nbt.getInteger(name + "element");
 		explosionCoefficient = nbt.getFloat(name + "explosionCoefficient");
 		explosionCoefficient2 = nbt.getFloat(name + "explosionCoefficient2");
+		dropblocks = nbt.getBoolean(name + "dropblocks");
 	}
 	
-	public ExplosionFleija(int x, int y, int z, World world, int rad, float coefficient, float coefficient2)
+	public ExplosionFleija(int x, int y, int z, World world, int rad, float coefficient, float coefficient2, boolean drop)
 	{
 		this.posX = x;
 		this.posY = y;
@@ -75,6 +80,8 @@ public class ExplosionFleija
 		this.explosionCoefficient2 = coefficient2;
 		
 		this.nlimit = this.radius2 * 4;
+
+		this.dropblocks = drop;
 	}
 	
 	public boolean update()
@@ -103,6 +110,13 @@ public class ExplosionFleija
 			for (int y = (int)(dist / this.explosionCoefficient2); y > -dist / this.explosionCoefficient; y--)
 			{
 				pos.setPos(this.posX+x, this.posY+y, this.posZ+z);
+				float chance = 1.0F;
+				if(!this.dropblocks)
+					chance = 0F;
+				if(this.dropblocks && !(this.worldObj.getBlockState(pos).getBlock() == ModBlocks.ore_tektite_osmiridium))
+					chance = 0F;
+				if(!(this.worldObj.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && this.posY+y <= 0) && !(this.worldObj.getBlockState(pos).getBlock() instanceof DecoBlockAlt))
+					this.worldObj.getBlockState(pos).getBlock().dropBlockAsItemWithChance(this.worldObj, pos, this.worldObj.getBlockState(pos), chance, 0);
 				if(!(this.worldObj.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && this.posY+y <= 0) && !(this.worldObj.getBlockState(pos).getBlock() instanceof DecoBlockAlt))
 					this.worldObj.setBlockToAir(pos);
 			}

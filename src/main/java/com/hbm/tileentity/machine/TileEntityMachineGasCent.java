@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.hbm.items.ModItems;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
@@ -43,7 +44,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public int progress;
 	public boolean isProgressing;
 	public static final int maxPower = 100000;
-	public static final int processingSpeed = 200;
+	public static final int processingSpeed = 1200;
 	public boolean needsUpdate = false;
 	
 	public FluidTank tank;
@@ -55,7 +56,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	private String customName;
 	
 	public TileEntityMachineGasCent() {
-		super(9);
+		super(12);
 		tank = new FluidTank(8000);
 	}
 	
@@ -125,32 +126,69 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	}
 	
 	private void process() {
-
 		List<GasCentOutput> out = MachineRecipes.getGasCentOutput(tank.getFluid() == null ? null : tank.getFluid().getFluid());
 		this.progress = 0;
 		tank.drain(MachineRecipes.getFluidConsumedGasCent(tank.getFluid() == null ? null : tank.getFluid().getFluid()), true);
-		
-		List<GasCentOutput> random = new ArrayList<GasCentOutput>();
-		
+
 		for(int i = 0; i < out.size(); i++) {
-			for(int j = 0; j < out.get(i).weight; j++) {
-				random.add(out.get(i));
+			GasCentOutput result = out.get(i);
+			int slot = result.slot + 4;
+			int count = result.weight;
+
+			if(inventory.getStackInSlot(slot).isEmpty()) {
+				ItemStack stack = result.output.copy();
+				stack.setCount(count);
+				inventory.setStackInSlot(slot, stack);
+			} else {
+				inventory.getStackInSlot(slot).grow(count);
 			}
-		}
-		
-		Collections.shuffle(random);
-		
-		GasCentOutput result = random.get(world.rand.nextInt(random.size()));
-		
-		int slot = result.slot + 4;
-		
-		if(inventory.getStackInSlot(slot).isEmpty()) {
-			inventory.setStackInSlot(slot, result.output.copy());
-		} else {
-			inventory.getStackInSlot(slot).grow(result.output.getCount());
 		}
 	}
 	
+	public int getSpeedLvl() {
+		int level = 0;
+		for(int i = 9; i <= 11; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_1)
+				level += 1;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_2)
+				level += 2;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_3)
+				level +=3;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_screm)
+				level +=6;
+		}
+		return Math.min(level, 18);
+	}
+
+	public int getPowerLvl() {
+		int level = 0;
+		for(int i = 9; i <= 11; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_1)
+				level += 1;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_2)
+				level += 2;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_3)
+				level +=3;
+		}
+		return Math.min(level, 3);
+	}
+
+	public int getOverdriveLvl() {
+		int level = 0;
+		for(int i = 9; i <= 11; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_1)
+				level += 1;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_2)
+				level += 2;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_3)
+				level +=3;
+		}
+		return Math.min(level, 3);
+	}
+
 	@Override
 	public void update() {
 		
@@ -168,15 +206,30 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 			if(this.inputValidForTank(-1, 3))
 				FFUtils.fillFromFluidContainer(inventory, tank, 3, 4);
 			
+			int speed = 1;
+			int consumption = 200;
 			
+			int speedLvl = getSpeedLvl();
+			int powerLvl = getPowerLvl();
+			int overdriveLvl = getOverdriveLvl();
+
+			speed += speedLvl;
+			consumption += speedLvl * 200;
+			
+			speed *= (1 + overdriveLvl * 2);
+			consumption += overdriveLvl * 10000;
+			
+			consumption /= (1 + powerLvl);
 			
 			if(canProcess()) {
 				
 				isProgressing = true;
 				
 				this.progress++;
+
+				progress += speed;
 				
-				this.power -= 200;
+				this.power -= consumption;
 				
 				if(this.power < 0)
 					power = 0;

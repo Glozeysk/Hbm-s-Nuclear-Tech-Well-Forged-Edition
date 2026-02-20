@@ -12,7 +12,7 @@ public class PacketDispatcher {
 	
 	public static final SimpleNetworkWrapper wrapper = NetworkRegistry.INSTANCE.newSimpleChannel(RefStrings.MODID);
 	
-	public static final void registerPackets(){
+	public static void registerPackets(){
 		int i = 0;
 
 		//PressPacket
@@ -43,8 +43,6 @@ public class PacketDispatcher {
 		wrapper.registerMessage(AuxButtonPacket.Handler.class, AuxButtonPacket.class, i++, Side.SERVER);
 		//For handling fluid tank type updates
 		wrapper.registerMessage(FluidTypePacketTest.Handler.class, FluidTypePacketTest.class, i++, Side.CLIENT);
-		//Fluid pipe type update for rendering
-		wrapper.registerMessage(TEFluidTypePacketTest.Handler.class, TEFluidTypePacketTest.class, i++, Side.CLIENT);
 		//Turret basic packet for making the client has the right ammo amounts
 		wrapper.registerMessage(TETurretPacket.Handler.class, TETurretPacket.class, i++, Side.CLIENT);
 		//CIWS has a really long range, so stuff might not even exist on client, so rotation needs to be sent
@@ -87,12 +85,14 @@ public class PacketDispatcher {
 		wrapper.registerMessage(TEMissileMultipartPacket.Handler.class, TEMissileMultipartPacket.class, i++, Side.CLIENT);
 		//Signals server to consume items and create template
 		wrapper.registerMessage(ItemFolderPacket.Handler.class, ItemFolderPacket.class, i++, Side.SERVER);
+		//Signals server to consume fluid ID and create new one
+		wrapper.registerMessage(ItemFluidIDPacket.Handler.class, ItemFluidIDPacket.class, i++, Side.SERVER);
+		//glozeysk shitcoded this
+		wrapper.registerMessage(ItemAssTemplatePacket.Handler.class, ItemAssTemplatePacket.class, i++, Side.SERVER);
 		//Signals server to buy offer from bobmazon
 		wrapper.registerMessage(ItemBobmazonPacket.Handler.class, ItemBobmazonPacket.class, i++, Side.SERVER);
 		//Update packet for force field
 		wrapper.registerMessage(TEFFPacket.Handler.class, TEFFPacket.class, i++, Side.CLIENT);
-		//Siren packet for looped sounds Drillgon200: Wrong descriptions, but eh, whatever.
-		wrapper.registerMessage(TERadarPacket.Handler.class, TERadarPacket.class, i++, Side.CLIENT);
 		//Packet for causing pipes to rebuild their connections
 		wrapper.registerMessage(PipeUpdatePacket.Handler.class, PipeUpdatePacket.class, i++, Side.CLIENT);
 		//Packet for updating entities being zapped
@@ -122,6 +122,8 @@ public class PacketDispatcher {
 		wrapper.registerMessage(KeypadClientPacket.Handler.class, KeypadClientPacket.class, i++, Side.CLIENT);
 		//Sends a funi text to display like a music disc announcement
 		wrapper.registerMessage(PlayerInformPacket.Handler.class, PlayerInformPacket.class, i++, Side.CLIENT);
+		//An alert from 1.7.10 (like if your lungs are going dead from coal)
+		wrapper.registerMessage(PlayerInformPacketLegacy.Handler.class, PlayerInformPacketLegacy.class, i++, Side.CLIENT);
 		//Activates particle effects or animations without the need for an entity
 		wrapper.registerMessage(GunFXPacket.Handler.class, GunFXPacket.class, i++, Side.CLIENT);
 		//Handles custom death animations (like the gluon gun disintegration effect)

@@ -31,9 +31,11 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
@@ -71,7 +73,7 @@ public class ItemGunEgon extends ItemGunBase {
 				RayTraceResult r = Library.rayTraceIncludeEntitiesCustomDirection(player, look, 50, 1);
 				if(r != null && r.hitVec != null && r.typeOfHit != Type.MISS && r.sideHit != null){
 					Vec3i norm = r.sideHit.getDirectionVec();
-					Vec3d pos = r.hitVec.addVector(norm.getX()*0.1F, norm.getY()*0.1F, norm.getZ()*0.1F);
+					Vec3d pos = r.hitVec.add(norm.getX()*0.1F, norm.getY()*0.1F, norm.getZ()*0.1F);
 					ParticleGluonFlare flare = new ParticleGluonFlare(world, pos.x, pos.y, pos.z, player);
 					Minecraft.getMinecraft().effectRenderer.addEffect(flare);
 				} else {
@@ -127,9 +129,12 @@ public class ItemGunEgon extends ItemGunBase {
 		super.updateServer(stack, world, player, slot, hand);
 		if(hand == EnumHand.OFF_HAND)
 			return;
-		if(getIsMouseDown(stack) && Library.countInventoryItem(player.inventory, getBeltType(player, stack, true)) >= 2){
+
+		boolean flag = player.capabilities.isCreativeMode || EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0;
+
+		if(getIsMouseDown(stack) && (Library.countInventoryItem(player.inventory, getBeltType(player, stack, true)) >= 2 || flag)){
 			setIsFiring(stack, true);
-			if(world.getTotalWorldTime() % 5 == 0){
+			if(world.getTotalWorldTime() % 5 == 0 && !flag){
 				Library.consumeInventoryItem(player.inventory, getBeltType(player, stack, true));
 				Library.consumeInventoryItem(player.inventory, getBeltType(player, stack, true));
 			}

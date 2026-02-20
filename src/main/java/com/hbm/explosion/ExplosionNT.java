@@ -14,6 +14,7 @@ import com.hbm.config.CompatibilityConfig;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.render.amlfrom1710.Vec3;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentProtection;
@@ -239,6 +240,9 @@ public class ExplosionNT extends Explosion {
 
 					if(!has(ExAttrib.ALLDROP))
 						chance = 1.0F / this.explosionSize;
+					if(has(ExAttrib.ALLDROP) && (block.getBlock() == Blocks.STONE || block.getBlock() == Blocks.DIRT || block.getBlock() == Blocks.GRASS || block.getBlock() == ModBlocks.tektite || block.getBlock() == Blocks.COBBLESTONE || block.getBlock() == Blocks.GRAVEL || block.getBlock() == Blocks.SAND || block.getBlock() == Blocks.SANDSTONE || block.getBlock() == ModBlocks.basalt_smooth))
+						chance = 0F;
+
 
 					block.getBlock().dropBlockAsItemWithChance(this.worldObj, chunkposition, this.worldObj.getBlockState(chunkposition), chance, 0);
 				}

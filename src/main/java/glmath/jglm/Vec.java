@@ -8,7 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
-public class Vec {
+@Deprecated public class Vec {
 
     protected float[] vector;
     protected int order;

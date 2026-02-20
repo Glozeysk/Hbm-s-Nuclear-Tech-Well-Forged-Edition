@@ -30,7 +30,7 @@ public class GUIMachineCMBFactory extends GuiInfoContainer {
 		super.drawScreen(mouseX, mouseY, f);
 
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 26, guiTop + 69 - 52, 16, 52, diFurnace.tank, diFurnace.tankType);
-		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 106 - 88, 16, 88, diFurnace.power, TileEntityMachineCMBFactory.maxPower);
+		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 106 - 88, 16, 52, diFurnace.power, TileEntityMachineCMBFactory.maxPower);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	

@@ -8,7 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
-public class Vec3 extends Vec {
+@Deprecated public class Vec3 extends Vec {
 
     public float x;
     public float y;
@@ -123,9 +123,7 @@ public class Vec3 extends Vec {
 
         t = t.times(quat.w).plus(q.crossProduct(t));
 
-        Vec3 v = t.plus(this);
-
-        return v;
+        return t.plus(this);
 
 //        return quat.m
     }

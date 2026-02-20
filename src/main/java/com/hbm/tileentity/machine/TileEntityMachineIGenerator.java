@@ -253,6 +253,7 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 		fluidHeat.put(ModForgeFluids.petroil, 125);
 		fluidHeat.put(ModForgeFluids.biofuel, 200);
 		fluidHeat.put(ModForgeFluids.nitan, 2500);
+		fluidHeat.put(ModForgeFluids.sparkfuel, 5000);
 	}
 	
 	public int getHeatFromFuel(FluidStack fluid) {

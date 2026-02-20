@@ -1,7 +1,13 @@
 package com.hbm.util;
 
 import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentData;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 
 public class EnchantmentUtil {
@@ -9,6 +15,16 @@ public class EnchantmentUtil {
 	public static void addEnchantment(ItemStack stack, Enchantment enchantment, int level) {
 
 		stack.addEnchantment(enchantment, level);
+	}
+
+	public static void addEnchantmentToBook(ItemStack stack, Enchantment enchantment, int level) {
+
+		Map<Enchantment,Integer> ench = new HashMap<>();
+
+		ench.put(enchantment, level);
+
+		EnchantmentHelper.setEnchantments(ench, stack);
+
 	}
 
 	public static void removeEnchantment(ItemStack stack, Enchantment enchantment) {

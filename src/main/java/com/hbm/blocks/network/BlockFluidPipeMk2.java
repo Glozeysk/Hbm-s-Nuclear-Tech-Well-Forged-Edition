@@ -7,7 +7,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.util.I18nUtil;
-import com.hbm.items.machine.ItemFFFluidDuct;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk2;
@@ -31,6 +30,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -46,7 +46,7 @@ public class BlockFluidPipeMk2 extends BlockContainer implements IToolable, ILoo
 	
 	public BlockFluidPipeMk2(Material materialIn, String s) {
 		super(materialIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(EXTRACTS, false));
 		
@@ -65,6 +65,9 @@ public class BlockFluidPipeMk2 extends BlockContainer implements IToolable, ILoo
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
+		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor"));
+		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
+		tooltip.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotreallyhot"));
 	}
 	
 	@Override
@@ -225,8 +228,6 @@ public class BlockFluidPipeMk2 extends BlockContainer implements IToolable, ILoo
 		if(te instanceof TileEntityFFDuctBaseMk2){
 			ductFluid = ((TileEntityFFDuctBaseMk2)te).getType();
 		}
-		if(ductFluid != null)
-			return ItemFFFluidDuct.getStackFromFluid(ductFluid, 1);
 		return super.getPickBlock(state, target, world, pos, player);
 	}
 
@@ -248,6 +249,6 @@ public class BlockFluidPipeMk2 extends BlockContainer implements IToolable, ILoo
 			text.add("&[" + color + "&]" +I18nUtil.resolveKey(ductFluid.getUnlocalizedName()));
 		}
 		
-		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getUnlocalizedName() + ".name"), 0xffff00, 0x404000, text);
+		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}
 }

@@ -1,16 +1,23 @@
 package com.hbm.inventory.gui;
 
+import java.io.IOException;
+
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerRBMKRod;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.RefStrings;
+import com.hbm.packet.NBTControlPacket;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKRod;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 public class GUIRBMKRod extends GuiContainer {
@@ -25,6 +32,25 @@ public class GUIRBMKRod extends GuiContainer {
 		this.xSize = 176;
 		this.ySize = 186;
 	}
+
+	@Override
+    protected void mouseClicked(int x, int y, int i) throws IOException {
+        super.mouseClicked(x, y, i);
+
+        if(guiLeft + 74 <= x && guiLeft + 74 + 12 > x && guiTop + 73 < y && guiTop + 73 + 12 >= y) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("minus", true);
+            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+        }
+
+        if(guiLeft + 90 <= x && guiLeft + 90 + 12 > x && guiTop + 73 < y && guiTop + 73 + 12 >= y) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("plus", true);
+            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+        }
+    }
 	
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
@@ -32,6 +58,9 @@ public class GUIRBMKRod extends GuiContainer {
 		
 		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
+
+		String percent = rod.DepletionToExtract + "%";
+        this.fontRenderer.drawString(percent, this.xSize / 2 - this.fontRenderer.getStringWidth(percent) / 2, 25, 0x00FF00);
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import com.hbm.packet.PacketDispatcher;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -85,6 +86,14 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
 	
 	public void networkUnpack(NBTTagCompound nbt) { }
 	
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(muffled);
+    }
+
+    public void deserialize(ByteBuf buf) {
+        this.muffled = buf.readBoolean();
+    }
+
 	public void handleButtonPacket(int value, int meta) { }
 	
 	@Override

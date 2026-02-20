@@ -341,9 +341,14 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			if(isOn) {
 
 				int defConsumption = consumption - 100000 * getConsumption();
+				int processSpeed = this.getSpeed();
+
+				int overdrive = getOverdrive();
+
+				processSpeed *= (1 + overdrive * 2);
 
 				if(canProcess() && power >= defConsumption) {
-					progress += this.getSpeed();
+					progress += processSpeed;
 					power -= defConsumption;
 					
 					if(progress >= duration) {
@@ -549,10 +554,32 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 					speed += 2;
 				else if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_3)
 					speed += 3;
+				else if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_screm)
+					speed += 6;
 			}
 		}
 
-		return Math.min(speed, 4);
+		return Math.min(speed, 13);
+	}
+
+	public int getOverdrive() {
+
+		int level = 0;
+
+		for(int i = 14; i < 16; i++) {
+
+			if(!inventory.getStackInSlot(i).isEmpty()) {
+
+				if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_1)
+					level += 1;
+				if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_2)
+					level += 2;
+				if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_3)
+					level +=3;
+			}
+		}
+
+		return Math.min(level, 6);
 	}
 
 	public int getConsumption() {

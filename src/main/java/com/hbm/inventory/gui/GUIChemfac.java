@@ -9,6 +9,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
+
+import java.io.IOException;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -46,6 +49,20 @@ public class GUIChemfac extends GuiInfoContainer {
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 233, guiTop + 108, 9, 54, chemfac.water.getTank(), ModForgeFluids.coolant);
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 242, guiTop + 108, 9, 54, chemfac.steam.getTank(), ModForgeFluids.hotcoolant);
 	}
+
+	@Override
+    protected void mouseClicked(int x, int y, int button) throws IOException {
+        super.mouseClicked(x, y, button);
+
+        if(this.checkClick(x, y, 50, 29, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 13);
+		if(this.checkClick(x, y, 160, 29, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 22);
+		if(this.checkClick(x, y, 50, 67, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 31);
+		if(this.checkClick(x, y, 160, 67, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 40);
+		if(this.checkClick(x, y, 50, 105, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 49);
+		if(this.checkClick(x, y, 160, 105, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 58);
+		if(this.checkClick(x, y, 50, 143, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 67);
+		if(this.checkClick(x, y, 160, 143, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemfac, this, 76);
+    }
 
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {

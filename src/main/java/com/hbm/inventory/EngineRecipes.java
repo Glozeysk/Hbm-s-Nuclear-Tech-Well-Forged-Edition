@@ -34,6 +34,7 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.biogas, FuelGrade.AERO, 500_000);
 		addFuel(ModForgeFluids.biofuel, FuelGrade.HIGH, 400_000);
 		addFuel(ModForgeFluids.nitan, FuelGrade.HIGH, 5_000_000);
+		addFuel(ModForgeFluids.sparkfuel, FuelGrade.HIGH, 10_000_000);
 		addFuel(ModForgeFluids.balefire, FuelGrade.HIGH, 2_500_000);
 		addFuel(ModForgeFluids.gasoline, FuelGrade.HIGH, 1_000_000);
 		addFuel(ModForgeFluids.ethanol, FuelGrade.HIGH, 200_000);

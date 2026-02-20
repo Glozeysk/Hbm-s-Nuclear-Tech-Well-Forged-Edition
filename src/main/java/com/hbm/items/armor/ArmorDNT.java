@@ -64,6 +64,8 @@ public class ArmorDNT extends ArmorFSBPowered {
 	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
 
+		player.extinguish();
+
 		super.onArmorTick(world, player, stack);
 		
 		if(this != ModItems.dns_plate)

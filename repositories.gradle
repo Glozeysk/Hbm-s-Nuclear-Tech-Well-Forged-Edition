@@ -1,0 +1,22 @@
+// Add any additional repositories for your dependencies here
+
+repositories {
+//    maven { //GC
+//        name = "galacticraft"
+//        url = "https://maven.galacticraft.net/repository/legacy/"
+//    }
+
+    mavenCentral()
+    maven { //  baubles
+        name = "thiakil"
+        url = "https://maven.thiakil.com"
+    }
+    maven {
+        name = 'CoFH Maven'
+        url = 'https://maven.covers1624.net'
+    }
+    maven { // CraftTweaker
+        name = "jared maven"
+        url = "http://maven.blamejared.com/"
+    }
+}

@@ -52,6 +52,18 @@ public class FluidTypeHandler {
 		return f.getTemperature() >= 373;
 	}
 
+	public static boolean isReallyHot(Fluid f){
+		if(f == null)
+			return false;
+		return f.getTemperature() > 873;
+	}
+
+	public static boolean isExtremelyHot(Fluid f){
+		if(f == null)
+			return false;
+		return f.getTemperature() > 3273;
+	}
+
 	public static boolean noID(Fluid f){
 		return containsTrait(f, FluidTrait.NO_ID);
 	}
@@ -148,6 +160,7 @@ public class FluidTypeHandler {
 		fluidProperties.put(ModForgeFluids.oxygen.getName(), new FluidProperties(3, 0, 0, 1.1F, EnumSymbol.CROYGENIC));
 		fluidProperties.put(ModForgeFluids.xenon.getName(), new FluidProperties(0, 0, 0, 1.25F, EnumSymbol.ASPHYXIANT));
 		fluidProperties.put(ModForgeFluids.balefire.getName(), new FluidProperties(4, 4, 5, 2.4F, EnumSymbol.RADIATION, FluidTrait.CORROSIVE));
+		fluidProperties.put(ModForgeFluids.sparkfuel.getName(), new FluidProperties(5, 5, 5, 2.5F, EnumSymbol.RADIATION, FluidTrait.CORROSIVE));
 		
 		fluidProperties.put(ModForgeFluids.mercury.getName(), new FluidProperties(2, 0, 0, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.pain.getName(), new FluidProperties(2, 0, 1, EnumSymbol.ACID, FluidTrait.CORROSIVE));

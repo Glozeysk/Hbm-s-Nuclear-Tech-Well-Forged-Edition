@@ -22,7 +22,7 @@ public class ArmorEuphemium extends ItemArmor implements ISpecialArmor {
 
 	public ArmorEuphemium(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn, String s) {
 		super(materialIn, renderIndexIn, equipmentSlotIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(null);
 		
@@ -88,12 +88,13 @@ public class ArmorEuphemium extends ItemArmor implements ISpecialArmor {
 			player.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 5, 127, true, false));
 			player.addPotionEffect(new PotionEffect(MobEffects.FIRE_RESISTANCE, 5, 127, true, false));
 			player.addPotionEffect(new PotionEffect(MobEffects.SATURATION, 5, 127, true, false));
+			player.fallDistance = 0;
 		 
-			if(player.motionY < -0.25D)
-			{
-				player.motionY = -0.25D;
-				player.fallDistance = 0;
-			}
+			// if(player.motionY < -0.25D)
+			// {
+			// 	player.motionY = -0.25D;
+			// 	player.fallDistance = 0;
+			// }
 			
 		}
 	}

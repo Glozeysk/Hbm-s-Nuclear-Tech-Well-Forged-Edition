@@ -53,11 +53,11 @@ public class EntityBoxcar extends EntityThrowable implements IConstantRenderer {
         {
             this.world.playSound(null, this.posX, this.posY, this.posZ, HBMSoundHandler.oldExplosion, SoundCategory.HOSTILE, 10000.0F, 0.5F + this.rand.nextFloat() * 0.1F);
             this.setDead();
-        	ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 3);
-    		ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 2.5);
-    		ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 2);
-    		ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 1.5);
-    		ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 1);
+        	// ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 3);
+    		// ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 2.5);
+    		// ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 2);
+    		// ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 1.5);
+    		// ExplosionLarge.spawnShock(world, posX, posY + 1, posZ, 24, 1);
     		if(CompatibilityConfig.isWarDim(world)){
 
 	    		List<Entity> list = (List<Entity>)world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(posX - 2, posY - 2, posZ - 2, posX + 2, posY + 2, posZ + 2));

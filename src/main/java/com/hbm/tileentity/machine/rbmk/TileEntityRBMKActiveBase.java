@@ -13,4 +13,8 @@ public abstract class TileEntityRBMKActiveBase extends TileEntityRBMKBase {
 			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 128;
 		}
 	}
+
+	public void markChanged() {
+        this.world.markChunkDirty(this.pos, this);
+    }
 }

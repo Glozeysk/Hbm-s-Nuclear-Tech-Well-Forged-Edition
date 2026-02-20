@@ -483,6 +483,22 @@ public class SILEXRecipes {
 					.addOut(new WeightedRandomObject(new ItemStack(ModItems.nugget_au198), 8 - 1 * i))
 					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_balefire), 1 + 2 * i)) );
 		}
+		for(int i = 0; i < 5; i++) {
+			// SPARK //
+			recipes.put(new ComparableStack(ModItems.rbmk_pellet_spk, 1, i), new SILEXRecipe(1000, 100, EnumWavelengths.DRX)
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.undefined), 44 - 10 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.nugget_radspice), 44 - 10 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.nugget_unobtainium_greater), 1 + 6 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_spark_mix), 1 + 6 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_paleogenite_tiny), 10 + 8 * i)) );
+		}
+		for(int i = 0; i < 5; i++) {
+			recipes.put(new ComparableStack(ModItems.rbmk_pellet_spk, 1, i + 5), new SILEXRecipe(1000, 100, EnumWavelengths.DRX)
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_xe135), 1))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.nugget_radspice), 8 - 1 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.undefined), 8 - 1 * i))
+					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_paleogenite), 1 + 2 * i)) );
+		}
 		for(int i = 0; i < 5; i++) {	
 			// POBE //
 			recipes.put(new ComparableStack(ModItems.rbmk_pellet_po210be, 1, i), new SILEXRecipe(600, 100, EnumWavelengths.IR)
@@ -536,7 +552,7 @@ public class SILEXRecipes {
 					.addOut(new WeightedRandomObject(new ItemStack(ModItems.powder_coal_tiny), 5 + 10 * i)) );
 		}
 		for(int i = 0; i < 5; i++) {
-			// FLASHGOLD //
+			// DIGAMMA //
 			recipes.put(new ComparableStack(ModItems.rbmk_pellet_drx, 1, i), new SILEXRecipe(600, 100, EnumWavelengths.GAMMA)
 					.addOut(new WeightedRandomObject(new ItemStack(ModItems.undefined), 1)));
 		}

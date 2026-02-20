@@ -601,30 +601,37 @@ public class ExplosionNukeGeneric {
 				return;
 			}
 			
-			if(b.getBlock() == Blocks.GRASS || b.getBlock() == Blocks.DIRT || b.getBlock() == Blocks.MYCELIUM || b.getBlock() == ModBlocks.waste_earth || b.getBlock() == ModBlocks.waste_dirt || b.getBlock() == ModBlocks.waste_mycelium) {
-				if(random.nextInt(5) < 2)
-					world.setBlockState(pos, Blocks.DIRT.getStateFromMeta(1));
-				else
-					world.setBlockState(pos, Blocks.DIRT.getDefaultState());
+			if(b.getBlock() == ModBlocks.waste_earth) {
+				world.setBlockState(pos, Blocks.DIRT.getDefaultState());
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.sellafield_slaked) {
+			if(b.getBlock() == ModBlocks.waste_earth) {
+				world.setBlockState(pos, Blocks.GRASS.getDefaultState());
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.waste_mycelium) {
+				world.setBlockState(pos, Blocks.MYCELIUM.getDefaultState());
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.sellafield_slaked || b.getBlock() == ModBlocks.baleonitite_slaked) {
 				world.setBlockState(pos, Blocks.STONE.getDefaultState());
 				return;
 			}
 
-			if( b.getBlock() == ModBlocks.sellafield_0 || b.getBlock() == ModBlocks.sellafield_1) {
+			if(b.getBlock() == ModBlocks.sellafield_0 || b.getBlock() == ModBlocks.sellafield_1 || b.getBlock() == ModBlocks.baleonitite_0 || b.getBlock() == ModBlocks.baleonitite_1) {
 				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(5));
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.sellafield_2 || b.getBlock() == ModBlocks.sellafield_3) {
+			if(b.getBlock() == ModBlocks.sellafield_2 || b.getBlock() == ModBlocks.sellafield_3 || b.getBlock() == ModBlocks.baleonitite_2 || b.getBlock() == ModBlocks.baleonitite_3) {
 				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(3));
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.sellafield_4 || b.getBlock() == ModBlocks.sellafield_core) {
+			if(b.getBlock() == ModBlocks.sellafield_4 || b.getBlock() == ModBlocks.sellafield_core || b.getBlock() == ModBlocks.baleonitite_4 || b.getBlock() == ModBlocks.baleonitite_core) {
 				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(1));
 				return;
 			}
@@ -644,8 +651,13 @@ public class ExplosionNukeGeneric {
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.waste_trinitite_red) {
+			if(b.getBlock() == ModBlocks.waste_trinitite_red || b.getBlock() == ModBlocks.waste_sand_red) {
 				world.setBlockState(pos, Blocks.SAND.getStateFromMeta(1));
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.block_corium || b.getBlock() == ModBlocks.block_corium_cobble) {
+				world.setBlockState(pos, Blocks.OBSIDIAN.getDefaultState());
 				return;
 			}
 
@@ -664,13 +676,33 @@ public class ExplosionNukeGeneric {
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.taint) {
-				world.setBlockState(pos, ModBlocks.stone_gneiss.getDefaultState());
+			if(b.getBlock() == ModBlocks.waste_ice) {
+				world.setBlockState(pos, Blocks.ICE.getDefaultState());
 				return;
 			}
-			
-			if(m == Material.CACTUS || m == Material.CORAL || m == Material.LEAVES || m == Material.PLANTS || m == Material.SPONGE || m == Material.VINE || m == Material.GOURD || m == Material.WOOD) {
+
+			if(b.getBlock() == ModBlocks.waste_snow_block) {
+				world.setBlockState(pos, Blocks.SNOW.getDefaultState());
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.waste_snow) {
+				world.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState());
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.radwater_block) {
+				world.setBlockState(pos, Blocks.WATER.getDefaultState());
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.waste_leaves || b.getBlock() == ModBlocks.block_fallout || b.getBlock() == ModBlocks.fallout || b.getBlock() == ModBlocks.corium_block || b.getBlock() == ModBlocks.mush || b.getBlock() == ModBlocks.mush_block || b.getBlock() == ModBlocks.mush_block_stem || b.getBlock() == ModBlocks.waste_grass_tall) {
 				world.setBlockToAir(pos);
+				return;
+			}
+
+			if(b.getBlock() == ModBlocks.taint) {
+				world.setBlockState(pos, ModBlocks.stone_gneiss.getDefaultState());
 			}
 		}
 	}

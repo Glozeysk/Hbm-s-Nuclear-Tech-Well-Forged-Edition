@@ -27,6 +27,7 @@ public class EntityNukeExplosionPlus extends Entity {
 	public boolean did = false;
 	public boolean did2 = false;
 	public boolean waste = true;
+	public boolean dropblocks = false;
 	
 	public EntityNukeExplosionPlus(World worldIn) {
 		super(worldIn);
@@ -47,7 +48,7 @@ public class EntityNukeExplosionPlus extends Entity {
         		wst = new ExplosionNukeAdvanced((int)this.posX, (int)this.posY, (int)this.posZ, this.world, (this.wasteRange), this.coefficient, 2);
         		vap = new ExplosionNukeAdvanced((int)this.posX, (int)this.posY, (int)this.posZ, this.world, (int)(this.wasteRange * 1.5), this.coefficient, 1);
         	} else {
-            	expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2);
+            	expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2, this.dropblocks);
         	}
         	
         	this.did = true;

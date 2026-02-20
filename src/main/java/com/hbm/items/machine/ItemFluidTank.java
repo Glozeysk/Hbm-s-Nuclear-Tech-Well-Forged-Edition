@@ -39,7 +39,7 @@ public class ItemFluidTank extends Item implements IHasCustomModel {
 	private int cap;
 
 	public ItemFluidTank(String s, int cap) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(MainRegistry.controlTab);
 		this.setHasSubtypes(true);
@@ -77,17 +77,17 @@ public class ItemFluidTank extends Item implements IHasCustomModel {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getUnlocalizedName() + ".name")).trim();
+		String s = ("" + I18n.format(this.getTranslationKey() + ".name")).trim();
 		String s1 = null;// ("" +
-							// StatCollector.translateToLocal(FluidType.getEnum(stack.getItemDamage()).getUnlocalizedName()))
+							// StatCollector.translateToLocal(FluidType.getEnum(stack.getItemDamage()).getTranslationKey()))
 		// .trim();
 		if (FluidUtil.getFluidContained(stack) != null) {
 			s1 = ("" + I18n.format(FluidUtil.getFluidContained(stack).getLocalizedName()).trim());
 		} else {
 			if(this == ModItems.fluid_tank_full)
-				return "Empty Universal Fluid Tank";
+				return I18n.format("item.fluid_tank_empty.name");
 			else if(this == ModItems.fluid_barrel_full)
-				return "Empty Fluid Barrel";
+				return I18n.format("item.fluid_barrel_empty.name");
 		}
 
 		if (s1 != null) {

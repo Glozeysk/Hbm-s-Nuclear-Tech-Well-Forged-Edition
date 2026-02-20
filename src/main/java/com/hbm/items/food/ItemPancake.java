@@ -21,7 +21,7 @@ public class ItemPancake extends ItemFood {
 
 	public ItemPancake(int amount, float saturation, boolean isWolfFood, String s) {
 		super(amount, saturation, isWolfFood);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setAlwaysEdible();
 		
@@ -36,7 +36,7 @@ public class ItemPancake extends ItemFood {
     			continue;
 
     		if(st.getItem() instanceof IBatteryItem) {
-    			((IBatteryItem)st.getItem()).setCharge(st, ((IBatteryItem)st.getItem()).getMaxCharge());
+    			((IBatteryItem)st.getItem()).setCharge(st, ((IBatteryItem)st.getItem()).getMaxCharge(st));
     		}
     	}
 	}

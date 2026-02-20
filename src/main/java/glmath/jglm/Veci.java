@@ -8,7 +8,7 @@ package glmath.jglm;
  * @deprecated 
  * @author gbarbieri
  */
-public class Veci {
+@Deprecated public class Veci {
 
     protected int[] vector;
     protected int order;

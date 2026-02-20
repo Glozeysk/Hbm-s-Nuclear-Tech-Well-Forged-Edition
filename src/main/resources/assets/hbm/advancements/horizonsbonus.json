@@ -13,11 +13,18 @@
 	},
 	"parent": "hbm:horizonsend",
 	"criteria": {
-		"impossible": {
-			"trigger": "minecraft:impossible"
-		}
-	},
+        "crafting_table": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    {
+         				"item": "hbm:plate_euphemium"
+      				}
+                ]
+            }
+        }
+    },
     "rewards": {
-        "experience": 2000
+        "experience": 20000
     }
 }

@@ -5,6 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IMultiBlock;
+import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityLaunchTable;
 import com.hbm.tileentity.machine.TileEntityDummy;
@@ -18,6 +19,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -39,7 +41,7 @@ public class LaunchTable extends BlockContainer implements IMultiBlock, IBomb {
 	
 	public LaunchTable(Material materialIn, String s) {
 		super(materialIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
@@ -92,7 +94,7 @@ public class LaunchTable extends BlockContainer implements IMultiBlock, IBomb {
 	
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		EnumFacing enumfacing = EnumFacing.getFront(meta);
+		EnumFacing enumfacing = EnumFacing.byIndex(meta);
 
         if (enumfacing.getAxis() == EnumFacing.Axis.Y)
         {
@@ -224,14 +226,23 @@ public class LaunchTable extends BlockContainer implements IMultiBlock, IBomb {
 		}
 	}
 
-
-
 	@Override
 	public void explode(World world, BlockPos pos) {
 		TileEntityLaunchTable entity = (TileEntityLaunchTable) world.getTileEntity(pos);
-		
 		if(entity.canLaunch())
 			entity.launch();
 	}
 
+	@Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, new ItemStack(ModBlocks.struct_launcher, 64)));
+        world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, new ItemStack(ModBlocks.struct_launcher, 16)));
+        world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, new ItemStack(ModBlocks.struct_scaffold, 11)));
+        world.notifyNeighborsOfStateChange(pos, state.getBlock(), true);
+        super.breakBlock(world, pos, state);
+    }
 }

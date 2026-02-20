@@ -16,7 +16,7 @@ public class AdvancementManager {
 	
 	public static Advancement horizonsStart;
 	public static Advancement horizonsEnd;
-	public static Advancement horizonsBonus;
+	// public static Advancement horizonsBonus;
 	public static Advancement soyuz;
 	public static Advancement achRadPoison;
 	public static Advancement achRadDeath;
@@ -40,7 +40,7 @@ public class AdvancementManager {
 	public static Advancement digammaFeel;
 	public static Advancement digammaKnow;
 	public static Advancement digammaKauaiMoho;
-	public static Advancement digammaUpOnTop;
+	// public static Advancement digammaUpOnTop;
 	public static Advancement achSomeWounds;
 	public static Advancement progress_dfc;
 	public static Advancement progress_rbmk_boom;
@@ -69,7 +69,7 @@ public class AdvancementManager {
 		achFiend2 = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achfiend2"));
 		horizonsStart = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsstart"));
 		horizonsEnd = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsend"));
-		horizonsBonus = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsbonus"));
+		// horizonsBonus = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsbonus"));
 		soyuz = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "soyuz"));
 		achRadPoison = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achradpoison"));
 		achRadDeath = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achraddeath"));
@@ -80,7 +80,7 @@ public class AdvancementManager {
 		digammaFeel = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammafeel"));
 		digammaKnow = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammaknow"));
 		digammaKauaiMoho = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammakauaimoho"));
-		digammaUpOnTop = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammaupontop"));
+		// digammaUpOnTop = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammaupontop"));
 		achSomeWounds = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsomewounds"));
 		progress_dfc = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "progress_dfc"));
 		progress_rbmk_boom = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "progress_rbmk_boom"));

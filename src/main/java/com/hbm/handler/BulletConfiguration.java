@@ -141,9 +141,9 @@ public class BulletConfiguration {
 
 		this.ammo = ammo;
 		this.bUpdate = BulletConfigFactory.getHomingBehavior(200, 45);
-		this.dmgMin *= 1.5F;
-		this.dmgMax *= 1.5F;
-		this.wear *= 0.5;
+		this.dmgMin *= 5.5F;
+		this.dmgMax *= 6.5F;
+		this.wear *= 2.5;
 		this.doesRicochet = false;
 		this.doesPenetrate = false;
 		this.vPFX = "greendust";

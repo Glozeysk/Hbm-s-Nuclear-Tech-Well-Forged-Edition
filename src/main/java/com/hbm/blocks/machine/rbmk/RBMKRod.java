@@ -17,10 +17,12 @@ import net.minecraft.world.World;
 public class RBMKRod extends RBMKBase {
 
 	public boolean moderated = false;
+	public boolean heatproof = false;
 	
-	public RBMKRod(boolean moderated, String s, String c) {
+	public RBMKRod(boolean moderated, boolean heatproof, String s, String c) {
 		super(s, c);
 		this.moderated = moderated;
+		this.heatproof = heatproof;
 	}
 
 	@Override

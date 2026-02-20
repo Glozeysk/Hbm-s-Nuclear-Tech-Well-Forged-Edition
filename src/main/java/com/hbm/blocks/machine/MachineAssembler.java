@@ -35,7 +35,7 @@ public class MachineAssembler extends BlockContainer implements IMultiBlock {
 
 	public MachineAssembler(Material materialIn, String s) {
 		super(materialIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, 2));
 		this.setCreativeTab(MainRegistry.machineTab);
@@ -242,7 +242,7 @@ public class MachineAssembler extends BlockContainer implements IMultiBlock {
 			TileEntity tileentity = world.getTileEntity(pos);
 
 			if(tileentity instanceof TileEntityMachineAssembler) {
-				InventoryHelper.dropInventoryItems(world, pos, (TileEntityMachineAssembler) tileentity);
+				InventoryHelper.dropInventoryItemsBan(world, pos, (TileEntityMachineAssembler) tileentity, 4, 4);
 
 				world.updateComparatorOutputLevel(pos, this);
 			}

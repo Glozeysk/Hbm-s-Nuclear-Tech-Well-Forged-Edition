@@ -13,7 +13,8 @@ import java.text.DecimalFormat;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
-import javax.annotation.Nullable;
+import io.netty.buffer.ByteBuf;
+// import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Level;
 import org.apache.commons.lang3.tuple.Pair;
@@ -70,6 +71,10 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.oredict.OreDictionary;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 @Spaghetti("this whole class")
 public class Library {
@@ -144,6 +149,11 @@ public class Library {
 		superuser.add(Drillgon);
 		superuser.add(Alcater);
 	}
+
+	public static boolean isCreative(Entity e){
+        if(e instanceof EntityPlayer player) return player.capabilities.isCreativeMode;
+        return false;
+    }
 
 	public static boolean checkForHeld(EntityPlayer player, Item item) {
 		return player.getHeldItemMainhand().getItem() == item || player.getHeldItemOffhand().getItem() == item;
@@ -226,10 +236,10 @@ public class Library {
 		TextureAtlasSprite sprite = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(stack.getItem(), stack.getMetadata());
 		if(sprite != null){
 			path = new ResourceLocation(sprite.getIconName()+".png");
-			actualPath = new ResourceLocation(path.getResourceDomain(), "textures/"+path.getResourcePath());
+			actualPath = new ResourceLocation(path.getNamespace(), "textures/"+path.getPath());
 		} else {
 			path = new ResourceLocation(stack.getItem().getRegistryName()+".png");
-			actualPath = new ResourceLocation(path.getResourceDomain(), "textures/items/"+path.getResourcePath());
+			actualPath = new ResourceLocation(path.getNamespace(), "textures/items/"+path.getPath());
 		}
 		return getColorFromResourceLocation(actualPath);
 	}
@@ -287,7 +297,7 @@ public class Library {
 			IBatteryItem battery = (IBatteryItem) inventory.getStackInSlot(index).getItem();
 			ItemStack stack = inventory.getStackInSlot(index);
 			
-			long batMax = battery.getMaxCharge();
+			long batMax = battery.getMaxCharge(stack);
 			long batCharge = battery.getCharge(stack);
 			long batRate = battery.getChargeRate();
 			
@@ -390,17 +400,17 @@ public class Library {
 
 	public static RayTraceResult rayTrace(EntityPlayer player, double length, float interpolation) {
 		Vec3d vec3 = getPosition(interpolation, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
 		Vec3d vec31 = player.getLook(interpolation);
-		Vec3d vec32 = vec3.addVector(vec31.x * length, vec31.y * length, vec31.z * length);
+		Vec3d vec32 = vec3.add(vec31.x * length, vec31.y * length, vec31.z * length);
 		return player.world.rayTraceBlocks(vec3, vec32, false, false, true);
 	}
 	
 	public static RayTraceResult rayTrace(EntityPlayer player, double length, float interpolation, boolean b1, boolean b2, boolean b3) {
 		Vec3d vec3 = getPosition(interpolation, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
 		Vec3d vec31 = player.getLook(interpolation);
-		Vec3d vec32 = vec3.addVector(vec31.x * length, vec31.y * length, vec31.z * length);
+		Vec3d vec32 = vec3.add(vec31.x * length, vec31.y * length, vec31.z * length);
 		return player.world.rayTraceBlocks(vec3, vec32, b1, b2, b3);
 	}
 	
@@ -421,16 +431,16 @@ public class Library {
 	
 	public static RayTraceResult rayTraceIncludeEntities(EntityPlayer player, double d, float f) {
 		Vec3d vec3 = getPosition(f, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
 		Vec3d vec31 = player.getLook(f);
-		Vec3d vec32 = vec3.addVector(vec31.x * d, vec31.y * d, vec31.z * d);
+		Vec3d vec32 = vec3.add(vec31.x * d, vec31.y * d, vec31.z * d);
 		return rayTraceIncludeEntities(player.world, vec3, vec32, player);
 	}
 	
 	public static RayTraceResult rayTraceIncludeEntitiesCustomDirection(EntityPlayer player, Vec3d look, double d, float f) {
 		Vec3d vec3 = getPosition(f, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
-		Vec3d vec32 = vec3.addVector(look.x * d, look.y * d, look.z * d);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
+		Vec3d vec32 = vec3.add(look.x * d, look.y * d, look.z * d);
 		return rayTraceIncludeEntities(player.world, vec3, vec32, player);
 	}
 	
@@ -464,9 +474,9 @@ public class Library {
 	
 	public static Pair<RayTraceResult, List<Entity>> rayTraceEntitiesOnLine(EntityPlayer player, double d, float f){
 		Vec3d vec3 = getPosition(f, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
 		Vec3d vec31 = player.getLook(f);
-		Vec3d vec32 = vec3.addVector(vec31.x * d, vec31.y * d, vec31.z * d);
+		Vec3d vec32 = vec3.add(vec31.x * d, vec31.y * d, vec31.z * d);
 		RayTraceResult result = player.world.rayTraceBlocks(vec3, vec32, false, true, true);
 		if(result != null)
 			vec32 = result.hitVec;
@@ -487,9 +497,9 @@ public class Library {
 	public static RayTraceResult rayTraceEntitiesInCone(EntityPlayer player, double d, float f, float degrees) {
 		double cosDegrees = Math.cos(Math.toRadians(degrees));
 		Vec3d vec3 = getPosition(f, player);
-		vec3 = vec3.addVector(0D, (double) player.eyeHeight, 0D);
+		vec3 = vec3.add(0D, (double) player.eyeHeight, 0D);
 		Vec3d vec31 = player.getLook(f);
-		Vec3d vec32 = vec3.addVector(vec31.x * d, vec31.y * d, vec31.z * d);
+		Vec3d vec32 = vec3.add(vec31.x * d, vec31.y * d, vec31.z * d);
 		
 		RayTraceResult result = player.world.rayTraceBlocks(vec3, vec32, false, true, true);
 		double runningDot = Double.MIN_VALUE;
@@ -522,7 +532,7 @@ public class Library {
 		Vec3d V = center.subtract(coneStart);
 		double VlenSq = V.lengthSquared();
 		Vec3d direction = coneEnd.subtract(coneStart);
-		double size = direction.lengthVector();
+		double size = direction.length();
 		double V1len  = V.dotProduct(direction.normalize());
 		double angRad = Math.toRadians(degrees);
 		double distanceClosestPoint = Math.cos(angRad) * Math.sqrt(VlenSq - V1len*V1len) - V1len * Math.sin(angRad);
@@ -767,6 +777,28 @@ public static boolean canConnect(IBlockAccess world, BlockPos pos, ForgeDirectio
 		}
 		
 		return false;
+	}
+
+	public static long blockPosToLong(int x, int y, int z) {
+		return ((long)x & 0x03FF_FFFF) << 38 | ((long)y & 0x0000_0FFF) << 26 | ((long) z & 0x03FF_FFFF);
+	}
+
+	public static int getBlockPosX(long serialized) {
+		return (int)(serialized >> 38);
+	}
+
+	public static int getBlockPosY(long serialized) {
+		return (int)(serialized << 26 >> 52);
+	}
+
+	public static int getBlockPosZ(long serialized) {
+		return (int)(serialized << 38 >> 38);
+	}
+
+	@Contract(mutates = "param1")
+	public static BlockPos.@NotNull MutableBlockPos fromLong(@NotNull BlockPos.MutableBlockPos pos, long serialized) {
+		pos.setPos(getBlockPosX(serialized), getBlockPosY(serialized), getBlockPosZ(serialized));
+        return pos;
 	}
 
 	//Alcater: Finally this shit is no more

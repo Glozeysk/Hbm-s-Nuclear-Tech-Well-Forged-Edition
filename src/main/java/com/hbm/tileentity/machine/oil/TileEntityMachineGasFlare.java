@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
+import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyGenerator;
 import com.hbm.entity.particle.EntityGasFlameFX;
 import com.hbm.explosion.ExplosionThermo;
@@ -13,6 +14,7 @@ import com.hbm.inventory.container.ContainerMachineGasFlare;
 import com.hbm.inventory.gui.GUIMachineGasFlare;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
@@ -195,6 +197,22 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
 		return new int[] {0, 1, 2, 3, 4, 5};
 	}
+
+	@Override
+    public boolean canInsertItem(int slot, ItemStack itemStack, int amount) {
+        return this.isItemValidForSlot(slot, itemStack);
+    }
+
+	@Override
+    public boolean isItemValidForSlot(int i, ItemStack stack) {
+		if(stack.getItem() instanceof IBatteryItem || stack.getItem() == ModItems.battery_creative){
+			return i == 0;
+		}
+		if(stack.getItem() instanceof ItemMachineUpgrade){
+			return i == 4 || i == 5;
+		}
+		return i == 1 || i == 2 || i == 3;
+    }
 
 	void setupTanks() {
 		if(inventory.getSlots() < 5){

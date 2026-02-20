@@ -59,6 +59,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 	//Extended Type
 	public int extType = 0;
 	private Ticket loaderTicket;
+	public boolean dropblocks = false;
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt) {
@@ -71,6 +72,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 		did2 = nbt.getBoolean("did2");
 		waste = nbt.getBoolean("waste");
 		extType = nbt.getInteger("extType");
+		dropblocks = nbt.getBoolean("dropblocks");
 		
 		long time = nbt.getLong("milliTime");
 		
@@ -88,7 +90,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
     	} else {
 
     		if(extType == 0) {
-    			expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2);
+    			expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2, this.dropblocks);
 				expl.readFromNbt(nbt, "expl_");
     		}
     		if(extType == 1) {
@@ -116,6 +118,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 		nbt.setBoolean("did2", did2);
 		nbt.setBoolean("waste", waste);
 		nbt.setInteger("extType", extType);
+		nbt.setBoolean("dropblocks", dropblocks);
 		
 		nbt.setLong("milliTime", System.currentTimeMillis());
     	
@@ -160,7 +163,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
         		vap = new ExplosionNukeAdvanced((int)this.posX, (int)this.posY, (int)this.posZ, this.world, (int)(this.destructionRange * 2.5), this.coefficient, 1);
         	} else {
         		if(extType == 0)
-        			expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2);
+        			expl = new ExplosionFleija((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2, this.dropblocks);
         		if(extType == 1)
         			sol = new ExplosionSolinium((int)this.posX, (int)this.posY, (int)this.posZ, this.world, this.destructionRange, this.coefficient, this.coefficient2);
         		if(extType == 2)
@@ -200,9 +203,9 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
         if(!flag)
         {
         	this.world.playSound(this.posX, this.posY, this.posZ, SoundEvents.ENTITY_LIGHTNING_THUNDER, SoundCategory.AMBIENT, 10000.0F, 0.8F + this.rand.nextFloat() * 0.2F, true);
-        	if(waste || extType != 1) {
+        	if(waste || extType == 2 || (extType == 0 && !dropblocks)) {
         		ContaminationUtil.radiate(this.world, this.posX, this.posY, this.posZ, this.destructionRange * 1D, 0F, 0F, 0F, this.destructionRange * 2F, this.destructionRange);
-        	} else {
+        	} else if(extType == 1){
         		ContaminationUtil.radiate(world, posX, posY, posZ, this.destructionRange, 250000F);
         	}
         } else {

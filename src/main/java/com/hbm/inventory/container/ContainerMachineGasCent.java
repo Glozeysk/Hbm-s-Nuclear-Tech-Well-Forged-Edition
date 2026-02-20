@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.SlotMachineOutput;
+import com.hbm.inventory.SlotUpgrade;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,6 +33,9 @@ public class ContainerMachineGasCent extends Container {
 		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 152, 17));
 		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 134, 53));
 		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 8, 152, 53));
+		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 9, 26, 17));
+		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 10, 26, 35));
+		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 11, 26, 53));
 		
 		for(int i = 0; i < 3; i++)
 		{

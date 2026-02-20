@@ -65,6 +65,7 @@ public class DiFurnaceRecipes {
 
 		addRecipe(new OreDictStack(W.ingot()), new OreDictStack(SA326.nugget()), new ItemStack(ModItems.ingot_magnetized_tungsten, 1));
 		addRecipe(new OreDictStack(W.dust()), new OreDictStack(SA326.nugget()), new ItemStack(ModItems.ingot_magnetized_tungsten, 1));
+		addRecipe(new OreDictStack(IRON.crystal()), new OreDictStack(SA326.nugget()), new ItemStack(ModItems.lodestone, 1));
 
 		addRecipe(new ComparableStack(ModItems.plate_mixed), new OreDictStack(GOLD.plate()), new ItemStack(ModItems.plate_paa, 2));
 		
@@ -92,9 +93,9 @@ public class DiFurnaceRecipes {
 		addRecipe(new ComparableStack(ModItems.meteorite_sword_hardened), new OreDictStack(CO.ingot()), new ItemStack(ModItems.meteorite_sword_alloyed));
 		addRecipe(new ComparableStack(ModItems.meteorite_sword_hardened), new OreDictStack(CO.dust()), new ItemStack(ModItems.meteorite_sword_alloyed));
 
-		if(GeneralConfig.enableDebugMode) {
-			addRecipe(new OreDictStack(IRON.ingot()), new OreDictStack(NETHERQUARTZ.gem()), new ItemStack(ModBlocks.test_render, 1));
-		}
+		// if(GeneralConfig.enableDebugMode) {
+		// 	addRecipe(new OreDictStack(IRON.ingot()), new OreDictStack(NETHERQUARTZ.gem()), new ItemStack(ModBlocks.test_render, 1));
+		// }
 		if(GeneralConfig.enableBabyMode) {
 			addRecipe(new ComparableStack(ModItems.canister_generic), new OreDictStack(COAL.gem()), ItemFluidCanister.getFullCanister(ModForgeFluids.oil));
 		}

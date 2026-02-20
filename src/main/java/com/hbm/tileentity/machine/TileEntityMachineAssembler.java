@@ -66,11 +66,40 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 				OnContentsChanged(slot);
 				super.onContentsChanged(slot);
 			}
+			@Override
+			public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+				if(canInsertItem(slot, stack, stack.getCount()))
+					return super.insertItem(slot, stack, simulate);
+				return stack;
+			}
+
+			@Override
+			public ItemStack extractItem(int slot, int amount, boolean simulate) {
+				if(canExtractItem(slot, inventory.getStackInSlot(slot), amount))
+					return super.extractItem(slot, amount, simulate);
+				return ItemStack.EMPTY;
+			}
 		};
 	}
 
 	public void OnContentsChanged(int slot){
 		this.needsProcess = true;
+	}
+
+	@Override
+	public boolean canInsertItem(int slot, ItemStack itemStack, int amount){
+		if(slot == 4) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
+		if(slot == 4) {
+			return false;
+		}
+		return true;
 	}
 
 
@@ -207,9 +236,9 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 				te = world.getTileEntity(pos.add(1, 0, 3));
 			}
 
-			if(!isProgressing){
-				tryExchangeTemplates(te, te2);
-			}
+			// if(!isProgressing){
+			// 	tryExchangeTemplates(te, te2);
+			// }
 
 			if(te != null) {
 				ICapabilityProvider capte = te;
@@ -324,48 +353,48 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 		this.recipe = nbt.getInteger("recipe");
 	}
 
-	public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
-		//validateTe sees if it's a valid inventory tile entity
-		boolean te1Valid = validateTe(te1);
-		boolean te2Valid = validateTe(te2);
+	// public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
+	// 	//validateTe sees if it's a valid inventory tile entity
+	// 	boolean te1Valid = validateTe(te1);
+	// 	boolean te2Valid = validateTe(te2);
 
-		if(te1Valid && te2Valid) {
-			IItemHandlerModifiable iTe1 = (IItemHandlerModifiable) te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			IItemHandlerModifiable iTe2 = (IItemHandlerModifiable) te2.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			boolean openSlot = false;
-			boolean existingTemplate = false;
-			boolean filledContainer = false;
-			//Check if there's an existing template and an open slot
-			for(int i = 0; i < iTe1.getSlots(); i++) {
-				if(iTe1.getStackInSlot(i).isEmpty()) {
-					openSlot = true;
-					break;
-				}
+	// 	if(te1Valid && te2Valid) {
+	// 		IItemHandlerModifiable iTe1 = (IItemHandlerModifiable) te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+	// 		IItemHandlerModifiable iTe2 = (IItemHandlerModifiable) te2.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+	// 		boolean openSlot = false;
+	// 		boolean existingTemplate = false;
+	// 		boolean filledContainer = false;
+	// 		//Check if there's an existing template and an open slot
+	// 		for(int i = 0; i < iTe1.getSlots(); i++) {
+	// 			if(iTe1.getStackInSlot(i).isEmpty()) {
+	// 				openSlot = true;
+	// 				break;
+	// 			}
 
-			}
-			if(!this.inventory.getStackInSlot(4).isEmpty()) {
-				existingTemplate = true;
-			}
-			//Check if there's a template in input
-			for(int i = 0; i < iTe2.getSlots(); i++) {
-				if(iTe2.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) {
-					if(openSlot && existingTemplate) {
-						filledContainer = tryFillContainerCap(iTe1, 4);
-					}
-					if(filledContainer || !existingTemplate) {
-						ItemStack copy = iTe2.getStackInSlot(i).copy();
-						iTe2.setStackInSlot(i, ItemStack.EMPTY);
-						this.inventory.setStackInSlot(4, copy);
-						return false;
-					}
-				}
+	// 		}
+	// 		if(!this.inventory.getStackInSlot(4).isEmpty()) {
+	// 			existingTemplate = true;
+	// 		}
+	// 		//Check if there's a template in input
+	// 		for(int i = 0; i < iTe2.getSlots(); i++) {
+	// 			if(iTe2.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) {
+	// 				if(openSlot && existingTemplate) {
+	// 					filledContainer = tryFillContainerCap(iTe1, 4);
+	// 				}
+	// 				if(filledContainer || !existingTemplate) {
+	// 					ItemStack copy = iTe2.getStackInSlot(i).copy();
+	// 					iTe2.setStackInSlot(i, ItemStack.EMPTY);
+	// 					this.inventory.setStackInSlot(4, copy);
+	// 					return false;
+	// 				}
+	// 			}
 
-			}
+	// 		}
 
-		}
-		return false;
+	// 	}
+	// 	return false;
 
-	}
+	// }
 
 	private boolean validateTe(TileEntity te) {
 		if(te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null) && te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null) instanceof IItemHandlerModifiable)
@@ -544,6 +573,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 					System.out.println("This should never happen method getValidSlot broke");
 					continue;
 				}
+
 				// Ok now we know what we are looking for (nexIngredient) and where to put it (ingredientSlot) - So lets see if we find some of it in containers
 				for (Map.Entry<Integer,ItemStack> set :
 						itemStackMap.entrySet()) {
@@ -552,7 +582,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 						ItemStack compareStack = stack.copy();
 						compareStack.setCount(1);
 
-						if(nextIngredient.isApplicable(compareStack)){ // bingo found something
+						if(nextIngredient.isApplicable(compareStack) && (inventory.getStackInSlot(ingredientSlot).isEmpty() || Library.areItemStacksEqualIgnoreCount(inventory.getStackInSlot(ingredientSlot), container.getStackInSlot(slot)))){ // bingo found something
 
 							int foundCount = Math.min(stack.getCount(), possibleAmount);
 							if(te != null && !te.canExtractItem(slot, stack, foundCount))
@@ -570,6 +600,8 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 									inventory.getStackInSlot(ingredientSlot).grow(foundCount); // transfer complete
 								}
 								needsProcess = true;
+							}if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()){
+								break;
 							}else{
 								break; // ingredientSlot filled
 							}

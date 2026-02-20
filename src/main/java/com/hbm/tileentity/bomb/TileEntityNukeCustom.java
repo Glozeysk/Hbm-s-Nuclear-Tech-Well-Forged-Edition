@@ -136,7 +136,9 @@ public class TileEntityNukeCustom extends TileEntity implements ITickable {
 
 		//ANTIMATTER
 		entries.put(new NbtComparableStack(ItemCell.getFullCell(ModForgeFluids.amat)), new CustomNukeEntry(EnumBombType.BALE, 1.05F, EnumEntryType.MULT));
+		entries.put(new NbtComparableStack(ItemCell.getFullCell(ModForgeFluids.balefire)), new CustomNukeEntry(EnumBombType.BALE, 5F));
 		entries.put(new ComparableStack(ModItems.particle_amat), new CustomNukeEntry(EnumBombType.BALE, 1.05F, EnumEntryType.MULT));
+		entries.put(new ComparableStack(ModItems.particle_amat_alt), new CustomNukeEntry(EnumBombType.BALE, 1.05F, EnumEntryType.MULT));
 		entries.put(new ComparableStack(ModItems.pellet_antimatter), new CustomNukeEntry(EnumBombType.BALE, 1.5F, EnumEntryType.MULT));
 		entries.put(new ComparableStack(ModItems.egg_balefire_shard), new CustomNukeEntry(EnumBombType.BALE, 15F));
 		entries.put(new ComparableStack(ModItems.egg_balefire), new CustomNukeEntry(EnumBombType.BALE, 150F));

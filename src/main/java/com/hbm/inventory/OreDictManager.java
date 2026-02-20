@@ -296,8 +296,8 @@ public class OreDictManager {
 		GOLD 																																			.dust(powder_gold)																						.crystal(crystal_gold)		.plate(plate_gold)			.ore(ore_gneiss_gold);
 		LAPIS																																			.dust(powder_lapis)																						.crystal(crystal_lapis);
 		REDSTONE																																																												.crystal(crystal_redstone);
-		QUARTZ																																			.dust(powder_quartz)																.gem(Items.QUARTZ);
-		NETHERQUARTZ																																	.dust(powder_quartz)																.gem(Items.QUARTZ);
+		QUARTZ																																			.dust(powder_quartz)																.gem(Items.QUARTZ)  .crystal(crystal_quartz);
+		NETHERQUARTZ																																	.dust(powder_quartz)																.gem(Items.QUARTZ)  .crystal(crystal_quartz);
 		DIAMOND																																			.dust(powder_diamond)																					.crystal(crystal_diamond)								.ore(gravel_diamond);
 		EMERALD																																			.dust(powder_emerald);
 		
@@ -452,6 +452,19 @@ public class OreDictManager {
 		// 	OreDictionary.registerOre(name, fromOne(coke, EnumCokeType.LIGNITE));
 		// 	OreDictionary.registerOre(name, fromOne(coke, EnumCokeType.PETROLEUM));
 		}
+
+		OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_centrifuged, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_cleaned, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_separated, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_deepcleaned, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_purified, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_nitrated, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_nitrocrystalline, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_seared, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_exquisite, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_perfect, 1, OreDictionary.WILDCARD_VALUE));
+        OreDictionary.registerOre("anyBedrockOre", new ItemStack(ore_bedrock_enriched, 1, OreDictionary.WILDCARD_VALUE));
 		
 		OreDictionary.registerOre(getReflector(), neutron_reflector);
 
@@ -475,22 +488,22 @@ public class OreDictManager {
 		OreDictionary.registerOre(KEY_PLANKS, new ItemStack(Blocks.PLANKS, 1, 5));
 
 		OreDictionary.registerOre("dyeRed", cinnebar);
-		OreDictionary.registerOre("dye", cinnebar);
+		//OreDictionary.registerOre("dye", cinnebar);
 		OreDictionary.registerOre("dyeYellow", sulfur);
-		OreDictionary.registerOre("dye", sulfur);
+		//OreDictionary.registerOre("dye", sulfur);
 		OreDictionary.registerOre("dyeBlack", powder_coal);
-		OreDictionary.registerOre("dye", powder_coal);
+		//OreDictionary.registerOre("dye", powder_coal);
 		OreDictionary.registerOre("dyeBrown", powder_lignite);
-		OreDictionary.registerOre("dye", powder_lignite);
+		//OreDictionary.registerOre("dye", powder_lignite);
 		OreDictionary.registerOre("dyeLightGray", powder_titanium);
-		OreDictionary.registerOre("dye", powder_titanium);
+		//OreDictionary.registerOre("dye", powder_titanium);
 		OreDictionary.registerOre("dyeWhite", fluorite);
-		OreDictionary.registerOre("dye", fluorite);
+		//OreDictionary.registerOre("dye", fluorite);
 		OreDictionary.registerOre("dyeBlue", powder_lapis);
-		OreDictionary.registerOre("dye", powder_lapis);
+		//OreDictionary.registerOre("dye", powder_lapis);
 		OreDictionary.registerOre("dyeBlack", fromOne(oil_tar, EnumTarType.CRUDE));
 		// OreDictionary.registerOre("dyeBlack", fromOne(oil_tar, EnumTarType.CRACK));
-		OreDictionary.registerOre("dye", oil_tar);
+		//OreDictionary.registerOre("dye", oil_tar);
 
 		OreDictionary.registerOre("blockGlass", glass_boron);
 		OreDictionary.registerOre("blockGlass", glass_lead);

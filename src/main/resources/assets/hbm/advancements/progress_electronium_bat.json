@@ -1,0 +1,30 @@
+{
+	"display": {
+		"icon": {
+			"item": "hbm:machine_electronium_battery"
+		},
+		"title": {
+			"translate": "hbm.achievement.progress_electronium_bat"
+		},
+		"description": {
+			"translate": "hbm.achievement.progress_electronium_bat.desc"
+		},
+		"frame": "goal"
+	},
+	"parent": "hbm:progress_dineutronium",
+	"criteria": {
+        "crafting_table": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    {
+                        "item": "hbm:machine_electronium_battery"
+                    }
+                ]
+            }
+        }
+    },
+    "rewards": {
+        "experience": 10000
+    }
+}

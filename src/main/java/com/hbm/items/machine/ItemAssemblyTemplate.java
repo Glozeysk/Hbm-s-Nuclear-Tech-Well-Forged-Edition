@@ -41,11 +41,11 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 	
 
 	public ItemAssemblyTemplate(String s) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setHasSubtypes(true);
 		this.setMaxDamage(0);
-		this.setCreativeTab(MainRegistry.templateTab);
+		this.setCreativeTab(null);
 
 		ModItems.ALL_ITEMS.add(this);
 	}
@@ -53,13 +53,13 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getUnlocalizedName() + ".name")).trim();
+		String s = ("").trim();
 		int damage = getTagWithRecipeNumber(stack).getInteger("type");
 		ItemStack out = damage < AssemblerRecipes.recipeList.size() ? AssemblerRecipes.recipeList.get(damage).toStack() : ItemStack.EMPTY;
-		String s1 = ("" + I18n.format((out != ItemStack.EMPTY ? out.getUnlocalizedName() : "") + ".name")).trim();
+		String s1 = ("" + I18n.format((out != ItemStack.EMPTY ? out.getTranslationKey() : "NULL") + ".name")).trim();
 
 		if (s1 != null) {
-			s = s + " " + s1;
+			s = s + "" + s1;
 		}
 
 		return s;
@@ -92,9 +92,6 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if (!(stack.getItem() instanceof ItemAssemblyTemplate))
 			return;
-		
-		list.add("§6" + I18nUtil.resolveKey("info.templatefolder"));
-		list.add("");
 
 		int i = getTagWithRecipeNumber(stack).getInteger("type");
 		

@@ -8,8 +8,8 @@ import net.minecraft.world.World;
 
 public class RBMKRodReaSim extends RBMKRod {
 
-	public RBMKRodReaSim(boolean moderated, String s, String c) {
-		super(moderated, s, c);
+	public RBMKRodReaSim(boolean moderated, boolean heatproof, String s, String c) {
+		super(moderated, heatproof, s, c);
 	}
 
 	@Override

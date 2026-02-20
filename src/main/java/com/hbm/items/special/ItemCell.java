@@ -49,12 +49,27 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ItemCell extends Item {
 
 	public ItemCell(String s) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setMaxDamage(1000);
-		this.setContainerItem(this);
+		// this.setContainerItem(this);
 		
 		ModItems.ALL_ITEMS.add(this);
+	}
+
+	@Override
+	public boolean hasContainerItem(ItemStack stack) {
+		return !isEmptyCell(stack);
+	}
+
+	@Override
+	public ItemStack getContainerItem(ItemStack itemStack) {
+		if (isEmptyCell(itemStack)) {
+			return ItemStack.EMPTY;
+		}
+		ItemStack empty = new ItemStack(ModItems.cell, 1, 0);
+		empty.setTagCompound(new NBTTagCompound());
+		return empty;
 	}
 
 	@Override
@@ -117,6 +132,8 @@ public class ItemCell extends Item {
 			ContaminationUtil.contaminate((EntityLivingBase)entityIn, HazardType.RADIATION, ContaminationType.CREATIVE, 2F / 20F);
 		} else if(hasFluid(stack, ModForgeFluids.puf6)){
 			ContaminationUtil.contaminate((EntityLivingBase)entityIn, HazardType.RADIATION, ContaminationType.CREATIVE, 10F / 20F);
+		} else if(hasFluid(stack, ModForgeFluids.balefire)){
+			ContaminationUtil.contaminate((EntityLivingBase)entityIn, HazardType.RADIATION, ContaminationType.CREATIVE, 100F / 20F);
 		}
 	}
 
@@ -167,6 +184,9 @@ public class ItemCell extends Item {
 			tooltip.add("§a[Radioactive]§r");
 			tooltip.add("§e20.0 RAD/s§r");
 			tooltip.add("§3[Blinding]§r");
+		} else if(ItemCell.hasFluid(stack, ModForgeFluids.balefire)){
+			tooltip.add("§a[Radioactive]§r");
+			tooltip.add("§e100.0 RAD/s§r");
 		}
 	}
 

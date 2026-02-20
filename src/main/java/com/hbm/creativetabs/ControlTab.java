@@ -18,7 +18,7 @@ public class ControlTab extends CreativeTabs {
 	}
 
 	@Override
-	public ItemStack getTabIconItem() {
+	public ItemStack createIcon() {
 		if(ModItems.pellet_rtg != null){
 			return new ItemStack(ModItems.pellet_rtg);
 		}
@@ -53,7 +53,7 @@ public class ControlTab extends CreativeTabs {
 			ItemStack full = stack.copy();
 
 			battery.setCharge(empty, 0);
-			battery.setCharge(full, battery.getMaxCharge());
+			battery.setCharge(full, battery.getMaxCharge(stack));
 
 			int index = list.indexOf(stack);
 

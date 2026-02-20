@@ -8,6 +8,8 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 @IFMLLoadingPlugin.TransformerExclusions({"com.hbm.core"})
 public class HbmCorePlugin implements IFMLLoadingPlugin {
 
+	private static boolean runtimeDeobfEnabled = false;
+
 	@Override
 	public String[] getASMTransformerClass() {
 		/*File file = new File("./config/hbm/hbm.cfg");
@@ -30,6 +32,14 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
 	public String getModContainerClass() {
 		return "com.hbm.core.HbmCoreModContainer";
 	}
+
+	public static boolean runtimeDeobfEnabled() {
+        return runtimeDeobfEnabled;
+    }
+
+    public static String chooseName(String mcp, String srg) {
+        return runtimeDeobfEnabled ? srg : mcp;
+    }
 
 	@Override
 	public String getSetupClass() {

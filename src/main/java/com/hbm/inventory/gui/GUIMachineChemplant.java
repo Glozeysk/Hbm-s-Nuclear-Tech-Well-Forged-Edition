@@ -1,6 +1,9 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.util.I18nUtil;
+
+import java.io.IOException;
+
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.FFUtils;
@@ -50,6 +53,13 @@ public class GUIMachineChemplant extends GuiInfoContainer {
 		String[] text = I18nUtil.resolveKeyArray("desc.guiacceptupgrades1");
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 105, guiTop + 40, 8, 8, guiLeft + 105, guiTop + 40 + 16, text);
 	}
+
+	@Override
+    protected void mouseClicked(int x, int y, int button) throws IOException {
+        super.mouseClicked(x, y, button);
+
+        if(this.checkClick(x, y, 79, 53, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemplant, this, 4);
+    }
 
 	@Override
 	protected void drawGuiContainerForegroundLayer( int i, int j) {

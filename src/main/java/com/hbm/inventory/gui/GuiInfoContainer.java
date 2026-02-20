@@ -100,6 +100,13 @@ public abstract class GuiInfoContainer extends GuiContainer {
 		}
 	}
 
+	protected boolean checkClick(int x, int y, int left, int top, int sizeX, int sizeY) {
+    return guiLeft + left <= x
+        && guiLeft + left + sizeX > x
+        && guiTop + top < y
+        && guiTop + top + sizeY >= y;
+  	}
+
 		protected void drawStackText(List lines, int x, int y, FontRenderer font, int highLightIndex) {
 		
 		if(!lines.isEmpty()) {

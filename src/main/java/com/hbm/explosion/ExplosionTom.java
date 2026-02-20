@@ -150,14 +150,14 @@ public class ExplosionTom
 								for(int k = -2; k < 3; k++) {
 									pos.setPos(pX + i, y + j, pZ + k);
 									m = world.getBlockState(pos).getMaterial();
-									if(m == Material.WATER || m == Material.ICE || world.isAirBlock(pos.setPos(pX + i, y, pZ + k))) {
-										world.setBlockState(pos.setPos(pX + i, y, pZ + k), Blocks.LAVA.getDefaultState());
-										world.setBlockState(pos.setPos(pX, y, pZ), Blocks.LAVA.getDefaultState());
+									if(m == Material.WATER || m == Material.ICE) {
+										world.setBlockToAir(pos.setPos(pX + i, y, pZ + k));
+										world.setBlockToAir(pos.setPos(pX, y, pZ));
 									}
 								}
 							}
 						}
-						world.setBlockState(pos.setPos(pX, y, pZ), Blocks.LAVA.getDefaultState());
+						world.setBlockToAir(pos.setPos(pX, y, pZ));
 					}
 				}
 				y--;

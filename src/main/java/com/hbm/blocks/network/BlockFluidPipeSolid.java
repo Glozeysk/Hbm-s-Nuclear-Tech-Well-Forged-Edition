@@ -27,6 +27,7 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -40,7 +41,7 @@ public class BlockFluidPipeSolid extends BlockContainer implements IToolable, IL
 	
 	public BlockFluidPipeSolid(Material materialIn, String s) {
 		super(materialIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(EXTRACTS, false));
 		
@@ -59,6 +60,9 @@ public class BlockFluidPipeSolid extends BlockContainer implements IToolable, IL
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
+		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor"));
+		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
+		tooltip.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotreallyhot"));
 	}
 	
 	@Override
@@ -159,6 +163,6 @@ public class BlockFluidPipeSolid extends BlockContainer implements IToolable, IL
 			text.add("&[" + color + "&]" +I18nUtil.resolveKey(ductFluid.getUnlocalizedName()));
 		}
 		
-		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getUnlocalizedName() + ".name"), 0xffff00, 0x404000, text);
+		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}
 }

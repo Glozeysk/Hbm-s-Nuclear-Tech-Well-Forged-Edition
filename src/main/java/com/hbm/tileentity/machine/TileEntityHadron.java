@@ -18,6 +18,7 @@ import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.TileEntityHadronDiode.DiodeConfig;
 
+import com.hbm.items.machine.ItemFWatzCore;
 import api.hbm.energy.IEnergyUser;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -90,7 +91,7 @@ public class TileEntityHadron extends TileEntityMachineBase implements ITickable
 			power = Library.chargeTEFromItems(inventory, 4, power, maxPower);
 			drawPower();
 
-			if(delay <= 0 && this.isOn && particles.size() < maxParticles && !inventory.getStackInSlot(0).isEmpty() && !inventory.getStackInSlot(1).isEmpty() && power >= maxPower * 0.75) {
+			if(delay <= 0 && this.isOn && particles.size() < maxParticles && !inventory.getStackInSlot(0).isEmpty() && !inventory.getStackInSlot(1).isEmpty() && power >= maxPower * 0.75 && (inventory.getStackInSlot(2).getCount() < inventory.getStackInSlot(2).getMaxStackSize()) && (inventory.getStackInSlot(3).getCount() < inventory.getStackInSlot(3).getMaxStackSize()) && !(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore) && !(inventory.getStackInSlot(3).getItem() instanceof ItemFWatzCore)) {
 				if(!hopperMode || (inventory.getStackInSlot(0).getCount() > 1 && inventory.getStackInSlot(1).getCount() > 1)) {
 					ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
 					particles.add(new Particle(inventory.getStackInSlot(0), inventory.getStackInSlot(1), dir, pos.getX(), pos.getY(), pos.getZ()));

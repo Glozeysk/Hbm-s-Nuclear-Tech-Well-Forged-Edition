@@ -82,6 +82,7 @@ public class ModForgeFluids {
 	public static Fluid colloid = new Fluid("colloid", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/colloid_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/colloid_flowing"), null, Color.WHITE);
 
 	public static Fluid nitan = new Fluid("nitan", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/nitan_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/nitan_flowing"), null, Color.WHITE);
+	public static Fluid sparkfuel = new Fluid("sparkfuel", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/sparkfuel_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/sparkfuel_flowing"), null, Color.WHITE).setTemperature(20000 + 273);
 
 	public static Fluid uf6 = new Fluid("uf6", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/uf6_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/uf6_flowing"), null, Color.WHITE);
 	public static Fluid puf6 = new Fluid("puf6", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/puf6_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/puf6_flowing"), null, Color.WHITE);
@@ -219,6 +220,8 @@ public class ModForgeFluids {
 
 		if(!FluidRegistry.registerFluid(nitan))
 			nitan = FluidRegistry.getFluid("nitan");
+		if(!FluidRegistry.registerFluid(sparkfuel))
+			sparkfuel = FluidRegistry.getFluid("sparkfuel");
 
 		if(!FluidRegistry.registerFluid(uf6))
 			uf6 = FluidRegistry.getFluid("uf6");
@@ -376,6 +379,7 @@ public class ModForgeFluids {
 		colloid = FluidRegistry.getFluid("colloid");
 
 		nitan = FluidRegistry.getFluid("nitan");
+		sparkfuel = FluidRegistry.getFluid("sparkfuel");
 
 		uf6 = FluidRegistry.getFluid("uf6");
 		puf6 = FluidRegistry.getFluid("puf6");

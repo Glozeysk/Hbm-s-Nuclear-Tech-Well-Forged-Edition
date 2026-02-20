@@ -21,7 +21,7 @@ public class DetMiner extends Block implements IBomb {
 
 	public DetMiner(Material m, String s) {
 		super(m);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
@@ -42,18 +42,18 @@ public class DetMiner extends Block implements IBomb {
 			explosion.atttributes.add(ExAttrib.NOHURT);
 			explosion.explode();
 
-			ExplosionLarge.spawnParticles(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 30);
+			//ExplosionLarge.spawnParticles(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 30);
 		}
 	}
 	
 	@Override
-	public void onBlockDestroyedByExplosion(World worldIn, BlockPos pos, Explosion explosionIn) {
+	public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {
 		this.explode(worldIn, pos);
 	}
 	
 	@Override
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
-		if (world.isBlockIndirectlyGettingPowered(pos) > 0)
+		if (world.getRedstonePowerFromNeighbors(pos) > 0)
         {
         	this.explode(world, pos);
         }

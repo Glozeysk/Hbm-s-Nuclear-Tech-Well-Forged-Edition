@@ -19,7 +19,7 @@ public class ItemSelfcharger extends Item implements IBatteryItem {
 	
 	public ItemSelfcharger(long charge, String s) {
 		this.charge = charge;
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		
 		ModItems.ALL_ITEMS.add(this);
@@ -48,7 +48,7 @@ public class ItemSelfcharger extends Item implements IBatteryItem {
 	}
 
 	@Override
-	public long getMaxCharge() {
+	public long getMaxCharge(ItemStack stack) {
 		return charge;
 	}
 

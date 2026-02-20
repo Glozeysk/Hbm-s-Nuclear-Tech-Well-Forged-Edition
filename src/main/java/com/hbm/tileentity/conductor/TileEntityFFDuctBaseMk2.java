@@ -17,6 +17,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -30,38 +31,55 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2, IFluidHandler {
+public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2, IFluidHandler, ITickable {
 
 	public EnumFacing[] connections = new EnumFacing[6];
 	protected Fluid type;
 	protected FFPipeNetworkMk2 network = null;
 	public TileEntity[] tileentityCache = new TileEntity[6];
 	public boolean isBeingDestroyed = false;
+	private long lastFillWorldTime = -1;
+	private int debugTickCounter = 0;
 
 	public TileEntityFFDuctBaseMk2() {
 	}
 
-	public void setType(Fluid f) {
-		if(f != type) {
-			type = f;
-			world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
-			world.neighborChanged(pos, getBlockType(), pos);
-			IBlockState state = world.getBlockState(pos);
-			world.markAndNotifyBlock(pos, world.getChunkFromBlockCoords(pos), state, state, 2);
-			rebuildNetworks(world, pos);
-			if(world instanceof WorldServer) {
-				PlayerChunkMapEntry entry = ((WorldServer) world).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
-
-				if(entry != null) {
-					for(EntityPlayerMP player : entry.getWatchingPlayers()) {
-						player.connection.sendPacket(new SPacketUpdateTileEntity(pos, 0, writeToNBT(new NBTTagCompound())));
-					}
-				}
-			}
-			if(!world.isRemote)
-				PacketDispatcher.wrapper.sendToAllTracking(new PipeUpdatePacket(pos, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-		}
+	public int getPipeTier() {
+		return 2;
 	}
+
+	protected boolean canConnectTo(BlockPos neighborPos, EnumFacing facing) {
+		if (!FFUtils.checkFluidConnectablesMk2(this.world, neighborPos, getType(), facing))
+			return false;
+		TileEntity te = world.getTileEntity(neighborPos);
+		if (te instanceof TileEntityFFDuctBaseMk2) {
+			return ((TileEntityFFDuctBaseMk2) te).getPipeTier() == this.getPipeTier();
+		}
+		return true;
+	}
+
+
+	public void setType(Fluid f) {
+        if (f != type) {
+            type = f;
+            world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
+            world.neighborChanged(pos, getBlockType(), pos);
+            IBlockState state = world.getBlockState(pos);
+            world.markAndNotifyBlock(pos, world.getChunk(pos), state, state, 2);
+            rebuildNetworks(world, pos);
+            if (world instanceof WorldServer) {
+                PlayerChunkMapEntry entry = ((WorldServer) world).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
+
+                if (entry != null) {
+                    for (EntityPlayerMP player : entry.getWatchingPlayers()) {
+                        player.connection.sendPacket(new SPacketUpdateTileEntity(pos, 0, writeToNBT(new NBTTagCompound())));
+                    }
+                }
+            }
+            if (!world.isRemote)
+                PacketDispatcher.wrapper.sendToAllTracking(new PipeUpdatePacket(pos, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+        }
+    }
 
 	public Fluid getType() {
 		return type;
@@ -208,6 +226,8 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 			BlockPos offset = pos.offset(e);
 			TileEntity te = world.getTileEntity(offset);
 			if(te instanceof IFluidPipeMk2) {
+				if(te instanceof TileEntityFFDuctBaseMk2 && ((TileEntityFFDuctBaseMk2) te).getPipeTier() != this.getPipeTier())
+					continue;
 				IFluidPipeMk2 pipe = (IFluidPipeMk2) te;
 				if(pipe.getNetwork() != null && pipe.getNetwork().getType() == this.getType() && !otherNetworks.contains(pipe.getNetwork())) {
 					otherNetworks.add(pipe.getNetwork());
@@ -262,35 +282,12 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	}
 
 	public void updateConnections() {
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.up(), getType(), EnumFacing.UP.getOpposite()))
-			connections[0] = EnumFacing.UP;
-		else
-			connections[0] = null;
-
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.down(), getType(), EnumFacing.DOWN.getOpposite()))
-			connections[1] = EnumFacing.DOWN;
-		else
-			connections[1] = null;
-
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.north(), getType(), EnumFacing.NORTH.getOpposite()))
-			connections[2] = EnumFacing.NORTH;
-		else
-			connections[2] = null;
-
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.east(), getType(), EnumFacing.EAST.getOpposite()))
-			connections[3] = EnumFacing.EAST;
-		else
-			connections[3] = null;
-
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.south(), getType(), EnumFacing.SOUTH.getOpposite()))
-			connections[4] = EnumFacing.SOUTH;
-		else
-			connections[4] = null;
-
-		if(FFUtils.checkFluidConnectablesMk2(this.world, pos.west(), getType(), EnumFacing.WEST.getOpposite()))
-			connections[5] = EnumFacing.WEST;
-		else
-			connections[5] = null;
+		connections[0] = canConnectTo(pos.up(), EnumFacing.DOWN) ? EnumFacing.UP : null;
+		connections[1] = canConnectTo(pos.down(), EnumFacing.UP) ? EnumFacing.DOWN : null;
+		connections[2] = canConnectTo(pos.north(), EnumFacing.SOUTH) ? EnumFacing.NORTH : null;
+		connections[3] = canConnectTo(pos.east(), EnumFacing.WEST) ? EnumFacing.EAST : null;
+		connections[4] = canConnectTo(pos.south(), EnumFacing.NORTH) ? EnumFacing.SOUTH : null;
+		connections[5] = canConnectTo(pos.west(), EnumFacing.EAST) ? EnumFacing.WEST : null;
 	}
 
 	@Override
@@ -315,7 +312,11 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
-		return network != null ? network.fill(resource, doFill) : 0;
+    	int filled = network != null ? network.fill(resource, doFill) : 0;
+    	if (filled > 0 && doFill && !world.isRemote) {
+        	lastFillWorldTime = world.getTotalWorldTime();
+    	}
+    	return filled;
 	}
 
 	@Override
@@ -326,6 +327,14 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return network != null ? network.drain(maxDrain, doDrain) : null;
+	}
+
+	public boolean isTransportingFluid() {
+    	return lastFillWorldTime >= 0 && (world.getTotalWorldTime() - lastFillWorldTime) < 20;
+	}
+
+	@Override
+	public void update() {
 	}
 
 	@Override

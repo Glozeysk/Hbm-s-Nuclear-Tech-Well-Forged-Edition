@@ -631,11 +631,30 @@ public class FFUtils {
 
 	// Ah yes, hacky special methods to make stacks drain.
 	private static boolean trySpecialFillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){ //drains tank into item
+		if(tank == null || tank.getFluid() == null) return false;
 		ItemStack in = slots.getStackInSlot(slot1);
 		ItemStack out = slots.getStackInSlot(slot2);
 
 		ItemStack in1 = in.copy();
+		Item item1 = in.getItem();
 		in1.setCount(1);
+
+		// Bucket override
+        if(item1 == Items.BUCKET && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000) {
+			if(!out.isEmpty() && in.getCount() > 1)
+				return false;
+            FluidStack f = tank.drain(1000, true);
+            if(f == null)
+                return false;
+            in.shrink(1);
+
+			if(out.isEmpty()){
+				slots.setStackInSlot(slot2, FluidUtil.getFilledBucket(f));
+			} else {
+				slots.setStackInSlot(slot1, FluidUtil.getFilledBucket(f));
+			}
+            return true;
+        }
 
 		// Fluid Tank override
 		if(tank.getFluid() != null && in.getItem() == ModItems.fluid_tank_full && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000 && ItemFluidTank.isEmptyTank(in1) && ((ItemFluidTank.isFullTank(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
@@ -895,7 +914,7 @@ public class FFUtils {
 	}
 
 	public static int getColorFromFluid(Fluid f){
-		return Library.getColorFromResourceLocation(new ResourceLocation(f.getStill().getResourceDomain(), "textures/"+f.getStill().getResourcePath()+".png"));
+		return Library.getColorFromResourceLocation(new ResourceLocation(f.getStill().getNamespace(), "textures/"+f.getStill().getPath()+".png"));
 	}
 
 	public static void setColorFromFluid(Fluid f){

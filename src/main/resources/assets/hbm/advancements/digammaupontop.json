@@ -13,11 +13,18 @@
 	},
 	"parent": "hbm:digammakauaimoho",
 	"criteria": {
-		"impossible": {
-			"trigger": "minecraft:impossible"
-		}
-	},
+        "crafting_table": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    {
+                        "item": "hbm:machine_fensu"
+                    }
+                ]
+            }
+        }
+    },
     "rewards": {
-        "experience": 1000
+        "experience": 200000
     }
 }

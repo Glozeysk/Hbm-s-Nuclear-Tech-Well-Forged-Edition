@@ -203,6 +203,10 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 		//Or is the output slot already full?
 		if(inventory.getStackInSlot(2).getCount() >= inventory.getStackInSlot(2).getMaxStackSize())
 			return false;
+		if(inventory.getStackInSlot(0).getItem() == ModItems.powder_borax && inventory.getStackInSlot(2).getCount() >= 63)
+			return false;
+		if(inventory.getStackInSlot(0).getItem() == ModItems.cinnebar && inventory.getStackInSlot(2).getCount() >= 63)
+			return false;
 
 		FluidStack acidFluid = CrystallizerRecipes.getOutputFluid(inventory.getStackInSlot(0));
 		if(acidFluid == null)

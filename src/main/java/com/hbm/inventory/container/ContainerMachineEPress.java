@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.SlotMachineOutput;
+import com.hbm.inventory.SlotUpgrade;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -29,6 +30,8 @@ private TileEntityMachineEPress nukeBoy;
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 80, 53));
 		//Output
 		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 3, 140, 35));
+		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 4, 44, 17));
+		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 5, 44, 35));
 		
 		for(int i = 0; i < 3; i++)
 		{

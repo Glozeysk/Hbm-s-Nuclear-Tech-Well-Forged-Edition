@@ -22,8 +22,10 @@ public class HbmCapability {
 		public void setKeyPressed(EnumKeybind key, boolean pressed);
 		public boolean getEnableBackpack();
 		public boolean getEnableHUD();
+		public boolean getEnableGoggles();
 		public void setEnableBackpack(boolean b);
 		public void setEnableHUD(boolean b);
+		public void setEnableGoggles(boolean b);
 		
 		public default boolean isJetpackActive() {
 			return getEnableBackpack() && getKeyPressed(EnumKeybind.JETPACK);
@@ -38,6 +40,7 @@ public class HbmCapability {
 		
 		public boolean enableBackpack = true;
 		public boolean enableHUD = true;
+		public boolean enableGoggles = true;
 		
 		@Override
 		public boolean getKeyPressed(EnumKeybind key) {
@@ -64,6 +67,14 @@ public class HbmCapability {
 					else
 						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "HUD OFF");
 				}
+				if(key == EnumKeybind.TOGGLE_GOGGLES) {
+					this.enableGoggles = !this.enableGoggles;
+					
+					if(this.enableGoggles)
+						MainRegistry.proxy.displayTooltip(TextFormatting.GREEN + "Goggles ON");
+					else
+						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "Goggles OFF");
+				}
 			}
 			keysPressed[key.ordinal()] = pressed;
 		}
@@ -79,6 +90,11 @@ public class HbmCapability {
 		}
 
 		@Override
+		public boolean getEnableGoggles(){
+			return enableGoggles;
+		}
+
+		@Override
 		public void setEnableBackpack(boolean b){
 			enableBackpack = b;
 		}
@@ -86,6 +102,11 @@ public class HbmCapability {
 		@Override
 		public void setEnableHUD(boolean b){
 			enableHUD = b;
+		}
+
+		@Override
+		public void setEnableGoggles(boolean b){
+			enableGoggles = b;
 		}
 		
 	}
@@ -100,6 +121,7 @@ public class HbmCapability {
 			}
 			tag.setBoolean("enableBackpack", instance.getEnableBackpack());
 			tag.setBoolean("enableHUD", instance.getEnableHUD());
+			tag.setBoolean("enableGoggles", instance.getEnableGoggles());
 			return tag;
 		}
 
@@ -112,6 +134,7 @@ public class HbmCapability {
 				}
 				instance.setEnableBackpack(tag.getBoolean("enableBackpack"));
 				instance.setEnableHUD(tag.getBoolean("enableHUD"));
+				instance.setEnableGoggles(tag.getBoolean("enableGoggles"));
 			}
 		}
 		
@@ -141,11 +164,20 @@ public class HbmCapability {
 			}
 
 			@Override
+			public boolean getEnableGoggles(){
+				return false;
+			}
+
+			@Override
 			public void setEnableBackpack(boolean b){
 			}
 
 			@Override
 			public void setEnableHUD(boolean b){
+			}
+
+			@Override
+			public void setEnableGoggles(boolean b){
 			}
 		};
 		

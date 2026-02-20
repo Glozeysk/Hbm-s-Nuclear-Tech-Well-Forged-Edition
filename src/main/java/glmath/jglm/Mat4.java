@@ -8,7 +8,7 @@ package glmath.jglm;
  * @deprecated
  * @author gbarbieri
  */
-public class Mat4 extends Mat {
+@Deprecated public class Mat4 extends Mat {
 
     public Vec4 c0;
     public Vec4 c1;

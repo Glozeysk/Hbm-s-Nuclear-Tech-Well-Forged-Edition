@@ -76,7 +76,7 @@ public class ItemRBMKRod extends Item implements IItemHazard {
 	}
 
 	public ItemRBMKRod(String fullName, String s) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.module = new ItemHazardModule();
 		
@@ -408,7 +408,7 @@ public class ItemRBMKRod extends Item implements IItemHazard {
 		
 		list.add(TextFormatting.ITALIC + this.fullName);
 		
-		if(this == ModItems.rbmk_fuel_drx) {
+		if(this == ModItems.rbmk_fuel_drx || this == ModItems.rbmk_fuel_spk) {
 			
 			if(selfRate > 0 || this.function == EnumBurnFunc.SIGMOID) {
 				list.add(TextFormatting.RED + I18nUtil.resolveKey("trait.rbmx.source"));

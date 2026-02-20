@@ -54,6 +54,8 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 	public Fluid[] types;
 	public FluidTank plasma;
 	public Fluid plasmaType;
+	public int growprogress = 0;
+	public static final int maxProgress = 12000;
 	
 	public int progress;
 	public static final int duration = 100;
@@ -117,10 +119,13 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 
 				if(plasma.getFluidAmount() > 0) {
 
-					int chance = FusionRecipes.getByproductChance(plasmaType);
-
-					if(chance > 0 && world.rand.nextInt(chance) == 0)
+					int processSpeed = FusionRecipes.getByproductChance(plasmaType);
+						growprogress += processSpeed;
+						if(growprogress >= maxProgress) {
 						produceByproduct();
+						growprogress = 0;
+						this.markDirty();
+					}
 				}
 
 				if(plasma.getFluidAmount() > 0 && this.getShield() != 0) {
@@ -159,6 +164,7 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTypePacketTest(pos.getX(), pos.getY(), pos.getZ(), new Fluid[]{plasmaType}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
 			/// END Notif packets ///
 			NBTTagCompound data = new NBTTagCompound();
+			data.setInteger("growprogress", growprogress);
 			data.setBoolean("isOn", isOn);
 			data.setLong("power", power);
 			data.setInteger("progress", progress);
@@ -210,7 +216,7 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 			out = new BreederRecipe(ModItems.meteorite_sword_fused, 1);
 
 		if(inventory.getStackInSlot(1).getItem() == ModItems.meteorite_sword_fused)
-			out = new BreederRecipe(ModItems.meteorite_sword_baleful, 4);
+			out = new BreederRecipe(ModItems.meteorite_sword_baleful, 5);
 
 		if(out == null) {
 			this.progress = 0;
@@ -297,8 +303,13 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 		return (progress * i) / duration;
 	}
 
+	public int getProgressScaled(int i) {
+		return (growprogress * i) / maxProgress;
+	}
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
+		growprogress = compound.getInteger("growprogress");
 		tanks[0].readFromNBT(compound.getCompoundTag("water"));
 		tanks[1].readFromNBT(compound.getCompoundTag("steam"));
 		plasma.readFromNBT(compound.getCompoundTag("plasma"));
@@ -310,6 +321,7 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		compound.setInteger("growprogress", growprogress);
 		compound.setTag("water", tanks[0].writeToNBT(new NBTTagCompound()));
 		compound.setTag("steam", tanks[1].writeToNBT(new NBTTagCompound()));
 		compound.setTag("plasma", plasma.writeToNBT(new NBTTagCompound()));
@@ -424,13 +436,22 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 	}
 	
 	@Override
-	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
-		return true;
+	public boolean canExtractItem(int slot, ItemStack stack, int side) {
+		return slot == 2 || slot == 4; // only allow removing breeder outputs <- ?????
 	}
-	
+
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-		return new int[] { 2, 4 };
+		return new int[] { 1, 2, 4 };
+	}
+
+	@Override
+	public boolean isItemValidForSlot(int i, ItemStack stack) {
+
+		if(i == 1 && BreederRecipes.getOutput(stack) != null)
+			return true;
+
+		return false;
 	}
 
 	AxisAlignedBB bb = null;

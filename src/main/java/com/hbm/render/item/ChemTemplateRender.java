@@ -20,7 +20,7 @@ public class ChemTemplateRender extends TileEntityItemStackRenderer {
 	@Override
 	public void renderByItem(ItemStack stack) {
 		if (stack.getItem() instanceof ItemChemistryTemplate && type == TransformType.GUI) {
-			if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+			if (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
 				GL11.glTranslated(0.5, 0.5, 0);
 				ItemStack renderStack = new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage());
 				Minecraft.getMinecraft().getRenderItem().renderItem(renderStack, Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(renderStack, Minecraft.getMinecraft().world, Minecraft.getMinecraft().player));

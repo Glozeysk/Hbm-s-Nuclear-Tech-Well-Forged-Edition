@@ -70,7 +70,7 @@ public class JetpackGlider extends ItemArmorMod implements IItemFluidHandler {
 	public int fill(ItemStack stack, FluidStack fluid, boolean doFill) {
 		if(fluid == null)
 			return 0;
-		if(fluid.getFluid() == ModForgeFluids.kerosene || fluid.getFluid() == ModForgeFluids.balefire || fluid.getFluid() == ModForgeFluids.nitan){
+		if(fluid.getFluid() == ModForgeFluids.kerosene || fluid.getFluid() == ModForgeFluids.balefire || fluid.getFluid() == ModForgeFluids.nitan || fluid.getFluid() == ModForgeFluids.sparkfuel){
 			FluidTank tank = getTank(stack);
 			int fill = tank.fill(fluid, doFill);
 			if(doFill)

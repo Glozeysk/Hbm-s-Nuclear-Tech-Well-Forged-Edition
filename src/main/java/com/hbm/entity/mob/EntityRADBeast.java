@@ -64,7 +64,7 @@ public class EntityRADBeast extends EntityMob implements IRadiationImmune {
 	        List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, this.getEntityBoundingBox().grow(50, 50, 50));
 
 	        for(EntityPlayer player : players) {
-	        	AdvancementManager.grantAchievement(player, AdvancementManager.achMeltdown);
+	        	AdvancementManager.grantAchievement(player, AdvancementManager.bossMeltdown);
 	        }
         }
         super.onDeath(cause);

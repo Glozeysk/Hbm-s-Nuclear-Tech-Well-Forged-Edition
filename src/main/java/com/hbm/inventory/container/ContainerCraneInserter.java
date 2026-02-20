@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import invtweaks.api.container.ChestContainer;
 import com.hbm.tileentity.network.TileEntityCraneInserter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -8,6 +9,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
+@ChestContainer(rowSize = 7) //Inventory-Tweaks
 public class ContainerCraneInserter extends Container {
     protected TileEntityCraneInserter inserter;
 

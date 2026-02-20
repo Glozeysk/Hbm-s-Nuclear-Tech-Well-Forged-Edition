@@ -47,6 +47,14 @@ public class HadronRecipes {
 				false
 				));
 		recipes.add(new HadronRecipe(
+				new ItemStack(ModItems.particle_amat),
+				new ItemStack(ModItems.particle_amat_alt),
+				900,
+				new ItemStack(ModItems.particle_aschrab),
+				new ItemStack(ModItems.particle_empty),
+				false
+				));
+		recipes.add(new HadronRecipe(
 				new ItemStack(ModItems.particle_hydrogen),
 				new ItemStack(ModItems.particle_amat),
 				2000,
@@ -113,6 +121,14 @@ public class HadronRecipes {
 		recipes.add(new HadronRecipe(
 				new ItemStack(ModItems.particle_aschrab),
 				new ItemStack(ModItems.particle_aschrab),
+				100000,
+				new ItemStack(ModItems.particle_dark),
+				new ItemStack(ModItems.particle_empty),
+				false
+				));
+		recipes.add(new HadronRecipe(
+				new ItemStack(ModItems.particle_aschrab),
+				new ItemStack(ModItems.particle_aschrab_alt),
 				100000,
 				new ItemStack(ModItems.particle_dark),
 				new ItemStack(ModItems.particle_empty),

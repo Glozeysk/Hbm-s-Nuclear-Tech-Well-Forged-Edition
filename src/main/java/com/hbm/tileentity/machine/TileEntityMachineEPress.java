@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.items.ModItems;
 import com.hbm.inventory.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.lib.HBMSoundHandler;
@@ -34,7 +35,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	boolean isRetracting = false;
 
 	public TileEntityMachineEPress() {
-		super(4);
+		super(6);
 	}
 
 	@Override
@@ -58,7 +59,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 		if(i == 0 && stack.getItem() instanceof IBatteryItem)
 			return true;
 		
-		if(!(stack.getItem() instanceof ItemStamp) && i == 2)
+		if(!(stack.getItem() instanceof ItemStamp) && !(stack.getItem() instanceof IBatteryItem) && i == 2)
 			return true;
 		return false;
 	}
@@ -97,6 +98,50 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 		super.readFromNBT(compound);
 	}
 	
+	public int getSpeedLvl() {
+		int level = 0;
+		for(int i = 4; i <= 5; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_1)
+				level += 25;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_2)
+				level += 50;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_3)
+				level += 75;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_screm)
+				level += 150;
+		}
+		return Math.min(level, 300);
+	}
+
+	public int getPowerLvl() {
+		int level = 0;
+		for(int i = 4; i <= 5; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_1)
+				level += 1;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_2)
+				level += 2;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_3)
+				level += 3;
+		}
+		return Math.min(level, 3);
+	}
+
+	public int getOverdriveLvl() {
+		int level = 0;
+		for(int i = 4; i <= 5; i++) {
+
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_1)
+				level += 1;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_2)
+				level += 2;
+			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_3)
+				level += 3;
+		}
+		return Math.min(level, 3);
+	}
+
 	@Override
 	public void update() {
 		if(!world.isRemote)
@@ -104,9 +149,22 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 			this.updateStandardConnections(world, pos);
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 			
-			if(power >= 100 && !(world.isBlockIndirectlyGettingPowered(pos) > 0)) {
+			if(power >= 100 && !(world.getRedstonePowerFromNeighbors(pos) > 0)) {
 
 				int speed = 25;
+				int consumption = 100;
+
+				int speedLvl = getSpeedLvl();
+				int powerLvl = getPowerLvl();
+				int overdriveLvl = getOverdriveLvl();
+
+				speed += speedLvl;
+				consumption += speedLvl * 4;
+			
+				speed *= (1 + overdriveLvl * 2);
+				consumption += overdriveLvl * 1000;
+			
+				consumption /= (1 + powerLvl);
 				
 				if(!inventory.getStackInSlot(1).isEmpty() && !inventory.getStackInSlot(2).isEmpty()) {
 					ItemStack stack = PressRecipes.getPressResult(inventory.getStackInSlot(2).copy(), inventory.getStackInSlot(1).copy());
@@ -115,7 +173,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 							(inventory.getStackInSlot(3).getItem() == stack.getItem() &&
 									inventory.getStackInSlot(3).getCount() + stack.getCount() <= inventory.getStackInSlot(3).getMaxStackSize()))) {
 						
-						power -= 100;
+						power -= consumption;
 						
 						if(progress >= maxProgress) {
 							

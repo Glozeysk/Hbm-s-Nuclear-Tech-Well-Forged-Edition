@@ -38,7 +38,7 @@ public class SpecialContainerFillLists {
 		private EnumCanister(Fluid f, ModelResourceLocation r){
 			this.fluid = f;
 			this.renderPair = MutablePair.of(r, null);
-			this.translateKey = "item." + r.getResourcePath() + ".name";
+			this.translateKey = "item." + r.getPath() + ".name";
 		}
 		public Fluid getFluid(){
 			return fluid;
@@ -91,7 +91,8 @@ public class SpecialContainerFillLists {
 		DEUTERIUM(ModForgeFluids.deuterium, new ModelResourceLocation(RefStrings.MODID + ":cell_deuterium", "inventory")),
 		TRITIUM(ModForgeFluids.tritium, new ModelResourceLocation(RefStrings.MODID + ":cell_tritium", "inventory")),
 		SAS3(ModForgeFluids.sas3, new ModelResourceLocation(RefStrings.MODID + ":cell_sas3", "inventory")),
-		ANTISCHRABIDIUM(ModForgeFluids.aschrab, new ModelResourceLocation(RefStrings.MODID + ":cell_anti_schrabidium", "inventory"));
+		ANTISCHRABIDIUM(ModForgeFluids.aschrab, new ModelResourceLocation(RefStrings.MODID + ":cell_anti_schrabidium", "inventory")),
+		BALEFIRE(ModForgeFluids.balefire, new ModelResourceLocation(RefStrings.MODID + ":cell_balefire", "inventory"));
 		
 		private Fluid fluid;
 		private Pair<ModelResourceLocation, IBakedModel> renderPair;
@@ -100,7 +101,7 @@ public class SpecialContainerFillLists {
 		private EnumCell(Fluid f, ModelResourceLocation r){
 			this.fluid = f;
 			this.renderPair = MutablePair.of(r, null);
-			this.translateKey = "item." + r.getResourcePath() + ".name";
+			this.translateKey = "item." + r.getPath() + ".name";
 		}
 		public Fluid getFluid(){
 			return fluid;
@@ -162,7 +163,7 @@ public class SpecialContainerFillLists {
 		private EnumGasCanister(Fluid f, ModelResourceLocation r){
 			this.fluid = f;
 			this.renderPair = MutablePair.of(r, null);
-			this.translateKey = "item." + r.getResourcePath() + ".name";
+			this.translateKey = "item." + r.getPath() + ".name";
 		}
 		public Fluid getFluid(){
 			return fluid;

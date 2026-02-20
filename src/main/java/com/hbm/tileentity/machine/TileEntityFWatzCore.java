@@ -1,8 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
@@ -11,22 +9,26 @@ import com.hbm.inventory.SAFERecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFWatzCore;
 import com.hbm.lib.Library;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.lib.ModDamageSource;
+import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.world.FWatz;
 import com.hbm.tileentity.INBTPacketReceiver;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.items.special.ItemCell;
+import net.minecraftforge.fluids.FluidUtil;
+import api.hbm.energy.IBatteryItem;
 
 import api.hbm.energy.IEnergyGenerator;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -36,30 +38,36 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityFWatzCore extends TileEntityLoadedBase implements IControlReceiver, ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor, INBTPacketReceiver {
+import java.util.List;
+
+public class TileEntityFWatzCore extends TileEntityMachineBase implements IControlReceiver, ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor {
 
 	public long power;
 	public final static long maxPower = 1000000000000L;
 	public boolean cooldown = false;
+    public int progress = 0;
+	public final static int maxProgress = 4000;
+    public boolean isProgressing;
 
-	public FluidTank tanks[];
+	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
-	public boolean needsUpdate;
+	public boolean needsUpdate = true;
 	public boolean isOn = false;
-
-	public ItemStackHandler inventory;
-
-	private String customName;
+    public boolean isOk = true;
+    public boolean isDoingSomething = false;
 
 	public TileEntityFWatzCore() {
-		inventory = new ItemStackHandler(7) {
+		super(0);
+        inventory = new ItemStackHandler(7){
 			@Override
 			protected void onContentsChanged(int slot) {
-				markDirty();
 				super.onContentsChanged(slot);
+				markDirty();
+                if(slot == 2) progress = 0;
 			}
 		};
 		tanks = new FluidTank[3];
@@ -70,7 +78,6 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 		tankTypes[1] = ModForgeFluids.amat;
 		tanks[2] = new FluidTank(64000);
 		tankTypes[2] = ModForgeFluids.aschrab;
-		needsUpdate = false;
 	}
 
 	@Override
@@ -84,36 +91,29 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 		this.markDirty();
 	}
 
-	public String getInventoryName() {
-		return this.hasCustomInventoryName() ? this.customName : "container.fusionaryWatzPlant";
-	}
-
-	public boolean hasCustomInventoryName() {
-		return this.customName != null && this.customName.length() > 0;
-	}
-
-	public void setCustomName(String name) {
-		this.customName = name;
-	}
-
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		if(world.getTileEntity(pos) != this) {
-			return false;
-		} else {
-			return true;
-		}
+	public String getName() {
+		return "container.fusionaryWatzPlant";
 	}
 
 	public int getSingularityType(){
 		Item item = inventory.getStackInSlot(2).getItem();
-		if(item instanceof ItemFWatzCore){
-			return ((ItemFWatzCore)item).type;
+		if(item instanceof ItemFWatzCore core){
+			return core.type;
 		}
 		return 0;
 	}
 
+    public int getType(){
+        Item item = inventory.getStackInSlot(2).getItem();
+        if(item instanceof ItemFWatzCore core){
+            return core.type * (core.isBaby ? -1 : 1);
+        }
+        return 0;
+    }
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
+        progress = compound.getInteger("progress");
 		power = compound.getLong("power");
 		isOn = compound.getBoolean("isOn");
 		tankTypes[0] = ModForgeFluids.coolant;
@@ -121,112 +121,179 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 		tankTypes[2] = ModForgeFluids.aschrab;
 		if(compound.hasKey("tanks"))
 			FFUtils.deserializeTankArray(compound.getTagList("tanks", 10), tanks);
-		if(compound.hasKey("inventory"))
-			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
 		super.readFromNBT(compound);
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.setInteger("progress", progress);
 		compound.setLong("power", power);
 		compound.setBoolean("isOn", isOn);
-		compound.setTag("inventory", inventory.serializeNBT());
 		compound.setTag("tanks", FFUtils.serializeTankArray(tanks));
 		return super.writeToNBT(compound);
 	}
 
+    public boolean canGrow() {
+        if(!inventory.getStackInSlot(2).isEmpty() && inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore core && core.isBaby) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean canGrowReversed() {
+        if(!inventory.getStackInSlot(2).isEmpty() && inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore core && !core.isBaby) {
+            return true;
+        }
+        return false;
+    }
+
 	@Override
 	public void update() {
-		if(!world.isRemote && this.isStructureValid(this.world)) {
+        if(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore core) {
+            doGravityStuff(world, isOk ? 6 : 30, 1, pos.getX()+0.5F, pos.getY()+2.5F, pos.getZ()+0.5F, (core.type / 2D + 2) * (core.isBaby ? 0.2 : 1));
+        }
+		if(!world.isRemote){
+            if(this.isStructureValid(this.world)) {
+                isOk = true;
+                sendSAFEPower();
 
-			sendSAFEPower();
+                if(isDoingSomething){
+                    doElse();
+                }
 
-			if(this.isRunning()){
-				ItemStack stack = inventory.getStackInSlot(2);
-				if(stack.getItem() == ModItems.meteorite_sword_baleful){
-					inventory.setStackInSlot(2, new ItemStack(ModItems.meteorite_sword_warped));
-				} else if(stack.hasTagCompound()){
-					NBTTagCompound nbt = stack.getTagCompound();
-					if(nbt.getBoolean("ntmContagion")) nbt.removeTag("ntmContagion");
-					if(nbt.hasNoTags()) stack.setTagCompound(null);
-				}
-			}
+                if(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore itemCore && this.isOn) {
+                    if(cooldown) {
 
-			if(this.isOn && inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore) {
-				ItemFWatzCore itemCore = (ItemFWatzCore)inventory.getStackInSlot(2).getItem();
-				if(cooldown) {
-					
-					tanks[0].fill(new FluidStack(tankTypes[0], itemCore.coolantRefill), true);
+                        tanks[0].fill(new FluidStack(tankTypes[0], itemCore.coolantRefill), true);
 
-					if(tanks[0].getFluidAmount() >= tanks[0].getCapacity()) {
-						cooldown = false;
-					}
+                        if (tanks[0].getFluidAmount() >= tanks[0].getCapacity()) {
+                            cooldown = false;
+                        }
+                        isDoingSomething = false;
 
-				} else {
+                    } else {
 
-					if(tanks[1].getFluidAmount() > itemCore.amatDrain && tanks[2].getFluidAmount() > itemCore.aschrabDrain) {
-						tanks[0].drain(itemCore.coolantDrain, true);
-						tanks[1].drain(itemCore.amatDrain, true);
-						tanks[2].drain(itemCore.aschrabDrain, true);
-						needsUpdate = true;
-						power += itemCore.powerOutput;
-					}
+                        if (tanks[1].getFluidAmount() > itemCore.amatDrain && tanks[2].getFluidAmount() > itemCore.aschrabDrain) {
+                            tanks[0].drain(itemCore.coolantDrain, true);
+                            tanks[1].drain(itemCore.amatDrain, true);
+                            tanks[2].drain(itemCore.aschrabDrain, true);
+                            needsUpdate = true;
+                            power += itemCore.powerOutput;
+                            isDoingSomething = true;
+                            int processSpeed = 10;
+                            if(!this.isOn){
+                                progress = 0;
+                            }
+                            if(inventory.getStackInSlot(2).isEmpty() || !(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore core)){
+                                progress = 0;
+                            }
+                            if(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore core && !core.isBaby){
+                                progress = 0;
+                            }
+                            if(canGrow()){
+				                isProgressing = true;
+			                } else {
+				                isProgressing = false;
+			                }
+                            if(isProgressing){
+                                progress += processSpeed;
+						        if(progress >= maxProgress) {
+						            tryGrowCore();
+						            progress = 0;
+                                } 
+                            } else {
+                                progress = 0;
+                            }
+						    this.markDirty();
+                        }
 
-					if(power > maxPower)
-						power = maxPower;
+                        if (power > maxPower)
+                            power = maxPower;
 
-					if(tanks[0].getFluidAmount() <= 0) {
-						cooldown = true;
-					}
+                        if (tanks[0].getFluidAmount() <= 0) {
+                            cooldown = true;
+                        }
+                        }
+                } else {
+                    isDoingSomething = false;
+                }
 
-					if(world.rand.nextInt(4096) == 0)
-						tryGrowCore();
-				}
-			}
+                if(power > maxPower)
+                    power = maxPower;
 
-			if(power > maxPower)
-				power = maxPower;
+                power = Library.chargeItemsFromTE(inventory, 0, power, maxPower);
 
-			power = Library.chargeItemsFromTE(inventory, 0, power, maxPower);
+                if(this.inputValidForTank(1, 3))
+                    if(FFUtils.fillFromFluidContainer(inventory, tanks[1], 3, 5))
+                        needsUpdate = true;
+                if(this.inputValidForTank(2, 4))
+                    if(FFUtils.fillFromFluidContainer(inventory, tanks[2], 4, 6))
+                        needsUpdate = true;
 
-			if(this.inputValidForTank(1, 3))
-				if(FFUtils.fillFromFluidContainer(inventory, tanks[1], 3, 5))
-					needsUpdate = true;
-			if(this.inputValidForTank(2, 4))
-				if(FFUtils.fillFromFluidContainer(inventory, tanks[2], 4, 6))
-					needsUpdate = true;
-			if(needsUpdate) {
-				needsUpdate = false;
-				this.markDirty();
-			}
 
-			if(this.isRunning() && (tanks[1].getFluidAmount() <= 0 || tanks[2].getFluidAmount() <= 0 || !isOn || !(inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore)) || cooldown || !this.isStructureValid(world))
-				this.emptyPlasma();
+                NBTTagCompound data = new NBTTagCompound();
+                data.setInteger("progress", progress);
+                data.setLong("power", power);
+                data.setTag("tanks", FFUtils.serializeTankArray(tanks));
+                data.setBoolean("isOn", isOn);
+                data.setBoolean("isOk", true);
+                data.setBoolean("isDo", isDoingSomething);
+                if(needsUpdate) data.setTag("inventory", inventory.serializeNBT());
+                networkPack(data, 50);
 
-			if(!this.isRunning() && tanks[1].getFluidAmount() >= 100 && tanks[2].getFluidAmount() >= 100 && isOn && inventory.getStackInSlot(2).getItem() instanceof ItemFWatzCore && !cooldown && this.isStructureValid(world))
-				this.fillPlasma();
-
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-			data.setBoolean("isOn", isOn);
-			INBTPacketReceiver.networkPack(this, data, 50);
-		}
+                if(needsUpdate) {
+                    needsUpdate = false;
+                    this.markDirty();
+                }
+            } else {
+                if(isOk){
+                    NBTTagCompound data = new NBTTagCompound();
+                    data.setInteger("progress", progress);
+                    data.setLong("power", power);
+                    data.setTag("tanks", FFUtils.serializeTankArray(tanks));
+                    data.setBoolean("isOn", isOn);
+                    data.setBoolean("isOk", false);
+                    data.setBoolean("isDo", isDoingSomething);
+                    INBTPacketReceiver.networkPack(this, data, 50);
+                }
+                isOk = false;
+            }
+        }
 	}
+
+    public void doElse(){
+        ItemStack stack = inventory.getStackInSlot(2);
+        if(stack.getItem() == ModItems.meteorite_sword_baleful){
+            inventory.setStackInSlot(2, new ItemStack(ModItems.meteorite_sword_warped));
+        } else if(stack.hasTagCompound()){
+            NBTTagCompound nbt = stack.getTagCompound();
+            if(nbt.getBoolean("ntmContagion")) nbt.removeTag("ntmContagion");
+            if(nbt.isEmpty()) stack.setTagCompound(null);
+        }
+    }
 
 	@Override
 	public void networkUnpack(NBTTagCompound data) {
+        this.progress = data.getInteger("progress");
 		this.power = data.getLong("power");
 		this.isOn = data.getBoolean("isOn");
-		if(data.hasKey("tanks"))
+        this.isOk = data.getBoolean("isOk");
+        this.isDoingSomething = data.getBoolean("isDo");
+        if(data.hasKey("inventory"))
+            this.inventory.deserializeNBT(data.getCompoundTag("inventory"));
+        if(data.hasKey("tanks"))
 			FFUtils.deserializeTankArray(data.getTagList("tanks", 10), tanks);
 	}
 
 	private void sendSAFEPower(){
-		this.sendPower(world, pos.add(7, -1, 0), Library.POS_X);
-		this.sendPower(world, pos.add(-7, -1, 0), Library.NEG_X);
-		this.sendPower(world, pos.add(0, -1, 7), Library.POS_Z);
-		this.sendPower(world, pos.add(0, -1, -7), Library.NEG_Z);
+		this.sendPower(world, pos.add(7, 1, 0), Library.POS_X);
+		this.sendPower(world, pos.add(-7, 1, 0), Library.NEG_X);
+		this.sendPower(world, pos.add(0,  1, 7), Library.POS_Z);
+		this.sendPower(world, pos.add(0, 1, -7), Library.NEG_Z);
+        this.sendPower(world, pos.add(7, -3, 0), Library.POS_X);
+        this.sendPower(world, pos.add(-7, -3, 0), Library.NEG_X);
+        this.sendPower(world, pos.add(0, -3, 7), Library.POS_Z);
+        this.sendPower(world, pos.add(0, -3, -7), Library.NEG_Z);
 	}
 
 	private void tryGrowCore(){
@@ -244,25 +311,13 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 		return (power / 100 * i) / (maxPower / 100);
 	}
 
-	public void fillPlasma() {
-		if(!this.world.isRemote)
-			FWatz.fillPlasma(world, pos);
-	}
-
-	public void emptyPlasma() {
-		if(!this.world.isRemote)
-			FWatz.emptyPlasma(world, pos);
-	}
-
-	public boolean isRunning() {
-		return FWatz.getPlasma(world, pos) && this.isStructureValid(world);
+    public int getProgressScaled(int i) {
+		return (progress * i) / maxProgress;
 	}
 
 	protected boolean inputValidForTank(int tank, int slot) {
 		if(tanks[tank] != null) {
-			if(inventory.getStackInSlot(slot).getItem() == ModItems.fluid_barrel_infinite || isValidFluidForTank(tank, FluidUtil.getFluidContained(inventory.getStackInSlot(slot)))) {
-				return true;
-			}
+            return inventory.getStackInSlot(slot).getItem() == ModItems.fluid_barrel_infinite || isValidFluidForTank(tank, FluidUtil.getFluidContained(inventory.getStackInSlot(slot)));
 		}
 		return false;
 	}
@@ -308,14 +363,40 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 
 	@Override
 	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 3) {
-			return;
-		} else {
+		if(tags.length == 3) {
 			tanks[0].readFromNBT(tags[0]);
 			tanks[1].readFromNBT(tags[1]);
 			tanks[2].readFromNBT(tags[2]);
 		}
 	}
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+        return new int[] {0, 2, 3, 4, 5, 6};
+    }
+
+    @Override
+    public boolean isItemValidForSlot(int i, ItemStack stack) {
+        if(stack.getItem() instanceof ItemFWatzCore){
+            return i == 2;
+        }
+        if(stack.getItem() instanceof IBatteryItem){
+			return i == 0;
+		}
+		if(FluidUtil.getFluidContained(stack) != null && FluidUtil.getFluidContained(stack).getFluid() == ModForgeFluids.amat){
+        return i == 3;
+		}
+		if(FluidUtil.getFluidContained(stack) != null && FluidUtil.getFluidContained(stack).getFluid() == ModForgeFluids.aschrab){
+        return i == 4;
+		}
+		return false;
+    }
+
+    @Override
+    public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
+        if(slot == 2 && itemStack.getItem() instanceof ItemFWatzCore core && !core.isBaby) return true;
+        return slot == 5 || slot == 6;
+    }
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
@@ -338,4 +419,56 @@ public class TileEntityFWatzCore extends TileEntityLoadedBase implements IContro
 	public long getMaxPower() {
 		return maxPower;
 	}
+
+    AxisAlignedBB bb = null;
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if(bb == null) {
+            bb = new AxisAlignedBB(pos.getX() + 0.5 - 8, pos.getY() + 0.5 - 3, pos.getZ() + 0.5 - 8, pos.getX() + 0.5 + 8, pos.getY() + 0.5 + 3, pos.getZ() + 0.5 + 8);
+        }
+
+        return bb;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
+    }
+
+    public static void doGravityStuff(World world, float range, float deathRadius, float posX, float posY, float posZ, double strength){
+        List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(posX - range, posY - range, posZ - range, posX + range, posY + range, posZ + range));
+
+        for(Entity e : entities) {
+            if(Library.isCreative(e))
+                continue;
+
+            Vec3 vec = Vec3.createVectorHelper(posX - e.posX, posY - e.posY, posZ - e.posZ);
+
+            double dist = vec.length();
+
+            if(dist > range)
+                continue;
+
+            vec = vec.normalize();
+
+            if(!(e instanceof EntityItem))
+                vec.rotateAroundY((float)Math.toRadians(15));
+            double r2 = Math.max(dist * dist, 1);
+            e.motionX += vec.xCoord * strength / r2;
+            e.motionY += vec.yCoord * strength * 2 / r2;
+            e.motionZ += vec.zCoord * strength / r2;
+
+            if(e instanceof EntityBlackHole)
+                continue;
+
+            if(dist < deathRadius) {
+                e.attackEntityFrom(ModDamageSource.blackhole, 1000);
+
+                if(!(e instanceof EntityLivingBase))
+                    e.setDead();
+            }
+        }
+    }
 }

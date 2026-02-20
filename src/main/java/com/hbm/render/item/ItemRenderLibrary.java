@@ -1419,6 +1419,8 @@ public class ItemRenderLibrary {
 		};
 		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod), rbmkRod);
 		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod_mod), rbmkRod);
+		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod_heatproof), rbmkRod);
+		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod_mod_heatproof), rbmkRod);
 		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod_reasim), rbmkRod);
 		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_rod_reasim_mod), rbmkRod);
 		renderers.put(Item.getItemFromBlock(ModBlocks.rbmk_control), rbmkControl);

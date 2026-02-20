@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 public class CraneGrabber extends BlockCraneBase {
     public CraneGrabber(Material materialIn, String s) {
         super(materialIn);
-        this.setUnlocalizedName(s);
+        this.setTranslationKey(s);
         this.setRegistryName(s);
         ModBlocks.ALL_BLOCKS.add(this);
     }
@@ -29,7 +29,7 @@ public class CraneGrabber extends BlockCraneBase {
         TileEntity tileentity = world.getTileEntity(pos);
 
         if(tileentity instanceof TileEntityCraneGrabber) {
-            InventoryHelper.dropInventoryItems(world, pos, (TileEntityCraneGrabber) tileentity);
+            InventoryHelper.dropInventoryItems(world, pos, tileentity, 9, 10);
         }
         super.breakBlock(world, pos, state);
     }

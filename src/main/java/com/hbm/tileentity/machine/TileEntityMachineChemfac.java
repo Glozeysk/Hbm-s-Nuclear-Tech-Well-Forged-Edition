@@ -14,6 +14,7 @@ import com.hbm.lib.Library;
 import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.tileentity.machine.TileEntityMachineChemplantBase.TypedFluidTank;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -65,6 +66,20 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 			}
 
 			@Override
+			public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+				if(canInsertItem(slot, stack, stack.getCount()))
+					return super.insertItem(slot, stack, simulate);
+				return stack;
+			}
+
+			@Override
+			public ItemStack extractItem(int slot, int amount, boolean simulate) {
+				if(canExtractItem(slot, inventory.getStackInSlot(slot), amount))
+					return super.extractItem(slot, amount, simulate);
+				return ItemStack.EMPTY;
+			}
+
+			@Override
 			public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
 				super.setStackInSlot(slot, stack);
 				if(!stack.isEmpty() && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
@@ -73,6 +88,22 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 			}
 		};
 		upgradeManager = new UpgradeManager();
+	}
+
+	@Override
+	public boolean canInsertItem(int slot, ItemStack itemStack, int amount){
+		if(slot == 13 || slot == 22 || slot == 31 || slot == 40 || slot == 49 || slot == 58 || slot == 67 || slot == 76) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
+		if(slot == 13 || slot == 22 || slot == 31 || slot == 40 || slot == 49 || slot == 58 || slot == 67 || slot == 76) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

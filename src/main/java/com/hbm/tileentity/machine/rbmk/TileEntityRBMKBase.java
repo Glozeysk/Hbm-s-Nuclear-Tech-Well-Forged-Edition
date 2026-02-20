@@ -89,6 +89,9 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 	 * @return
 	 */
 	public double maxHeat() {
+		if(isHeatproof())
+			return 3000D;
+
 		return 1500D;
 	}
 	
@@ -97,7 +100,7 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 	 * @return
 	 */
 	public double passiveCooling() {
-		return RBMKDials.getPassiveCooling(world); //default: 5.0D
+		return RBMKDials.getPassiveCooling(world);
 	}
 	
 	//necessary checks to figure out whether players are close enough to ensure that the reactor can be safely used
@@ -230,6 +233,11 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 		
 		int members = rec.size();
 		double stepSize = RBMKDials.getColumnHeatFlow(world);
+		if(isHeatproof()) {
+			stepSize = RBMKDials.getColumnHeatFlow(world) * 2D;
+		} else {
+			stepSize = RBMKDials.getColumnHeatFlow(world);
+		}
 		
 		if(members > 1) {
 			
@@ -353,8 +361,8 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 			mc.fontRenderer.drawString(title, pX + 1, pZ - 19, 0x006000);
 			mc.fontRenderer.drawString(title, pX, pZ - 20, 0x00FF00);
 
-			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getUnlocalizedName() + ".name"), pX + 1, pZ - 9, 0x606000);
-			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getUnlocalizedName() + ".name"), pX, pZ - 10, 0xffff00);
+			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), pX + 1, pZ - 9, 0x606000);
+			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), pX, pZ - 10, 0xffff00);
 			
 			String[] ents = new String[keys.size()];
 			keys.toArray(ents);
@@ -548,6 +556,10 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 	}
 	
 	public boolean isModerated() {
+		return false;
+	}
+
+	public boolean isHeatproof() {
 		return false;
 	}
 	

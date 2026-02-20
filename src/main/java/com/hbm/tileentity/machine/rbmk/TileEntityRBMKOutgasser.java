@@ -50,6 +50,11 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 	}
 
 	@Override
+	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+		return new int[] { 0, 1 };
+	}
+
+	@Override
 	public String getName() {
 		return "container.rbmkOutgasser";
 	}
@@ -299,6 +304,11 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		inventory.setStackInSlot(1, ItemStack.EMPTY);
 		this.markDirty();
 	}
+
+	// @Override
+	// public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+	// 	return new int[] { 0, 1 };
+	// }
 
 	// control panel
 	@Override

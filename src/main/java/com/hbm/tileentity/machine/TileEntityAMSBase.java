@@ -261,15 +261,15 @@ public class TileEntityAMSBase extends TileEntity implements ITickable, IFluidHa
 						tanks[2].drain((int)(fuelBase * fuelMod), true);
 						tanks[3].drain((int)(fuelBase * fuelMod), true);
 						
-						radiation();
+						// radiation();
 
 						if(heat > maxHeat) {
-							explode();
+							// explode();
 							heat = maxHeat;
 						}
 						
-						if(field <= 0)
-							explode();
+						// if(field <= 0)
+						// 	explode();
 					}
 				}
 				

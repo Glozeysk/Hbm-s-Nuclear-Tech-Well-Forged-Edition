@@ -8,6 +8,8 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKRod;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.interfaces.IControlReceiver;
+import com.hbm.interfaces.ICopiable;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.ForgeDirection;
@@ -15,6 +17,7 @@ import com.hbm.saveddata.RadiationSavedData;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
 import com.hbm.tileentity.machine.rbmk.IRBMKLoadable;
 
@@ -28,8 +31,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable {
+public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, ICopiable, IControlReceiver {
 	
 	//amount of "neutron energy" buffered for the next tick to use for the reaction
 	public double fluxFast;
@@ -44,6 +49,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	public float cherenkovR;
 	public float cherenkovG;
 	public float cherenkovB;
+	public volatile int DepletionToExtract = 50;
 
 
 	public TileEntityRBMKRod() {
@@ -54,10 +60,23 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	public String getName() {
 		return "container.rbmkRod";
 	}
+
+	public boolean getDepletion(ItemStack stack) {
+		ItemRBMKRod rod = ((ItemRBMKRod)inventory.getStackInSlot(0).getItem());
+		if(((((rod.yield - ItemRBMKRod.getYield(stack)) / rod.yield) * 100000) / 1000) >= DepletionToExtract){
+			return true;
+		}
+		return false;
+	}
 	
 	@Override
 	public boolean isModerated() {
 		return ((RBMKRod)this.getBlockType()).moderated;
+	}
+
+	@Override
+	public boolean isHeatproof() {
+		return ((RBMKRod)this.getBlockType()).heatproof;
 	}
 
 	@SuppressWarnings("incomplete-switch") //shut the fuck up
@@ -126,13 +145,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 				super.update();
 			}
 		}
-	}
-
-	@Override
-	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
-		if(itemStack.getItem() instanceof ItemRBMKRod)
-			return !(ItemRBMKRod.getMeltdownPercent(itemStack) > 0);
-		return true;
 	}
 	
 	/**
@@ -265,6 +277,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 
 		this.fluxFast = nbt.getDouble("fluxFast");
 		this.fluxSlow = nbt.getDouble("fluxSlow");
+		DepletionToExtract = nbt.getInteger("DepletionToExtract");
 		this.hasRod = nbt.getBoolean("hasRod");
 		this.fuelR = nbt.getFloat("fuelR");
 		this.fuelG = nbt.getFloat("fuelG");
@@ -280,6 +293,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 
 		nbt.setDouble("fluxFast", this.fluxFast);
 		nbt.setDouble("fluxSlow", this.fluxSlow);
+		nbt.setInteger("DepletionToExtract", DepletionToExtract);
 		nbt.setBoolean("hasRod", this.hasRod);
 		nbt.setFloat("fuelR", this.fuelR);
 		nbt.setFloat("fuelG", this.fuelG);
@@ -288,6 +302,11 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		nbt.setFloat("cherenkovG", this.cherenkovG);
 		nbt.setFloat("cherenkovB", this.cherenkovB);
 		return nbt;
+	}
+
+	@Override
+	public boolean hasPermission(EntityPlayer player) {
+		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
 	}
 	
 	public void getDiagData(NBTTagCompound nbt) {
@@ -322,7 +341,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		
 		boolean corium = inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod;
 		
-		if(corium && inventory.getStackInSlot(0).getItem() == ModItems.rbmk_fuel_drx) 
+		if(corium && (inventory.getStackInSlot(0).getItem() == ModItems.rbmk_fuel_drx || inventory.getStackInSlot(0).getItem() == ModItems.rbmk_fuel_spk)) 
 			RBMKBase.digamma = true;
 		
 		inventory.setStackInSlot(0, ItemStack.EMPTY);
@@ -375,7 +394,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		if(inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
 			
 			ItemRBMKRod rod = ((ItemRBMKRod)inventory.getStackInSlot(0).getItem());
-			data.setString("rod_name", rod.getUnlocalizedName());
+			data.setString("rod_name", rod.getTranslationKey());
 			data.setDouble("enrichment", ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0)));
 			data.setDouble("xenon", ItemRBMKRod.getPoison(inventory.getStackInSlot(0)));
 			data.setDouble("c_heat", ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)));
@@ -422,7 +441,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 
 		if (inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
 			ItemRBMKRod rod = ((ItemRBMKRod)inventory.getStackInSlot(0).getItem());
-			data.put("rod_name", new DataValueString(rod.getUnlocalizedName()));
+			data.put("rod_name", new DataValueString(rod.getTranslationKey()));
 			data.put("enrichment", new DataValueFloat((float) ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0))));
 			data.put("xenon", new DataValueFloat((float) ItemRBMKRod.getPoison(inventory.getStackInSlot(0))));
 			data.put("c_heat", new DataValueFloat((float) ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0))));
@@ -433,5 +452,54 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		data.put("flux", new DataValueFloat((float) this.fluxOut));
 
 		return data;
+	}
+
+	@Override
+    public void receiveControl(NBTTagCompound data) {
+        if (data.hasKey("minus")) {
+            if (this.DepletionToExtract > 5) {
+                this.DepletionToExtract -= 5;
+            } else if (this.DepletionToExtract > 1) {
+                this.DepletionToExtract -= 4;
+            }
+        }
+        
+        if (data.hasKey("plus")) {
+            if (this.DepletionToExtract == 1) {
+                this.DepletionToExtract += 4;
+            } else if (this.DepletionToExtract >= 5 && this.DepletionToExtract < 95) {
+                this.DepletionToExtract += 5;
+            }
+        }
+        
+        this.DepletionToExtract = MathHelper.clamp(this.DepletionToExtract, 1, 95);
+        this.markChanged();
+    }
+
+	@Override
+    public NBTTagCompound getSettings(World world, int x, int y, int z) {
+        NBTTagCompound data = new NBTTagCompound();
+        data.setInteger("DepletionToExtract", DepletionToExtract);
+        return data;
+    }
+
+    @Override
+    public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+        if(nbt.hasKey("DepletionToExtract")) {
+            this.DepletionToExtract = MathHelper.clamp(nbt.getInteger("DepletionToExtract"), 1, 95);
+        }
+    }
+
+	@Override
+	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+		return new int[] { 0 };
+	}
+
+	@Override
+	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
+		if(itemStack.getItem() instanceof ItemRBMKRod && this.getDepletion(itemStack)) {
+			return true;
+		}
+		return false;
 	}
 }

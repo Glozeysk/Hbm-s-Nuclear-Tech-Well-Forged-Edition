@@ -53,7 +53,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase implements ITicka
 		boolean flag = this.hasPower();
         boolean extension = world.getBlockState(pos.up()).getBlock() == ModBlocks.machine_difurnace_ext;
 
-		if(this.dualPower > 0) {
+		if(this.dualPower > 0 && canProcess()) {
 			this.dualPower--;
 		}
 		int itemPower = DiFurnaceRecipes.getItemPower(inventory.getStackInSlot(2));

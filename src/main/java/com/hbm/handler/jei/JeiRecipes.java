@@ -885,7 +885,7 @@ public class JeiRecipes {
 					totalWeight += o.weight;
 				}
 				
-				ItemStack input = ItemFluidIcon.getStackWithQuantity(f, MachineRecipes.getFluidConsumedGasCent(f) * totalWeight);
+				ItemStack input = ItemFluidIcon.getStackWithQuantity(f, MachineRecipes.getFluidConsumedGasCent(f));
 				
 				List<ItemStack> result = new ArrayList<ItemStack>(4);
 				

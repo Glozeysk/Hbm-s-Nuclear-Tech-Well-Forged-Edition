@@ -254,6 +254,7 @@ import com.hbm.inventory.BedrockOreRegistry;
 import com.hbm.inventory.control_panel.ControlEvent;
 import com.hbm.inventory.control_panel.ControlRegistry;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ItemModLens;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.HbmWorld;
 import com.hbm.lib.Library;
@@ -293,8 +294,14 @@ import com.hbm.tileentity.network.energy.TileEntityCableSwitch;
 import com.hbm.tileentity.network.energy.TileEntityMachineDetector;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk2;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk3;
+import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk3;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
+import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk4;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2Solid;
 import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk2Solid;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk3Solid;
+import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk3Solid;
 import com.hbm.tileentity.deco.TileEntityDecoBlock;
 import com.hbm.tileentity.deco.TileEntityDecoBlockAlt;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
@@ -470,11 +477,15 @@ public class MainRegistry {
 	
 	// Tool Materials
 	public static ToolMaterial enumToolMaterialSchrabidium = EnumHelper.addToolMaterial(RefStrings.MODID + ":SCHRABIDIUM", 4, 10000, 50.0F, 100.0F, 200);
+	public static ToolMaterial enumToolMaterialSchrabidiumPaxel = EnumHelper.addToolMaterial(RefStrings.MODID + ":SCHRABIDIUMPAXEL", 4, 20000, 50.0F, 100.0F, 200);
 	public static ToolMaterial enumToolMaterialHammer = EnumHelper.addToolMaterial(RefStrings.MODID + ":SCHRABIDIUMHAMMER", 3, 0, 50.0F, 999999996F, 200);
 	public static ToolMaterial enumToolMaterialChainsaw = EnumHelper.addToolMaterial(RefStrings.MODID + ":CHAINSAW", 3, 1500, 50.0F, 22.0F, 0);
 	public static ToolMaterial enumToolMaterialSteel = EnumHelper.addToolMaterial(RefStrings.MODID + ":STEEL", 2, 500, 7.5F, 2.0F, 10);
 	public static ToolMaterial enumToolMaterialTitanium = EnumHelper.addToolMaterial(RefStrings.MODID + ":TITANIUM", 2, 750, 9.0F, 2.5F, 15);
 	public static ToolMaterial enumToolMaterialAlloy = EnumHelper.addToolMaterial(RefStrings.MODID + ":ALLOY", 3, 2000, 15.0F, 5.0F, 5);
+	public static ToolMaterial enumToolMaterialAlloyHammer = EnumHelper.addToolMaterial(RefStrings.MODID + ":ALLOYHAMMER", 3, 3000, 15.0F, 5.0F, 5);
+	public static ToolMaterial enumToolMaterialAlloyExcavator = EnumHelper.addToolMaterial(RefStrings.MODID + ":ALLOYEXCAVATOR", 3, 3000, 15.0F, 5.0F, 5);
+	public static ToolMaterial enumToolMaterialAlloyPaxel = EnumHelper.addToolMaterial(RefStrings.MODID + ":ALLOYPAXEL", 3, 5000, 15.0F, 5.0F, 5);
 	public static ToolMaterial enumToolMaterialCmb = EnumHelper.addToolMaterial(RefStrings.MODID + ":CMB", 4, 8500, 40.0F, 55F, 100);
 	public static ToolMaterial enumToolMaterialElec = EnumHelper.addToolMaterial(RefStrings.MODID + ":ELEC", 2, 0, 30.0F, 12.0F, 2);
 	public static ToolMaterial enumToolMaterialDesh = EnumHelper.addToolMaterial(RefStrings.MODID + ":DESH", 2, 0, 7.5F, 2.0F, 10);
@@ -581,11 +592,15 @@ public class MainRegistry {
 		enumArmorMaterialAusIII.setRepairItem(new ItemStack(ModItems.ingot_australium));
 		enumArmorMaterialSecurity.setRepairItem(new ItemStack(ModItems.plate_kevlar));
 		enumToolMaterialSchrabidium.setRepairItem(new ItemStack(ModItems.ingot_schrabidium));
+		enumToolMaterialSchrabidiumPaxel.setRepairItem(new ItemStack(ModItems.ingot_schrabidium));
 		enumToolMaterialHammer.setRepairItem(new ItemStack(Item.getItemFromBlock(ModBlocks.block_schrabidium)));
 		enumToolMaterialChainsaw.setRepairItem(new ItemStack(ModItems.ingot_steel));
 		enumToolMaterialTitanium.setRepairItem(new ItemStack(ModItems.ingot_titanium));
 		enumToolMaterialSteel.setRepairItem(new ItemStack(ModItems.ingot_steel));
 		enumToolMaterialAlloy.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
+		enumToolMaterialAlloyHammer.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
+		enumToolMaterialAlloyExcavator.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
+		enumToolMaterialAlloyPaxel.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
 		enumToolMaterialCmb.setRepairItem(new ItemStack(ModItems.ingot_combine_steel));
 		enumToolMaterialBottleOpener.setRepairItem(new ItemStack(ModItems.plate_steel));
 		enumToolMaterialDesh.setRepairItem(new ItemStack(ModItems.ingot_desh));
@@ -600,12 +615,14 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityMachineAssembler.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_assembler"));
 		GameRegistry.registerTileEntity(TileEntityDiFurnace.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace"));
 		GameRegistry.registerTileEntity(TileEntityDiFurnaceRTG.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace_rtg"));
+		GameRegistry.registerTileEntity(TileEntityMachineDiFurnaceSPK.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace_spk"));
 		GameRegistry.registerTileEntity(TileEntityMachinePress.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_press"));
 		GameRegistry.registerTileEntity(TileEntityTestRender.class, new ResourceLocation(RefStrings.MODID, "tileentity_testrenderer"));
 		GameRegistry.registerTileEntity(TileEntityMachineChemplant.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_chemplant"));
 		GameRegistry.registerTileEntity(TileEntityMachineChemfac.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_chemfac"));
 		GameRegistry.registerTileEntity(TileEntityMachineMixer.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_mixer"));
 		GameRegistry.registerTileEntity(TileEntityDummyPort.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy_port"));
+		GameRegistry.registerTileEntity(TileEntityDummyPortNew.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy_portnew"));
 		GameRegistry.registerTileEntity(TileEntityNukeMan.class, new ResourceLocation(RefStrings.MODID, "tileentity_nuke_man"));
 		GameRegistry.registerTileEntity(TileEntityNukeFleija.class, new ResourceLocation(RefStrings.MODID, "tileentity_nuke_fleija"));
 		GameRegistry.registerTileEntity(TileEntityMachineCoal.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_coal"));
@@ -645,6 +662,7 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityRailgun.class, new ResourceLocation(RefStrings.MODID, "tileentity_railgun"));
 		GameRegistry.registerTileEntity(TileEntityMachineReactor.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_reactor"));
 		GameRegistry.registerTileEntity(TileEntityMachineShredder.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_shredder"));
+		GameRegistry.registerTileEntity(TileEntityMachineShreddermk2.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_shreddermk2"));
 		GameRegistry.registerTileEntity(TileEntityDummyFluidPort.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy_fluid_port"));
 		GameRegistry.registerTileEntity(TileEntityMachineFluidTank.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_fluidtank"));
 		GameRegistry.registerTileEntity(TileEntityCableSwitch.class, new ResourceLocation(RefStrings.MODID, "tileentity_cable_switch"));
@@ -673,6 +691,7 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityMachineArcFurnace.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_arc_furnace"));
 		GameRegistry.registerTileEntity(TileEntityMachineElectricFurnace.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_electric_furnace"));
 		GameRegistry.registerTileEntity(TileEntityWasteDrum.class, new ResourceLocation(RefStrings.MODID, "tileentity_waste_drum"));
+		GameRegistry.registerTileEntity(TileEntityWasteDrumt2.class, new ResourceLocation(RefStrings.MODID, "tileentity_waste_drum_t2"));
 		GameRegistry.registerTileEntity(TileEntityMachineOilWell.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_oil_well"));
 		GameRegistry.registerTileEntity(TileEntityMachinePumpjack.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_pumpjack"));
 		GameRegistry.registerTileEntity(TileEntityMachineFrackingTower.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_fracking_tower"));
@@ -730,7 +749,10 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityObjTester.class, new ResourceLocation(RefStrings.MODID, "tileentity_obj_tester"));
 		GameRegistry.registerTileEntity(TileEntityDecoBlockAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_deco_block_alt"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk2.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk2"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk3.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk3"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk4.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk4"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk2Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk2_solid"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk3Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk3_solid"));
 		GameRegistry.registerTileEntity(TileEntityBarrel.class, new ResourceLocation(RefStrings.MODID, "tileentity_barrel"));
 		GameRegistry.registerTileEntity(TileEntityTesla.class, new ResourceLocation(RefStrings.MODID, "tileentity_tesla"));
 		GameRegistry.registerTileEntity(TileEntityCyberCrab.class, new ResourceLocation(RefStrings.MODID, "tileentity_cybercrab"));
@@ -742,7 +764,10 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntitySoyuzCapsule.class, new ResourceLocation(RefStrings.MODID, "tileentity_soyuz_capsule"));
 		GameRegistry.registerTileEntity(TileEntitySoyuzLauncher.class, new ResourceLocation(RefStrings.MODID, "tileentity_soyuz_launcher"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidSuccMk2.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk2"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidSuccMk3.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk3"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidSuccMk4.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk4"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidSuccMk2Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk2_solid"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidSuccMk3Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk3_solid"));
 		GameRegistry.registerTileEntity(TileEntityMachineCrystallizer.class, new ResourceLocation(RefStrings.MODID, "tileentity_acidomatic"));
 		GameRegistry.registerTileEntity(TileEntitySoyuzStruct.class, new ResourceLocation(RefStrings.MODID, "tileentity_soyuz_struct"));
 		GameRegistry.registerTileEntity(TileEntityITERStruct.class, new ResourceLocation(RefStrings.MODID, "tileentity_iter_struct"));
@@ -812,6 +837,7 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityMachineBAT9000.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_bat9000"));
 		GameRegistry.registerTileEntity(TileEntityMachineOrbus.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_orbus"));
 		GameRegistry.registerTileEntity(TileEntityCondenser.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_condenser"));
+		GameRegistry.registerTileEntity(TileEntityMachineAutocrafter.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_autocrafter"));
 		GameRegistry.registerTileEntity(TileEntityChungus.class, new ResourceLocation(RefStrings.MODID, "tileentity_chungus"));
 		GameRegistry.registerTileEntity(TileEntitySpacer.class, new ResourceLocation(RefStrings.MODID, "tileentity_spacer"));
 		GameRegistry.registerTileEntity(TileEntityMachineFractionTower.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_frac_tower"));
@@ -833,6 +859,8 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityRadioTorchReceiver.class, new ResourceLocation(RefStrings.MODID, "tileentity_radio_torch_receiver"));
 		GameRegistry.registerTileEntity(TileEntityCraneExtractor.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector"));
 		GameRegistry.registerTileEntity(TileEntityCraneInserter.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneinserter"));
+		GameRegistry.registerTileEntity(TileEntityCraneExtractorAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt"));
+		GameRegistry.registerTileEntity(TileEntityCraneInserterAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneinserter_alt"));
 		GameRegistry.registerTileEntity(TileEntityCraneSplitter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranesplitter"));
 		GameRegistry.registerTileEntity(TileEntityCraneBoxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneboxer"));
 		GameRegistry.registerTileEntity(TileEntityCraneUnboxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneunboxer"));
@@ -1113,9 +1141,13 @@ public class MainRegistry {
 		FluidContainerRegistry.registerContainer(ModItems.nugget_mercury, null, new FluidStack(ModForgeFluids.mercury, 125));
 		FluidContainerRegistry.registerContainer(ModItems.bottle_mercury, Items.GLASS_BOTTLE, new FluidStack(ModForgeFluids.mercury, 1000));
 		FluidContainerRegistry.registerContainer(ModItems.particle_hydrogen, ModItems.particle_empty, new FluidStack(ModForgeFluids.hydrogen, 1000));
+		FluidContainerRegistry.registerContainer(ModItems.particle_amat_alt, ModItems.particle_empty, new FluidStack(ModForgeFluids.amat, 1000));
+		FluidContainerRegistry.registerContainer(ModItems.particle_aschrab_alt, ModItems.particle_empty, new FluidStack(ModForgeFluids.aschrab, 1000));
 		FluidContainerRegistry.registerContainer(ModItems.particle_amat, ModItems.particle_empty, new FluidStack(ModForgeFluids.amat, 1000));
 		FluidContainerRegistry.registerContainer(ModItems.particle_aschrab, ModItems.particle_empty, new FluidStack(ModForgeFluids.aschrab, 1000));
 		FluidContainerRegistry.registerContainer(Item.getItemFromBlock(ModBlocks.ore_gneiss_gas), Item.getItemFromBlock(ModBlocks.stone_gneiss), new FluidStack(ModForgeFluids.petroleum, 250));
+		FluidContainerRegistry.registerContainer(ModItems.canned_diesel, ModItems.can_key, new FluidStack(ModForgeFluids.diesel, 1000));
+		FluidContainerRegistry.registerContainer(ModItems.canned_kerosene, ModItems.can_key, new FluidStack(ModForgeFluids.kerosene, 1000));
 		
 		//Drillgon200: expand the max entity radius for the hunter chopper
 		if(World.MAX_ENTITY_RADIUS < 5)
@@ -1125,6 +1157,7 @@ public class MainRegistry {
 		NTMCraftTweaker.applyPostInitActions();
 		AssemblerRecipes.generateList();
 		HeatRecipes.setFluidsForRBMKLoader();
+		ItemModLens.initBlockList();
 		if(event.getSide() == Side.CLIENT) {
 			BedrockOreRegistry.registerOreColors();
 			ModForgeFluids.registerFluidColors();

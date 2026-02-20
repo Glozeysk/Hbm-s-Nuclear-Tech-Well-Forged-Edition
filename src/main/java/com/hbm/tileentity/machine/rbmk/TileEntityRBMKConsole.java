@@ -93,7 +93,8 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 					columns[index].data.setDouble("maxHeat", rbmk.maxHeat());
 					columns[index].data.setDouble("realSimWater", rbmk.water);
 					columns[index].data.setDouble("realSimSteam", rbmk.steam);
-					if(rbmk.isModerated()) columns[index].data.setBoolean("moderated", true); //false is the default anyway and not setting it when we don't need to reduces cruft
+					if(rbmk.isModerated()) columns[index].data.setBoolean("moderated", true);
+					if(rbmk.isHeatproof()) columns[index].data.setBoolean("heatproof", true); //false is the default anyway and not setting it when we don't need to reduces cruft
 					
 				} else {
 					columns[index] = null;
@@ -335,7 +336,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 
 	@Override
 	public boolean hasPermission(EntityPlayer player) {
-		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).lengthVector() < 20;
+		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
 	}
 
 	@Override
@@ -539,6 +540,8 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 			
 			if(data.getBoolean("moderated"))
 				stats.add(TextFormatting.YELLOW + I18nUtil.resolveKey("rbmk.moderated"));
+			if(data.getBoolean("heatproof"))
+				stats.add(TextFormatting.RED + I18nUtil.resolveKey("rbmk.heatproof"));
 			
 			return stats;
 		}
@@ -641,6 +644,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 			data_table.put("realSimWater", column_data.getDouble("realSimWater"));
 			data_table.put("realSimSteam", column_data.getDouble("realSimSteam"));
 			data_table.put("moderated", column_data.getBoolean("moderated"));
+			data_table.put("heatproof", column_data.getBoolean("heatproof"));
 			data_table.put("level", column_data.getDouble("level"));
 			data_table.put("color", column_data.getShort("color"));
 			data_table.put("enrichment", column_data.getDouble("enrichment"));

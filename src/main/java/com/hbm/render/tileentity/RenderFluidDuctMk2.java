@@ -18,7 +18,7 @@ public class RenderFluidDuctMk2<T extends TileEntityFFDuctBaseMk2> extends TileE
 	
 	@Override
 	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-		if(te.getBlockType() == ModBlocks.fluid_duct_solid)
+		if(te.getBlockType() == ModBlocks.fluid_duct_solid || te.getBlockType() == ModBlocks.fluid_duct_solid_sealed || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid_sealed)
 			return;
 		GL11.glPushMatrix();
 		GlStateManager.enableLighting();
@@ -30,21 +30,41 @@ public class RenderFluidDuctMk2<T extends TileEntityFFDuctBaseMk2> extends TileE
 		boolean nY = te.connections[1] != null;
 		boolean pZ = te.connections[4] != null;
 		boolean nZ = te.connections[2] != null;
-		
+
 		int mask = 0 + (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
-		
+
 		GL11.glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
-		
-		if(te instanceof TileEntityFFDuctBaseMk2){
-			if(te.getType() != null){
-				FFUtils.setRGBFromHex(ModForgeFluids.getFluidColor(te.getType()));
-			}
-		}
+
+		// First pass - base texture without color tint
+		GlStateManager.color(1, 1, 1, 1);
 		if(te instanceof TileEntityFFFluidSuccMk2){
 			bindTexture(ResourceManager.pipe_neo_succ_tex);
 		} else {
 			bindTexture(ResourceManager.pipe_neo_tex);
 		}
+		renderParts(mask, pX, nX, pY, nY, pZ, nZ);
+
+		// Second pass - overlay with fluid color
+		if(te.getType() != null){
+			GlStateManager.enableBlend();
+			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			FFUtils.setRGBFromHex(ModForgeFluids.getFluidColor(te.getType()));
+			if(te instanceof TileEntityFFFluidSuccMk2){
+				bindTexture(ResourceManager.pipe_neo_overlay_tex);
+			} else {
+				bindTexture(ResourceManager.pipe_neo_tex);
+			}
+			renderParts(mask, pX, nX, pY, nY, pZ, nZ);
+			GlStateManager.disableBlend();
+		}
+
+		GlStateManager.shadeModel(GL11.GL_FLAT);
+		GlStateManager.color(1, 1, 1, 1);
+		GL11.glTranslated(-x - 0.5F, -y - 0.5F, -z - 0.5F);
+		GL11.glPopMatrix();
+	}
+
+	private void renderParts(int mask, boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
 		if(mask == 0) {
 			ResourceManager.pipe_neo.renderPart("pX");
 			ResourceManager.pipe_neo.renderPart("nX");
@@ -62,14 +82,13 @@ public class RenderFluidDuctMk2<T extends TileEntityFFDuctBaseMk2> extends TileE
 			ResourceManager.pipe_neo.renderPart("pZ");
 			ResourceManager.pipe_neo.renderPart("nZ");
 		} else {
-	
 			if(pX) ResourceManager.pipe_neo.renderPart("pX");
 			if(nX) ResourceManager.pipe_neo.renderPart("nX");
 			if(pY) ResourceManager.pipe_neo.renderPart("pY");
 			if(nY) ResourceManager.pipe_neo.renderPart("nY");
 			if(pZ) ResourceManager.pipe_neo.renderPart("nZ");
 			if(nZ) ResourceManager.pipe_neo.renderPart("pZ");
-	
+
 			if(!pX && !pY && !pZ) ResourceManager.pipe_neo.renderPart("ppn");
 			if(!pX && !pY && !nZ) ResourceManager.pipe_neo.renderPart("ppp");
 			if(!nX && !pY && !pZ) ResourceManager.pipe_neo.renderPart("npn");
@@ -78,11 +97,6 @@ public class RenderFluidDuctMk2<T extends TileEntityFFDuctBaseMk2> extends TileE
 			if(!pX && !nY && !nZ) ResourceManager.pipe_neo.renderPart("pnp");
 			if(!nX && !nY && !pZ) ResourceManager.pipe_neo.renderPart("nnn");
 			if(!nX && !nY && !nZ) ResourceManager.pipe_neo.renderPart("nnp");
-
 		}
-		GlStateManager.shadeModel(GL11.GL_FLAT);
-        GlStateManager.color(1, 1, 1, 1);
-		GL11.glTranslated(-x - 0.5F, -y - 0.5F, -z - 0.5F);
-		GL11.glPopMatrix();
-	}	
+	}
 }

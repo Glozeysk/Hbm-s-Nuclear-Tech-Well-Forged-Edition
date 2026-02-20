@@ -282,8 +282,8 @@ public class ModEventHandler {
 					return sta;
 				}
 			};
-			LootEntry entry = new LootEntryItem(content.theItemId.getItem(), content.itemWeight, 1, funcs, conds, content.theItemId.getUnlocalizedName() + "_loot");
-			LootPool pool = new LootPool(new LootEntry[]{entry}, new LootCondition[]{new RandomChanceWithLooting(0.25F, 0.1F)}, new RandomValueRange(1), new RandomValueRange(0), content.theItemId.getUnlocalizedName() + "_loot");
+			LootEntry entry = new LootEntryItem(content.theItemId.getItem(), content.itemWeight, 1, funcs, conds, content.theItemId.getTranslationKey() + "_loot");
+			LootPool pool = new LootPool(new LootEntry[]{entry}, new LootCondition[]{new RandomChanceWithLooting(0.25F, 0.1F)}, new RandomValueRange(1), new RandomValueRange(0), content.theItemId.getTranslationKey() + "_loot");
 			e.getTable().addPool(pool);
 		}
 	}
@@ -1021,23 +1021,24 @@ public class ModEventHandler {
 
 			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_JETPACK, props.getEnableBackpack()), playerMP);
 			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_HEAD, props.getEnableHUD()), playerMP);
+			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_GOGGLES, props.getEnableGoggles()), playerMP);
 			
 			if (GeneralConfig.enableWelcomeMessage) {
 				e.player.sendMessage(new TextComponentTranslation("chat.welcome"));
 			}
 
-			if(HTTPHandler.newVersion && GeneralConfig.changelog) {
-				e.player.sendMessage(new TextComponentTranslation("chat.newver", HTTPHandler.versionNumber));
-				e.player.sendMessage(new TextComponentTranslation("chat.curver", RefStrings.VERSION));
+			// if(HTTPHandler.newVersion && GeneralConfig.changelog) {
+			// 	e.player.sendMessage(new TextComponentTranslation("chat.newver", HTTPHandler.versionNumber));
+			// 	e.player.sendMessage(new TextComponentTranslation("chat.curver", RefStrings.VERSION));
 
-				if(HTTPHandler.changes != ""){
-					String[] lines = HTTPHandler.changes.split("\\$");
-					e.player.sendMessage(new TextComponentString("§6[Some of the new Features]§r"));//RefStrings.CHANGELOG
-					for(String w: lines){
-						e.player.sendMessage(new TextComponentString(w));//RefStrings.CHANGELOG
-					}
-				}
-			}
+			// 	if(HTTPHandler.changes != ""){
+			// 		String[] lines = HTTPHandler.changes.split("\\$");
+			// 		e.player.sendMessage(new TextComponentString("§6[Some of the new Features]§r"));//RefStrings.CHANGELOG
+			// 		for(String w: lines){
+			// 			e.player.sendMessage(new TextComponentString(w));//RefStrings.CHANGELOG
+			// 		}
+			// 	}
+			// }
 			
 			if(HTTPHandler.optifine){
 				e.player.sendMessage(new TextComponentString("Optifine detected, may cause compatibility issues. Check log for details."));

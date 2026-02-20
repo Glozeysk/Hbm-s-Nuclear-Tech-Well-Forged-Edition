@@ -5,6 +5,7 @@ import com.hbm.util.ItemStackUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.List;
 
@@ -133,6 +134,18 @@ public class ModulePatternMatcher {
                 List<String> keys = ItemStackUtil.getOreDictNames(input);
                 return keys.contains(mode);
         }
+    }
+
+    public boolean matchesFilter(ItemStackHandler inventory, ItemStack stack) {
+
+        for(int i = 0; i < 9; i++) {
+            ItemStack filter = inventory.getStackInSlot(i);
+
+            if(!filter.isEmpty() && this.isValidForFilter(filter, i, stack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void readFromNBT(NBTTagCompound nbt) {

@@ -7,6 +7,7 @@ import java.util.Random;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
+import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 
 import net.minecraft.block.Block;
@@ -20,13 +21,16 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class BlockDummyable extends BlockContainer {
 
@@ -35,7 +39,7 @@ public abstract class BlockDummyable extends BlockContainer {
 	
 	public BlockDummyable(Material materialIn, String s) {
 		super(materialIn);
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setTickRandomly(true);
 		
@@ -52,6 +56,7 @@ public abstract class BlockDummyable extends BlockContainer {
 	public static final int offset = 10;
 	//meta offset from dummy to extra rotation
 	public static final int extra = 6;
+	private static final long NO_CORE = Long.MIN_VALUE;
 		
 	public static boolean safeRem = false;
 	
@@ -92,6 +97,10 @@ public abstract class BlockDummyable extends BlockContainer {
     		world.setBlockToAir(pos);
     	}
 	}
+
+	protected int getMaxCoreSearchSteps() {
+        return 512;
+    }
 	
 	public int[] findCore(IBlockAccess world, int x, int y, int z) {
     	positions.clear();

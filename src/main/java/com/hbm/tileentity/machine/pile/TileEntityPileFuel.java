@@ -14,7 +14,7 @@ public class TileEntityPileFuel extends TileEntityPileBase implements IPileNeutr
 	public int neutrons;
 	public int lastNeutrons;
 	public int progress;
-	public static final int maxProgress = 100000;
+	public static final int maxProgress = 50000;
 
 	@Override
 	public void update() {

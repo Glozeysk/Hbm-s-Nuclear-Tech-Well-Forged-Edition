@@ -135,6 +135,8 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 
 			if(tankType == ModForgeFluids.nitan)
 				powerCap = maxPower * 10;
+			else if(tankType == ModForgeFluids.sparkfuel)
+				powerCap = maxPower * 20;
 			else
 				powerCap = maxPower;
 			

@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.hbm.items.ISatChip;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.missile.EntityMinerRocket;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemSatChip;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteMiner;
 import com.hbm.saveddata.satellites.SatelliteHorizons;
@@ -69,7 +69,7 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements I
 			data.markDirty();
 
 			if(data != null && !inventory.getStackInSlot(15).isEmpty()) {
-				int freq = ItemSatChip.getFreq(inventory.getStackInSlot(15));
+				int freq = ISatChip.getFreqS(inventory.getStackInSlot(15));
 
 				Satellite sat = data.getSatFromFreq(freq);
 

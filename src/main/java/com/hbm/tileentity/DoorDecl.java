@@ -728,7 +728,7 @@ public abstract class DoorDecl {
 		
 		@Override
 		public int timeToOpen() {
-			return 160;
+			return 20;
 		};
 		
 		@Override

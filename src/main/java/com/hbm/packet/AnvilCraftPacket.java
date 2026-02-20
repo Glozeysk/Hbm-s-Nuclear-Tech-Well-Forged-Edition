@@ -5,7 +5,6 @@ import com.hbm.inventory.AnvilRecipes;
 import com.hbm.inventory.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.container.ContainerAnvil;
 import com.hbm.main.AdvancementManager;
-import com.hbm.main.MainRegistry;
 import com.hbm.util.InventoryUtil;
 
 import io.netty.buffer.ByteBuf;
@@ -44,7 +43,7 @@ public class AnvilCraftPacket implements IMessage {
 		@Override
 		public IMessage onMessage(AnvilCraftPacket m, MessageContext ctx) {
 
-			ctx.getServerHandler().player.mcServer.addScheduledTask(() -> {
+			ctx.getServerHandler().player.server.addScheduledTask(() -> {
 				if(m.recipeIndex < 0 || m.recipeIndex >= AnvilRecipes.getConstruction().size()) //recipe is out of range -> bad
 					return;
 

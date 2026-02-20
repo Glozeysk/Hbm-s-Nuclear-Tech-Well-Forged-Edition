@@ -26,7 +26,7 @@ public class AssemblyTemplateRender extends TileEntityItemStackRenderer {
 	public void renderByItem(ItemStack stack) {
 		try{
 			if (stack.getItem() instanceof ItemAssemblyTemplate && type == TransformType.GUI) {
-				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+				if (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
 					GL11.glPushMatrix();
 					GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 					GL11.glTranslated(0.5, 0.5, 0);

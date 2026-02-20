@@ -43,6 +43,7 @@ import com.hbm.tileentity.machine.TileEntityCrateTungsten;
 import com.hbm.tileentity.machine.TileEntityCrateDesh;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
+import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceSPK;
 import com.hbm.tileentity.machine.TileEntityFWatzCore;
 import com.hbm.tileentity.machine.TileEntityForceField;
 import com.hbm.tileentity.machine.TileEntityHadron;
@@ -87,6 +88,7 @@ import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
 import com.hbm.tileentity.machine.TileEntityMachineSchrabidiumTransmutator;
 import com.hbm.tileentity.machine.TileEntityMachineSeleniumEngine;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
+import com.hbm.tileentity.machine.TileEntityMachineShreddermk2;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
 import com.hbm.tileentity.machine.TileEntityMachineTeleLinker;
 import com.hbm.tileentity.machine.TileEntityMachineTeleporter;
@@ -104,6 +106,7 @@ import com.hbm.tileentity.machine.TileEntitySoyuzCapsule;
 import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import com.hbm.tileentity.machine.TileEntityWasteDrum;
+import com.hbm.tileentity.machine.TileEntityWasteDrumt2;
 import com.hbm.tileentity.machine.TileEntityWatzCore;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBoiler;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
@@ -170,6 +173,10 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_rtg_difurnace: 
 			if(entity instanceof TileEntityDiFurnaceRTG) {
 				return new ContainerDiFurnaceRTG(player.inventory, (TileEntityDiFurnaceRTG) entity);
+			}
+		case ModBlocks.guiID_spk_difurnace: 
+			if(entity instanceof TileEntityMachineDiFurnaceSPK) {
+				return new ContainerMachineDiFurnaceSPK(player.inventory, (TileEntityMachineDiFurnaceSPK) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_assembler:
@@ -282,6 +289,11 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerMachineShredder(player.inventory, (TileEntityMachineShredder) entity);
 			}
 			return null;
+		case ModBlocks.guiID_machine_shreddermk2:
+			if(entity instanceof TileEntityMachineShreddermk2) {
+				return new ContainerMachineShreddermk2(player.inventory, (TileEntityMachineShreddermk2) entity);
+			}
+			return null;
 		case ModBlocks.guiID_machine_fluidtank:
 			if(entity instanceof TileEntityMachineFluidTank) {
 				return new ContainerMachineFluidTank(player.inventory, (TileEntityMachineFluidTank) entity);
@@ -375,6 +387,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_waste_drum:
 			if(entity instanceof TileEntityWasteDrum) {
 				return new ContainerWasteDrum(player.inventory, (TileEntityWasteDrum) entity);
+			}
+			return null;
+		case ModBlocks.guiID_waste_drum_t2:
+			if(entity instanceof TileEntityWasteDrumt2) {
+				return new ContainerWasteDrumt2(player.inventory, (TileEntityWasteDrumt2) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_well:
@@ -780,6 +797,10 @@ public class GuiHandler implements IGuiHandler {
 			if(entity instanceof TileEntityDiFurnaceRTG) {
 				return new GUIDiFurnaceRTG(player.inventory, (TileEntityDiFurnaceRTG) entity);
 			}
+		case ModBlocks.guiID_spk_difurnace:
+			if(entity instanceof TileEntityMachineDiFurnaceSPK) {
+				return new GUIMachineDiFurnaceSPK(player.inventory, (TileEntityMachineDiFurnaceSPK) entity);
+			}
 			return null;
 		case ModBlocks.guiID_machine_assembler:
 			if(entity instanceof TileEntityMachineAssembler) {
@@ -891,6 +912,11 @@ public class GuiHandler implements IGuiHandler {
 				return new GUIMachineShredder(player.inventory, (TileEntityMachineShredder) entity);
 			}
 			return null;
+		case ModBlocks.guiID_machine_shreddermk2:
+			if(entity instanceof TileEntityMachineShreddermk2) {
+				return new GUIMachineShreddermk2(player.inventory, (TileEntityMachineShreddermk2) entity);
+			}
+			return null;
 		case ModBlocks.guiID_machine_fluidtank:
 			if(entity instanceof TileEntityMachineFluidTank) {
 				return new GUIMachineFluidTank(player.inventory, (TileEntityMachineFluidTank) entity);
@@ -984,6 +1010,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_waste_drum:
 			if(entity instanceof TileEntityWasteDrum) {
 				return new GUIWasteDrum(player.inventory, (TileEntityWasteDrum) entity);
+			}
+			return null;
+		case ModBlocks.guiID_waste_drum_t2:
+			if(entity instanceof TileEntityWasteDrumt2) {
+				return new GUIWasteDrumt2(player.inventory, (TileEntityWasteDrumt2) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_well:
@@ -1354,6 +1385,8 @@ public class GuiHandler implements IGuiHandler {
 		// ITEM GUIS
 		case ModItems.guiID_item_folder:
 			return new GUIScreenTemplateFolder(player);
+		case ModItems.guiID_fluid_id:
+			return new GUIScreenFluidIdentifier(player);
 		case ModItems.guiID_item_designator:
 			return new GUIScreenDesignator(player);
 		case ModItems.guiID_item_sat_interface:

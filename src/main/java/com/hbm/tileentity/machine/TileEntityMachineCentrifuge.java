@@ -58,7 +58,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 	
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack) {
-		if(i == 2 || i == 3 || i == 4 || i == 5)
+		if(i == 2 || i == 3 || i == 4 || i == 5 || i == 6 || i == 7)
 		{
 			return false;
 		}

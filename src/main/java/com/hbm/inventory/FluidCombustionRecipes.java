@@ -46,6 +46,7 @@ public class FluidCombustionRecipes {
 		addBurnableFluid(ModForgeFluids.unsaturateds, 1_000);
 		addBurnableFluid(ModForgeFluids.nitan, 2_000);
 		addBurnableFluid(ModForgeFluids.balefire, 10_000);
+		addBurnableFluid(ModForgeFluids.sparkfuel, 25_000);
 		addBurnableFluid(ModForgeFluids.uu_matter, 50_000);
 
 		addBurnableFluid("liquidhydrogen", 5);

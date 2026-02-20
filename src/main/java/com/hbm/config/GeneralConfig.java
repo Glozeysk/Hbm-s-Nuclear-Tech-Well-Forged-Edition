@@ -17,11 +17,15 @@ import net.minecraftforge.fml.relauncher.Side;
 public class GeneralConfig {
 
 	public static double conversionRateHeToRF = 1.0F;
+	// public static boolean enablePacketThreading = true;
+	// public static int packetThreadingCoreCount = 1;
+	// public static int packetThreadingMaxCount = 2;
+	// public static boolean packetThreadingErrorBypass = false;
 	public static boolean enableDebugMode = false;
 	public static boolean enableSkybox = true;
 	public static boolean enableWelcomeMessage = true;
 	public static boolean enableMycelium = false;
-	public static boolean enablePlutoniumOre = false;
+	public static boolean enablePlutoniumOre = true;
 	public static boolean enableDungeons = true;
 	public static boolean enableMDOres = true;
 	public static boolean enableMines = true;
@@ -67,6 +71,7 @@ public class GeneralConfig {
 	public static boolean bulletHoleNormalMapping = true;
 	public static int flowingDecalAmountMax = 20;
 	public static boolean bloodFX = true;
+	public static int hintPos = 0;
 	public static int crucibleMaxCharges = 16;
 	public static boolean enableReEval = true;
 	
@@ -82,10 +87,14 @@ public class GeneralConfig {
 	
 	public static void loadFromConfig(Configuration config){
 		final String CATEGORY_GENERAL = "01_general";
+		// enablePacketThreading = config.get(CATEGORY_GENERAL, "0.01_enablePacketThreading", true).getBoolean(true);
+		// packetThreadingCoreCount = config.get(CATEGORY_GENERAL, "0.02_packetThreadingCoreCount", 1).getInt(1);
+		// packetThreadingMaxCount = config.get(CATEGORY_GENERAL, "0.03_packetThreadingMaxCount", 2).getInt(2);
+		// packetThreadingErrorBypass = config.get(CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false).getBoolean(false);
 		enableDebugMode = config.get(CATEGORY_GENERAL, "1.00_enableDebugMode", false).getBoolean(false);
 		enableSkybox = config.get(CATEGORY_GENERAL, "1.00_enableSkybox", true).getBoolean(true);
 		enableMycelium = config.get(CATEGORY_GENERAL, "1.01_enableMyceliumSpread", false).getBoolean(false);
-		enablePlutoniumOre = config.get(CATEGORY_GENERAL, "1.02_enablePlutoniumNetherOre", false).getBoolean(false);
+		enablePlutoniumOre = config.get(CATEGORY_GENERAL, "1.02_enablePlutoniumNetherOre", true).getBoolean(true);
 		enableDungeons = config.get(CATEGORY_GENERAL, "1.03_enableDungeonSpawn", true).getBoolean(true);
 		enableMDOres = config.get(CATEGORY_GENERAL, "1.04_enableOresInModdedDimensions", true).getBoolean(true);
 		enableMines = config.get(CATEGORY_GENERAL, "1.05_enableLandmineSpawn", true).getBoolean(true);
@@ -186,6 +195,8 @@ public class GeneralConfig {
 		enableWelcomeMessage = CommonConfig.createConfigBool(config, CATEGORY_GENERAL, "1.34_enableWelcomeMessage", "Enables the welcome message which appears in the chat when you load into the game", true);
 
 		conversionRateHeToRF = CommonConfig.createConfigDouble(config, CATEGORY_GENERAL, "1.35_conversionRateHeToRF", "One HE is (insert number) RF - <number> (double)", 1.0D);
+
+		hintPos = CommonConfig.createConfigInt(config, CATEGORY_GENERAL, "1.36_infoOverlayPosition", "Positions where the info overlay will appear (from 0 to 3). 0: Top left\n1: Top right\n2: Center right\n3: Center Left", 0);
 
 		final String CATEGORY_528 = "528";
 

@@ -25,7 +25,7 @@ public class ItemFusionCore extends Item {
 	private int charge;
 	
 	public ItemFusionCore(int charge, String s) {
-		this.setUnlocalizedName(s);
+		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.charge = charge;
 		
@@ -44,7 +44,7 @@ public class ItemFusionCore extends Item {
 
         		if(st.getItem() instanceof IBatteryItem) {
 
-        			long maxcharge = ((IBatteryItem)st.getItem()).getMaxCharge();
+        			long maxcharge = ((IBatteryItem)st.getItem()).getMaxCharge(st);
         			long charge = ((IBatteryItem)st.getItem()).getCharge(st);
         			long newcharge = Math.min(charge + this.charge, maxcharge);
 
