@@ -2,6 +2,7 @@ package com.hbm.lib;
 
 import java.util.Random;
 
+import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemChemistryTemplate;
 
 import net.minecraft.entity.item.EntityItem;
@@ -33,6 +34,23 @@ public class InventoryHelper {
         }
     }
 
+    public static void dropInventoryItemsAssembler(World world, BlockPos pos, ICapabilityProvider t) {
+        if(t == null)
+            return;
+        if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
+            return;
+        IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        for (int i = 0; i < inventory.getSlots(); ++i) {
+            if(inventory.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) continue;
+            ItemStack itemstack = inventory.getStackInSlot(i);
+
+            if (!itemstack.isEmpty() && (!(inventory.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate)))
+            {
+                spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
+            }
+        }
+    }
+
     public static void dropInventoryItems(World world, BlockPos pos, ICapabilityProvider t, int from, int to) {
         if(t == null)
             return;
@@ -41,23 +59,6 @@ public class InventoryHelper {
         IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         for (int i = 0; i < inventory.getSlots(); ++i) {
             if(i < from || i > to) continue;
-            ItemStack itemstack = inventory.getStackInSlot(i);
-
-            if (!itemstack.isEmpty())
-            {
-                spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
-            }
-        }
-    }
-
-    public static void dropInventoryItemsBan(World world, BlockPos pos, ICapabilityProvider t, int banfrom, int banto) {
-        if(t == null)
-            return;
-        if(!t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
-            return;
-        IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-        for (int i = 0; i < inventory.getSlots(); ++i) {
-            if(i >= banfrom || i <= banto) continue;
             ItemStack itemstack = inventory.getStackInSlot(i);
 
             if (!itemstack.isEmpty())

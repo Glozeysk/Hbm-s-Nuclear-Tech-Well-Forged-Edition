@@ -278,7 +278,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 
             if (tileentity instanceof TileEntityMachineChemplant)
             {
-                InventoryHelper.dropInventoryItemsBan(world, pos, (TileEntityMachineChemplant)tileentity, 4, 4);
+                InventoryHelper.dropInventoryItems(world, pos, (TileEntityMachineChemplant)tileentity);
                 
                 world.updateComparatorOutputLevel(pos, this);
             }

@@ -292,7 +292,8 @@ public class GUIAnvil extends GuiContainer {
 		return list;
 	}
 
-	private boolean isMouseOverSlot(Slot slot, int x, int y) {
+	@Override
+	public boolean isMouseOverSlot(Slot slot, int x, int y) {
 		int guiLeft = this.guiLeft;
 		int guiTop = this.guiTop;
 		x -= guiLeft;

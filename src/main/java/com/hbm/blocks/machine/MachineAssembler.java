@@ -242,7 +242,7 @@ public class MachineAssembler extends BlockContainer implements IMultiBlock {
 			TileEntity tileentity = world.getTileEntity(pos);
 
 			if(tileentity instanceof TileEntityMachineAssembler) {
-				InventoryHelper.dropInventoryItemsBan(world, pos, (TileEntityMachineAssembler) tileentity, 4, 4);
+				InventoryHelper.dropInventoryItemsAssembler(world, pos, (TileEntityMachineAssembler) tileentity);
 
 				world.updateComparatorOutputLevel(pos, this);
 			}
