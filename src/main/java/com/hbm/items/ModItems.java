@@ -510,6 +510,10 @@ public class ModItems {
 	public static final Item stamp_obsidian_plate = new ItemStamp("stamp_obsidian_plate", 512);
 	public static final Item stamp_obsidian_wire = new ItemStamp("stamp_obsidian_wire", 512);
 	public static final Item stamp_obsidian_circuit = new ItemStamp("stamp_obsidian_circuit", 512);
+    public static final Item stamp_advanced_flat = new ItemStamp("stamp_advanced_flat", 1024);
+    public static final Item stamp_advanced_plate = new ItemStamp("stamp_advanced_plate", 1024);
+    public static final Item stamp_advanced_wire = new ItemStamp("stamp_advanced_wire", 1024);
+    public static final Item stamp_advanced_circuit = new ItemStamp("stamp_advanced_circuit", 1024);
 	public static final Item stamp_schrabidium_flat = new ItemStamp("stamp_schrabidium_flat", 4096);
 	public static final Item stamp_schrabidium_plate = new ItemStamp("stamp_schrabidium_plate", 4096);
 	public static final Item stamp_schrabidium_wire = new ItemStamp("stamp_schrabidium_wire", 4096);

@@ -147,6 +147,13 @@ public class ItemFolderPacket implements IMessage {
 							p.dropItem(stack, true);
 					}
 				}
+                if(stack.getItem() == ModItems.stamp_advanced_plate || stack.getItem() == ModItems.stamp_advanced_wire || stack.getItem() == ModItems.stamp_advanced_circuit) {
+                    if(Library.hasInventoryItem(p.inventory, ModItems.stamp_advanced_flat)) {
+                        Library.consumeInventoryItem(p.inventory, ModItems.stamp_advanced_flat);
+                        if(!p.inventory.addItemStackToInventory(stack.copy()))
+                            p.dropItem(stack, true);
+                    }
+                }
 			});
 
 			

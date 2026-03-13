@@ -5209,3 +5209,7 @@ lung_scanner.pos=§4Позитивный
 tile.ore_tektite_osmiridium.name=Тектит, насыщенный осмиридием
 tile.tektite.name=Тектит
 trait.mkuinfected=Заражённый
+item.stamp_advanced_plate.name=Штамп пластины (Продвинутый сплав)
+item.stamp_advanced_flat.name=Плоский штамп (Продвинутый сплав)
+item.stamp_advanced_circuit.name=Штамп микросхемы (Продвинутый сплав)
+item.stamp_advanced_wire.name=Штамп провода (Продвинутый сплав)

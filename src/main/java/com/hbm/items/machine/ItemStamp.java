@@ -45,7 +45,10 @@ public class ItemStamp extends Item {
 				this == ModItems.stamp_titanium_wire ||
 				this == ModItems.stamp_stone_circuit ||
 				this == ModItems.stamp_stone_plate ||
-				this == ModItems.stamp_stone_wire)
+				this == ModItems.stamp_stone_wire ||
+                this == ModItems.stamp_advanced_circuit ||
+                this == ModItems.stamp_advanced_plate ||
+                this == ModItems.stamp_advanced_wire)
 			tooltip.add("§e" + I18nUtil.resolveKey("info.templatefolder"));
 	}
 }

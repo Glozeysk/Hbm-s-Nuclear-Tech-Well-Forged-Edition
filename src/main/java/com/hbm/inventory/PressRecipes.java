@@ -8,7 +8,6 @@ import static com.hbm.inventory.OreDictManager.*;
 import com.hbm.util.Tuple.Pair;
 import com.hbm.items.ModItems;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.OreDictStack;
 
@@ -207,6 +206,7 @@ public class PressRecipes {
 			add(ModItems.stamp_obsidian_flat);
 			add(ModItems.stamp_schrabidium_flat);
 			add(ModItems.stamp_desh_flat);
+            add(ModItems.stamp_advanced_flat);
 		}
 	};
 
@@ -219,6 +219,7 @@ public class PressRecipes {
 			add(ModItems.stamp_obsidian_plate);
 			add(ModItems.stamp_schrabidium_plate);
 			add(ModItems.stamp_desh_plate);
+            add(ModItems.stamp_advanced_plate);
 		}
 	};
 
@@ -231,6 +232,7 @@ public class PressRecipes {
 			add(ModItems.stamp_obsidian_wire);
 			add(ModItems.stamp_schrabidium_wire);
 			add(ModItems.stamp_desh_wire);
+            add(ModItems.stamp_advanced_wire);
 		}
 	};
 
@@ -243,6 +245,7 @@ public class PressRecipes {
 			add(ModItems.stamp_obsidian_circuit);
 			add(ModItems.stamp_schrabidium_circuit);
 			add(ModItems.stamp_desh_circuit);
+            add(ModItems.stamp_advanced_circuit);
 		}
 	};
 
