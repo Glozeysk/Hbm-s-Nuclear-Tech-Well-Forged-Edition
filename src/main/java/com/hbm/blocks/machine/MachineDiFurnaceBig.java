@@ -5,7 +5,8 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.TileEntityProxyCombo;
-import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
+import com.hbm.tileentity.TileEntityProxyInventory;
+import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceBig;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -17,19 +18,22 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class MachineCrystallizer extends BlockDummyable {
+public class MachineDiFurnaceBig extends BlockDummyable {
 
-	public MachineCrystallizer(Material mat, String s) {
+	public MachineDiFurnaceBig(Material mat, String s) {
 		super(mat, s);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World p_149915_1_, int meta) {
 		if(meta >= 12)
-			return new TileEntityMachineCrystallizer();
+			return new TileEntityMachineDiFurnaceBig();
 
 		if(meta >= 8 && meta <= 11)
-			return new TileEntityProxyCombo(true, true, true);
+			return new TileEntityProxyInventory();
+
+		if(meta == 7)
+			return new TileEntityProxyCombo(false, true, true);
 
 		return null;
 	}
@@ -46,10 +50,10 @@ public class MachineCrystallizer extends BlockDummyable {
 			if(pos1 == null)
 				return false;
 
-			TileEntityMachineCrystallizer entity = (TileEntityMachineCrystallizer) world.getTileEntity(new BlockPos(pos1[0], pos1[1], pos1[2]));
+			TileEntityMachineDiFurnaceBig entity = (TileEntityMachineDiFurnaceBig) world.getTileEntity(new BlockPos(pos1[0], pos1[1], pos1[2]));
 			if(entity != null)
 			{
-				player.openGui(MainRegistry.instance, ModBlocks.guiID_crystallizer, world, pos1[0], pos1[1], pos1[2]);
+				player.openGui(MainRegistry.instance, ModBlocks.guiID_difurnacebig, world, pos1[0], pos1[1], pos1[2]);
 			}
 			return true;
 		} else {
@@ -59,7 +63,7 @@ public class MachineCrystallizer extends BlockDummyable {
 
 	@Override
 	public int[] getDimensions() {
-		return new int[] { 5, 0, 1, 1, 1, 1 };
+		return new int[] { 3, 0, 1, 1, 1, 1 };
 	}
 	
 	@Override
@@ -75,6 +79,16 @@ public class MachineCrystallizer extends BlockDummyable {
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o + 1);
 		this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o - 1);
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o - 1);
+
+		if(dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH) {
+			this.makeExtra(world, x + dir.offsetX * o + 1, y + 1, z + dir.offsetZ * o);
+			this.makeExtra(world, x + dir.offsetX * o - 1, y + 1, z + dir.offsetZ * o);
+		}
+
+		if(dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
+			this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o + 1);
+			this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o - 1);
+		}
 	}
 	
 	@Override

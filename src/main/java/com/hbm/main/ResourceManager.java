@@ -243,6 +243,7 @@ public class ResourceManager {
 
 	//Crystallizer
 	public static final IModelCustom crystallizer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/crystallizer.obj")).asVBO();
+	public static final IModelCustom difurnacebig = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/difurnacebig.obj")).asVBO();
 
 	//Cyclotron
 	public static final IModelCustom cyclotron = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/cyclotron.obj")).asVBO();
@@ -759,6 +760,11 @@ public class ResourceManager {
 	
 	//Crystallizer
 	public static final ResourceLocation crystallizer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/crystallizer.png");
+	public static final ResourceLocation difurnacebig_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig.png");
+	public static final ResourceLocation difurnacebig_nitan_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_nitan.png");
+	public static final ResourceLocation difurnacebig_balefire_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_balefire.png");
+	public static final ResourceLocation difurnacebig_spark_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_spark.png");
+	public static final ResourceLocation difurnacebig_uu_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_uu.png");
 	public static final ResourceLocation crystallizer_spinner_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/crystallizer_spinner.png");
 	public static final ResourceLocation crystallizer_window_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/crystallizer_window.png");
 

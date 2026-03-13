@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
@@ -27,16 +28,21 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
         GlStateManager.enableLighting();
         GlStateManager.disableCull();
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-		switch(te.getBlockMetadata())
-		{
+		GL11.glRotatef(90, 0F, 1F, 0F);
+
+		switch(te.getBlockMetadata() - BlockDummyable.offset) {
 		case 2:
-			GL11.glRotatef(270, 0F, 1F, 0F); break;
+			GL11.glRotatef(90, 0F, 1F, 0F);
+			break;
 		case 4:
-			GL11.glRotatef(0, 0F, 1F, 0F); break;
+			GL11.glRotatef(180, 0F, 1F, 0F);
+			break;
 		case 3:
-			GL11.glRotatef(90, 0F, 1F, 0F); break;
+			GL11.glRotatef(270, 0F, 1F, 0F);
+			break;
 		case 5:
-			GL11.glRotatef(180, 0F, 1F, 0F); break;
+			GL11.glRotatef(0, 0F, 1F, 0F);
+			break;
 		}
 
         bindTexture(ResourceManager.tank_tex);
@@ -53,16 +59,19 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
         GL11.glTranslated(x + 0.5D, y, z + 0.5D);
         GlStateManager.enableLighting();
         GlStateManager.disableCull();
-		switch(tileEntity.getBlockMetadata())
-		{
-		case 2:
-			GL11.glRotatef(270, 0F, 1F, 0F); break;
-		case 4:
-			GL11.glRotatef(0, 0F, 1F, 0F); break;
+		switch(tileEntity.getBlockMetadata() - BlockDummyable.offset) {
 		case 3:
-			GL11.glRotatef(90, 0F, 1F, 0F); break;
+			GL11.glRotatef(0, 0F, 1F, 0F);
+			break;
+		case 2:
+			GL11.glRotatef(180, 0F, 1F, 0F);
+			break;
 		case 5:
-			GL11.glRotatef(180, 0F, 1F, 0F); break;
+			GL11.glRotatef(90, 0F, 1F, 0F);
+			break;
+		case 4:
+			GL11.glRotatef(270, 0F, 1F, 0F);
+			break;
 		}
 
 		String s = "NONE";

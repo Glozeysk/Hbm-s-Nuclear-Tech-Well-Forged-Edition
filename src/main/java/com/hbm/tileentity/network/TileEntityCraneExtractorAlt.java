@@ -48,6 +48,11 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
     }
 
     @Override
+    public EnumFacing getInputSide() {
+        return EnumFacing.UP;
+    }
+
+    @Override
     public void update() {
         super.update();
         if(!world.isRemote) {
@@ -83,26 +88,39 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                     }
                 }
 
-                EnumFacing inputSide = EnumFacing.UP; // note the switcheroo!
+                EnumFacing inputSide = getInputSide(); // note the switcheroo!
                 EnumFacing outputSide = getOutputSide();
                 TileEntity te = world.getTileEntity(pos.offset(inputSide));
                 Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
-                int[] access = null;
-                ISidedInventory sided = null;
+                // int[] access = null;
+                // ISidedInventory sided = null;
 
-                if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneExtractorAlt)) {
-                    sided = (ISidedInventory) te;
-                    access = masquerade(sided, EnumFacing.byIndex(inputSide.getOpposite().ordinal()));
-                }
+                // if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneExtractorAlt)) {
+                //     sided = (ISidedInventory) te;
+                //     access = masquerade(sided, EnumFacing.byIndex(inputSide.getOpposite().ordinal()));
+                // }
 
                 //collect matching items
                 if(te != null) {
+                    EnumFacing accessFace = inputSide.getOpposite();
+                    int[] access = null;
+                    ISidedInventory sided = null;
+
+                    if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneExtractorAlt)) {
+                        sided = (ISidedInventory) te;
+                        access = masquerade(sided, accessFace);
+                    }
 
                     /* try to send items from a connected inv, if present */
-                    if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide)) {
-                        IItemHandler inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide);
+                    IItemHandler inv = null;
+                    if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+                        inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+                    } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+                        inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+                    }
 
+                    if(inv != null) {
                         int size;
                         if(access == null) {
                             size = inv.getSlots();
@@ -114,7 +132,7 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                             int index = access == null ? i : access[i];
                             ItemStack stack = inv.getStackInSlot(index);
 
-                            if(!stack.isEmpty() && (sided == null || canExtract(sided, index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal())))){
+                            if(!stack.isEmpty() && (sided == null || canExtract(sided, index, stack, accessFace))){
 
                                 boolean match = this.matchesFilter(stack);
 

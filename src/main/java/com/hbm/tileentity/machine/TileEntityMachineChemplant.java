@@ -370,9 +370,9 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 				te2 = world.getTileEntity(pos.add(1, 0, 3));
 			}
 
-			// if(!isProgressing) {
-			// 	tryExchangeTemplates(te1, te2);
-			// }
+			if(!isProgressing) {
+				tryExchangeTemplates(te1, te2);
+			}
 
 			if(te1 != null && te1.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY())) {
 				IItemHandler cap = te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY());
@@ -421,51 +421,51 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 
 	}
 
-	// public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
-	// 	//validateTe sees if it's a valid inventory tile entity
-	// 	boolean te1Valid = validateTe(te1);
-	// 	boolean te2Valid = validateTe(te2);
+	public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
+		//validateTe sees if it's a valid inventory tile entity
+		boolean te1Valid = validateTe(te1);
+		boolean te2Valid = validateTe(te2);
 
-	// 	if(te1Valid && te2Valid) {
-	// 		IItemHandler iTe1 = te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-	// 		IItemHandler iTe2e = te2.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-	// 		if(!(iTe2e instanceof IItemHandlerModifiable))
-	// 			return false;
-	// 		IItemHandlerModifiable iTe2 = (IItemHandlerModifiable) iTe2e;
-	// 		boolean openSlot = false;
-	// 		boolean existingTemplate = false;
-	// 		boolean filledContainer = false;
-	// 		//Check if there's an existing template and an open slot
-	// 		for(int i = 0; i < iTe1.getSlots(); i++) {
-	// 			if(iTe1.getStackInSlot(i) == null || iTe1.getStackInSlot(i) == ItemStack.EMPTY) {
-	// 				openSlot = true;
+		if(te1Valid && te2Valid) {
+			IItemHandler iTe1 = te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			IItemHandler iTe2e = te2.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			if(!(iTe2e instanceof IItemHandlerModifiable))
+				return false;
+			IItemHandlerModifiable iTe2 = (IItemHandlerModifiable) iTe2e;
+			boolean openSlot = false;
+			boolean existingTemplate = false;
+			boolean filledContainer = false;
+			//Check if there's an existing template and an open slot
+			for(int i = 0; i < iTe1.getSlots(); i++) {
+				if(iTe1.getStackInSlot(i) == null || iTe1.getStackInSlot(i) == ItemStack.EMPTY) {
+					openSlot = true;
 
-	// 			}
+				}
 
-	// 		}
-	// 		if(this.inventory.getStackInSlot(4) != ItemStack.EMPTY && inventory.getStackInSlot(4).getItem() instanceof ItemChemistryTemplate) {
-	// 			existingTemplate = true;
-	// 		}
-	// 		//Check if there's a template in input
-	// 		for(int i = 0; i < iTe2.getSlots(); i++) {
-	// 			iTe2.getStackInSlot(i);
-	// 			if(iTe2.getStackInSlot(i) != ItemStack.EMPTY && iTe2.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate) {
-	// 				if(openSlot && existingTemplate) {
-	// 					filledContainer = tryFillContainerCap(iTe1, 4);
+			}
+			if(this.inventory.getStackInSlot(4) != ItemStack.EMPTY && inventory.getStackInSlot(4).getItem() instanceof ItemChemistryTemplate) {
+				existingTemplate = true;
+			}
+			//Check if there's a template in input
+			for(int i = 0; i < iTe2.getSlots(); i++) {
+				iTe2.getStackInSlot(i);
+				if(iTe2.getStackInSlot(i) != ItemStack.EMPTY && iTe2.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate) {
+					if(openSlot && existingTemplate) {
+						filledContainer = tryFillContainerCap(iTe1, 4);
 
-	// 				}
-	// 				if(filledContainer || !existingTemplate) {
-	// 					ItemStack copy = iTe2.getStackInSlot(i).copy();
-	// 					iTe2.setStackInSlot(i, ItemStack.EMPTY);
-	// 					this.inventory.setStackInSlot(4, copy);
-	// 				}
-	// 			}
+					}
+					if(filledContainer || !existingTemplate) {
+						ItemStack copy = iTe2.getStackInSlot(i).copy();
+						iTe2.setStackInSlot(i, ItemStack.EMPTY);
+						this.inventory.setStackInSlot(4, copy);
+					}
+				}
 
-	// 		}
-	// 	}
-	// 	return false;
+			}
+		}
+		return false;
 
-	// }
+	}
 
 	private void updateConnections() {
 		int meta = this.getBlockMetadata();

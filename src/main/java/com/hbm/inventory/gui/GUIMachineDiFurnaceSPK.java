@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.container.ContainerMachineDiFurnaceSPK;
 import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceSPK;
@@ -11,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.FluidStack;
 
 public class GUIMachineDiFurnaceSPK extends GuiInfoContainer {
 	
@@ -29,8 +31,8 @@ public class GUIMachineDiFurnaceSPK extends GuiInfoContainer {
 	public void drawScreen(int mouseX, int mouseY, float f) {
 		super.drawScreen(mouseX, mouseY, f);
 
-		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 26 + 18, guiTop + 69 - 54, 16, 52, diFurnace.tank, diFurnace.tankType);
-		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 26, guiTop + 106 - 89, 16, 52, diFurnace.power, TileEntityMachineDiFurnaceSPK.maxPower);
+		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 15 + 18, guiTop + 17, 16, 52, diFurnace.tank, diFurnace.tankType);
+		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 15, guiTop + 17, 16, 52, diFurnace.power, TileEntityMachineDiFurnaceSPK.maxPower);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	
@@ -49,17 +51,26 @@ public class GUIMachineDiFurnaceSPK extends GuiInfoContainer {
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
+		FluidStack fluid = diFurnace.tank.getFluid();
+
+		if(fluid != null && fluid.getFluid() != null && (fluid.getFluid() == ModForgeFluids.sparkfuel || fluid.getFluid() == ModForgeFluids.uu_matter)) {
+			drawTexturedModalRect(guiLeft + 94, guiTop + 34, 208, 18, 30, 18);
+		}
+
 		if(diFurnace.power > 0) {
 			int i = (int)diFurnace.getPowerScaled(52);
-			drawTexturedModalRect(guiLeft + 8 + 18, guiTop + 69 - i, 176, 52 - i, 16, i);
+			drawTexturedModalRect(guiLeft + 15, guiTop + 69 - i, 176, 52 - i, 16, i);
 		}
-		
-		// int j1 = diFurnace.getProgressScaled(24);
-		// drawTexturedModalRect(guiLeft + 101 + 9, guiTop + 34, 208, 0, j1 + 1, 16);
-		if(diFurnace.canProcess()) {
-			drawTexturedModalRect(guiLeft + 101, guiTop + 34, 208, 0, 24, 17);
+
+		if(fluid != null && fluid.getFluid() != null && (fluid.getFluid() == ModForgeFluids.sparkfuel || fluid.getFluid() == ModForgeFluids.uu_matter) && diFurnace.canProcess()) {
+			drawTexturedModalRect(guiLeft + 94, guiTop + 34, 208, 0, 30, 18);
 		}
-		
-		FFUtils.drawLiquid(diFurnace.tank, guiLeft + 18, guiTop, this.zLevel, 16, 52, 26, 97);
+
+		if(fluid != null && fluid.getFluid() != null && (fluid.getFluid() == ModForgeFluids.nitan || fluid.getFluid() == ModForgeFluids.balefire) && diFurnace.canProcess()) {
+			int j1 = diFurnace.getProgressScaled(30);
+			drawTexturedModalRect(guiLeft + 94, guiTop + 34, 208, 36, j1, 18);
+		}
+
+		FFUtils.drawLiquid(diFurnace.tank, guiLeft + 7, guiTop, this.zLevel, 16, 52, 26, 97);
 	}
 }

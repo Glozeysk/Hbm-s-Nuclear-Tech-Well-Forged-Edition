@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.util.ResourceLocation;
 
 public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMachineCrystallizer> {
 
@@ -21,10 +22,12 @@ public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMach
 	
 	@Override
 	public void render(TileEntityMachineCrystallizer crys, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+		GlStateManager.enableAlpha();
 		GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5D, y, z + 0.5D);
         GlStateManager.enableLighting();
-        GlStateManager.disableCull();
+        // GlStateManager.disableCull();
+		GlStateManager.enableCull();
 
 		switch(crys.getBlockMetadata() - 10) {
 		case 2: GL11.glRotatef(90, 0F, 1F, 0F); break;
@@ -39,16 +42,32 @@ public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMach
 
         GL11.glPushMatrix();
         GL11.glRotatef(crys.prevAngle + (crys.angle - crys.prevAngle) * partialTicks, 0, 1, 0);
-        bindTexture(ResourceManager.crystallizer_spinner_tex);
+        // bindTexture(ResourceManager.crystallizer_spinner_tex);
         ResourceManager.crystallizer.renderPart("Spinner");
         GL11.glPopMatrix();
 
-        renderFill(crys);
-        bindTexture(ResourceManager.crystallizer_window_tex);
-        ResourceManager.crystallizer.renderPart("Windows");
+        // renderFill(crys);
+        // bindTexture(ResourceManager.crystallizer_window_tex);
+        // ResourceManager.crystallizer.renderPart("Fluid");
+
+		if (crys.tank.getFluid() != null) {
+			GlStateManager.enableBlend();
+			GlStateManager.depthMask(false);
+			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+			ResourceLocation test;
+			String s = crys.tank.getFluid().getFluid().getStill().toString();
+			String textureBase = "textures/";
+			String[] test1 = s.split(":");
+			String location = test1[0] + ":" + textureBase + test1[1] + "_chem.png";
+			test = new ResourceLocation(location);
+			bindTexture(test);
+			ResourceManager.crystallizer.renderPart("Fluid");
+			GlStateManager.depthMask(true);
+			GlStateManager.disableBlend();
+		}
         
 		GlStateManager.shadeModel(GL11.GL_FLAT);
-		GlStateManager.enableCull();
+		// GlStateManager.enableCull();
 
         GL11.glPopMatrix();
 	}
@@ -62,7 +81,7 @@ public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMach
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 		
 		RenderHelper.setColor(ModForgeFluids.getFluidColor(crys.tank.getFluid().getFluid()));
-		ResourceManager.crystallizer.renderPart("Windows");
+		ResourceManager.crystallizer.renderPart("Fluid");
 
 		
 		GL11.glColor4f(1F, 1F, 1F, 1F);

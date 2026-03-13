@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.PressRecipes;
+import com.hbm.forgefluid.FluidTypeHandler;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemCassette;
+import com.hbm.items.machine.ItemChemistryTemplate;
+import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.items.machine.ItemCassette.TrackType;
 import com.hbm.lib.RefStrings;
 import com.hbm.packet.ItemFolderPacket;
@@ -26,6 +30,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.lwjgl.input.Keyboard;
 
 public class GUIScreenTemplateFolder extends GuiScreen {
@@ -85,6 +91,20 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 		//Tracks
     	for(int i = 1; i < ItemCassette.TrackType.values().length; i++)
 			allStacks.add(new ItemStack(ModItems.siren_track, 1, i));
+    	//Assembly Templates
+    	//for(int i = 0; i < ItemAssemblyTemplate.recipes.size(); i++)
+    	//	stacks.add(new ItemStack(ModItems.assembly_template, 1, i));
+    	for (int i = 0; i < AssemblerRecipes.recipeList.size(); ++i) {
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setInteger("type", i);
+			ItemStack stack = new ItemStack(ModItems.assembly_template, 1, 0);
+			stack.setTagCompound(tag);
+			allStacks.add(stack);
+		}
+    	//Chemistry Templates
+    	for (int i: ChemplantRecipes.recipeNames.keySet()){
+			allStacks.add(new ItemStack(ModItems.chemistry_template, 1, i));
+		}
 		search(null);
     }
     
@@ -240,6 +260,11 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 			try {
 		        RenderHelper.enableGUIStandardItemLighting();
 				if(stack != null) {
+					if(stack.getItem() == ModItems.assembly_template)
+						itemRender.renderItemAndEffectIntoGUI(player, AssemblerRecipes.getOutputFromTempate(stack), xPos + 1, yPos + 1);
+					else if(stack.getItem() == ModItems.chemistry_template)
+						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
+					else
 						itemRender.renderItemAndEffectIntoGUI(player, stack, xPos + 1, yPos + 1);
 				}
 				RenderHelper.disableStandardItemLighting();

@@ -23,7 +23,7 @@ public class TileEntityMachineBAT9000 extends TileEntityBarrel {
 	
 	@Override
 	public void checkFluidInteraction() {
-		if(tank.getFluid() != null && FluidTypeHandler.containsTrait(tank.getFluid().getFluid(), FluidTrait.AMAT)) {
+		if(tank.getFluid() != null && (FluidTypeHandler.containsTrait(tank.getFluid().getFluid(), FluidTrait.AMAT) || FluidTypeHandler.isExtremelyHot(tank.getFluid().getFluid()))) {
 			world.destroyBlock(pos, false);
 			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 10, true, true);
 		}

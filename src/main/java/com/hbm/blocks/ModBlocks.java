@@ -1194,6 +1194,9 @@ public class ModBlocks {
 	
 	public static final Block machine_crystallizer = new MachineCrystallizer(Material.IRON, "machine_crystallizer").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_crystallizer = 95;
+
+	public static final Block machine_difurnace_big = new MachineDiFurnaceBig(Material.IRON, "machine_difurnace_big").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_difurnacebig = 138;
 	
 	public static final Block machine_shredder = new MachineShredder(Material.IRON, "machine_shredder").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_shredder = 34;

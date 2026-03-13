@@ -37,23 +37,17 @@ public class TileEntityFFFluidSuccMk3 extends TileEntityFFFluidDuctMk3 implement
 
 	@Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (resource != null && resource.getFluid() != null && !world.isRemote) {
+        int filled = super.fill(resource, doFill);
+        if (filled > 0 && doFill && !world.isRemote) {
             if (FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT)) {
-                if (doFill) {
-                    world.destroyBlock(pos, false);
-                    world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, true, true);
-                }
-                return resource.amount;
-            }
-            if (FluidTypeHandler.isExtremelyHot(resource.getFluid())) {
-                if (doFill) {
-                    world.destroyBlock(pos, false);
-                    world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
-                return resource.amount;
+                world.destroyBlock(pos, false);
+                world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, true, true);
+            } else if (FluidTypeHandler.isExtremelyHot(resource.getFluid())) {
+                world.destroyBlock(pos, false);
+                world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         }
-        return super.fill(resource, doFill);
+        return filled;
     }
 
 }

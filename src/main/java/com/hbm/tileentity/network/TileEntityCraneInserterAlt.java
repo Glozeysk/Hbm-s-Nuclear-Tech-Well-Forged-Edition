@@ -36,14 +36,24 @@ public class TileEntityCraneInserterAlt extends TileEntityCraneBase implements I
         }
     }
 
+    @Override
+    public EnumFacing getOutputSide() {
+        return EnumFacing.DOWN;
+    }
+
     public void tryFillTe(){
-        EnumFacing outputSide = EnumFacing.DOWN;
-        TileEntity te = world.getTileEntity(pos.offset(outputSide));
+        TileEntity te = world.getTileEntity(pos.offset(EnumFacing.DOWN));
 
         if(te != null){
-            if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide)) {
-                IItemHandler cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide);
-            
+            EnumFacing accessFace = EnumFacing.UP;
+            IItemHandler cap = null;
+            if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+                cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+            } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+                cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+            }
+
+            if(cap != null) {
                 for(int i = 0; i < inventory.getSlots(); i++) {
                     tryFillContainerCap(cap, i);
                 }

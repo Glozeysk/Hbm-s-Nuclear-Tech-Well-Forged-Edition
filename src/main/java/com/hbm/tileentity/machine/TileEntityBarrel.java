@@ -82,9 +82,29 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 			world.destroyBlock(pos, false);
 			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
 		}
+
+		if(b == ModBlocks.barrel_antimatter && FluidTypeHandler.is20KHot(f)) {
+			world.destroyBlock(pos, false);
+			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
+		}
+
+		if(b == ModBlocks.barrel_corroded && FluidTypeHandler.is1300Hot(f)) {
+			world.destroyBlock(pos, false);
+			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
+
+		if(b == ModBlocks.barrel_tcalloy && FluidTypeHandler.isExtremelyHot(f)) {
+			world.destroyBlock(pos, false);
+			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
 		
 		//for when you fill hot or corrosive liquids into a plastic tank
 		if(b == ModBlocks.barrel_plastic && (FluidTypeHandler.isCorrosivePlastic(f) || FluidTypeHandler.isHot(f))) {
+			world.destroyBlock(pos, false);
+			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
+
+		if((b == ModBlocks.barrel_iron && FluidTypeHandler.is1500Hot(f)) || (b == ModBlocks.barrel_steel && FluidTypeHandler.is1300Hot(f))) {
 			world.destroyBlock(pos, false);
 			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
 		}

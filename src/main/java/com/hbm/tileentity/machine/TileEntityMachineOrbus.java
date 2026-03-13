@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.FluidTypeHandler;
+import com.hbm.forgefluid.FluidTypeHandler.FluidTrait;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 
@@ -22,7 +24,12 @@ public class TileEntityMachineOrbus extends TileEntityBarrel {
 	}
 	
 	@Override
-	public void checkFluidInteraction() { } //NO!
+	public void checkFluidInteraction() {
+		if(tank.getFluid() != null && FluidTypeHandler.is20KHot(tank.getFluid().getFluid())) {
+			world.destroyBlock(pos, false);
+			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 15, true, true);
+		}
+	}
 
 	public void fillFluid(BlockPos pos1, FluidTank tank) {
 		FFUtils.fillFluid(this, tank, world, pos1, 64000);

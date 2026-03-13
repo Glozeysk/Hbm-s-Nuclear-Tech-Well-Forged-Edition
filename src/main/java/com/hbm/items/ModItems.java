@@ -1423,7 +1423,7 @@ public class ModItems {
 	public static final Item powder_bismuth = new ItemBase("powder_bismuth").setCreativeTab(MainRegistry.partsTab);
 	public static final Item powder_coal = new ItemFuelHazard("powder_coal", 1600, false).addCoal(3).toItem().setCreativeTab(MainRegistry.partsTab);
 	public static final Item powder_coal_tiny = new ItemFuelHazard("powder_coal_tiny", 160, false).addCoal(1).toItem().setCreativeTab(MainRegistry.partsTab);
-	public static final Item powder_yellowcake = new ItemContaminating(ItemHazard.yc * ItemHazard.powder, "powder_yellowcake").setCreativeTab(MainRegistry.partsTab);
+	public static final Item powder_yellowcake = new ItemHazard(ItemHazard.yc * ItemHazard.powder, "powder_yellowcake").setCreativeTab(MainRegistry.partsTab);
 	public static final Item powder_thorium = new ItemContaminating(ItemHazard.th232 * ItemHazard.powder, "powder_thorium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item powder_uranium = new ItemContaminating(ItemHazard.u * ItemHazard.powder, "powder_uranium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item powder_plutonium = new ItemContaminating(ItemHazard.pu * ItemHazard.powder, true, "powder_plutonium").setCreativeTab(MainRegistry.partsTab);

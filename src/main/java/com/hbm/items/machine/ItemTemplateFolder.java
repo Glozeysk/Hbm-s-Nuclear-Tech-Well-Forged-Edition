@@ -25,6 +25,7 @@ public class ItemTemplateFolder extends Item {
 	
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+		tooltip.add(I18nUtil.resolveKey("desc.templfolder1"));
 		tooltip.add(I18nUtil.resolveKey("desc.templfolder3"));
 		tooltip.add(I18nUtil.resolveKey("desc.templfolder4"));
 	}

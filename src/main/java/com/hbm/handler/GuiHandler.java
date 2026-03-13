@@ -62,6 +62,7 @@ import com.hbm.tileentity.machine.TileEntityMachineCoal;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
+import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceBig;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
@@ -592,6 +593,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_crystallizer:
 			if(entity instanceof TileEntityMachineCrystallizer) {
 				return new ContainerCrystallizer(player.inventory, (TileEntityMachineCrystallizer) entity);
+			}
+			return null;
+		case ModBlocks.guiID_difurnacebig:
+			if(entity instanceof TileEntityMachineDiFurnaceBig) {
+				return new ContainerDiFurnaceBig(player.inventory, (TileEntityMachineDiFurnaceBig) entity);
 			}
 			return null;
 		case ModBlocks.guiID_mining_laser:
@@ -1215,6 +1221,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_crystallizer:
 			if(entity instanceof TileEntityMachineCrystallizer) {
 				return new GUICrystallizer(player.inventory, (TileEntityMachineCrystallizer) entity);
+			}
+			return null;
+		case ModBlocks.guiID_difurnacebig:
+			if(entity instanceof TileEntityMachineDiFurnaceBig) {
+				return new GUIDiFurnaceBig(player.inventory, (TileEntityMachineDiFurnaceBig) entity);
 			}
 			return null;
 		case ModBlocks.guiID_mining_laser:

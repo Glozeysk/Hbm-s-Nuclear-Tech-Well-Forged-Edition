@@ -58,10 +58,28 @@ public class FluidTypeHandler {
 		return f.getTemperature() > 873;
 	}
 
+	public static boolean is1300Hot(Fluid f){
+		if(f == null)
+			return false;
+		return f.getTemperature() > 1573;
+	}
+
+	public static boolean is1500Hot(Fluid f){
+		if(f == null)
+			return false;
+		return f.getTemperature() > 1773;
+	}
+
 	public static boolean isExtremelyHot(Fluid f){
 		if(f == null)
 			return false;
 		return f.getTemperature() > 3273;
+	}
+
+	public static boolean is20KHot(Fluid f){
+		if(f == null)
+			return false;
+		return f.getTemperature() > 20273;
 	}
 
 	public static boolean noID(Fluid f){

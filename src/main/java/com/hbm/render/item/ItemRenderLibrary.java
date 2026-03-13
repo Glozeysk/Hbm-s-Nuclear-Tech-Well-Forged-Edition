@@ -168,14 +168,30 @@ public class ItemRenderLibrary {
 			}
 			public void renderInventory() {
 				GL11.glTranslated(0, -4, 0);
-				GL11.glScaled(1.75, 1.75, 1.75);
+				GL11.glScaled(2, 2, 2);
 			}
 			public void renderCommon() {
 				GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		        bindTexture(ResourceManager.crystallizer_tex); ResourceManager.crystallizer.renderPart("Body");
-		        bindTexture(ResourceManager.crystallizer_window_tex); ResourceManager.crystallizer.renderPart("Windows");
-		        bindTexture(ResourceManager.crystallizer_spinner_tex); ResourceManager.crystallizer.renderPart("Spinner");
+		        // bindTexture(ResourceManager.crystallizer_window_tex); ResourceManager.crystallizer.renderPart("Windows");
+		        // bindTexture(ResourceManager.crystallizer_spinner_tex); 
+				ResourceManager.crystallizer.renderPart("Spinner");
 				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_difurnace_big), new ItemRenderBase() {
+			public void renderNonInv() {
+				GL11.glScaled(1, 1, 1);
+			}
+			public void renderInventory() {
+				GL11.glTranslated(0, -2, 0);
+				GL11.glScaled(3, 3, 3);
+			}
+			public void renderCommon() {
+				GL11.glRotated(90, 0, 1, 0);
+		        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				bindTexture(ResourceManager.difurnacebig_tex);  ResourceManager.difurnacebig.renderPart("Plane");
+		        GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_reactor), new ItemRenderBase() {

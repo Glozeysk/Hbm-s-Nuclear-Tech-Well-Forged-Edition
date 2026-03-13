@@ -1,27 +1,27 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.blocks.machine.MachineDiFurnaceSPK;
-import com.hbm.forgefluid.FFUtils;
+import com.hbm.blocks.BlockDummyable;
+import com.hbm.entity.particle.EntityGasFlameFX;
+import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.DiFurnaceRecipes;
-import com.hbm.items.ModItems;
-import com.hbm.lib.Library;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
 
-import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyUser;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-// import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-// import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -31,32 +31,26 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
 
 	public long power = 0;
 	public int process = 0;
-	// public int soundCycle = 0;
 	public static final long maxPower = 500000000;
 	public FluidTank tank;
 	public Fluid tankType = ModForgeFluids.nitan;
 	public boolean needsUpdate = false;
-	private boolean lastTrigger = false;
-
-	private static final int[] slots_top = new int[] {0, 1, 2, 3};
-	private static final int[] slots_bottom = new int[] {4, 5, 6, 7};
-	private static final int[] slots_side = new int[] {};
 	
-	public TileEntityMachineDiFurnaceSPK() {
+	public TileEntityMachineDiFurnaceBig() {
 		super(8);
 		tank = new FluidTank(8000);
 	}
 	
 	@Override
 	public String getName(){
-		return "container.machinedifurnaceSPK";
+		return "container.machinedifurnacebig";
 	}
 
 	public int getProcessSpeed() {
@@ -70,9 +64,21 @@ public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase impleme
 	}
 	
 	@Override
-	public int[] getAccessibleSlotsFromSide(EnumFacing e){
-		int i = e.ordinal();
-		return i == 0 ? slots_bottom : (i == 1 ? slots_top : slots_side);
+	public int[] getAccessibleSlotsFromSide(EnumFacing face) {
+		return new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+	}
+
+	private void updateConnections() {
+
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
+
+		if(dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH) {
+			this.trySubscribe(world, pos.add(2, 1, 0), ForgeDirection.EAST);
+			this.trySubscribe(world, pos.add(-2, 1, 0), ForgeDirection.WEST);
+		} else if(dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
+			this.trySubscribe(world, pos.add(0, 1, 2), ForgeDirection.SOUTH);
+			this.trySubscribe(world, pos.add(0, 1, -2), ForgeDirection.NORTH);
+		}
 	}
 	
 	@Override
@@ -260,18 +266,13 @@ public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase impleme
 	public void update() {
 		if (!world.isRemote) {
 
-			this.updateStandardConnections(world, pos);
+			this.updateConnections();
 
 			long prevPower = power;
 			int prevAmount = tank.getFluidAmount();
 			if (needsUpdate) {
 				needsUpdate = false;
 			}
-			// power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
-			
-			// if(this.inputValidForTank(-1, 3))
-			// 	if(FFUtils.fillFromFluidContainer(inventory, tank, 3, 5))
-			// 		needsUpdate = true;
 
 			if(!inventory.getStackInSlot(1).isEmpty() && inventory.getStackInSlot(0).isEmpty()) {
 				inventory.setStackInSlot(0, inventory.getStackInSlot(1).copy());
@@ -284,20 +285,15 @@ public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase impleme
 
 			if (canProcess()) {
 				process();
-				// if(soundCycle == 0)
-			    //     this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_MINECART_RIDING, SoundCategory.BLOCKS, 1.0F, 1.5F);
-				// soundCycle++;
-					
-				// if(soundCycle >= 25)
-				// 	soundCycle = 0;
+				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.8F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
+				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.7F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
+				// ExplosionThermo.setEntitiesOnFire(world, pos.getX() + 0.5F, pos.getY() + 4, pos.getZ() + 0.5F, 2);
+
+				// if(this.world.getTotalWorldTime() % 5 == 0)
+				// 	this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.flamethrowerShoot, SoundCategory.BLOCKS, 2F, 0.2F);
 			} else {
 				process = 0;
 			}
-
-			boolean trigger = isProcessing() || canProcess();
-			if(trigger != lastTrigger)
-				MachineDiFurnaceSPK.updateBlockState(trigger, this.world, pos);
-			lastTrigger = trigger;
 
 			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
@@ -305,15 +301,6 @@ public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase impleme
 				markDirty();
 			}
 		}
-	}
-	
-	protected boolean inputValidForTank(int tank, int slot){
-		if(!inventory.getStackInSlot(slot).isEmpty()){
-			if(isValidFluid(FluidUtil.getFluidContained(inventory.getStackInSlot(slot)))){
-				return true;	
-			}
-		}
-		return false;
 	}
 	
 	private boolean isValidFluid(FluidStack stack) {
@@ -324,6 +311,18 @@ public class TileEntityMachineDiFurnaceSPK extends TileEntityMachineBase impleme
 			|| stack.getFluid() == ModForgeFluids.uu_matter
 			|| stack.getFluid() == ModForgeFluids.balefire;
 	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		return TileEntity.INFINITE_EXTENT_AABB;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getMaxRenderDistanceSquared() {
+		return 65536.0D;
+	}
+
 	
 	@Override
 	public void setPower(long i) {

@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.SlotMachineOutput;
-import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceSPK;
+import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceBig;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -11,38 +11,38 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class ContainerMachineDiFurnaceSPK extends Container {
+public class ContainerDiFurnaceBig extends Container {
 	
-	private TileEntityMachineDiFurnaceSPK diFurnace;
+	private TileEntityMachineDiFurnaceBig diFurnace;
 	private int progress;
 	private long power;
 	private int tankAmount;
 	private int tankType;
 	
-	public ContainerMachineDiFurnaceSPK(InventoryPlayer invPlayer, TileEntityMachineDiFurnaceSPK tedf) {
+	public ContainerDiFurnaceBig(InventoryPlayer invPlayer, TileEntityMachineDiFurnaceBig tedf) {
 		
 		diFurnace = tedf;
 		
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 57, 17));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 75, 17));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 57, 53));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 75, 53));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 4, 127, 26));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 145, 26));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 127, 44));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 145, 44));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 57, 23));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 75, 23));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 57, 59));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 75, 59));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 4, 127, 32));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 145, 32));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 127, 50));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 145, 50));
 		
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 114 + i * 18));
 			}
 		}
 		
 		for(int i = 0; i < 9; i++)
 		{
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
+			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 172));
 		}
 	}
 	

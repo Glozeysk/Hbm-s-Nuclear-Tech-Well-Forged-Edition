@@ -50,14 +50,14 @@ public class BlockFluidBarrel extends BlockContainer {
 	public void addInformation(ItemStack stack, World player, List<String> list, ITooltipFlag advanced) {
 		if(this == ModBlocks.barrel_plastic) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "12,000"));
-			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannothot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannothot"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		}
 		
 		if(this == ModBlocks.barrel_corroded) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "6,000"));
-			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannot1300hot"));
 			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.leaky"));
@@ -65,14 +65,14 @@ public class BlockFluidBarrel extends BlockContainer {
 		
 		if(this == ModBlocks.barrel_iron) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "8,000"));
-			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannot1500hot"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor1"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		}
 		
 		if(this == ModBlocks.barrel_steel) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "16,000"));
-			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannot1300hot"));
 			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.cancor"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannothighcor"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
@@ -80,14 +80,14 @@ public class BlockFluidBarrel extends BlockContainer {
 		
 		if(this == ModBlocks.barrel_antimatter) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "16,000"));
-			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannot20Khot"));
 			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canam"));
 		}
 		
 		if(this == ModBlocks.barrel_tcalloy) {
 			list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "24,000"));
-			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
+			list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotextremelyhot"));
 			list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 			list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		}

@@ -118,6 +118,8 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.crane_router), new Object[] { "PIP", "ICI", "PIP", 'P', ModItems.piston_pneumatic, 'I', ModItems.plate_polymer, 'C', ModItems.circuit_copper });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector_alt, 1), new Object[] { ModBlocks.crane_ejector });
+		addShapelessAuto(new ItemStack(ModBlocks.machine_difurnace_spk_off, 1), new Object[] { ModBlocks.machine_difurnace_big });
+		addShapelessAuto(new ItemStack(ModBlocks.machine_difurnace_big, 1), new Object[] { ModBlocks.machine_difurnace_spk_off });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter_alt, 1), new Object[] { ModBlocks.crane_inserter });
 
@@ -1877,7 +1879,7 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_plastic, 1), new Object[] { "IPI", "I I", "IPI", 'I', ModItems.plate_polymer, 'P', AL.plate() });
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_iron, 1), new Object[] { "IPI", "I I", "IPI", 'I', IRON.plate(), 'P', IRON.ingot() });
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_steel, 1), new Object[] { "IPI", "IOI", "IPI", 'I', STEEL.plate(), 'P', STEEL.ingot(), 'O', ModItems.oil_tar });
-		addRecipeAuto(new ItemStack(ModBlocks.barrel_antimatter, 1), new Object[] { "IPI", "IPI", "IPI", 'I', BIGMT.plate(), 'P', ModItems.coil_advanced_torus });
+		addRecipeAuto(new ItemStack(ModBlocks.barrel_antimatter, 1), new Object[] { "IPI", "IBI", "IPI", 'I', BIGMT.plate(), 'P', ModItems.coil_advanced_torus, 'B', ModItems.battery_sc_uranium });
 		addRecipeAuto(new ItemStack(ModBlocks.tesla, 1), new Object[] { "CCC", "PIP", "WTW", 'C', ModItems.coil_copper, 'I', IRON.ingot(), 'P', ANY_PLASTIC.ingot(), 'T', ModBlocks.machine_transformer, 'W', KEY_PLANKS });
 
 		addRecipeAuto(new ItemStack(ModItems.bottle_mercury, 1), new Object[] { "###", "#B#", "###", '#', ModItems.nugget_mercury, 'B', Items.GLASS_BOTTLE });

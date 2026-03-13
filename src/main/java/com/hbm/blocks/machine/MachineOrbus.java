@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import java.util.List;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
@@ -7,13 +9,17 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineOrbus;
 
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 
@@ -39,6 +45,13 @@ public class MachineOrbus extends BlockDummyable {
 	@Override
 	public int getOffset() {
 		return 1;
+	}
+
+	@Override
+	public void addInformation(ItemStack stack, World player, List<String> list, ITooltipFlag advanced) {
+		list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannot20Khot"));
+		list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
+		list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canam"));
 	}
 	
 	@Override

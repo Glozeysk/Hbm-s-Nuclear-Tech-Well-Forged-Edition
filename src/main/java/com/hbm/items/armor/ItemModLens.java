@@ -46,27 +46,28 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
     }
 
     public static void initBlockList(){
-        blockList.put(ModBlocks.ore_coltan, new Object[]{5, I18nUtil.resolveKey("tile.ore_coltan.name"), 0xffbd54});
-        blockList.put(ModBlocks.ore_gneiss_lithium, new Object[]{5, I18nUtil.resolveKey("tile.ore_gneiss_lithium.name"), 0xcef2ee});
-        blockList.put(ModBlocks.ore_reiium, new Object[]{10, I18nUtil.resolveKey("tile.ore_reiium.name"), 0xbe0000});
-        blockList.put(ModBlocks.ore_weidanium, new Object[]{10, I18nUtil.resolveKey("tile.ore_weidanium.name"), 0xff3f00});
-        blockList.put(ModBlocks.ore_australium, new Object[]{10, I18nUtil.resolveKey("tile.ore_australium.name"), 0xffff00});
-        blockList.put(ModBlocks.ore_verticium, new Object[]{10, I18nUtil.resolveKey("tile.ore_verticium.name"), 0x00ff00});
-        blockList.put(ModBlocks.ore_unobtainium, new Object[]{10, I18nUtil.resolveKey("tile.ore_unobtainium.name"), 0x0059ff});
-        blockList.put(ModBlocks.ore_daffergon, new Object[]{10, I18nUtil.resolveKey("tile.ore_daffergon.name"), 0xa500ff});
-        blockList.put(Blocks.END_PORTAL_FRAME, new Object[]{1, I18nUtil.resolveKey("neutrino.end_portal.name"), 0x40b080});
-        blockList.put(ModBlocks.basalt_gem, new Object[]{1, I18nUtil.resolveKey("tile.basalt_gem.name"), 0xff5000});
-        blockList.put(ModBlocks.volcano_core, new Object[]{1, I18nUtil.resolveKey("tile.volcano_core.name"), 0xff4000});
-        blockList.put(ModBlocks.pink_log, new Object[]{1, I18nUtil.resolveKey("tile.pink_log.name"), 0xff00ff});
-        blockList.put(ModBlocks.crate_red, new Object[]{1, I18nUtil.resolveKey("tile.crate_red.name"), 0xff0000});
-        blockList.put(ModBlocks.brick_jungle_circle, new Object[]{1, I18nUtil.resolveKey("tile.brick_jungle_circle.name"), 0xff0000});
-        blockList.put(ModBlocks.safe, new Object[]{1, I18nUtil.resolveKey("tile.safe.name"), 0xa0a0a0});
+        blockList.put(ModBlocks.ore_coltan, new Object[]{5, "tile.ore_coltan.name", 0xffbd54});
+        blockList.put(ModBlocks.ore_gneiss_lithium, new Object[]{20, "tile.ore_gneiss_lithium.name", 0xcef2ee});
+        blockList.put(ModBlocks.ore_reiium, new Object[]{10, "tile.ore_reiium.name", 0xbe0000});
+        blockList.put(ModBlocks.ore_weidanium, new Object[]{10, "tile.ore_weidanium.name", 0xff3f00});
+        blockList.put(ModBlocks.ore_australium, new Object[]{10, "tile.ore_australium.name", 0xffff00});
+        blockList.put(ModBlocks.ore_verticium, new Object[]{10, "tile.ore_verticium.name", 0x00ff00});
+        blockList.put(ModBlocks.ore_unobtainium, new Object[]{10, "tile.ore_unobtainium.name", 0x0059ff});
+        blockList.put(ModBlocks.ore_daffergon, new Object[]{10, "tile.ore_daffergon.name", 0xa500ff});
+        blockList.put(Blocks.END_PORTAL_FRAME, new Object[]{1, "neutrino.end_portal.name", 0x40b080});
+        blockList.put(ModBlocks.basalt_gem, new Object[]{1, "tile.basalt_gem.name", 0xff5000});
+        blockList.put(ModBlocks.volcano_core, new Object[]{1, "tile.volcano_core.name", 0xff4000});
+        blockList.put(ModBlocks.pink_log, new Object[]{1, "tile.pink_log.name", 0xff00ff});
+        blockList.put(ModBlocks.crate_red, new Object[]{1, "tile.crate_red.name", 0xff0000});
+        blockList.put(ModBlocks.brick_jungle_circle, new Object[]{1, "tile.brick_jungle_circle.name", 0xff0000});
+        blockList.put(ModBlocks.safe, new Object[]{1, "tile.safe.name", 0xa0a0a0});
         blockList.put(ModBlocks.statue_elb_f, new Object[]{1, "ELB", 0x909090});
-        blockList.put(ModBlocks.block_euphemium_cluster, new Object[]{1, I18nUtil.resolveKey("tile.block_euphemium_cluster.name"), 0xd2398c});
-        blockList.put(ModBlocks.ore_schrabidium, new Object[]{1, I18nUtil.resolveKey("tile.ore_schrabidium.name"), 0x00d0ff});
-        blockList.put(ModBlocks.ore_gneiss_schrabidium, new Object[]{1, I18nUtil.resolveKey("tile.ore_schrabidium.name"), 0x00d0ff});
-        blockList.put(ModBlocks.ore_nether_schrabidium, new Object[]{1, I18nUtil.resolveKey("tile.ore_schrabidium.name"), 0x00d0ff});
-        blockList.put(ModBlocks.taint, new Object[]{4, I18nUtil.resolveKey("tile.taint.name"), 0x00ff74});
+        blockList.put(ModBlocks.block_euphemium_cluster, new Object[]{1, "tile.block_euphemium_cluster.name", 0xd2398c});
+        blockList.put(ModBlocks.ore_schrabidium, new Object[]{1, "tile.ore_schrabidium.name", 0x00d0ff});
+        blockList.put(ModBlocks.ore_gneiss_schrabidium, new Object[]{1, "tile.ore_schrabidium.name", 0x00d0ff});
+        blockList.put(ModBlocks.ore_nether_schrabidium, new Object[]{1, "tile.ore_schrabidium.name", 0x00d0ff});
+        blockList.put(ModBlocks.taint, new Object[]{4, "tile.taint.name", 0x00ff74});
+        blockList.put(ModBlocks.crashed_balefire, new Object[]{1, "tile.crashed_bomb.name", 0x00ff00});
     }
 
     @Override
@@ -125,11 +126,15 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
             data.setInteger("color", color);
             data.setInteger("expires", 15_000);
             data.setDouble("dist", 300D);
-            if(label != null) data.setString("label", label);
+            if(label != null) {
+                String translated = net.minecraft.util.text.translation.I18n.translateToLocal(label);
+                data.setString("label", translated);
+            }
             PacketDispatcher.wrapper.sendTo(new AuxParticlePacketNT(data, x, y, z), player);
             return true;
         }
 
         return false;
     }
+    
 }
