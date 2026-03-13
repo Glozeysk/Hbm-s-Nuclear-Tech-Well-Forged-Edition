@@ -27,6 +27,17 @@ import javax.inject.Inject
 
 import static org.gradle.internal.logging.text.StyledTextOutput.Style
 
+//Plugin for javax.inject.Inject, but this package not found
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'javax.inject:javax.inject:1'
+    }
+}
+
 plugins {
     id 'java'
     id 'java-library'
@@ -439,6 +450,15 @@ repositories {
                     url = 'https://www.cursemaven.com'
                     // url = 'https://beta.cursemaven.com'
                 }
+
+                /*maven {
+                    name = 'Forge Legacy'
+                    url = 'https://maven.minecraftforge.net'
+                    content {
+                        includeGroup 'net.minecraft'
+                        includeGroup 'net.minecraftforge'
+                    }
+                }*/
             }
             filter {
                 includeGroup 'curse.maven'
@@ -563,9 +583,7 @@ dependencies {
 
     compileOnlyApi 'org.jetbrains:annotations:26.0.2'
     annotationProcessor 'org.jetbrains:annotations:26.0.2'
-    patchedMinecraft('net.minecraft:launchwrapper:1.17.2') {
-        transitive = false
-    }
+    implementation files('libs/launchwrapper-1.17.2.jar')
 
     if ((usesMixins.toBoolean() || forceEnableMixins.toBoolean()) && stripForgeRequirements.toBoolean()) {
         runtimeOnlyNonPublishable 'com.cleanroommc:strip-latest-forge-requirements:1.0'
