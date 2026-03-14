@@ -36,6 +36,7 @@ import com.hbm.handler.guncfg.GunRocketFactory;
 import com.hbm.interfaces.IItemHazard;
 import com.hbm.items.armor.ArmorAJR;
 import com.hbm.items.armor.ArmorAJRO;
+import com.hbm.items.armor.ArmorAJRAlpha;
 import com.hbm.items.armor.ArmorAJRMUR;
 import com.hbm.items.armor.ArmorRPA;
 import com.hbm.items.armor.ArmorAshGlasses;
@@ -881,6 +882,25 @@ public class ModItems {
 	public static final Item ajro_plate = new ArmorAJRO(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajro_plate").cloneStats((ArmorFSB) ajro_helmet);
 	public static final Item ajro_legs = new ArmorAJRO(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 2500000, 10000, 2000, 25, "ajro_legs").cloneStats((ArmorFSB) ajro_helmet);
 	public static final Item ajro_boots = new ArmorAJRO(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajro_boots").cloneStats((ArmorFSB) ajro_helmet);
+
+	public static final Item ajr_alpha_helmet = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_alpha_helmet").setMod(0.25F).setCap(6.0F).setThreshold(4F)
+			.setFireproof(true)
+			.enableVATS(true)
+			.enableFlashlight(new Vec3d(-0.18, 0.2, 0.9))
+			.setHasGeigerSound(true)
+			.setHasHardLanding(true)
+			.addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
+			.addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 0))
+			.setBlastProtection(0.25F)
+			.setProtectionLevel(200F)
+			.setStep(HBMSoundHandler.iron)
+			.setJump(HBMSoundHandler.ironJump)
+			.setFall(HBMSoundHandler.ironLand)
+			.addResistance("monoxide", 0F)
+			.addResistance("fall", 0);
+	public static final Item ajr_alpha_plate = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_alpha_plate").cloneStats((ArmorFSB) ajr_alpha_helmet);
+	public static final Item ajr_alpha_legs = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 2500000, 10000, 2000, 25, "ajr_alpha_legs").cloneStats((ArmorFSB) ajr_alpha_helmet);
+	public static final Item ajr_alpha_boots = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_alpha_boots").cloneStats((ArmorFSB) ajr_alpha_helmet);
 
 	public static final Item ajr_mur_helmet = new ArmorAJRMUR(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_helmet").setMod(0.25F).setCap(6.0F).setThreshold(5F)
 			.setFireproof(true)

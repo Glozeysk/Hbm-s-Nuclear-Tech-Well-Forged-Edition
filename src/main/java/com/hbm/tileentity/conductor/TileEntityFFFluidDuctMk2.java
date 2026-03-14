@@ -17,7 +17,7 @@ public class TileEntityFFFluidDuctMk2 extends TileEntityFFDuctBaseMk2 implements
             if (FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT)) {
                 world.destroyBlock(pos, false);
                 world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, true, true);
-            } else if (FluidTypeHandler.isReallyHot(resource.getFluid()) || FluidTypeHandler.isCorrosivePlastic(resource.getFluid())) {
+            } else if (FluidTypeHandler.isReallyHot(resource.getFluid()) || FluidTypeHandler.isCorrosiveIron(resource.getFluid())) {
                 world.destroyBlock(pos, false);
                 world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }

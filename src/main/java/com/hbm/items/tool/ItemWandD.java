@@ -72,6 +72,12 @@ public class ItemWandD extends Item {
 					if(world.isRemote)
 						player.sendMessage(new TextComponentString(te.connected.get(i).getX() + " " + te.connected.get(i).getY() + " " + te.connected.get(i).getZ()));
 			}
+			if (b == ModBlocks.red_connector) {
+				TileEntityPylonBase te = (TileEntityPylonBase) world.getTileEntity(pos);
+				for(int i = 0; i < te.connected.size(); i++)
+					if(world.isRemote)
+						player.sendMessage(new TextComponentString(te.connected.get(i).getX() + " " + te.connected.get(i).getY() + " " + te.connected.get(i).getZ()));
+			}
 			
 			if(player.isSneaking()){
 				RayTraceResult pos1 = Library.rayTrace(player, 500, 1);

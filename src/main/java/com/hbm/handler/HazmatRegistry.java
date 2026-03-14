@@ -156,6 +156,11 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.ajro_legs, fixRounding(ajr * legs));
 		HazmatRegistry.registerHazmat(ModItems.ajro_boots, fixRounding(ajr * boots));
 
+		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_helmet, fixRounding(ajr * helmet));
+		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_plate, fixRounding(ajr * chest));
+		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_legs, fixRounding(ajr * legs));
+		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_boots, fixRounding(ajr * boots));
+
 		HazmatRegistry.registerHazmat(ModItems.ajr_mur_helmet, fixRounding(ajr * helmet));
 		HazmatRegistry.registerHazmat(ModItems.ajr_mur_plate, fixRounding(ajr * chest));
 		HazmatRegistry.registerHazmat(ModItems.ajr_mur_legs, fixRounding(ajr * legs));

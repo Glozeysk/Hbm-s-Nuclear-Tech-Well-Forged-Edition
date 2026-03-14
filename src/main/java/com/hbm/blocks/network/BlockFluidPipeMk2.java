@@ -65,7 +65,8 @@ public class BlockFluidPipeMk2 extends BlockContainer implements IToolable, ILoo
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
-		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor"));
+		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.cancor"));
+		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannothighcor"));
 		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		tooltip.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotreallyhot"));
 	}

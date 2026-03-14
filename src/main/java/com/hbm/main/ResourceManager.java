@@ -225,6 +225,7 @@ public class ResourceManager {
 	public static final IModelCustom cable_neo = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/blocks/cable_neo.obj")).asVBO();
 
 	//Big Cables
+	public static final IModelCustom red_connector = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/network/connector.obj")).asVBO();
 	public static final IModelCustom pylon_large = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/network/pylon_large.obj")).asVBO();
 	public static final IModelCustom substation = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/network/substation.obj")).asVBO();
 
@@ -662,6 +663,7 @@ public class ResourceManager {
 	public static final ResourceLocation cable_neo_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/cable_neo.png");
 
 	//Large Cable
+	public static final ResourceLocation red_connector_tex = new ResourceLocation(RefStrings.MODID, "textures/models/network/connector.png");
 	public static final ResourceLocation pylon_large_tex = new ResourceLocation(RefStrings.MODID, "textures/models/network/pylon_large.png");
 	public static final ResourceLocation substation_tex = new ResourceLocation(RefStrings.MODID, "textures/models/network/substation.png");
 
@@ -973,6 +975,11 @@ public class ResourceManager {
 	public static final ResourceLocation ajro_leg = new ResourceLocation(RefStrings.MODID, "textures/armor/ajro_leg.png");
 	public static final ResourceLocation ajro_chest = new ResourceLocation(RefStrings.MODID, "textures/armor/ajro_chest.png");
 	public static final ResourceLocation ajro_arm = new ResourceLocation(RefStrings.MODID, "textures/armor/ajro_arm.png");
+
+	public static final ResourceLocation ajr_alpha_helmet = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_alpha_helmet.png");
+	public static final ResourceLocation ajr_alpha_leg = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_alpha_leg.png");
+	public static final ResourceLocation ajr_alpha_chest = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_alpha_chest.png");
+	public static final ResourceLocation ajr_alpha_arm = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_alpha_arm.png");
 
 	public static final ResourceLocation ajr_mur_helmet = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_mur_helmet.png");
 	public static final ResourceLocation ajr_mur_leg = new ResourceLocation(RefStrings.MODID, "textures/armor/ajr_mur_leg.png");

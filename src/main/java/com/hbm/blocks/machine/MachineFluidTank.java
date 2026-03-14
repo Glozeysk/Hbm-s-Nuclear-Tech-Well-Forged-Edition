@@ -66,10 +66,6 @@ public class MachineFluidTank extends BlockDummyable {
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o + 1);
 		this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o - 1);
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o - 1);
-		// this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o + 1);
-		// this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o + 1);
-		// this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o - 1);
-		// this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o - 1);
 	}
 
 	@Override

@@ -21,9 +21,9 @@ public class RenderPylon extends TileEntitySpecialRenderer<TileEntityPylon> {
 
 	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/network/ModelPylon.png");
 
-	private static final float cableColorR = 0.16F;
-	private static final float cableColorG = 0.16F;
-	private static final float cableColorB = 0.16F;
+	private static final float cableColorR = 0.847F;
+	private static final float cableColorG = 0.251F;
+	private static final float cableColorB = 0.039F;
 
 	private ModelPylon pylon;
 
