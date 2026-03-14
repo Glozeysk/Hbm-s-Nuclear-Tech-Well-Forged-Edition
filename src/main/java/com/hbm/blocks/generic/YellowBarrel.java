@@ -4,6 +4,8 @@ import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.interfaces.IItemHazard;
+import com.hbm.modules.ItemHazardModule;
 import com.hbm.saveddata.RadiationSavedData;
 
 import net.minecraft.block.Block;
@@ -20,16 +22,17 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class YellowBarrel extends Block {
+public class YellowBarrel extends Block implements IItemHazard {
 
 	public static final AxisAlignedBB BARREL_BB = new AxisAlignedBB(2 * 0.0625F, 0.0F, 2 * 0.0625F, 14 * 0.0625F, 1.0F, 14 * 0.0625F);
 	Random rand = new Random();
+    ItemHazardModule module;
 	
 	public YellowBarrel(Material materialIn, String s) {
 		super(materialIn);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
-		
+        this.module = new ItemHazardModule();
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 	
@@ -108,5 +111,14 @@ public class YellowBarrel extends Block {
 		super.onBlockAdded(worldIn, pos, state);
 		worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
 	}
-	
+
+    @Override
+    public ItemHazardModule getModule() {
+        return module;
+    }
+
+    @Override
+    public Block toBlock() {
+        return IItemHazard.super.toBlock();
+    }
 }
