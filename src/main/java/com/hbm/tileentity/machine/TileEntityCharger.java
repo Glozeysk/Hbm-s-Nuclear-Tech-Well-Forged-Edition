@@ -56,7 +56,7 @@ public class TileEntityCharger extends TileEntityLoadedBase implements ITickable
 						IBatteryItem battery = (IBatteryItem) stack.getItem();
 						totalCapacity += battery.getMaxCharge(stack);
 						totalEnergy += battery.getCharge(stack);
-						charge += Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate());
+						charge += Math.max(0, Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate()));
 					}
 				}
 			}
@@ -120,15 +120,16 @@ public class TileEntityCharger extends TileEntityLoadedBase implements ITickable
 					if(stack != null && stack.getItem() instanceof IBatteryItem) {
 						IBatteryItem battery = (IBatteryItem) stack.getItem();
 						
-						long toCharge = Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate());
+						long toCharge = Math.max(0, Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate()));
 						toCharge = Math.min(toCharge, chargeBudget);
 						toCharge = Math.min(toCharge, power);
-						battery.chargeBattery(stack, toCharge);
-						power -= toCharge;
-						actualCharge += toCharge;
-						chargeBudget -= toCharge;
-						
-						lastOp = 4;
+						if(toCharge > 0) {
+							battery.chargeBattery(stack, toCharge);
+							power -= toCharge;
+							actualCharge += toCharge;
+							chargeBudget -= toCharge;
+							lastOp = 4;
+						}
 					}
 				}
 			}

@@ -831,7 +831,7 @@ public class ModItems {
 	public static final Item t45_legs = new ArmorT45(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.LEGS, 1000000, 10000, 1000, 5, "t45_legs").cloneStats((ArmorFSB) t45_helmet).setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item t45_boots = new ArmorT45(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.FEET, 1000000, 10000, 1000, 5, "t45_boots").cloneStats((ArmorFSB) t45_helmet).setCreativeTab(CreativeTabs.COMBAT);
 
-	public static final Item t45_mur_helmet = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.HEAD, 1500000, 10000, 1000, 5, "t45_mur_helmet").setCap(16F).setMod(0.45F)
+	public static final Item t45_mur_helmet = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.HEAD, 1500000, 10000, 1000, 5, "t45_mur_helmet").setCap(16F).setMod(0.45F)
 			.setFireproof(true)
 			.enableVATS(true)
 			.addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
@@ -841,9 +841,9 @@ public class ModItems {
 			.setProjectileProtection(0.45F)
 			.setProtectionLevel(150F)
 			.addResistance("fall", 0).setCreativeTab(CreativeTabs.COMBAT);
-	public static final Item t45_mur_plate = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.CHEST, 1500000, 10000, 1000, 5, "t45_mur_plate").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
-	public static final Item t45_mur_legs = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.LEGS, 1500000, 10000, 1000, 5, "t45_mur_legs").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
-	public static final Item t45_mur_boots = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.FEET, 1500000, 10000, 1000, 5, "t45_mur_boots").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
+	public static final Item t45_mur_plate = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.CHEST, 1500000, 10000, 1000, 5, "t45_mur_plate").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
+	public static final Item t45_mur_legs = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.LEGS, 1500000, 10000, 1000, 5, "t45_mur_legs").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
+	public static final Item t45_mur_boots = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.FEET, 1500000, 10000, 1000, 5, "t45_mur_boots").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
 	
 	public static final Item ajr_helmet = new ArmorAJR(MainRegistry.aMatAJR, 7, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_helmet").setMod(0.25F).setCap(6.0F).setThreshold(4F)
 			.setFireproof(true)
@@ -902,7 +902,7 @@ public class ModItems {
 	public static final Item ajr_alpha_legs = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 2500000, 10000, 2000, 25, "ajr_alpha_legs").cloneStats((ArmorFSB) ajr_alpha_helmet);
 	public static final Item ajr_alpha_boots = new ArmorAJRAlpha(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_alpha_boots").cloneStats((ArmorFSB) ajr_alpha_helmet);
 
-	public static final Item ajr_mur_helmet = new ArmorAJRMUR(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_helmet").setMod(0.25F).setCap(6.0F).setThreshold(5F)
+	public static final Item ajr_mur_helmet = new ArmorAJRMUR(MainRegistry.aMatAJRMur, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_helmet").setMod(0.25F).setCap(6.0F).setThreshold(5F)
 			.setFireproof(true)
 			.enableVATS(true)
 			.enableFlashlight(new Vec3d(-0.18, 0.2, 0.9))
@@ -919,9 +919,9 @@ public class ModItems {
 			.setFall(HBMSoundHandler.ironLand)
 			.addResistance("monoxide", 0F)
 			.addResistance("fall", 0);
-	public static final Item ajr_mur_plate = new ArmorAJRMUR(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_plate").cloneStats((ArmorFSB) ajr_mur_helmet);
-	public static final Item ajr_mur_legs = new ArmorAJRMUR(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 3000000, 10000, 2000, 25, "ajr_mur_legs").cloneStats((ArmorFSB) ajr_mur_helmet);
-	public static final Item ajr_mur_boots = new ArmorAJRMUR(MainRegistry.aMatAJR, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_boots").cloneStats((ArmorFSB) ajr_mur_helmet);
+	public static final Item ajr_mur_plate = new ArmorAJRMUR(MainRegistry.aMatAJRMur, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_plate").cloneStats((ArmorFSB) ajr_mur_helmet);
+	public static final Item ajr_mur_legs = new ArmorAJRMUR(MainRegistry.aMatAJRMur, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 3000000, 10000, 2000, 25, "ajr_mur_legs").cloneStats((ArmorFSB) ajr_mur_helmet);
+	public static final Item ajr_mur_boots = new ArmorAJRMUR(MainRegistry.aMatAJRMur, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 3000000, 10000, 2000, 25, "ajr_mur_boots").cloneStats((ArmorFSB) ajr_mur_helmet);
 
 	public static final Item hev_helmet = new ArmorHEV(MainRegistry.aMatHEV, 7, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 5000000, 10000, 2500, 100, "hev_helmet").setCap(4.0F).setThreshold(2.0F)
 			.addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))

@@ -57,16 +57,19 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 	}
     
 	@Override
-    public void chargeBattery(ItemStack stack, long i) {
-    	if(stack.getItem() instanceof ArmorFSBPowered) {
-    		if(stack.hasTagCompound()) {
-    			stack.getTagCompound().setLong("charge", Math.min(getMaxCharge(stack), Math.max(0, stack.getTagCompound().getLong("charge") + i)));
-    		} else {
-    			stack.setTagCompound(new NBTTagCompound());
-    			stack.getTagCompound().setLong("charge", Math.min(getMaxCharge(stack), Math.max(0, i)));
-    		}
-    	}
-    }
+	public void chargeBattery(ItemStack stack, long i) {
+		if(stack.getItem() instanceof ArmorFSBPowered) {
+			if(!stack.hasTagCompound()) {
+				stack.setTagCompound(new NBTTagCompound());
+			}
+			long currentCharge = stack.getTagCompound().getLong("charge");
+			long newCharge = Math.min(getMaxCharge(stack), Math.max(0, currentCharge + i));
+			if(i > 0) {
+				newCharge = Math.max(newCharge, currentCharge);
+			}
+			stack.getTagCompound().setLong("charge", newCharge);
+		}
+	}
 
 	@Override
     public void setCharge(ItemStack stack, long i) {
