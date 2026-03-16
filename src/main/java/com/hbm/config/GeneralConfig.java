@@ -84,7 +84,11 @@ public class GeneralConfig {
 	public static boolean enableReflectorCompat = false;
 	public static int coltanRate = 2;
 	public static int bedrockRate = 50;
-	
+
+    public static boolean enablePacketThreading = true;
+	public static int packetThreadingCoreCount = 1;
+    public static int packetThreadingMaxCount = 2;
+
 	public static void loadFromConfig(Configuration config){
 		final String CATEGORY_GENERAL = "01_general";
 		// enablePacketThreading = config.get(CATEGORY_GENERAL, "0.01_enablePacketThreading", true).getBoolean(true);

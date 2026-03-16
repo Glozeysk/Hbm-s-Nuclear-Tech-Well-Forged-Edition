@@ -381,9 +381,9 @@ minecraft {
 
     if (usesMixins.toBoolean()) {
         extraRunJvmArguments.addAll([
-            '-Dmixin.hotSwap=true',
-            '-Dmixin.checks.interfaces=true',
-            '-Dmixin.debug.export=true'
+                '-Dmixin.hotSwap=true',
+                '-Dmixin.checks.interfaces=true',
+                '-Dmixin.debug.export=true'
         ])
     }
 
@@ -466,7 +466,7 @@ repositories {
         }
         exclusiveContent {
             forRepository {
-                //noinspection ForeignDelegate
+                //noinspection ForeignDelegatef
                 maven {
                     name = 'Modrinth'
                     url = 'https://api.modrinth.com/maven'
@@ -908,7 +908,7 @@ if (enableJava17RunTasks.toBoolean()) {
         if (modId != 'lwjgl3ify') {
             java17Dependencies("io.github.twilightflower:lwjgl3ify:1.0.1")
             java17PatchDependencies("io.github.twilightflower:lwjgl3ify:1.0.1:forgePatches") {
-            transitive = false
+                transitive = false
             }
         }
     }
