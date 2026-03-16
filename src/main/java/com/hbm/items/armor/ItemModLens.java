@@ -2,9 +2,11 @@ package com.hbm.items.armor;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ISatChip;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.toClient.AuxParticlePacketTest;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteSavedData;
 import com.hbm.saveddata.satellites.SatelliteScanner;
@@ -130,7 +132,7 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
                 String translated = net.minecraft.util.text.translation.I18n.translateToLocal(label);
                 data.setString("label", translated);
             }
-            PacketDispatcher.wrapper.sendTo(new AuxParticlePacketNT(data, x, y, z), player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketTest(data, x, y, z), player);
             return true;
         }
 

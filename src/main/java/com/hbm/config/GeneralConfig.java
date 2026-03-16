@@ -86,15 +86,17 @@ public class GeneralConfig {
 	public static int bedrockRate = 50;
 
     public static boolean enablePacketThreading = true;
-	public static int packetThreadingCoreCount = 1;
-    public static int packetThreadingMaxCount = 2;
+	public static int packetThreadingCoreCount = 2;
+    public static int packetThreadingMaxCount = 4;
+    public static boolean packetThreadingErrorBypass = false;
+
 
 	public static void loadFromConfig(Configuration config){
 		final String CATEGORY_GENERAL = "01_general";
-		// enablePacketThreading = config.get(CATEGORY_GENERAL, "0.01_enablePacketThreading", true).getBoolean(true);
-		// packetThreadingCoreCount = config.get(CATEGORY_GENERAL, "0.02_packetThreadingCoreCount", 1).getInt(1);
-		// packetThreadingMaxCount = config.get(CATEGORY_GENERAL, "0.03_packetThreadingMaxCount", 2).getInt(2);
-		// packetThreadingErrorBypass = config.get(CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false).getBoolean(false);
+		enablePacketThreading = config.get(CATEGORY_GENERAL, "0.01_enablePacketThreading", true).getBoolean(true);
+		packetThreadingCoreCount = config.get(CATEGORY_GENERAL, "0.02_packetThreadingCoreCount", 2).getInt(2);
+		packetThreadingMaxCount = config.get(CATEGORY_GENERAL, "0.03_packetThreadingMaxCount", 4).getInt(4);
+		packetThreadingErrorBypass = config.get(CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false).getBoolean(false);
 		enableDebugMode = config.get(CATEGORY_GENERAL, "1.00_enableDebugMode", false).getBoolean(false);
 		enableSkybox = config.get(CATEGORY_GENERAL, "1.00_enableSkybox", true).getBoolean(true);
 		enableMycelium = config.get(CATEGORY_GENERAL, "1.01_enableMyceliumSpread", false).getBoolean(false);
