@@ -50,36 +50,36 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
     // 1. Offsets, Info & Instantiation
     // ================================================================================================================
 
-    public abstract long objectFieldOffset(Field f);
+    public abstract long objectFieldOffset(Field f) throws Throwable;
 
-    public abstract Object staticFieldBase(Field f);
+    public abstract Object staticFieldBase(Field f) throws Throwable;
 
-    public abstract long staticFieldOffset(Field f);
+    public abstract long staticFieldOffset(Field f) throws Throwable;
 
-    public abstract Object allocateInstance(Class<?> cls) throws InstantiationException;
+    public abstract Object allocateInstance(Class<?> cls) throws Throwable;
 
-    public abstract Object allocateUninitializedArray(Class<?> componentType, int length);
+    public abstract Object allocateUninitializedArray(Class<?> componentType, int length) throws Throwable;
 
-    public abstract long arrayBaseOffset(Class<?> cls);
+    public abstract long arrayBaseOffset(Class<?> cls) throws Throwable;
 
-    public abstract int arrayIndexScale(Class<?> cls);
+    public abstract int arrayIndexScale(Class<?> cls) throws Throwable;
 
-    public abstract int addressSize();
+    public abstract int addressSize() throws Throwable;
 
-    public abstract int pageSize();
+    public abstract int pageSize() throws Throwable;
 
 
     // ================================================================================================================
     // 2. References (Object)
     // ================================================================================================================
 
-    public abstract Object getReference(Object o, long offset);
+    public abstract Object getReference(Object o, long offset) throws Throwable;
 
-    public abstract void putReference(Object o, long offset, Object x);
+    public abstract void putReference(Object o, long offset, Object x) throws Throwable;
 
-    public abstract Object getReferenceVolatile(Object o, long offset);
+    public abstract Object getReferenceVolatile(Object o, long offset) throws Throwable;
 
-    public abstract void putReferenceVolatile(Object o, long offset, Object x);
+    public abstract void putReferenceVolatile(Object o, long offset, Object x) throws Throwable;
 
     public abstract Object getReferenceAcquire(Object o, long offset);
 
@@ -500,7 +500,7 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
      * @deprecated use {@link #getReference(Object, long)} whenever possible
      */
     @Deprecated
-    public final Object getObject(Object o, long offset) {
+    public final Object getObject(Object o, long offset) throws Throwable {
         return getReference(o, offset);
     }
 
@@ -508,7 +508,7 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
      * @deprecated use {@link #putReference(Object, long, Object)} whenever possible
      */
     @Deprecated
-    public final void putObject(Object o, long offset, Object x) {
+    public final void putObject(Object o, long offset, Object x) throws Throwable {
         putReference(o, offset, x);
     }
 
@@ -516,7 +516,7 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
      * @deprecated use {@link #getReferenceVolatile(Object, long)} whenever possible
      */
     @Deprecated
-    public final Object getObjectVolatile(Object o, long offset) {
+    public final Object getObjectVolatile(Object o, long offset) throws Throwable {
         return getReferenceVolatile(o, offset);
     }
 
@@ -524,7 +524,7 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
      * @deprecated use {@link #putReferenceVolatile(Object, long, Object)} whenever possible
      */
     @Deprecated
-    public final void putObjectVolatile(Object o, long offset, Object x) {
+    public final void putObjectVolatile(Object o, long offset, Object x) throws Throwable {
         putReferenceVolatile(o, offset, x);
     }
 

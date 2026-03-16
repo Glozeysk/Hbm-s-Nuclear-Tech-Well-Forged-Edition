@@ -34,7 +34,7 @@ public final class FMLNetworkHook {
     private FMLNetworkHook() {
     }
 
-    private static void releaseCustomPayloadData(Object pkt) {
+    private static void releaseCustomPayloadData(Object pkt) throws Throwable {
         if (pkt instanceof SPacketCustomPayload sp) {
             Object o = U.getReference(sp, SP_DATA_OFF);
             if (o != null) {
@@ -50,7 +50,7 @@ public final class FMLNetworkHook {
         }
     }
 
-    private static SPacketCustomPayload createUncheckedSPacket(String channel, PacketBuffer buf) {
+    private static SPacketCustomPayload createUncheckedSPacket(String channel, PacketBuffer buf) throws Throwable {
         SPacketCustomPayload pkt = new SPacketCustomPayload();
         // skip 1048576B size check in ctor
         U.putReference(pkt, SP_CHAN_OFF, channel);
@@ -58,7 +58,7 @@ public final class FMLNetworkHook {
         return pkt;
     }
 
-    private static CPacketCustomPayload createUncheckedCPacket(String channel, PacketBuffer buf) {
+    private static CPacketCustomPayload createUncheckedCPacket(String channel, PacketBuffer buf) throws Throwable {
         CPacketCustomPayload pkt = new CPacketCustomPayload();
         // skip 32767B size check in ctor
         U.putReference(pkt, CP_CHAN_OFF, channel);
@@ -67,7 +67,7 @@ public final class FMLNetworkHook {
     }
 
     @SuppressWarnings("unused")
-    public static void networkDispatcherWrite(NetworkDispatcher self, ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+    public static void networkDispatcherWrite(NetworkDispatcher self, ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Throwable {
         if (!(msg instanceof FMLProxyPacket pkt)) {
             ctx.write(msg, promise);
             return;
@@ -92,7 +92,11 @@ public final class FMLNetworkHook {
                 final ChannelFuture f = ctx.write(out, promise);
                 f.addListener((ChannelFutureListener) future -> {
                     if (!local || !future.isSuccess()) {
-                        releaseCustomPayloadData(out);
+                        try {
+                            releaseCustomPayloadData(out);
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
 
@@ -103,7 +107,11 @@ public final class FMLNetworkHook {
                     final ChannelFuture f = ctx.write(out, promise);
                     f.addListener((ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
-                            releaseCustomPayloadData(out);
+                            try {
+                                releaseCustomPayloadData(out);
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     });
                     return;
@@ -117,7 +125,11 @@ public final class FMLNetworkHook {
 
                     final ChannelFuture f = ctx.write(p, pPromise);
                     f.addListener((ChannelFutureListener) _ -> {
-                        releaseCustomPayloadData(p);
+                        try {
+                            releaseCustomPayloadData(p);
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
                     });
                 }
             }
@@ -131,7 +143,7 @@ public final class FMLNetworkHook {
         }
     }
 
-    public static List<Packet<INetHandlerPlayClient>> fmlProxyPacketToS3FPackets(FMLProxyPacket self) {
+    public static List<Packet<INetHandlerPlayClient>> fmlProxyPacketToS3FPackets(FMLProxyPacket self) throws Throwable {
         final ByteBuf buf = self.payload();
         final int len = buf.readableBytes();
         final int ri = buf.readerIndex();

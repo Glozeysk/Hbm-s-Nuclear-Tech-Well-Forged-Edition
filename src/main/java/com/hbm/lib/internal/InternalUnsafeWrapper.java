@@ -1,7 +1,5 @@
 package com.hbm.lib.internal;
 
-import com.hbm.interfaces.SuppressCheckedExceptions;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -13,7 +11,7 @@ import java.lang.reflect.Field;
  *
  * @author mlbv
  */
-@SuppressCheckedExceptions
+@SuppressWarnings("unchecked")
 final class InternalUnsafeWrapper extends AbstractUnsafe {
 
     private static final MethodHandle OBJECT_FIELD_OFFSET, STATIC_FIELD_BASE, STATIC_FIELD_OFFSET, ALLOCATE_INSTANCE, ARRAY_BASE_OFFSET, ARRAY_INDEX_SCALE, ADDRESS_SIZE, PAGE_SIZE;
@@ -63,20 +61,12 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
 
     static {// @formatter:off
         try {
-            // JDK-8159995 did the internal Unsafe compare* renaming in JDK 10 and JDK-8181292 backported them to JDK 9.
-            // I doubt if anyone would use java 9 to run the mod though...
-            // Specifically:
-            // - compareAndExchange*Volatile to compareAndExchange*
-            // - compareAndSwap* to compareAndSet*
-            // - weakCompareAndSwap*Volatile -> weakCompareAndSet*
-            // - weakCompareAndSwap* -> weakCompareAndSet*Plain
-            boolean JDK_8207146 = MAJOR_VERSION >= 12; // Rename xxxObject -> xxxReference
-            boolean JDK_8344168 = MAJOR_VERSION >= 25; // arrayBaseOffset returns long
+            boolean JDK_8207146 = MAJOR_VERSION >= 12;
+            boolean JDK_8344168 = MAJOR_VERSION >= 25;
             Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
             Object unsafeInstance = IMPL_LOOKUP.findStatic(unsafeClass, "getUnsafe", MethodType.methodType(unsafeClass)).invoke();
             UnsafeBinder binder = new UnsafeBinder(IMPL_LOOKUP, unsafeClass, unsafeInstance);
 
-            // --- 1. Offsets & Basics ---
             OBJECT_FIELD_OFFSET = binder.bind("objectFieldOffset", long.class, Field.class);
             STATIC_FIELD_BASE = binder.bind("staticFieldBase", Object.class, Field.class);
             STATIC_FIELD_OFFSET = binder.bind("staticFieldOffset", long.class, Field.class);
@@ -92,7 +82,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             ADDRESS_SIZE = binder.bind("addressSize", int.class);
             PAGE_SIZE = binder.bind("pageSize", int.class);
 
-            // --- 2. References ---
             String getRefName = JDK_8207146 ? "getReference" : "getObject";
             String putRefName = JDK_8207146 ? "putReference" : "putObject";
             String getRefVolName = JDK_8207146 ? "getReferenceVolatile" : "getObjectVolatile";
@@ -141,7 +130,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             GET_AND_SET_REFERENCE_ACQUIRE = binder.bind(getAndSetRefAcqName, Object.class, Object.class, long.class, Object.class);
             GET_AND_SET_REFERENCE_RELEASE = binder.bind(getAndSetRefRelName, Object.class, Object.class, long.class, Object.class);
 
-            // --- 3. Int ---
             GET_INT = binder.bind("getInt", int.class, Object.class, long.class);
             PUT_INT = binder.bind("putInt", void.class, Object.class, long.class, int.class);
             GET_INT_VOLATILE = binder.bind("getIntVolatile", int.class, Object.class, long.class);
@@ -167,7 +155,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             GET_AND_SET_INT_ACQUIRE = binder.bind("getAndSetIntAcquire", int.class, Object.class, long.class, int.class);
             GET_AND_SET_INT_RELEASE = binder.bind("getAndSetIntRelease", int.class, Object.class, long.class, int.class);
 
-            // --- 4. Long ---
             GET_LONG = binder.bind("getLong", long.class, Object.class, long.class);
             PUT_LONG = binder.bind("putLong", void.class, Object.class, long.class, long.class);
             GET_LONG_VOLATILE = binder.bind("getLongVolatile", long.class, Object.class, long.class);
@@ -193,7 +180,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             GET_AND_SET_LONG_ACQUIRE = binder.bind("getAndSetLongAcquire", long.class, Object.class, long.class, long.class);
             GET_AND_SET_LONG_RELEASE = binder.bind("getAndSetLongRelease", long.class, Object.class, long.class, long.class);
 
-            // --- 5. Boolean ---
             GET_BOOLEAN = binder.bind("getBoolean", boolean.class, Object.class, long.class);
             PUT_BOOLEAN = binder.bind("putBoolean", void.class, Object.class, long.class, boolean.class);
             GET_BOOLEAN_VOLATILE = binder.bind("getBooleanVolatile", boolean.class, Object.class, long.class);
@@ -214,7 +200,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_BOOLEAN_ACQUIRE = binder.bind("compareAndExchangeBooleanAcquire", boolean.class, Object.class, long.class, boolean.class, boolean.class);
             COMPARE_AND_EXCHANGE_BOOLEAN_RELEASE = binder.bind("compareAndExchangeBooleanRelease", boolean.class, Object.class, long.class, boolean.class, boolean.class);
 
-            // --- 6. Byte ---
             GET_BYTE = binder.bind("getByte", byte.class, Object.class, long.class);
             PUT_BYTE = binder.bind("putByte", void.class, Object.class, long.class, byte.class);
             GET_BYTE_VOLATILE = binder.bind("getByteVolatile", byte.class, Object.class, long.class);
@@ -235,7 +220,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_BYTE_ACQUIRE = binder.bind("compareAndExchangeByteAcquire", byte.class, Object.class, long.class, byte.class, byte.class);
             COMPARE_AND_EXCHANGE_BYTE_RELEASE = binder.bind("compareAndExchangeByteRelease", byte.class, Object.class, long.class, byte.class, byte.class);
 
-            // --- 7. Short ---
             GET_SHORT = binder.bind("getShort", short.class, Object.class, long.class);
             PUT_SHORT = binder.bind("putShort", void.class, Object.class, long.class, short.class);
             GET_SHORT_VOLATILE = binder.bind("getShortVolatile", short.class, Object.class, long.class);
@@ -256,7 +240,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_SHORT_ACQUIRE = binder.bind("compareAndExchangeShortAcquire", short.class, Object.class, long.class, short.class, short.class);
             COMPARE_AND_EXCHANGE_SHORT_RELEASE = binder.bind("compareAndExchangeShortRelease", short.class, Object.class, long.class, short.class, short.class);
 
-            // --- 8. Char ---
             GET_CHAR = binder.bind("getChar", char.class, Object.class, long.class);
             PUT_CHAR = binder.bind("putChar", void.class, Object.class, long.class, char.class);
             GET_CHAR_VOLATILE = binder.bind("getCharVolatile", char.class, Object.class, long.class);
@@ -277,7 +260,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_CHAR_ACQUIRE = binder.bind("compareAndExchangeCharAcquire", char.class, Object.class, long.class, char.class, char.class);
             COMPARE_AND_EXCHANGE_CHAR_RELEASE = binder.bind("compareAndExchangeCharRelease", char.class, Object.class, long.class, char.class, char.class);
 
-            // --- 9. Float ---
             GET_FLOAT = binder.bind("getFloat", float.class, Object.class, long.class);
             PUT_FLOAT = binder.bind("putFloat", void.class, Object.class, long.class, float.class);
             GET_FLOAT_VOLATILE = binder.bind("getFloatVolatile", float.class, Object.class, long.class);
@@ -298,7 +280,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_FLOAT_ACQUIRE = binder.bind("compareAndExchangeFloatAcquire", float.class, Object.class, long.class, float.class, float.class);
             COMPARE_AND_EXCHANGE_FLOAT_RELEASE = binder.bind("compareAndExchangeFloatRelease", float.class, Object.class, long.class, float.class, float.class);
 
-            // --- 10. Double ---
             GET_DOUBLE = binder.bind("getDouble", double.class, Object.class, long.class);
             PUT_DOUBLE = binder.bind("putDouble", void.class, Object.class, long.class, double.class);
             GET_DOUBLE_VOLATILE = binder.bind("getDoubleVolatile", double.class, Object.class, long.class);
@@ -319,14 +300,12 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             COMPARE_AND_EXCHANGE_DOUBLE_ACQUIRE = binder.bind("compareAndExchangeDoubleAcquire", double.class, Object.class, long.class, double.class, double.class);
             COMPARE_AND_EXCHANGE_DOUBLE_RELEASE = binder.bind("compareAndExchangeDoubleRelease", double.class, Object.class, long.class, double.class, double.class);
 
-            // --- 11. Memory ---
             ALLOCATE_MEMORY = binder.bind("allocateMemory", long.class, long.class);
             FREE_MEMORY = binder.bind("freeMemory", void.class, long.class);
             REALLOCATE_MEMORY = binder.bind("reallocateMemory", long.class, long.class, long.class);
             SET_MEMORY = binder.bind("setMemory", void.class, long.class, long.class, byte.class);
             COPY_MEMORY = binder.bind("copyMemory", void.class, Object.class, long.class, Object.class, long.class, long.class);
 
-            // Raw Primitive Access
             GET_BYTE_ADDRESS = binder.bind("getByte", byte.class, long.class);
             PUT_BYTE_ADDRESS = binder.bind("putByte", void.class, long.class, byte.class);
             GET_SHORT_ADDRESS = binder.bind("getShort", short.class, long.class);
@@ -344,7 +323,6 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
             GET_ADDRESS_ADDRESS = binder.bind("getAddress", long.class, long.class);
             PUT_ADDRESS_ADDRESS = binder.bind("putAddress", void.class, long.class, long.class);
 
-            // --- 12. Fences & Misc ---
             LOAD_FENCE = binder.bind("loadFence", void.class);
             STORE_FENCE = binder.bind("storeFence", void.class);
             FULL_FENCE = binder.bind("fullFence", void.class);
@@ -357,771 +335,776 @@ final class InternalUnsafeWrapper extends AbstractUnsafe {
         }
     }// @formatter:on
 
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable> RuntimeException sneakyThrow(Throwable t) throws E {
+        throw (E) t;
+    }
+
     InternalUnsafeWrapper() {
     }
 
-
     public long objectFieldOffset(Field f) {
-        return (long) OBJECT_FIELD_OFFSET.invokeExact(f);
+        try { return (long) OBJECT_FIELD_OFFSET.invokeExact(f); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object staticFieldBase(Field f) {
-        return (Object) STATIC_FIELD_BASE.invokeExact(f);
+        try { return (Object) STATIC_FIELD_BASE.invokeExact(f); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long staticFieldOffset(Field f) {
-        return (long) STATIC_FIELD_OFFSET.invokeExact(f);
+        try { return (long) STATIC_FIELD_OFFSET.invokeExact(f); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object allocateInstance(Class<?> cls) throws InstantiationException {
-        return ALLOCATE_INSTANCE.invokeExact(cls);
+        try { return ALLOCATE_INSTANCE.invokeExact(cls); } catch (InstantiationException e) { throw e; } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object allocateUninitializedArray(Class<?> componentType, int length) {
-        return ALLOCATE_UNINITIALIZED_ARRAY.invokeExact(componentType, length);
+        try { return ALLOCATE_UNINITIALIZED_ARRAY.invokeExact(componentType, length); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long arrayBaseOffset(Class<?> cls) {
-        return (long) ARRAY_BASE_OFFSET.invokeExact(cls);
+        try { return (long) ARRAY_BASE_OFFSET.invokeExact(cls); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int arrayIndexScale(Class<?> cls) {
-        return (int) ARRAY_INDEX_SCALE.invokeExact(cls);
+        try { return (int) ARRAY_INDEX_SCALE.invokeExact(cls); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int addressSize() {
-        return (int) ADDRESS_SIZE.invokeExact();
+        try { return (int) ADDRESS_SIZE.invokeExact(); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int pageSize() {
-        return (int) PAGE_SIZE.invokeExact();
+        try { return (int) PAGE_SIZE.invokeExact(); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getReference(Object o, long offset) {
-        return GET_REFERENCE.invokeExact(o, offset);
+        try { return GET_REFERENCE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putReference(Object o, long offset, Object x) {
-        PUT_REFERENCE.invokeExact(o, offset, x);
+        try { PUT_REFERENCE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getReferenceVolatile(Object o, long offset) {
-        return GET_REFERENCE_VOLATILE.invokeExact(o, offset);
+        try { return GET_REFERENCE_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putReferenceVolatile(Object o, long offset, Object x) {
-        PUT_REFERENCE_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_REFERENCE_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getReferenceAcquire(Object o, long offset) {
-        return GET_REFERENCE_ACQUIRE.invokeExact(o, offset);
+        try { return GET_REFERENCE_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putReferenceRelease(Object o, long offset, Object x) {
-        PUT_REFERENCE_RELEASE.invokeExact(o, offset, x);
+        try { PUT_REFERENCE_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getReferenceOpaque(Object o, long offset) {
-        return GET_REFERENCE_OPAQUE.invokeExact(o, offset);
+        try { return GET_REFERENCE_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putReferenceOpaque(Object o, long offset, Object x) {
-        PUT_REFERENCE_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_REFERENCE_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetReference(Object o, long offset, Object expected, Object x) {
-        return (boolean) COMPARE_AND_SET_REFERENCE.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_REFERENCE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getAndSetReference(Object o, long offset, Object x) {
-        return GET_AND_SET_REFERENCE.invokeExact(o, offset, x);
+        try { return GET_AND_SET_REFERENCE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetReference(Object o, long offset, Object expected, Object x) {
-        return (boolean) WEAK_COMPARE_AND_SET_REFERENCE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_REFERENCE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetReferenceAcquire(Object o, long offset, Object expected, Object x) {
-        return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetReferenceRelease(Object o, long offset, Object expected, Object x) {
-        return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetReferencePlain(Object o, long offset, Object expected, Object x) {
-        return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_REFERENCE_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object compareAndExchangeReference(Object o, long offset, Object expected, Object x) {
-        return COMPARE_AND_EXCHANGE_REFERENCE.invokeExact(o, offset, expected, x);
+        try { return COMPARE_AND_EXCHANGE_REFERENCE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object compareAndExchangeReferenceAcquire(Object o, long offset, Object expected, Object x) {
-        return COMPARE_AND_EXCHANGE_REFERENCE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return COMPARE_AND_EXCHANGE_REFERENCE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object compareAndExchangeReferenceRelease(Object o, long offset, Object expected, Object x) {
-        return COMPARE_AND_EXCHANGE_REFERENCE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return COMPARE_AND_EXCHANGE_REFERENCE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getAndSetReferenceAcquire(Object o, long offset, Object x) {
-        return GET_AND_SET_REFERENCE_ACQUIRE.invokeExact(o, offset, x);
+        try { return GET_AND_SET_REFERENCE_ACQUIRE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public Object getAndSetReferenceRelease(Object o, long offset, Object x) {
-        return GET_AND_SET_REFERENCE_RELEASE.invokeExact(o, offset, x);
+        try { return GET_AND_SET_REFERENCE_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getInt(Object o, long offset) {
-        return (int) GET_INT.invokeExact(o, offset);
+        try { return (int) GET_INT.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putInt(Object o, long offset, int x) {
-        PUT_INT.invokeExact(o, offset, x);
+        try { PUT_INT.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getIntVolatile(Object o, long offset) {
-        return (int) GET_INT_VOLATILE.invokeExact(o, offset);
+        try { return (int) GET_INT_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putIntVolatile(Object o, long offset, int x) {
-        PUT_INT_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_INT_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getIntAcquire(Object o, long offset) {
-        return (int) GET_INT_ACQUIRE.invokeExact(o, offset);
+        try { return (int) GET_INT_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putIntRelease(Object o, long offset, int x) {
-        PUT_INT_RELEASE.invokeExact(o, offset, x);
+        try { PUT_INT_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getIntOpaque(Object o, long offset) {
-        return (int) GET_INT_OPAQUE.invokeExact(o, offset);
+        try { return (int) GET_INT_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putIntOpaque(Object o, long offset, int x) {
-        PUT_INT_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_INT_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetInt(Object o, long offset, int expected, int x) {
-        return (boolean) COMPARE_AND_SET_INT.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_INT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getAndAddInt(Object o, long offset, int delta) {
-        return (int) GET_AND_ADD_INT.invokeExact(o, offset, delta);
+        try { return (int) GET_AND_ADD_INT.invokeExact(o, offset, delta); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getAndSetInt(Object o, long offset, int x) {
-        return (int) GET_AND_SET_INT.invokeExact(o, offset, x);
+        try { return (int) GET_AND_SET_INT.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetInt(Object o, long offset, int expected, int x) {
-        return (boolean) WEAK_COMPARE_AND_SET_INT.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_INT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetIntAcquire(Object o, long offset, int expected, int x) {
-        return (boolean) WEAK_COMPARE_AND_SET_INT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_INT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetIntRelease(Object o, long offset, int expected, int x) {
-        return (boolean) WEAK_COMPARE_AND_SET_INT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_INT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetIntPlain(Object o, long offset, int expected, int x) {
-        return (boolean) WEAK_COMPARE_AND_SET_INT_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_INT_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int compareAndExchangeInt(Object o, long offset, int expected, int x) {
-        return (int) COMPARE_AND_EXCHANGE_INT.invokeExact(o, offset, expected, x);
+        try { return (int) COMPARE_AND_EXCHANGE_INT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int compareAndExchangeIntAcquire(Object o, long offset, int expected, int x) {
-        return (int) COMPARE_AND_EXCHANGE_INT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (int) COMPARE_AND_EXCHANGE_INT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int compareAndExchangeIntRelease(Object o, long offset, int expected, int x) {
-        return (int) COMPARE_AND_EXCHANGE_INT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (int) COMPARE_AND_EXCHANGE_INT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getAndSetIntAcquire(Object o, long offset, int x) {
-        return (int) GET_AND_SET_INT_ACQUIRE.invokeExact(o, offset, x);
+        try { return (int) GET_AND_SET_INT_ACQUIRE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getAndSetIntRelease(Object o, long offset, int x) {
-        return (int) GET_AND_SET_INT_RELEASE.invokeExact(o, offset, x);
+        try { return (int) GET_AND_SET_INT_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getLong(Object o, long offset) {
-        return (long) GET_LONG.invokeExact(o, offset);
+        try { return (long) GET_LONG.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putLong(Object o, long offset, long x) {
-        PUT_LONG.invokeExact(o, offset, x);
+        try { PUT_LONG.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getLongVolatile(Object o, long offset) {
-        return (long) GET_LONG_VOLATILE.invokeExact(o, offset);
+        try { return (long) GET_LONG_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putLongVolatile(Object o, long offset, long x) {
-        PUT_LONG_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_LONG_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getLongAcquire(Object o, long offset) {
-        return (long) GET_LONG_ACQUIRE.invokeExact(o, offset);
+        try { return (long) GET_LONG_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putLongRelease(Object o, long offset, long x) {
-        PUT_LONG_RELEASE.invokeExact(o, offset, x);
+        try { PUT_LONG_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getLongOpaque(Object o, long offset) {
-        return (long) GET_LONG_OPAQUE.invokeExact(o, offset);
+        try { return (long) GET_LONG_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putLongOpaque(Object o, long offset, long x) {
-        PUT_LONG_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_LONG_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetLong(Object o, long offset, long expected, long x) {
-        return (boolean) COMPARE_AND_SET_LONG.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_LONG.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getAndAddLong(Object o, long offset, long delta) {
-        return (long) GET_AND_ADD_LONG.invokeExact(o, offset, delta);
+        try { return (long) GET_AND_ADD_LONG.invokeExact(o, offset, delta); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getAndSetLong(Object o, long offset, long x) {
-        return (long) GET_AND_SET_LONG.invokeExact(o, offset, x);
+        try { return (long) GET_AND_SET_LONG.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetLong(Object o, long offset, long expected, long x) {
-        return (boolean) WEAK_COMPARE_AND_SET_LONG.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_LONG.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetLongAcquire(Object o, long offset, long expected, long x) {
-        return (boolean) WEAK_COMPARE_AND_SET_LONG_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_LONG_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetLongRelease(Object o, long offset, long expected, long x) {
-        return (boolean) WEAK_COMPARE_AND_SET_LONG_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_LONG_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetLongPlain(Object o, long offset, long expected, long x) {
-        return (boolean) WEAK_COMPARE_AND_SET_LONG_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_LONG_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long compareAndExchangeLong(Object o, long offset, long expected, long x) {
-        return (long) COMPARE_AND_EXCHANGE_LONG.invokeExact(o, offset, expected, x);
+        try { return (long) COMPARE_AND_EXCHANGE_LONG.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long compareAndExchangeLongAcquire(Object o, long offset, long expected, long x) {
-        return (long) COMPARE_AND_EXCHANGE_LONG_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (long) COMPARE_AND_EXCHANGE_LONG_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long compareAndExchangeLongRelease(Object o, long offset, long expected, long x) {
-        return (long) COMPARE_AND_EXCHANGE_LONG_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (long) COMPARE_AND_EXCHANGE_LONG_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getAndSetLongAcquire(Object o, long offset, long x) {
-        return (long) GET_AND_SET_LONG_ACQUIRE.invokeExact(o, offset, x);
+        try { return (long) GET_AND_SET_LONG_ACQUIRE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getAndSetLongRelease(Object o, long offset, long x) {
-        return (long) GET_AND_SET_LONG_RELEASE.invokeExact(o, offset, x);
+        try { return (long) GET_AND_SET_LONG_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean getBoolean(Object o, long offset) {
-        return (boolean) GET_BOOLEAN.invokeExact(o, offset);
+        try { return (boolean) GET_BOOLEAN.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putBoolean(Object o, long offset, boolean x) {
-        PUT_BOOLEAN.invokeExact(o, offset, x);
+        try { PUT_BOOLEAN.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean getBooleanVolatile(Object o, long offset) {
-        return (boolean) GET_BOOLEAN_VOLATILE.invokeExact(o, offset);
+        try { return (boolean) GET_BOOLEAN_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putBooleanVolatile(Object o, long offset, boolean x) {
-        PUT_BOOLEAN_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_BOOLEAN_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean getBooleanAcquire(Object o, long offset) {
-        return (boolean) GET_BOOLEAN_ACQUIRE.invokeExact(o, offset);
+        try { return (boolean) GET_BOOLEAN_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putBooleanRelease(Object o, long offset, boolean x) {
-        PUT_BOOLEAN_RELEASE.invokeExact(o, offset, x);
+        try { PUT_BOOLEAN_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean getBooleanOpaque(Object o, long offset) {
-        return (boolean) GET_BOOLEAN_OPAQUE.invokeExact(o, offset);
+        try { return (boolean) GET_BOOLEAN_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putBooleanOpaque(Object o, long offset, boolean x) {
-        PUT_BOOLEAN_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_BOOLEAN_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetBoolean(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) COMPARE_AND_SET_BOOLEAN.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_BOOLEAN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetBoolean(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetBooleanAcquire(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetBooleanRelease(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetBooleanPlain(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BOOLEAN_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndExchangeBoolean(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndExchangeBooleanAcquire(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndExchangeBooleanRelease(Object o, long offset, boolean expected, boolean x) {
-        return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_EXCHANGE_BOOLEAN_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte getByte(Object o, long offset) {
-        return (byte) GET_BYTE.invokeExact(o, offset);
+        try { return (byte) GET_BYTE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putByte(Object o, long offset, byte x) {
-        PUT_BYTE.invokeExact(o, offset, x);
+        try { PUT_BYTE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte getByteVolatile(Object o, long offset) {
-        return (byte) GET_BYTE_VOLATILE.invokeExact(o, offset);
+        try { return (byte) GET_BYTE_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putByteVolatile(Object o, long offset, byte x) {
-        PUT_BYTE_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_BYTE_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte getByteAcquire(Object o, long offset) {
-        return (byte) GET_BYTE_ACQUIRE.invokeExact(o, offset);
+        try { return (byte) GET_BYTE_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putByteRelease(Object o, long offset, byte x) {
-        PUT_BYTE_RELEASE.invokeExact(o, offset, x);
+        try { PUT_BYTE_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte getByteOpaque(Object o, long offset) {
-        return (byte) GET_BYTE_OPAQUE.invokeExact(o, offset);
+        try { return (byte) GET_BYTE_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putByteOpaque(Object o, long offset, byte x) {
-        PUT_BYTE_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_BYTE_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetByte(Object o, long offset, byte expected, byte x) {
-        return (boolean) COMPARE_AND_SET_BYTE.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_BYTE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetByte(Object o, long offset, byte expected, byte x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BYTE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BYTE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetByteAcquire(Object o, long offset, byte expected, byte x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BYTE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BYTE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetByteRelease(Object o, long offset, byte expected, byte x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BYTE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BYTE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetBytePlain(Object o, long offset, byte expected, byte x) {
-        return (boolean) WEAK_COMPARE_AND_SET_BYTE_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_BYTE_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte compareAndExchangeByte(Object o, long offset, byte expected, byte x) {
-        return (byte) COMPARE_AND_EXCHANGE_BYTE.invokeExact(o, offset, expected, x);
+        try { return (byte) COMPARE_AND_EXCHANGE_BYTE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte compareAndExchangeByteAcquire(Object o, long offset, byte expected, byte x) {
-        return (byte) COMPARE_AND_EXCHANGE_BYTE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (byte) COMPARE_AND_EXCHANGE_BYTE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public byte compareAndExchangeByteRelease(Object o, long offset, byte expected, byte x) {
-        return (byte) COMPARE_AND_EXCHANGE_BYTE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (byte) COMPARE_AND_EXCHANGE_BYTE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short getShort(Object o, long offset) {
-        return (short) GET_SHORT.invokeExact(o, offset);
+        try { return (short) GET_SHORT.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putShort(Object o, long offset, short x) {
-        PUT_SHORT.invokeExact(o, offset, x);
+        try { PUT_SHORT.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short getShortVolatile(Object o, long offset) {
-        return (short) GET_SHORT_VOLATILE.invokeExact(o, offset);
+        try { return (short) GET_SHORT_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putShortVolatile(Object o, long offset, short x) {
-        PUT_SHORT_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_SHORT_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short getShortAcquire(Object o, long offset) {
-        return (short) GET_SHORT_ACQUIRE.invokeExact(o, offset);
+        try { return (short) GET_SHORT_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putShortRelease(Object o, long offset, short x) {
-        PUT_SHORT_RELEASE.invokeExact(o, offset, x);
+        try { PUT_SHORT_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short getShortOpaque(Object o, long offset) {
-        return (short) GET_SHORT_OPAQUE.invokeExact(o, offset);
+        try { return (short) GET_SHORT_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putShortOpaque(Object o, long offset, short x) {
-        PUT_SHORT_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_SHORT_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetShort(Object o, long offset, short expected, short x) {
-        return (boolean) COMPARE_AND_SET_SHORT.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_SHORT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetShort(Object o, long offset, short expected, short x) {
-        return (boolean) WEAK_COMPARE_AND_SET_SHORT.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_SHORT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetShortAcquire(Object o, long offset, short expected, short x) {
-        return (boolean) WEAK_COMPARE_AND_SET_SHORT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_SHORT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetShortRelease(Object o, long offset, short expected, short x) {
-        return (boolean) WEAK_COMPARE_AND_SET_SHORT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_SHORT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetShortPlain(Object o, long offset, short expected, short x) {
-        return (boolean) WEAK_COMPARE_AND_SET_SHORT_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_SHORT_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short compareAndExchangeShort(Object o, long offset, short expected, short x) {
-        return (short) COMPARE_AND_EXCHANGE_SHORT.invokeExact(o, offset, expected, x);
+        try { return (short) COMPARE_AND_EXCHANGE_SHORT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short compareAndExchangeShortAcquire(Object o, long offset, short expected, short x) {
-        return (short) COMPARE_AND_EXCHANGE_SHORT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (short) COMPARE_AND_EXCHANGE_SHORT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short compareAndExchangeShortRelease(Object o, long offset, short expected, short x) {
-        return (short) COMPARE_AND_EXCHANGE_SHORT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (short) COMPARE_AND_EXCHANGE_SHORT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char getChar(Object o, long offset) {
-        return (char) GET_CHAR.invokeExact(o, offset);
+        try { return (char) GET_CHAR.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putChar(Object o, long offset, char x) {
-        PUT_CHAR.invokeExact(o, offset, x);
+        try { PUT_CHAR.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char getCharVolatile(Object o, long offset) {
-        return (char) GET_CHAR_VOLATILE.invokeExact(o, offset);
+        try { return (char) GET_CHAR_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putCharVolatile(Object o, long offset, char x) {
-        PUT_CHAR_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_CHAR_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char getCharAcquire(Object o, long offset) {
-        return (char) GET_CHAR_ACQUIRE.invokeExact(o, offset);
+        try { return (char) GET_CHAR_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putCharRelease(Object o, long offset, char x) {
-        PUT_CHAR_RELEASE.invokeExact(o, offset, x);
+        try { PUT_CHAR_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char getCharOpaque(Object o, long offset) {
-        return (char) GET_CHAR_OPAQUE.invokeExact(o, offset);
+        try { return (char) GET_CHAR_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putCharOpaque(Object o, long offset, char x) {
-        PUT_CHAR_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_CHAR_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetChar(Object o, long offset, char expected, char x) {
-        return (boolean) COMPARE_AND_SET_CHAR.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_CHAR.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetChar(Object o, long offset, char expected, char x) {
-        return (boolean) WEAK_COMPARE_AND_SET_CHAR.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_CHAR.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetCharAcquire(Object o, long offset, char expected, char x) {
-        return (boolean) WEAK_COMPARE_AND_SET_CHAR_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_CHAR_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetCharRelease(Object o, long offset, char expected, char x) {
-        return (boolean) WEAK_COMPARE_AND_SET_CHAR_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_CHAR_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetCharPlain(Object o, long offset, char expected, char x) {
-        return (boolean) WEAK_COMPARE_AND_SET_CHAR_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_CHAR_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char compareAndExchangeChar(Object o, long offset, char expected, char x) {
-        return (char) COMPARE_AND_EXCHANGE_CHAR.invokeExact(o, offset, expected, x);
+        try { return (char) COMPARE_AND_EXCHANGE_CHAR.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char compareAndExchangeCharAcquire(Object o, long offset, char expected, char x) {
-        return (char) COMPARE_AND_EXCHANGE_CHAR_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (char) COMPARE_AND_EXCHANGE_CHAR_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char compareAndExchangeCharRelease(Object o, long offset, char expected, char x) {
-        return (char) COMPARE_AND_EXCHANGE_CHAR_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (char) COMPARE_AND_EXCHANGE_CHAR_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float getFloat(Object o, long offset) {
-        return (float) GET_FLOAT.invokeExact(o, offset);
+        try { return (float) GET_FLOAT.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putFloat(Object o, long offset, float x) {
-        PUT_FLOAT.invokeExact(o, offset, x);
+        try { PUT_FLOAT.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float getFloatVolatile(Object o, long offset) {
-        return (float) GET_FLOAT_VOLATILE.invokeExact(o, offset);
+        try { return (float) GET_FLOAT_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putFloatVolatile(Object o, long offset, float x) {
-        PUT_FLOAT_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_FLOAT_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float getFloatAcquire(Object o, long offset) {
-        return (float) GET_FLOAT_ACQUIRE.invokeExact(o, offset);
+        try { return (float) GET_FLOAT_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putFloatRelease(Object o, long offset, float x) {
-        PUT_FLOAT_RELEASE.invokeExact(o, offset, x);
+        try { PUT_FLOAT_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float getFloatOpaque(Object o, long offset) {
-        return (float) GET_FLOAT_OPAQUE.invokeExact(o, offset);
+        try { return (float) GET_FLOAT_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putFloatOpaque(Object o, long offset, float x) {
-        PUT_FLOAT_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_FLOAT_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetFloat(Object o, long offset, float expected, float x) {
-        return (boolean) COMPARE_AND_SET_FLOAT.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_FLOAT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetFloat(Object o, long offset, float expected, float x) {
-        return (boolean) WEAK_COMPARE_AND_SET_FLOAT.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_FLOAT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetFloatAcquire(Object o, long offset, float expected, float x) {
-        return (boolean) WEAK_COMPARE_AND_SET_FLOAT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_FLOAT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetFloatRelease(Object o, long offset, float expected, float x) {
-        return (boolean) WEAK_COMPARE_AND_SET_FLOAT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_FLOAT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetFloatPlain(Object o, long offset, float expected, float x) {
-        return (boolean) WEAK_COMPARE_AND_SET_FLOAT_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_FLOAT_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float compareAndExchangeFloat(Object o, long offset, float expected, float x) {
-        return (float) COMPARE_AND_EXCHANGE_FLOAT.invokeExact(o, offset, expected, x);
+        try { return (float) COMPARE_AND_EXCHANGE_FLOAT.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float compareAndExchangeFloatAcquire(Object o, long offset, float expected, float x) {
-        return (float) COMPARE_AND_EXCHANGE_FLOAT_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (float) COMPARE_AND_EXCHANGE_FLOAT_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float compareAndExchangeFloatRelease(Object o, long offset, float expected, float x) {
-        return (float) COMPARE_AND_EXCHANGE_FLOAT_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (float) COMPARE_AND_EXCHANGE_FLOAT_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double getDouble(Object o, long offset) {
-        return (double) GET_DOUBLE.invokeExact(o, offset);
+        try { return (double) GET_DOUBLE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putDouble(Object o, long offset, double x) {
-        PUT_DOUBLE.invokeExact(o, offset, x);
+        try { PUT_DOUBLE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double getDoubleVolatile(Object o, long offset) {
-        return (double) GET_DOUBLE_VOLATILE.invokeExact(o, offset);
+        try { return (double) GET_DOUBLE_VOLATILE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putDoubleVolatile(Object o, long offset, double x) {
-        PUT_DOUBLE_VOLATILE.invokeExact(o, offset, x);
+        try { PUT_DOUBLE_VOLATILE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double getDoubleAcquire(Object o, long offset) {
-        return (double) GET_DOUBLE_ACQUIRE.invokeExact(o, offset);
+        try { return (double) GET_DOUBLE_ACQUIRE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putDoubleRelease(Object o, long offset, double x) {
-        PUT_DOUBLE_RELEASE.invokeExact(o, offset, x);
+        try { PUT_DOUBLE_RELEASE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double getDoubleOpaque(Object o, long offset) {
-        return (double) GET_DOUBLE_OPAQUE.invokeExact(o, offset);
+        try { return (double) GET_DOUBLE_OPAQUE.invokeExact(o, offset); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putDoubleOpaque(Object o, long offset, double x) {
-        PUT_DOUBLE_OPAQUE.invokeExact(o, offset, x);
+        try { PUT_DOUBLE_OPAQUE.invokeExact(o, offset, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean compareAndSetDouble(Object o, long offset, double expected, double x) {
-        return (boolean) COMPARE_AND_SET_DOUBLE.invokeExact(o, offset, expected, x);
+        try { return (boolean) COMPARE_AND_SET_DOUBLE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetDouble(Object o, long offset, double expected, double x) {
-        return (boolean) WEAK_COMPARE_AND_SET_DOUBLE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_DOUBLE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetDoubleAcquire(Object o, long offset, double expected, double x) {
-        return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetDoubleRelease(Object o, long offset, double expected, double x) {
-        return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public boolean weakCompareAndSetDoublePlain(Object o, long offset, double expected, double x) {
-        return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_PLAIN.invokeExact(o, offset, expected, x);
+        try { return (boolean) WEAK_COMPARE_AND_SET_DOUBLE_PLAIN.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double compareAndExchangeDouble(Object o, long offset, double expected, double x) {
-        return (double) COMPARE_AND_EXCHANGE_DOUBLE.invokeExact(o, offset, expected, x);
+        try { return (double) COMPARE_AND_EXCHANGE_DOUBLE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double compareAndExchangeDoubleAcquire(Object o, long offset, double expected, double x) {
-        return (double) COMPARE_AND_EXCHANGE_DOUBLE_ACQUIRE.invokeExact(o, offset, expected, x);
+        try { return (double) COMPARE_AND_EXCHANGE_DOUBLE_ACQUIRE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double compareAndExchangeDoubleRelease(Object o, long offset, double expected, double x) {
-        return (double) COMPARE_AND_EXCHANGE_DOUBLE_RELEASE.invokeExact(o, offset, expected, x);
+        try { return (double) COMPARE_AND_EXCHANGE_DOUBLE_RELEASE.invokeExact(o, offset, expected, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long allocateMemory(long bytes) {
-        return (long) ALLOCATE_MEMORY.invokeExact(bytes);
+        try { return (long) ALLOCATE_MEMORY.invokeExact(bytes); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void freeMemory(long address) {
-        FREE_MEMORY.invokeExact(address);
+        try { FREE_MEMORY.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long reallocateMemory(long address, long bytes) {
-        return (long) REALLOCATE_MEMORY.invokeExact(address, bytes);
+        try { return (long) REALLOCATE_MEMORY.invokeExact(address, bytes); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void setMemory(long address, long bytes, byte value) {
-        SET_MEMORY.invokeExact(address, bytes, value);
+        try { SET_MEMORY.invokeExact(address, bytes, value); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes) {
-        COPY_MEMORY.invokeExact(srcBase, srcOffset, destBase, destOffset, bytes);
+        try { COPY_MEMORY.invokeExact(srcBase, srcOffset, destBase, destOffset, bytes); } catch (Throwable t) { throw sneakyThrow(t); }
     }
+
     public byte getByte(long address) {
-        return (byte) GET_BYTE_ADDRESS.invokeExact(address);
+        try { return (byte) GET_BYTE_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putByte(long address, byte x) {
-        PUT_BYTE_ADDRESS.invokeExact(address, x);
+        try { PUT_BYTE_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public short getShort(long address) {
-        return (short) GET_SHORT_ADDRESS.invokeExact(address);
+        try { return (short) GET_SHORT_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putShort(long address, short x) {
-        PUT_SHORT_ADDRESS.invokeExact(address, x);
+        try { PUT_SHORT_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public char getChar(long address) {
-        return (char) GET_CHAR_ADDRESS.invokeExact(address);
+        try { return (char) GET_CHAR_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putChar(long address, char x) {
-        PUT_CHAR_ADDRESS.invokeExact(address, x);
+        try { PUT_CHAR_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public int getInt(long address) {
-        return (int) GET_INT_ADDRESS.invokeExact(address);
+        try { return (int) GET_INT_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putInt(long address, int x) {
-        PUT_INT_ADDRESS.invokeExact(address, x);
+        try { PUT_INT_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getLong(long address) {
-        return (long) GET_LONG_ADDRESS.invokeExact(address);
+        try { return (long) GET_LONG_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putLong(long address, long value) {
-        PUT_LONG_ADDRESS.invokeExact(address, value);
+        try { PUT_LONG_ADDRESS.invokeExact(address, value); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public float getFloat(long address) {
-        return (float) GET_FLOAT_ADDRESS.invokeExact(address);
+        try { return (float) GET_FLOAT_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putFloat(long address, float x) {
-        PUT_FLOAT_ADDRESS.invokeExact(address, x);
+        try { PUT_FLOAT_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public double getDouble(long address) {
-        return (double) GET_DOUBLE_ADDRESS.invokeExact(address);
+        try { return (double) GET_DOUBLE_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putDouble(long address, double x) {
-        PUT_DOUBLE_ADDRESS.invokeExact(address, x);
+        try { PUT_DOUBLE_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public long getAddress(long address) {
-        return (long) GET_ADDRESS_ADDRESS.invokeExact(address);
+        try { return (long) GET_ADDRESS_ADDRESS.invokeExact(address); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void putAddress(long address, long x) {
-        PUT_ADDRESS_ADDRESS.invokeExact(address, x);
+        try { PUT_ADDRESS_ADDRESS.invokeExact(address, x); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void loadFence() {
-        LOAD_FENCE.invokeExact();
+        try { LOAD_FENCE.invokeExact(); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void storeFence() {
-        STORE_FENCE.invokeExact();
+        try { STORE_FENCE.invokeExact(); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void fullFence() {
-        FULL_FENCE.invokeExact();
+        try { FULL_FENCE.invokeExact(); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void park(boolean isAbsolute, long time) {
-        PARK.invokeExact(isAbsolute, time);
+        try { PARK.invokeExact(isAbsolute, time); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void unpark(Object thread) {
-        UNPARK.invokeExact(thread);
+        try { UNPARK.invokeExact(thread); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     public void throwException(Throwable ee) {
-        THROW_EXCEPTION.invokeExact(ee);
+        try { THROW_EXCEPTION.invokeExact(ee); } catch (Throwable t) { throw sneakyThrow(t); }
     }
 
     private record UnsafeBinder(MethodHandles.Lookup lookup, Class<?> unsafeClass, Object unsafeInstance) {

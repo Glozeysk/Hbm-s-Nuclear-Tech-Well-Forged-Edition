@@ -10,24 +10,185 @@ import com.hbm.core.HbmCorePlugin;
 public final class UnsafeHolder {
     public static final AbstractUnsafe U = AbstractUnsafe.getUnsafe();
 
-    public static final long IA_BASE = U.arrayBaseOffset(int[].class);
-    public static final int IA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(int[].class));
-    public static final long JA_BASE = U.arrayBaseOffset(long[].class);
-    public static final int JA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(long[].class));
-    public static final long BA_BASE = U.arrayBaseOffset(byte[].class);
-    public static final int BA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(byte[].class));
-    public static final long ZA_BASE = U.arrayBaseOffset(boolean[].class);
-    public static final int ZA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(boolean[].class));
-    public static final long SA_BASE = U.arrayBaseOffset(short[].class);
-    public static final int SA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(short[].class));
-    public static final long CA_BASE = U.arrayBaseOffset(char[].class);
-    public static final int CA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(char[].class));
-    public static final long FA_BASE = U.arrayBaseOffset(float[].class);
-    public static final int FA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(float[].class));
-    public static final long DA_BASE = U.arrayBaseOffset(double[].class);
-    public static final int DA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(double[].class));
-    public static final long RA_BASE = U.arrayBaseOffset(Object[].class);
-    public static final int RA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(Object[].class));
+    public static final long IA_BASE;
+
+    static {
+        try {
+            IA_BASE = U.arrayBaseOffset(int[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int IA_SHIFT;
+
+    static {
+        try {
+            IA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(int[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long JA_BASE;
+
+    static {
+        try {
+            JA_BASE = U.arrayBaseOffset(long[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int JA_SHIFT;
+
+    static {
+        try {
+            JA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(long[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long BA_BASE;
+
+    static {
+        try {
+            BA_BASE = U.arrayBaseOffset(byte[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int BA_SHIFT;
+
+    static {
+        try {
+            BA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(byte[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long ZA_BASE;
+
+    static {
+        try {
+            ZA_BASE = U.arrayBaseOffset(boolean[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int ZA_SHIFT;
+
+    static {
+        try {
+            ZA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(boolean[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long SA_BASE;
+
+    static {
+        try {
+            SA_BASE = U.arrayBaseOffset(short[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int SA_SHIFT;
+
+    static {
+        try {
+            SA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(short[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long CA_BASE;
+
+    static {
+        try {
+            CA_BASE = U.arrayBaseOffset(char[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int CA_SHIFT;
+
+    static {
+        try {
+            CA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(char[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long FA_BASE;
+
+    static {
+        try {
+            FA_BASE = U.arrayBaseOffset(float[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int FA_SHIFT;
+
+    static {
+        try {
+            FA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(float[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long DA_BASE;
+
+    static {
+        try {
+            DA_BASE = U.arrayBaseOffset(double[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int DA_SHIFT;
+
+    static {
+        try {
+            DA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(double[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final long RA_BASE;
+
+    static {
+        try {
+            RA_BASE = U.arrayBaseOffset(Object[].class);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final int RA_SHIFT;
+
+    static {
+        try {
+            RA_SHIFT = Integer.numberOfTrailingZeros(U.arrayIndexScale(Object[].class));
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private UnsafeHolder() {
     }
@@ -97,6 +258,8 @@ public final class UnsafeHolder {
             //noinspection unchecked
             return (T) U.allocateInstance(clz);
         } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
