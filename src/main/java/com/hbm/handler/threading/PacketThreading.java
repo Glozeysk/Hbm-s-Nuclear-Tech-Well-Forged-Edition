@@ -247,6 +247,7 @@ public class PacketThreading {
     }
 
     private static void dispatch(ThreadedPacket packet, PacketOp op, Object target, int dimension) {
+        MainRegistry.logger.info("dispatching");
         totalCnt.increment();
         U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, 1);
         try {
@@ -341,6 +342,7 @@ public class PacketThreading {
      * Mirrors {@link com.hbm.main.NetworkHandler#sendToServer(IMessage)}.
      */
     public static void createSendToServerThreadedPacket(@NotNull ThreadedPacket message) {
+        MainRegistry.logger.info("Packet sending..." + Thread.currentThread().getName());
         dispatch(message, PacketOp.SERVER, null, Integer.MIN_VALUE);
     }
 

@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import java.io.IOException;
 
+import com.hbm.handler.threading.PacketThreading;
+import com.hbm.packet.NBTControlPacketTest;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerRBMKRod;
@@ -41,14 +43,14 @@ public class GUIRBMKRod extends GuiContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("minus", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacketTest(data, rod.getPos()));
         }
 
         if(guiLeft + 90 <= x && guiLeft + 90 + 12 > x && guiTop + 73 < y && guiTop + 73 + 12 >= y) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("plus", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacketTest(data, rod.getPos()));
         }
     }
 	

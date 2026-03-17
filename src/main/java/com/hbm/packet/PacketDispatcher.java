@@ -147,6 +147,7 @@ public class PacketDispatcher {
         wrapper.registerMessage(AuxParticlePacketTest.Handler.class, AuxParticlePacketTest.class, i++, Side.CLIENT);
 // 		wrapper.registerMessage(ControlPanelLinkerServerPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.SERVER);
 //		wrapper.registerMessage(ControlPanelLinkerClientPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.CLIENT);
+        wrapper.registerMessage(NBTControlPacketTest.Handler.class, NBTControlPacketTest.class, i++, Side.SERVER);
 
         for (IPacketRegisterListener listener : LISTENERS) {
             i = listener.registerPackets(i);

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.hbm.entity.item.EntityMovingPackage;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.tileentity.network.*;
 import org.apache.logging.log4j.Logger;
 
@@ -870,7 +871,7 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityCraneUnboxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneunboxer"));
 		GameRegistry.registerTileEntity(TileEntityCraneRouter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranerouter"));
 		GameRegistry.registerTileEntity(TileEntityCraneGrabber.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranegrabber"));
-		
+
 		int i = 0;
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_nuke_mk5"), EntityNukeExplosionMK5.class, "entity_nuke_mk5", i++, MainRegistry.instance, 1000, 1, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_d_smoke_fx"), EntityDSmokeFX.class, "entity_d_smoke_fx", i++, MainRegistry.instance, 1000, 1, true);
@@ -1088,6 +1089,7 @@ public class MainRegistry {
 	public void init(FMLInitializationEvent event) {
 		ModItems.init();
 		ModBlocks.init();
+        PacketThreading.init();
 		HazmatRegistry.registerHazmats();
 		registerReactorFuels();
 		ControlRegistry.init();
