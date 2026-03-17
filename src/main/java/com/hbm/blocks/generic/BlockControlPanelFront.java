@@ -76,7 +76,7 @@
 //            if(ctrl != null) {
 //                NBTTagCompound dat = ControlEvent.newEvent("ctrl_press").setVar("isSneaking", new DataValueFloat(playerIn.isSneaking())).writeToNBT(new NBTTagCompound());
 //                dat.setInteger("click_control", ctrl.panel.controls.indexOf(ctrl));
-//                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(dat, pos));
+//                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(dat, pos));
 //                return true;
 //            }
 //        }

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.FluidCombustionRecipes;
@@ -54,13 +55,13 @@ public class GUIMachineGasFlare extends GuiInfoContainer {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("valve", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, flare.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, flare.getPos()));
 
 		} else if(guiLeft + 89 <= x && guiLeft + 89 + 16 > x && guiTop + 50 < y && guiTop + 50 + 14 >= y) {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("dial", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, flare.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, flare.getPos()));
 		}
 	}
 

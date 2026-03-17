@@ -3,6 +3,7 @@ package com.hbm.items.weapon;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -239,7 +240,7 @@ public class ItemGunBase extends Item implements IHoldableWeapon, IItemHUD {
 			NBTTagCompound nbt = new NBTTagCompound();
 			nbt.setString("type", "justTilt");
 			nbt.setInteger("time", mainConfig.rateOfFire + 1);
-			PacketDispatcher.wrapper.sendTo(new AuxParticlePacketNT(nbt, player.posX, player.posY, player.posZ), (EntityPlayerMP) player);
+			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, player.posX, player.posY, player.posZ), (EntityPlayerMP) player);
 		}
 	}
 	

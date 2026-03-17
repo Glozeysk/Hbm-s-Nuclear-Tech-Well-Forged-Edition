@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.lib.RefStrings;
 import com.hbm.packet.NBTControlPacket;
@@ -109,14 +110,14 @@ public class GUIHeaterHeatex extends GuiInfoContainer {
             int cyc = Math.max(NumberUtils.toInt(this.fieldCycles.getText()), 1);
             NBTTagCompound data = new NBTTagCompound();
             data.setInteger("toCool", cyc);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
             return;
         }
         if (this.fieldDelay.textboxKeyTyped(c, i)) {
             int delay = Math.max(NumberUtils.toInt(this.fieldDelay.getText()), 1);
             NBTTagCompound data = new NBTTagCompound();
             data.setInteger("delay", delay);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
             return;
         }
 

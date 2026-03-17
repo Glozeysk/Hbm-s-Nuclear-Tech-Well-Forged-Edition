@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.blocks.ModBlocks;
@@ -513,7 +514,7 @@ public abstract class TileEntityRBMKBase extends TileEntity implements INBTPacke
 		NBTTagCompound data = new NBTTagCompound();
 		data.setString("type", "rbmkmush");
 		data.setFloat("scale", smallDim);
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, avgX + 0.5, pos.getY() + TileEntityRBMKBase.rbmkHeight, avgZ + 0.5), new TargetPoint(world.provider.getDimension(), avgX + 0.5, pos.getY() + TileEntityRBMKBase.rbmkHeight, avgZ + 0.5, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, avgX + 0.5, pos.getY() + TileEntityRBMKBase.rbmkHeight, avgZ + 0.5), new TargetPoint(world.provider.getDimension(), avgX + 0.5, pos.getY() + TileEntityRBMKBase.rbmkHeight, avgZ + 0.5, 250));
 		MainRegistry.proxy.effectNT(data);
 		
 		world.playSound(null, avgX + 0.5, pos.getY() + TileEntityRBMKBase.rbmkHeight>>1, avgZ + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);

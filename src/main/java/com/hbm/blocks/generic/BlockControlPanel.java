@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.hbm.blocks.BlockControlPanelType;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.ICustomSelectionBox;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.items.ModItems;
@@ -80,7 +81,7 @@ public class BlockControlPanel extends BlockContainer implements ICustomSelectio
 				evt.setVar("isSneaking", new DataValueFloat(playerIn.isSneaking()));
 				NBTTagCompound dat = evt.writeToNBT(new NBTTagCompound());
 				dat.setInteger("click_control", ctrl.panel.controls.indexOf(ctrl));
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(dat, pos));
+				PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(dat, pos));
 				return true;
 			}
 		}

@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -157,14 +158,14 @@ public class GUIScreenRadioTorch extends GuiScreen {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("hasMapping", !radio.customMap);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radio.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, radio.getPos()));
 		}
 		
 		if(guiLeft + 173 <= x && guiLeft + 173 + 18 > x && guiTop + 17 < y && guiTop + 17 + 18 >= y) {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("isPolling", !radio.polling);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radio.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, radio.getPos()));
 		}
 		
 		if(guiLeft + 209 <= x && guiLeft + 209 + 18 > x && guiTop + 17 < y && guiTop + 17 + 18 >= y) {
@@ -174,7 +175,7 @@ public class GUIScreenRadioTorch extends GuiScreen {
 			for(int j = 0; j < 16; j++) {
 				data.setString("mapping" + j, this.remap[j].getText());
 			}
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radio.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, radio.getPos()));
 		}
 	}
 

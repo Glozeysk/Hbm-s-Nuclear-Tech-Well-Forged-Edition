@@ -3,6 +3,7 @@ package com.hbm.entity.logic;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.projectile.EntityBulletBase;
 import com.hbm.handler.BulletConfigSyncingUtil;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.AuxParticlePacketNT;
@@ -51,7 +52,7 @@ public class EntityDeathBlast extends Entity implements IConstantRenderer {
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setString("type", "muke");
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY + 0.5, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 250));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY + 0.5, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 250));
 			world.playSound(null, posX, posY, posZ, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 25.0F, 0.9F);
 		}
 	}

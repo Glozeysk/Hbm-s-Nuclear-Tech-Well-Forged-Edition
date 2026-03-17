@@ -6,6 +6,7 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.FluidCombustionRecipes;
 import com.hbm.items.ModItems;
@@ -100,7 +101,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
 			data.setString("mode", "flame");
 			data.setInteger("count", 2);
 			data.setDouble("motion", 0.025D);
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 		}
 	}
 	

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneExtractor;
 import com.hbm.lib.RefStrings;
 import com.hbm.packet.NBTControlPacket;
@@ -67,7 +68,7 @@ public class GUICraneExtractor extends GuiInfoContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("isWhitelist", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, ejector.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, ejector.getPos()));
         }
     }
 

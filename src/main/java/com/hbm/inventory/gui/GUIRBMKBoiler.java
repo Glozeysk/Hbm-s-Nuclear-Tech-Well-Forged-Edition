@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import java.io.IOException;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.FFUtils;
@@ -52,7 +53,7 @@ public class GUIRBMKBoiler extends GuiInfoContainer {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("compression", true); //we only need to send on bit, so boolean it is
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, boiler.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, boiler.getPos()));
 		}
 	}
 	

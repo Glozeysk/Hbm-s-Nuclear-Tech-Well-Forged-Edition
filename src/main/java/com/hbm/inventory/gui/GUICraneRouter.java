@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneRouter;
 import com.hbm.lib.RefStrings;
 import com.hbm.modules.ModulePatternMatcher;
@@ -46,7 +47,7 @@ public class GUICraneRouter extends GuiInfoContainer {
                     mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                     NBTTagCompound data = new NBTTagCompound();
                     data.setInteger("toggle", j * 3 + k);
-                    PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, router.getPos()));
+                    PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, router.getPos()));
                 }
             }
         }

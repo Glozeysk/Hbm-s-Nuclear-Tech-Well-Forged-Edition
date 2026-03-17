@@ -1,5 +1,6 @@
 package com.hbm.entity.item;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
 
@@ -47,7 +48,7 @@ public class EntityFireworks extends Entity {
 				data.setString("type", "fireworks");
 				data.setInteger("color", color);
 				data.setInteger("char", character);
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(this.world.provider.getDimension(), posX, posY, posZ, 300));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(this.world.provider.getDimension(), posX, posY, posZ, 300));
 			}
 		}
 	}

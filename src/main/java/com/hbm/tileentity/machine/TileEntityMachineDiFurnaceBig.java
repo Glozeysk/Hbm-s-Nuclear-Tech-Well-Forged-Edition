@@ -285,8 +285,8 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 
 			if (canProcess()) {
 				process();
-				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.8F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
-				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.7F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
+				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.8F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0, 0.5F));
+				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.7F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0, 0.5F));
 				// ExplosionThermo.setEntitiesOnFire(world, pos.getX() + 0.5F, pos.getY() + 4, pos.getZ() + 0.5F, 2);
 
 				// if(this.world.getTotalWorldTime() % 5 == 0)

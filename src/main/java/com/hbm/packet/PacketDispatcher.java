@@ -3,7 +3,6 @@ package com.hbm.packet;
 import com.hbm.lib.RefStrings;
 import com.hbm.api.network.IPacketRegisterListener;
 import com.hbm.main.NetworkHandler;
-import com.hbm.packet.toClient.AuxParticlePacketTest;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
@@ -142,10 +141,8 @@ public class PacketDispatcher {
         wrapper.registerMessage(NBTControlPacket.Handler.class, NBTControlPacket.class, i++, Side.SERVER);
         wrapper.registerMessage(AnvilCraftPacket.Handler.class, AnvilCraftPacket.class, i++, Side.SERVER);
         wrapper.registerMessage(ControlPanelUpdatePacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.CLIENT);
-        wrapper.registerMessage(AuxParticlePacketTest.Handler.class, AuxParticlePacketTest.class, i++, Side.CLIENT);
 // 		wrapper.registerMessage(ControlPanelLinkerServerPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.SERVER);
 //		wrapper.registerMessage(ControlPanelLinkerClientPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.CLIENT);
-        wrapper.registerMessage(NBTControlPacket.Handler.class, NBTControlPacket.class, i++, Side.SERVER);
         for (IPacketRegisterListener listener : LISTENERS) {
             i = listener.registerPackets(i);
         }

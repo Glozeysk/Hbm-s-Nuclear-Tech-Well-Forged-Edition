@@ -9,6 +9,7 @@ import com.hbm.entity.particle.EntityGasFlameFX;
 import com.hbm.entity.projectile.EntityOilSpill;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.entity.projectile.EntityShrapnel;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
@@ -38,7 +39,7 @@ public class ExplosionLarge {
 		data.setString("type", "smoke");
 		data.setString("mode", "radial");
 		data.setInteger("count", count);
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x, y, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
 	}
 
 	public static void spawnParticles(World world, double x, double y, double z, int count) {
@@ -46,7 +47,7 @@ public class ExplosionLarge {
 		data.setString("type", "smoke");
 		data.setString("mode", "cloud");
 		data.setInteger("count", count);
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x, y, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
 	}
 	
 	public static void spawnBurst(World world, double x, double y, double z, int count, double strength) {
@@ -72,7 +73,7 @@ public class ExplosionLarge {
 		data.setString("mode", "shock");
 		data.setInteger("count", count);
 		data.setDouble("strength", strength);
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x, y + 0.5, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y + 0.5, z),  new TargetPoint(world.provider.getDimension(), x, y, z, 250));
 	}
 
 	public static void spawnRubble(World world, double x, double y, double z, int count) {

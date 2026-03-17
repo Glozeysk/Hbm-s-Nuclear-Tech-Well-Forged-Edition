@@ -8,6 +8,7 @@ import java.util.List;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.BlockHadronCoil;
 import com.hbm.blocks.machine.BlockHadronPlating;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.HadronRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
@@ -534,7 +535,7 @@ public class TileEntityHadron extends TileEntityMachineBase implements ITickable
 				this.state = EnumHadronState.ANALYSIS;
 				NBTTagCompound data = new NBTTagCompound();
 				data.setString("type", "hadron");
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5), new TargetPoint(world.provider.getDimension(), p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5, 25));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5), new TargetPoint(world.provider.getDimension(), p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5, 25));
 			}
 
 			//if operating in line accelerator mode, halt after 2 blocks and staart the reading

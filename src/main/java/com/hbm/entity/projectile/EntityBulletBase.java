@@ -21,6 +21,7 @@ import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
@@ -502,7 +503,7 @@ public class EntityBulletBase extends Entity implements IProjectile {
 				tag.setInteger("block", Block.getIdFromBlock(block));
 				tag.setByte("meta", (byte) block.getMetaFromState(blockstate));
 			}
-			PacketDispatcher.wrapper.sendToAllTracking(new AuxParticlePacketNT(tag, hit.hitVec.x, hit.hitVec.y, hit.hitVec.z), this);
+			PacketThreading.createSendToAllTrackingThreadedPacket(new AuxParticlePacketNT(tag, hit.hitVec.x, hit.hitVec.y, hit.hitVec.z), this);
 			if(hit.typeOfHit == Type.ENTITY && hit.entityHit instanceof EntityLivingBase){
 				EntityHitDataHandler.addHit((EntityLivingBase) hit.entityHit, this, hit.hitVec, new Vec3d(this.motionX, this.motionY, this.motionZ).normalize());
 			}

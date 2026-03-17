@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.input.Mouse;
 
 import com.hbm.lib.RefStrings;
@@ -69,7 +70,7 @@ public class GuiControlEdit extends GuiContainer {
 		NBTTagCompound tag = new NBTTagCompound();
 		control.panel.writeToNBT(tag);
 		tag.setString("full_set", "");
-		PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(tag, control.getPos()));
+		PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(tag, control.getPos()));
 		control.updateTransform();
 		isEditMode = false;
 	}
