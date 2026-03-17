@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.FluidCombustionRecipes;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.packet.NBTControlPacket;
@@ -57,7 +58,7 @@ public class GUIOilburner extends GuiInfoContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("toggle", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heater.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heater.getPos()));
         }
     }
 

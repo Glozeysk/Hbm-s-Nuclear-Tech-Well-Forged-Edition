@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.handler.threading.PacketThreading;
-import com.hbm.packet.NBTControlPacketTest;
+import com.hbm.packet.NBTControlPacket;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -9,8 +9,6 @@ import java.io.IOException;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.inventory.container.ContainerFWatzCore;
 import com.hbm.lib.RefStrings;
-import com.hbm.packet.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityFWatzCore;
 
 import net.minecraft.client.Minecraft;
@@ -59,7 +57,7 @@ public class GUIFWatzCore extends GuiInfoContainer {
 		//toggle column selection
 		if(guiLeft + 29 <= mouseX && guiLeft + 29 + 18 > mouseX && guiTop + 89 < mouseY && guiTop + 89 + 18 >= mouseY) {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacketTest(new NBTTagCompound(), this.fwatz.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(new NBTTagCompound(), this.fwatz.getPos()));
 		}
 	}
 

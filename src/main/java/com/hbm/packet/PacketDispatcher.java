@@ -12,13 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PacketDispatcher {
-
     public static final NetworkHandler wrapper = new NetworkHandler(RefStrings.MODID);
     public static final List<IPacketRegisterListener> LISTENERS = new ArrayList<>();
 
     public static void registerPackets(){
         int i = 0;
-
         //PressPacket
         wrapper.registerMessage(TEPressPacket.Handler.class, TEPressPacket.class, i++, Side.CLIENT);
         //Send chunk radiation packet to individual players
@@ -147,8 +145,7 @@ public class PacketDispatcher {
         wrapper.registerMessage(AuxParticlePacketTest.Handler.class, AuxParticlePacketTest.class, i++, Side.CLIENT);
 // 		wrapper.registerMessage(ControlPanelLinkerServerPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.SERVER);
 //		wrapper.registerMessage(ControlPanelLinkerClientPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.CLIENT);
-        wrapper.registerMessage(NBTControlPacketTest.Handler.class, NBTControlPacketTest.class, i++, Side.SERVER);
-
+        wrapper.registerMessage(NBTControlPacket.Handler.class, NBTControlPacket.class, i++, Side.SERVER);
         for (IPacketRegisterListener listener : LISTENERS) {
             i = listener.registerPackets(i);
         }

@@ -3,14 +3,12 @@ package com.hbm.inventory.gui;
 import java.io.IOException;
 
 import com.hbm.handler.threading.PacketThreading;
-import com.hbm.packet.NBTControlPacketTest;
+import com.hbm.packet.NBTControlPacket;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerRBMKRod;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.RefStrings;
-import com.hbm.packet.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKRod;
 
 import net.minecraft.client.Minecraft;
@@ -43,14 +41,14 @@ public class GUIRBMKRod extends GuiContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("minus", true);
-            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacketTest(data, rod.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
         }
 
         if(guiLeft + 90 <= x && guiLeft + 90 + 12 > x && guiTop + 73 < y && guiTop + 73 + 12 >= y) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("plus", true);
-            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacketTest(data, rod.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
         }
     }
 	
