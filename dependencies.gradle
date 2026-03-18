@@ -41,10 +41,6 @@ dependencies {
     // annotationProcessor project(':processor')
     // compileOnly project(':processor')
     //compileOnly rfg.deobf("dev.galacticraft:galacticraft-legacy:${version_gc}")
-    annotationProcessor project(':processor')
-    compileOnly project(':processor')
-    testImplementation project(':processor')
-    testAnnotationProcessor project(':processor')
 
     api("CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.700")
     compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")

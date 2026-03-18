@@ -1,6 +1,5 @@
 package com.hbm.handler.threading;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hbm.config.GeneralConfig;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.NetworkHandler;
@@ -12,13 +11,10 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import org.jctools.queues.MpscBlockingConsumerArrayQueue;
 import org.jetbrains.annotations.NotNull;
-import com.hbm.main.NetworkHandler;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +29,6 @@ public class PacketThreading {
      * Global lock guarding the FML channel state for outbound packets.
      */
     public static final ReentrantLock LOCK = new ReentrantLock();
-    public static final String THREAD_PREFIX = "NTM-Packet-Thread-";
     private static final Object IN_FLIGHT_BASE = staticFieldBase(PacketThreading.class, "inFlightDispatch");
     private static final long IN_FILGHT_OFF = staticfieldOffset(PacketThreading.class, "inFlightDispatch");
     private static final Object LAST_S_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastServerFlushNs");
@@ -44,9 +39,6 @@ public class PacketThreading {
     private static final int BATCH_SIZE = 128;
     // Coalesce flushes in multi-threaded mode to avoid flush storms.
     private static final long MIN_FLUSH_NS = 1_000_000L; // 1ms
-
-    private static final ThreadFactory packetThreadFactory = new ThreadFactoryBuilder().setNameFormat(THREAD_PREFIX + "%d").setDaemon(true).build();
-
     private static final LongAdder totalCnt = new LongAdder();
     private static final LongAdder nanosWaited = new LongAdder();
     @SuppressWarnings("FieldMayBeFinal")
@@ -71,42 +63,19 @@ public class PacketThreading {
             return;
         }
 
-        int coreCount = GeneralConfig.packetThreadingCoreCount;
-        int maxCount = GeneralConfig.packetThreadingMaxCount;
-
-        if (coreCount <= 0 || maxCount <= 0) {
-            MainRegistry.logger.error("packetThreadingCoreCount ({}) or packetThreadingMaxCount ({}) is <= 0. Defaulting to single-threaded mode.",
-                    coreCount, maxCount);
-            coreCount = 1;
-        } else if (maxCount < coreCount) {
-            MainRegistry.logger.warn(
-                    "packetThreadingMaxCount ({}) cannot be less than packetThreadingCoreCount ({}). Setting max count to core count.", maxCount,
-                    coreCount);
-            maxCount = coreCount;
-        }
-
         enabled = true;
 
-        if (coreCount > 1) {
-            multiThreaded = true;
-            singleThreadQueue = null;
-            MainRegistry.logger.info("Initializing PacketThreading in Multi-Threaded mode (Core: {}, Max: {}).", coreCount, maxCount);
-            ThreadPoolExecutor tp = new ThreadPoolExecutor(coreCount, maxCount, 50L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(QUEUE_CAPACITY),
-                    packetThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
-            tp.allowCoreThreadTimeOut(false);
-            threadPool = tp;
-        } else {
-            multiThreaded = false;
-            threadPool = null;
-            MainRegistry.logger.info("Initializing PacketThreading in Optimized Single-Threaded mode.");
-            running = true;
-            MpscBlockingConsumerArrayQueue<PacketTask> q = new MpscBlockingConsumerArrayQueue<>(QUEUE_CAPACITY);
-            singleThreadQueue = q;
-            Thread t = new Thread(() -> processBatch(q), "NTM-Packet-Thread-0");
-            t.setDaemon(true);
-            singleWorkerThread = t;
-            t.start();
-        }
+        multiThreaded = false;
+        threadPool = null;
+        MainRegistry.logger.info("Initializing PacketThreading in Optimized Single-Threaded mode.");
+        running = true;
+        MpscBlockingConsumerArrayQueue<PacketTask> q = new MpscBlockingConsumerArrayQueue<>(QUEUE_CAPACITY);
+        singleThreadQueue = q;
+        Thread t = new Thread(() -> processBatch(q), "NTM-Packet-Thread-0");
+        t.setDaemon(true);
+        singleWorkerThread = t;
+        t.start();
+
     }
 
     private static void shutdown() {
@@ -342,55 +311,6 @@ public class PacketThreading {
      */
     public static void createSendToServerThreadedPacket(@NotNull ThreadedPacket message) {
         dispatch(message, PacketOp.SERVER, null, Integer.MIN_VALUE);
-    }
-
-    // debugging
-    public static int getPoolSize() {
-        ThreadPoolExecutor tp = threadPool;
-        if (tp == null) return -1;
-        return tp.getPoolSize();
-    }
-
-    public static int getCorePoolSize() {
-        ThreadPoolExecutor tp = threadPool;
-        if (tp == null) return -1;
-        return tp.getCorePoolSize();
-    }
-
-    public static int getActiveCount() {
-        ThreadPoolExecutor tp = threadPool;
-        if (tp == null) return -1;
-        return tp.getActiveCount();
-    }
-
-    public static int getMaximumPoolSize() {
-        ThreadPoolExecutor tp = threadPool;
-        if (tp == null) return -1;
-        return tp.getMaximumPoolSize();
-    }
-
-    public static int getThreadPoolQueueSize() {
-        ThreadPoolExecutor tp = threadPool;
-        if (tp == null) return -1;
-        return tp.getQueue().size();
-    }
-
-    public static int getQueueSize() {
-        MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
-        if (q == null) return -1;
-        return q.size();
-    }
-
-    public static boolean isMultiThreaded() {
-        return multiThreaded;
-    }
-
-    public static long getTotalCount() {
-        return totalCnt.sum();
-    }
-
-    public static long getNanosWaited() {
-        return nanosWaited.sum();
     }
 
     private enum PacketOp {
