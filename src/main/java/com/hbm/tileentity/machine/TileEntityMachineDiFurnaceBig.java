@@ -282,10 +282,10 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 
             if (canProcess()) {
                 process();
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.171875F, pos.getY() + 2.7F, pos.getZ() + 1.171875F, 0.0, 0.0, 0.0, 1000F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 1.171875F, pos.getY() + 2.7F, pos.getZ() + 1.171875F, 0.0, 0.0, 0.0, 1000F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.171875F, pos.getY() + 2.7F, pos.getZ() - 1.171875F, 0.0, 0.0, 0.0, 1000F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 1.171875F, pos.getY() + 2.7F, pos.getZ() - 1.171875F, 0.0, 0.0, 0.0, 1000F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
 
                 if(this.world.getTotalWorldTime() % 20 == 0)
                     this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 1F, 1F);

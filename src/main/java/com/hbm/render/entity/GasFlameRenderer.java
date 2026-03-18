@@ -86,22 +86,18 @@ public class GasFlameRenderer extends Render<EntityGasFlameFX> {
 			GL11.glDisable(GL11.GL_LIGHTING);
 			GL11.glTranslatef((float) x, (float) y, (float) z);
 			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-			GL11.glScalef(0.5F, 0.5F, 0.5F);
-			GL11.glScalef(7.5F, 7.5F, 7.5F);
-			//
-			GL11.glScalef(0.35F, 0.35F, 0.35F);
-			//
+			float baseScale = 0.5F * 7.5F * 0.35F;
+			GL11.glScalef(baseScale, baseScale, baseScale);
 			this.bindEntityTexture(fx);
 			Tessellator tessellator = Tessellator.getInstance();
-
-			this.func_77026_a(tessellator, icon);
+			this.func_77026_a(tessellator, icon, fx.particleScale);
 			GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 			GL11.glPopAttrib();
 			GL11.glPopMatrix();
 		}
 	}
-	
-	private void func_77026_a(Tessellator tes, TextureAtlasSprite p_77026_2_) {
+
+	private void func_77026_a(Tessellator tes, TextureAtlasSprite p_77026_2_, float particleScale) {
 		float f = p_77026_2_.getMinU();
 		float f1 = p_77026_2_.getMaxU();
 		float f2 = p_77026_2_.getMinV();
@@ -111,8 +107,8 @@ public class GasFlameRenderer extends Render<EntityGasFlameFX> {
 		float f6 = 0.25F;
 		GL11.glRotatef(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
 		GL11.glRotatef(-this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
+		GL11.glScalef(particleScale, particleScale, particleScale);
 		RenderHelper.startDrawingTexturedQuads(tes);
-		//RenderHelper.setNormal(0.0F, 1.0F, 0.0F);
 		RenderHelper.addVertexWithUV(0.0F - f5, 0.0F - f6, 0.0D, f, f3);
 		RenderHelper.addVertexWithUV(f4 - f5, 0.0F - f6, 0.0D, f1, f3);
 		RenderHelper.addVertexWithUV(f4 - f5, f4 - f6, 0.0D, f1, f2);

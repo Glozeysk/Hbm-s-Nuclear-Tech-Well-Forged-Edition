@@ -1,8 +1,10 @@
 package com.hbm.entity.particle;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
-public class EntityGasFlameFX extends EntityModFX {
+public class EntityGasFlameFX extends EntityModFX implements IEntityAdditionalSpawnData {
 
 	float smokeParticleScale;
     public int particleAge;
@@ -27,12 +29,20 @@ public class EntityGasFlameFX extends EntityModFX {
         this.motionY += p_i1226_10_;
         this.motionZ += p_i1226_12_;
         this.particleRed = this.particleGreen = this.particleBlue = (float)(Math.random() * 0.30000001192092896D);
-//        this.particleScale *= 0.75F;
+        this.particleScale *= 0.75F;
         this.particleScale *= p_i1226_14_;
         this.smokeParticleScale = this.particleScale;
-        //this.particleMaxAge = (int)(8.0D / (Math.random() * 0.8D + 0.2D));
-        //this.particleMaxAge = (int)((float)this.particleMaxAge * p_i1226_14_);
         this.noClip = false;
+    }
+
+    @Override
+    public void writeSpawnData(ByteBuf buffer) {
+        buffer.writeFloat(this.particleScale);
+    }
+
+    @Override
+    public void readSpawnData(ByteBuf buffer) {
+        this.particleScale = buffer.readFloat();
     }
     
     @Override
