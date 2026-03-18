@@ -14,6 +14,7 @@ public final class HBMSoundHandler {
 	public static List<SoundEvent> ALL_SOUNDS = new ArrayList<SoundEvent>();
 	
 	public static SoundEvent assemblerOperate;
+    public static SoundEvent difurnace_loop;
 	public static SoundEvent fel;
 	public static SoundEvent siloopen;
 	public static SoundEvent siloclose;
@@ -278,6 +279,7 @@ public final class HBMSoundHandler {
 		
 		
 		assemblerOperate = register("block.assembleroperate");
+        difurnace_loop = register("block.difurnace_loop");
 		fel = register("block.fel");
 		pressOperate = register("block.pressoperate");
 		laserBang = register("weapon.laserBang");

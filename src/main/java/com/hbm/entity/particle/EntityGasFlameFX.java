@@ -27,7 +27,7 @@ public class EntityGasFlameFX extends EntityModFX {
         this.motionY += p_i1226_10_;
         this.motionZ += p_i1226_12_;
         this.particleRed = this.particleGreen = this.particleBlue = (float)(Math.random() * 0.30000001192092896D);
-        this.particleScale *= 0.75F;
+//        this.particleScale *= 0.75F;
         this.particleScale *= p_i1226_14_;
         this.smokeParticleScale = this.particleScale;
         //this.particleMaxAge = (int)(8.0D / (Math.random() * 0.8D + 0.2D));

@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.entity.particle.EntityGasFlameFX;
-import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.DiFurnaceRecipes;
@@ -12,8 +12,6 @@ import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
-
-import api.hbm.energy.IEnergyUser;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,7 +24,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
@@ -283,17 +280,18 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 				inventory.setStackInSlot(3, ItemStack.EMPTY);
 			}
 
-			if (canProcess()) {
-				process();
-				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.8F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
-				// world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 0.5F, pos.getY() + 3.7F, pos.getZ() + 0.5F, 0.0, 0.0, 0.0));
-				// ExplosionThermo.setEntitiesOnFire(world, pos.getX() + 0.5F, pos.getY() + 4, pos.getZ() + 0.5F, 2);
+            if (canProcess()) {
+                process();
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.171875F, pos.getY() + 2.7F, pos.getZ() + 1.171875F, 0.0, 0.0, 0.0, 1000F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 1.171875F, pos.getY() + 2.7F, pos.getZ() + 1.171875F, 0.0, 0.0, 0.0, 1000F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.171875F, pos.getY() + 2.7F, pos.getZ() - 1.171875F, 0.0, 0.0, 0.0, 1000F));
+                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 1.171875F, pos.getY() + 2.7F, pos.getZ() - 1.171875F, 0.0, 0.0, 0.0, 1000F));
 
-				// if(this.world.getTotalWorldTime() % 5 == 0)
-				// 	this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.flamethrowerShoot, SoundCategory.BLOCKS, 2F, 0.2F);
-			} else {
-				process = 0;
-			}
+                if(this.world.getTotalWorldTime() % 20 == 0)
+                    this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 1F, 1F);
+            } else {
+                process = 0;
+            }
 
 			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));

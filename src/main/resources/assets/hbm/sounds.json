@@ -269,5 +269,6 @@
     "block.rbmk_az5_cover": {"category": "block", "sounds": [{"name": "hbm:block/rbmk_az5_cover", "stream": false}]},
     "block.chungusLever": {"category": "block", "sounds": [{"name": "hbm:block/chungusLever", "stream": false}]},
 	"item.upgradePlug": {"category": "player", "sounds": [{"name": "hbm:tool/upgradePlug", "stream": false}]},
-	"item.battery": {"category": "player", "sounds": [{"name": "hbm:tool/battery", "stream": false}]}
+	"item.battery": {"category": "player", "sounds": [{"name": "hbm:tool/battery", "stream": false}]},
+    "block.difurnace_loop": {"category": "block", "sounds": [{"name": "hbm:block/difurnace_loop", "stream": false}]}
 }
