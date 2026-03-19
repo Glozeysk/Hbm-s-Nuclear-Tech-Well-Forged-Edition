@@ -3,6 +3,7 @@ package com.hbm.packet;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.handler.JetpackHandler.JetpackInfo;
 
+import com.hbm.packet.threading.PrecompiledPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -14,7 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class JetpackSyncPacket implements IMessage {
+public class JetpackSyncPacket extends PrecompiledPacket {
 
 	int playerId;
 	JetpackInfo info;
@@ -49,18 +50,18 @@ public class JetpackSyncPacket implements IMessage {
 					EntityPlayer player = ctx.getServerHandler().player;
 					JetpackInfo info = JetpackHandler.get(player);
 					if(info == null) {
-						JetpackHandler.put(player, info = new JetpackInfo(false));
+						JetpackHandler.put(player, new JetpackInfo(false));
 					}
 					JetpackHandler.put(player, message.info);
 				});
 			} else {
-				handleMessageClient(message, ctx);
+				handleMessageClient(message);
 			}
 			return null;
 		}
 
 		@SideOnly(Side.CLIENT)
-		public void handleMessageClient(JetpackSyncPacket m, MessageContext ctx) {
+		public void handleMessageClient(JetpackSyncPacket m) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
 				World world = Minecraft.getMinecraft().world;
 				Entity ent = world.getEntityByID(m.playerId);
