@@ -193,42 +193,6 @@ public final class UnsafeHolder {
     private UnsafeHolder() {
     }
 
-    public static long offInt(int i) {
-        return ((long) i << IA_SHIFT) + IA_BASE;
-    }
-
-    public static long offLong(int i) {
-        return ((long) i << JA_SHIFT) + JA_BASE;
-    }
-
-    public static long offByte(int i) {
-        return ((long) i << BA_SHIFT) + BA_BASE;
-    }
-
-    public static long offBoolean(int i) {
-        return ((long) i << ZA_SHIFT) + ZA_BASE;
-    }
-
-    public static long offShort(int i) {
-        return ((long) i << SA_SHIFT) + SA_BASE;
-    }
-
-    public static long offChar(int i) {
-        return ((long) i << CA_SHIFT) + CA_BASE;
-    }
-
-    public static long offFloat(int i) {
-        return ((long) i << FA_SHIFT) + FA_BASE;
-    }
-
-    public static long offDouble(int i) {
-        return ((long) i << DA_SHIFT) + DA_BASE;
-    }
-
-    public static long offReference(int i) {
-        return ((long) i << RA_SHIFT) + RA_BASE;
-    }
-
     public static Object staticFieldBase(Class<?> clz, String fieldName) {
         try {
             return U.staticFieldBase(clz.getDeclaredField(fieldName));
@@ -248,17 +212,6 @@ public final class UnsafeHolder {
     public static long fieldOffset(Class<?> clz, String fieldName) {
         try {
             return U.objectFieldOffset(clz.getDeclaredField(fieldName));
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static <T> T allocateInstance(Class<? extends T> clz) {
-        try {
-            //noinspection unchecked
-            return (T) U.allocateInstance(clz);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

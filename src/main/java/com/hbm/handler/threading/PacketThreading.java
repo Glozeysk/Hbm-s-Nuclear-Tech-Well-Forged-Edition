@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,26 +30,17 @@ public class PacketThreading {
     public static final ReentrantLock LOCK = new ReentrantLock();
     private static final Object IN_FLIGHT_BASE = staticFieldBase(PacketThreading.class, "inFlightDispatch");
     private static final long IN_FILGHT_OFF = staticfieldOffset(PacketThreading.class, "inFlightDispatch");
-    private static final Object LAST_S_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastServerFlushNs");
-    private static final long LAST_S_FLUSH_OFF = staticfieldOffset(PacketThreading.class, "lastServerFlushNs");
-    private static final Object LAST_C_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastClientFlushNs");
-    private static final long LAST_C_FLUSH_OFF = staticfieldOffset(PacketThreading.class, "lastClientFlushNs");
     private static final int QUEUE_CAPACITY = 4096;
     private static final int BATCH_SIZE = 128;
-    // Coalesce flushes in multi-threaded mode to avoid flush storms.
-    private static final long MIN_FLUSH_NS = 1_000_000L; // 1ms
     private static final LongAdder totalCnt = new LongAdder();
     private static final LongAdder nanosWaited = new LongAdder();
     @SuppressWarnings("FieldMayBeFinal")
-    private static volatile long lastServerFlushNs = 0L, lastClientFlushNs = 0L;
-    private static volatile boolean multiThreaded = false;
     private static volatile boolean running = true;
     private static volatile boolean enabled = false;
     @SuppressWarnings("unused")
     private static volatile int inFlightDispatch;
     private static volatile MpscBlockingConsumerArrayQueue<PacketTask> singleThreadQueue;
     private static volatile Thread singleWorkerThread;
-    private static volatile ThreadPoolExecutor threadPool;
 
     /**
      * Sets up thread pool settings during mod initialization.
@@ -65,8 +55,6 @@ public class PacketThreading {
 
         enabled = true;
 
-        multiThreaded = false;
-        threadPool = null;
         MainRegistry.logger.info("Initializing PacketThreading in Optimized Single-Threaded mode.");
         running = true;
         MpscBlockingConsumerArrayQueue<PacketTask> q = new MpscBlockingConsumerArrayQueue<>(QUEUE_CAPACITY);
@@ -90,16 +78,7 @@ public class PacketThreading {
                 LockSupport.parkNanos(500L);
             }
         }
-        ThreadPoolExecutor tp = threadPool;
-        threadPool = null;
-        if (tp != null) {
-            List<Runnable> pendingTasks = tp.shutdownNow();
-            for (Runnable r : pendingTasks) {
-                if (r instanceof PacketRunner runner) {
-                    runner.free();
-                }
-            }
-        }
+
         Thread t = singleWorkerThread;
         singleWorkerThread = null;
         if (t != null && t.isAlive()) t.interrupt();
@@ -110,22 +89,6 @@ public class PacketThreading {
             while ((task = q.relaxedPoll()) != null) {
                 task.packet.releaseBuffer();
             }
-        }
-    }
-
-    private static void maybeFlushServer() {
-        long now = System.nanoTime();
-        long prev = lastServerFlushNs;
-        if (now - prev >= MIN_FLUSH_NS && U.compareAndSetLong(LAST_S_FLUSH_BASE, LAST_S_FLUSH_OFF, prev, now)) {
-            NetworkHandler.flushServer();
-        }
-    }
-
-    private static void maybeFlushClient() {
-        long now = System.nanoTime();
-        long prev = lastClientFlushNs;
-        if (now - prev >= MIN_FLUSH_NS && U.compareAndSetLong(LAST_C_FLUSH_BASE, LAST_C_FLUSH_OFF, prev, now)) {
-            NetworkHandler.flushClient();
         }
     }
 
@@ -226,20 +189,13 @@ public class PacketThreading {
 
             PacketTask task = new PacketTask(packet, op, target, dimension);
 
-            if (multiThreaded) {
-                ThreadPoolExecutor tp = threadPool;
-                if (tp == null || tp.isShutdown()) {
-                    runSynchronously(packet, op, target, dimension);
-                    return;
-                }
-                tp.execute(new PacketRunner(task));
-            } else {
-                MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
-                if (q == null || !q.offer(task)) {
-                    MainRegistry.logger.warn("Packet Queue full (size > {}). Running synchronously.", QUEUE_CAPACITY);
-                    runSynchronously(packet, op, target, dimension);
-                }
+
+            MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
+            if (q == null || !q.offer(task)) {
+                MainRegistry.logger.warn("Packet Queue full (size > {}). Running synchronously.", QUEUE_CAPACITY);
+                runSynchronously(packet, op, target, dimension);
             }
+
         } finally {
             U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, -1);
         }
@@ -315,44 +271,6 @@ public class PacketThreading {
 
     private enum PacketOp {
         PLAYER, ALL, DIMENSION, ALL_AROUND, TRACKING_POINT, TRACKING_ENTITY, SERVER
-    }
-
-    @SuppressWarnings("ClassCanBeRecord") // dude
-    static class PacketRunner implements Runnable {
-        final PacketTask task;
-
-        PacketRunner(PacketTask task) {
-            this.task = task;
-        }
-
-        @Override
-        public void run() {
-            try {
-                task.packet.getCompiledBuffer();
-                LOCK.lock();
-                try {
-                    send(task);
-                } finally {
-                    LOCK.unlock();
-                }
-                if (task.op == PacketOp.SERVER) {
-                    maybeFlushClient();
-                } else {
-                    maybeFlushServer();
-                }
-            } catch (Throwable t) {
-                MainRegistry.logger.error("Error processing packet in thread pool", t);
-                throw t;
-            } finally {
-                task.packet.releaseBuffer();
-            }
-        }
-
-        void free() {
-            if (task != null && task.packet != null) {
-                task.packet.releaseBuffer();
-            }
-        }
     }
 
     record PacketTask(ThreadedPacket packet, PacketOp op, Object target, int dimension) {

@@ -11,7 +11,6 @@ import io.netty.handler.codec.CodecException;
 import io.netty.handler.codec.MessageToMessageCodec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
@@ -164,30 +163,6 @@ public class NetworkHandler {
 
         SimpleChannelHandlerWrapper<REQ, REPLY> handler = new SimpleChannelHandlerWrapper<>(messageHandler, side, requestMessageType);
         channel.pipeline().addAfter(type, messageHandler.getClass().getName(), handler);
-    }
-
-    public Packet<?> getPacketFrom(IMessage message) {
-        return serverChannel.generatePacketFrom(message);
-    }
-
-    // ClientTickEvent Phase END
-    public static void flushClient() {
-        PacketThreading.LOCK.lock();
-        try {
-            flushClientDirect();
-        } finally {
-            PacketThreading.LOCK.unlock();
-        }
-    }
-
-    // ServerTickEvent Phase END
-    public static void flushServer() {
-        PacketThreading.LOCK.lock();
-        try {
-            flushServerDirect();
-        } finally {
-            PacketThreading.LOCK.unlock();
-        }
     }
 
     public static void flushClientDirect() {
