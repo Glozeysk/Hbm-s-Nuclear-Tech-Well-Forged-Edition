@@ -30,10 +30,7 @@ public class MachineDiFurnaceBig extends BlockDummyable {
 			return new TileEntityMachineDiFurnaceBig();
 
 		if(meta >= 8 && meta <= 11)
-			return new TileEntityProxyInventory();
-
-		if(meta == 7)
-			return new TileEntityProxyCombo(false, true, true);
+			return new TileEntityProxyCombo(true, true, true);
 
 		return null;
 	}
@@ -79,16 +76,6 @@ public class MachineDiFurnaceBig extends BlockDummyable {
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o + 1);
 		this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o - 1);
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o - 1);
-
-		if(dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH) {
-			this.makeExtra(world, x + dir.offsetX * o + 1, y + 1, z + dir.offsetZ * o);
-			this.makeExtra(world, x + dir.offsetX * o - 1, y + 1, z + dir.offsetZ * o);
-		}
-
-		if(dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
-			this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o + 1);
-			this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o - 1);
-		}
 	}
 	
 	@Override

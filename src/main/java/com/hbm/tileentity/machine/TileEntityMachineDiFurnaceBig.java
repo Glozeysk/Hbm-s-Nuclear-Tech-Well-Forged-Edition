@@ -3,20 +3,27 @@ package com.hbm.tileentity.machine;
 import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.entity.particle.EntityGasFlameFX;
+import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.DiFurnaceRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleCloud;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -24,6 +31,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
@@ -31,7 +39,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor, INBTPacketReceiver {
 
 	public long power = 0;
 	public int process = 0;
@@ -39,10 +47,11 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	public FluidTank tank;
 	public Fluid tankType = ModForgeFluids.nitan;
 	public boolean needsUpdate = false;
+	public boolean isRunning = false;
 	
 	public TileEntityMachineDiFurnaceBig() {
-		super(8);
-		tank = new FluidTank(8000);
+		super(11);
+		tank = new FluidTank(16000);
 	}
 	
 	@Override
@@ -62,20 +71,22 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing face) {
-		return new int[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+		return new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 10 };
 	}
 
 	private void updateConnections() {
 
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 
-		if(dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH) {
-			this.trySubscribe(world, pos.add(2, 1, 0), ForgeDirection.EAST);
-			this.trySubscribe(world, pos.add(-2, 1, 0), ForgeDirection.WEST);
-		} else if(dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
-			this.trySubscribe(world, pos.add(0, 1, 2), ForgeDirection.SOUTH);
-			this.trySubscribe(world, pos.add(0, 1, -2), ForgeDirection.NORTH);
-		}
+		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
+		this.trySubscribe(world, pos.add(1, 0, -2), ForgeDirection.NORTH);
+		this.trySubscribe(world, pos.add(-1, 0, 2), ForgeDirection.SOUTH);
+		this.trySubscribe(world, pos.add(1, 0, 2), ForgeDirection.SOUTH);
+		this.trySubscribe(world, pos.add(-2, 0, -1), ForgeDirection.WEST);
+		this.trySubscribe(world, pos.add(-2, 0, 1), ForgeDirection.WEST);
+		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
+		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
+		
 	}
 	
 	@Override
@@ -107,12 +118,12 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	
 	@Override
 	public boolean canExtractItem(int i, ItemStack itemStack, int amount){
-		return i == 4 || i == 5 || i == 6 || i == 7;
+		return i == 4 || i == 5 || i == 6 || i == 7 || i == 10;
 	}
 	
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack){
-		if(i == 4 || i == 5 || i == 6 || i == 7) return false;
+		if(i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10) return false;
 		return true;
 	}
 	
@@ -130,15 +141,29 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		power = compound.getLong("power");
 		tank.readFromNBT(compound);
 		process = compound.getShort("process");
+		isRunning = compound.getBoolean("isRunning");
 		super.readFromNBT(compound);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setLong("power", power);
 		tank.writeToNBT(compound);
 		compound.setShort("process", (short) process);
+		compound.setBoolean("isRunning", isRunning);
 		return super.writeToNBT(compound);
+	}
+
+	@SideOnly(Side.CLIENT)
+	private void spawnSmoke(double x, double y, double z) {
+		Particle p = new ParticleCloud(world, x, y, z, 0.0D, 0.05D, 0.0D) {
+			@Override
+			public void move(double dx, double dy, double dz) {
+				this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
+				this.resetPositionToBB();
+			}
+		};
+		Minecraft.getMinecraft().effectRenderer.addEffect(p);
 	}
 	
 	public long getPowerScaled(long i) {
@@ -265,6 +290,11 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 
 			this.updateConnections();
 
+			power = Library.chargeTEFromItems(inventory, 8, power, maxPower);
+			if(inputValidForTank(9) && tank.getFluidAmount() < tank.getCapacity()){
+				FFUtils.fillFromFluidContainer(inventory, tank, 9, 10);
+			}
+
 			long prevPower = power;
 			int prevAmount = tank.getFluidAmount();
 			if (needsUpdate) {
@@ -280,24 +310,86 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 				inventory.setStackInSlot(3, ItemStack.EMPTY);
 			}
 
-            if (canProcess()) {
-                process();
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
-                world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
+			if (canProcess()) {
+				isRunning = true;
+				process();
+				world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
+				world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() + 1.671875F, 0.0, 0.0, 0.0, 0.15F));
+				world.spawnEntity(new EntityGasFlameFX(world, pos.getX() + 1.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
+				world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
 
-                if(this.world.getTotalWorldTime() % 20 == 0)
-                    this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 1F, 1F);
-            } else {
-                process = 0;
-            }
+				if(this.world.getTotalWorldTime() % 20 == 0)
+					this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 2F, 1F);
+			} else {
+				isRunning = false;
+				process = 0;
+			}
 
+			NBTTagCompound data = new NBTTagCompound();
+			data.setBoolean("isRunning", isRunning);
+			data.setShort("process", (short) process);
+			INBTPacketReceiver.networkPack(this, data, 15);
 			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			if(prevPower != power || prevAmount != tank.getFluidAmount()){
 				markDirty();
 			}
+		} else {
+			if(isRunning) {
+				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+				if(this.world.getTotalWorldTime() % 2 == 0) {
+					switch (dir)
+					{
+						case WEST:
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.4 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							break;
+						case EAST:
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() - 0.4 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							break;
+						case NORTH:
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 0.4 + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							break;
+						case SOUTH:
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() - 0.4 + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+					default:
+						break;
+					}
+				}
+				if(this.world.getTotalWorldTime() % 10 == 0) {
+					spawnSmoke(pos.getX() + 1.671875F, pos.getY() + 1F, pos.getZ() + 1.671875F);
+					spawnSmoke(pos.getX() - 0.671875F, pos.getY() + 1F, pos.getZ() + 1.671875F);
+					spawnSmoke(pos.getX() + 1.671875F, pos.getY() + 1F, pos.getZ() - 0.671875F);
+					spawnSmoke(pos.getX() - 0.671875F, pos.getY() + 1F, pos.getZ() - 0.671875F);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void networkUnpack(NBTTagCompound nbt) {
+		this.isRunning = nbt.getBoolean("isRunning");
+		this.process = nbt.getShort("process");
+	}
+
+	protected boolean inputValidForTank(int slot){
+		
+		if(!inventory.getStackInSlot(slot).isEmpty()){
+			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
+			if(containerFluid != null){
+				if(isValidFluid(containerFluid)){
+					setTankType(containerFluid.getFluid());
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public void setTankType(Fluid f){
+		if(f != null && (tank.getFluid() == null || (tank.getFluid() != null && tank.getFluid().getFluid() != f))){
+			tank.setFluid(new FluidStack(f, 0));
 		}
 	}
 	

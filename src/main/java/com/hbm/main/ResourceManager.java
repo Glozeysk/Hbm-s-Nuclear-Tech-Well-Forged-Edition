@@ -767,6 +767,10 @@ public class ResourceManager {
 	public static final ResourceLocation difurnacebig_balefire_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_balefire.png");
 	public static final ResourceLocation difurnacebig_spark_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_spark.png");
 	public static final ResourceLocation difurnacebig_uu_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_uu.png");
+	public static final ResourceLocation difurnacebig_nitan_on_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_nitan_on.png");
+	public static final ResourceLocation difurnacebig_balefire_on_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_balefire_on.png");
+	public static final ResourceLocation difurnacebig_spark_on_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_spark_on.png");
+	public static final ResourceLocation difurnacebig_uu_on_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/difurnacebig_uu_on.png");
 	public static final ResourceLocation crystallizer_spinner_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/crystallizer_spinner.png");
 	public static final ResourceLocation crystallizer_window_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/crystallizer_window.png");
 

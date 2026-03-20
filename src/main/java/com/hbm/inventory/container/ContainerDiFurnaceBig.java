@@ -23,26 +23,35 @@ public class ContainerDiFurnaceBig extends Container {
 		
 		diFurnace = tedf;
 		
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 57, 23));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 75, 23));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 57, 59));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 75, 59));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 4, 127, 32));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 145, 32));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 127, 50));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 145, 50));
+		// Input up
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 60, 18));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 78, 18));
+		// Input down
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 60, 72));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 78, 72));
+		// Output
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 4, 130, 36));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 148, 36));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 130, 54));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 148, 54));
+		// Battery
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 8, 184, 72));
+		// Fluid
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 15, 18));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 10, 15, 72));
+
 		
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 114 + i * 18));
+				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 119 + i * 18));
 			}
 		}
 		
 		for(int i = 0; i < 9; i++)
 		{
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 172));
+			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 177));
 		}
 	}
 	
@@ -59,40 +68,60 @@ public class ContainerDiFurnaceBig extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
+	public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
 		ItemStack var3 = ItemStack.EMPTY;
 		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
+
+		if (var4 != null && var4.getHasStack()) {
 			ItemStack var5 = var4.getStack();
 			var3 = var5.copy();
-			
-            if (par2 <= 7) {
-				if (!this.mergeItemStack(var5, 8, this.inventorySlots.size(), true))
-				{
+
+			if (par2 <= 10) {
+				if (!this.mergeItemStack(var5, 11, this.inventorySlots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
-			}
-			else
-			{
-				if (!this.mergeItemStack(var5, 0, 4, false))
+			} else {
+				ItemStack slot0 = this.inventorySlots.get(0).getStack();
+				ItemStack slot1 = this.inventorySlots.get(1).getStack();
+				ItemStack slot2 = this.inventorySlots.get(2).getStack();
+				ItemStack slot3 = this.inventorySlots.get(3).getStack();
+
+				boolean matchesUpper = (!slot0.isEmpty() && slot0.getItem() == var5.getItem() && slot0.getMetadata() == var5.getMetadata()) ||
+									(!slot1.isEmpty() && slot1.getItem() == var5.getItem() && slot1.getMetadata() == var5.getMetadata());
+
+				boolean matchesLower = (!slot2.isEmpty() && slot2.getItem() == var5.getItem() && slot2.getMetadata() == var5.getMetadata()) ||
+									(!slot3.isEmpty() && slot3.getItem() == var5.getItem() && slot3.getMetadata() == var5.getMetadata());
+
+				boolean upperEmpty = slot0.isEmpty() && slot1.isEmpty();
+				boolean lowerEmpty = slot2.isEmpty() && slot3.isEmpty();
+
+				if (matchesUpper) {
+					if (!this.mergeItemStack(var5, 0, 2, false))
 						return ItemStack.EMPTY;
+				} else if (matchesLower) {
+					if (!this.mergeItemStack(var5, 2, 4, false))
+						return ItemStack.EMPTY;
+				} else if (upperEmpty) {
+					if (!this.mergeItemStack(var5, 0, 2, false))
+						return ItemStack.EMPTY;
+				} else if (lowerEmpty) {
+					if (!this.mergeItemStack(var5, 2, 4, false))
+						return ItemStack.EMPTY;
+				} else {
+					if (!this.mergeItemStack(var5, 0, 4, false))
+						return ItemStack.EMPTY;
+				}
 			}
-			
-			if (var5.isEmpty())
-			{
+
+			if (var5.isEmpty()) {
 				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
+			} else {
 				var4.onSlotChanged();
 			}
 		}
-		
+
 		return var3;
-    }
+	}
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {

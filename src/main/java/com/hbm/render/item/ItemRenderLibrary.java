@@ -184,14 +184,17 @@ public class ItemRenderLibrary {
 				GL11.glScaled(1, 1, 1);
 			}
 			public void renderInventory() {
-				GL11.glTranslated(0, -2, 0);
+				GL11.glTranslated(0, -2.5, 0);
 				GL11.glScaled(3, 3, 3);
 			}
 			public void renderCommon() {
 				GL11.glRotated(90, 0, 1, 0);
-		        GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				bindTexture(ResourceManager.difurnacebig_tex);  ResourceManager.difurnacebig.renderPart("Plane");
-		        GlStateManager.shadeModel(GL11.GL_FLAT);
+				GlStateManager.disableCull();
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				bindTexture(ResourceManager.difurnacebig_tex);
+				ResourceManager.difurnacebig.renderAllExcept("on");
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+				GlStateManager.enableCull();
 			}});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_reactor), new ItemRenderBase() {

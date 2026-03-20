@@ -1,5 +1,6 @@
 package com.hbm.render.tileentity;
 
+import net.minecraft.client.renderer.OpenGlHelper;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.main.ResourceManager;
@@ -30,10 +31,10 @@ public class RenderDiFurnaceBig extends TileEntitySpecialRenderer<TileEntityMach
 		FluidStack fluid = diFurnace.tank.getFluid();
 
 		switch(diFurnace.getBlockMetadata() - 10) {
-		case 2: GL11.glRotatef(180, 0F, 1F, 0F); break;
-		case 4: GL11.glRotatef(270, 0F, 1F, 0F); break;
-		case 3: GL11.glRotatef(0, 0F, 1F, 0F); break;
-		case 5: GL11.glRotatef(90, 0F, 1F, 0F); break;
+		case 2: GL11.glRotatef(0, 0F, 1F, 0F); break;
+		case 4: GL11.glRotatef(90, 0F, 1F, 0F); break;
+		case 3: GL11.glRotatef(180, 0F, 1F, 0F); break;
+		case 5: GL11.glRotatef(270, 0F, 1F, 0F); break;
 		}
 
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
@@ -50,7 +51,23 @@ public class RenderDiFurnaceBig extends TileEntitySpecialRenderer<TileEntityMach
 			bindTexture(ResourceManager.difurnacebig_tex);
 		}
 
-		ResourceManager.difurnacebig.renderAll();
+		ResourceManager.difurnacebig.renderPart("main");
+
+		if(diFurnace.isRunning) {
+			GL11.glPushMatrix();
+			GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+			
+			GL11.glDisable(GL11.GL_LIGHTING);
+			GL11.glDisable(GL11.GL_CULL_FACE);
+			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+			ResourceManager.difurnacebig.renderPart("on");
+			GL11.glEnable(GL11.GL_LIGHTING);
+			
+			GL11.glPopAttrib();
+			GL11.glPopMatrix();
+		} else {
+			ResourceManager.difurnacebig.renderPart("off");
+		}
 		
 		GlStateManager.shadeModel(GL11.GL_FLAT);
 		GlStateManager.enableCull();
