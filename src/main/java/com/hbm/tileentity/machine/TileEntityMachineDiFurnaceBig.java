@@ -154,17 +154,28 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		return super.writeToNBT(compound);
 	}
 
-	@SideOnly(Side.CLIENT)
-	private void spawnSmoke(double x, double y, double z) {
-		Particle p = new ParticleCloud(world, x, y, z, 0.0D, 0.05D, 0.0D) {
-			@Override
-			public void move(double dx, double dy, double dz) {
-				this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
-				this.resetPositionToBB();
-			}
-		};
-		Minecraft.getMinecraft().effectRenderer.addEffect(p);
-	}
+    @SideOnly(Side.CLIENT)
+    private void spawnSmoke(double x, double y, double z) {
+        Particle p = new ParticleCloud(world, x, y, z, 0.0D, 0.05D, 0.0D) {
+            @Override
+            public void onUpdate() {
+                this.prevPosX = this.posX;
+                this.prevPosY = this.posY;
+                this.prevPosZ = this.posZ;
+
+                if (this.particleAge++ >= this.particleMaxAge) {
+                    this.setExpired();
+                }
+
+                this.setParticleTextureIndex(7 - this.particleAge * 8 / this.particleMaxAge);
+                this.move(this.motionX, this.motionY, this.motionZ);
+                this.motionX *= 0.9599999785423279D;
+                this.motionY *= 0.9599999785423279D;
+                this.motionZ *= 0.9599999785423279D;
+            }
+        };
+        Minecraft.getMinecraft().effectRenderer.addEffect(p);
+    }
 	
 	public long getPowerScaled(long i) {
 		return (power * i) / maxPower;
@@ -343,16 +354,16 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 					switch (dir)
 					{
 						case WEST:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.4 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() - 0.5 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 0.9 * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case EAST:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() - 0.4 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 1.45 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case NORTH:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 0.4 + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.3, pos.getZ() - 0.58, 0.0, 0.0, 0.0);
 							break;
 						case SOUTH:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() - 0.4 + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+                            world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.9 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 1.45 - rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 					default:
 						break;
 					}
