@@ -17,7 +17,8 @@ import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleCloud;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,6 +28,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -156,27 +158,55 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 
     @SideOnly(Side.CLIENT)
     private void spawnSmoke(double x, double y, double z) {
-        Particle p = new ParticleCloud(world, x, y, z, 0.0D, 0.05D, 0.0D) {
+        Particle p = new Particle(world, x, y, z) {
+            private float baseScale;
+            {
+                this.motionX = 0.0D;
+                this.motionY = 0.05D;
+                this.motionZ = 0.0D;
+                this.particleRed = 0.9F;
+                this.particleGreen = 0.9F;
+                this.particleBlue = 0.9F;
+                this.particleMaxAge = (int)(8.0F / (this.rand.nextFloat() * 0.9F + 0.1F));
+                this.baseScale = this.particleScale * 1.1F;
+                this.particleScale = 0;
+                this.setParticleTextureIndex(0);
+            }
+
             @Override
             public void onUpdate() {
                 this.prevPosX = this.posX;
                 this.prevPosY = this.posY;
                 this.prevPosZ = this.posZ;
-
                 if (this.particleAge++ >= this.particleMaxAge) {
                     this.setExpired();
                 }
-
                 this.setParticleTextureIndex(7 - this.particleAge * 8 / this.particleMaxAge);
-                this.move(this.motionX, this.motionY, this.motionZ);
-                this.motionX *= 0.9599999785423279D;
-                this.motionY *= 0.9599999785423279D;
-                this.motionZ *= 0.9599999785423279D;
+                this.posX += this.motionX;
+                this.posY += this.motionY;
+                this.posZ += this.motionZ;
+                this.motionX *= 0.96D;
+                this.motionY *= 0.96D;
+                this.motionZ *= 0.96D;
+            }
+
+            @Override
+            public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
+                float f = ((float)this.particleAge + partialTicks) / (float)this.particleMaxAge * 32.0F;
+                f = MathHelper.clamp(f, 0.0F, 1.0F);
+                this.particleScale = this.baseScale * f;
+                super.renderParticle(buffer, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ);
+            }
+
+            @Override
+            public int getBrightnessForRender(float partialTick) {
+                int i = super.getBrightnessForRender(partialTick);
+                int k = i >> 16 & 0xFF;
+                return 240 | (k << 16);
             }
         };
         Minecraft.getMinecraft().effectRenderer.addEffect(p);
     }
-	
 	public long getPowerScaled(long i) {
 		return (power * i) / maxPower;
 	}
@@ -330,7 +360,7 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 				world.spawnEntity(new EntityGasFlameFX(world, pos.getX() - 0.671875F, pos.getY() + 3.2F, pos.getZ() - 0.671875F, 0.0, 0.0, 0.0, 0.15F));
 
 				if(this.world.getTotalWorldTime() % 20 == 0)
-					this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 2F, 1F);
+					this.world.playSound(null, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, HBMSoundHandler.difurnace_loop, SoundCategory.BLOCKS, 1F, 1F);
 			} else {
 				isRunning = false;
 				process = 0;
@@ -354,16 +384,28 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 					switch (dir)
 					{
 						case WEST:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() - 0.5 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 0.9 * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME,
+                                    pos.getX() - 0.5 + rot.offsetX * world.rand.nextDouble(),
+                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+                                    pos.getZ() + 0.9 * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case EAST:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 1.45 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME,
+                                    pos.getX() + 1.45 + rot.offsetX * world.rand.nextDouble(),
+                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+                                    pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case NORTH:
-							world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.3, pos.getZ() - 0.58, 0.0, 0.0, 0.0);
+							world.spawnParticle(EnumParticleTypes.FLAME,
+                                    pos.getX() + rot.offsetX * world.rand.nextDouble(),
+                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.3,
+                                    pos.getZ() - 0.58, 0.0, 0.0, 0.0);
 							break;
 						case SOUTH:
-                            world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.9 + rot.offsetX * world.rand.nextDouble(), pos.getY() + 1.65 + world.rand.nextDouble() * 0.25, pos.getZ() + 1.45 - rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+                            world.spawnParticle(EnumParticleTypes.FLAME,
+                                    pos.getX() + 0.9 + rot.offsetX * world.rand.nextDouble(),
+                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+                                    pos.getZ() + 1.45 - rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 					default:
 						break;
 					}
@@ -428,7 +470,6 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	@Override
 	public void setPower(long i) {
 		power = i;
-		
 	}
 
 	@Override

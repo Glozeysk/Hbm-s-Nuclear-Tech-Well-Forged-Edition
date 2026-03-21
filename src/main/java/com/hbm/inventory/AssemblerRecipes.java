@@ -1,23 +1,5 @@
 package com.hbm.inventory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import static com.hbm.inventory.OreDictManager.*;
-
-import org.apache.logging.log4j.Level;
-
 import com.google.gson.Gson;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
@@ -32,7 +14,6 @@ import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.tool.ItemFluidCanister;
 import com.hbm.main.MainRegistry;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -46,6 +27,12 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
+import org.apache.logging.log4j.Level;
+
+import java.io.*;
+import java.util.*;
+
+import static com.hbm.inventory.OreDictManager.*;
 
 public class AssemblerRecipes {
 
@@ -353,20 +340,18 @@ public class AssemblerRecipes {
 				new OreDictStack(OreDictManager.getReflector(), 8),
 				new OreDictStack(CU.plate(), 12)
 			}, 150);
-		makeRecipe(new ComparableStack(ModBlocks.machine_difurnace_spk_off, 1), new AStack[] {
-				new ComparableStack(ModBlocks.machine_difurnace_rtg_off, 1),
-				new ComparableStack(ModItems.fusion_shield_desh, 1),
-				new ComparableStack(ModItems.pellet_coolant, 1),
-				new ComparableStack(ModItems.battery_spark, 1),
+		makeRecipe(new ComparableStack(ModBlocks.machine_difurnace_big, 1), new AStack[] {
+				new ComparableStack(ModBlocks.block_steel, 8),
 				new ComparableStack(ModBlocks.barrel_antimatter, 1),
-				new ComparableStack(ModItems.powder_spark_mix, 16),
-				new ComparableStack(ModItems.thermo_unit_endo, 2),
-				new ComparableStack(ModBlocks.fwatz_cooler, 4),
-				new ComparableStack(ModBlocks.hadron_coil_starmetal, 8),
-				new ComparableStack(ModItems.motor_desh, 8),
-				new ComparableStack(ModItems.circuit_targeting_tier5, 5),
+				new ComparableStack(ModItems.pipes_steel, 4),
+				new ComparableStack(ModBlocks.fusion_conductor, 16),
+				new ComparableStack(ModItems.plate_combine_steel, 24),
+				new ComparableStack(ModBlocks.machine_difurnace_rtg_off, 2),
+				new ComparableStack(ModItems.ingot_tungsten, 32),
+				new ComparableStack(ModItems.ingot_schrabidate, 16),
+				new ComparableStack(ModItems.circuit_tantalium, 4),
 				new ComparableStack(ModItems.circuit_targeting_tier6, 2)
-			}, 2400);
+			}, 900);
 		makeRecipe(new ComparableStack(ModBlocks.machine_radgen, 1), new AStack[] { new OreDictStack(STEEL.ingot(), 8), new OreDictStack(STEEL.plate(), 32), new ComparableStack(ModItems.coil_magnetized_tungsten, 6), new ComparableStack(ModItems.wire_magnetized_tungsten, 24), new ComparableStack(ModItems.circuit_gold, 4), new ComparableStack(ModItems.reactor_core, 3), new OreDictStack(STAR.ingot(), 1), new OreDictStack(KEY_RED, 1), }, 400);
 		makeRecipe(new ComparableStack(ModBlocks.machine_diesel, 1), new AStack[] { new ComparableStack(ModItems.hull_small_steel, 4), new ComparableStack(Blocks.PISTON, 4), new OreDictStack(STEEL.ingot(), 6), new OreDictStack(MINGRADE.ingot(), 2), new OreDictStack(CU.plate(), 4), new ComparableStack(ModItems.wire_red_copper, 6), }, 200);
 		makeRecipe(new ComparableStack(ModBlocks.machine_selenium, 1), new AStack[] { new OreDictStack(STEEL.ingot(), 4), new OreDictStack(TI.plate(), 6), new OreDictStack(CU.plate(), 8), new ComparableStack(ModItems.hull_big_steel, 1), new ComparableStack(ModItems.hull_small_steel, 9), new ComparableStack(ModItems.pedestal_steel, 1), new ComparableStack(ModItems.coil_copper, 4), }, 250);
