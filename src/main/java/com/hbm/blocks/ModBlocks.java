@@ -1242,10 +1242,6 @@ public class ModBlocks {
 	
 	public static final Block machine_combine_factory = new MachineCMBFactory(Material.IRON, "machine_combine_factory").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_combine_factory = 35;
-
-	public static final Block machine_difurnace_spk_on = new MachineDiFurnaceSPK(Material.IRON, "machine_difurnace_spk_on", true).setHardness(5.0F).setResistance(10.0F).setLightOpacity(15).setLightLevel(2.0F).setCreativeTab(null);
-	public static final Block machine_difurnace_spk_off = new MachineDiFurnaceSPK(Material.IRON, "machine_difurnace_spk_off", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final int guiID_spk_difurnace = 135;
 	
 	public static final Block machine_teleporter = new MachineTeleporter(Material.IRON, "machine_teleporter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	// public static final int guiID_machine_teleporter = 36;

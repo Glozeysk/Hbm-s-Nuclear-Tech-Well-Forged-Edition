@@ -43,7 +43,6 @@ import com.hbm.tileentity.machine.TileEntityCrateTungsten;
 import com.hbm.tileentity.machine.TileEntityCrateDesh;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
-import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceSPK;
 import com.hbm.tileentity.machine.TileEntityFWatzCore;
 import com.hbm.tileentity.machine.TileEntityForceField;
 import com.hbm.tileentity.machine.TileEntityHadron;
@@ -175,11 +174,6 @@ public class GuiHandler implements IGuiHandler {
 			if(entity instanceof TileEntityDiFurnaceRTG) {
 				return new ContainerDiFurnaceRTG(player.inventory, (TileEntityDiFurnaceRTG) entity);
 			}
-		case ModBlocks.guiID_spk_difurnace: 
-			if(entity instanceof TileEntityMachineDiFurnaceSPK) {
-				return new ContainerMachineDiFurnaceSPK(player.inventory, (TileEntityMachineDiFurnaceSPK) entity);
-			}
-			return null;
 		case ModBlocks.guiID_machine_assembler:
 			if(entity instanceof TileEntityMachineAssembler) {
 				return new ContainerMachineAssembler(player.inventory, (TileEntityMachineAssembler) entity);
@@ -803,11 +797,6 @@ public class GuiHandler implements IGuiHandler {
 			if(entity instanceof TileEntityDiFurnaceRTG) {
 				return new GUIDiFurnaceRTG(player.inventory, (TileEntityDiFurnaceRTG) entity);
 			}
-		case ModBlocks.guiID_spk_difurnace:
-			if(entity instanceof TileEntityMachineDiFurnaceSPK) {
-				return new GUIMachineDiFurnaceSPK(player.inventory, (TileEntityMachineDiFurnaceSPK) entity);
-			}
-			return null;
 		case ModBlocks.guiID_machine_assembler:
 			if(entity instanceof TileEntityMachineAssembler) {
 				return new GUIMachineAssembler(player.inventory, (TileEntityMachineAssembler) entity);

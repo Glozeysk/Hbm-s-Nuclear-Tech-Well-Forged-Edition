@@ -86,7 +86,6 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_epress), PRESS);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_difurnace_off), ALLOY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_difurnace_rtg_off), ALLOY);
-		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_difurnace_spk_off), ALLOY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_difurnace_big), ALLOY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_boiler_off), BOILER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_boiler_electric_off), BOILER);
@@ -176,8 +175,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineEPress.class, 80, 35, 15, 15, PRESS);
 		registry.addRecipeClickArea(GUITestDiFurnace.class, 102, 36, 21, 14, ALLOY);
 		registry.addRecipeClickArea(GUIDiFurnaceRTG.class, 102, 36, 21, 14, ALLOY);
-		registry.addRecipeClickArea(GUIMachineDiFurnaceSPK.class, 106, 36, 14, 14, ALLOY);
-		registry.addRecipeClickArea(GUIDiFurnaceBig.class, 106, 36, 14, 14, ALLOY);
+		registry.addRecipeClickArea(GUIDiFurnaceBig.class, 95, 45, 30, 16, ALLOY);
 		registry.addRecipeClickArea(GUIMachineBoiler.class, 61, 34, 17, 35, BOILER);
 		registry.addRecipeClickArea(GUIMachineBoilerElectric.class, 61, 34, 17, 35, BOILER);
 		registry.addRecipeClickArea(GUIMachineBoilerRTG.class, 61, 34, 17, 17, BOILER);
@@ -207,7 +205,6 @@ public class JEIConfig implements IModPlugin {
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_electric_furnace_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_difurnace_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_difurnace_rtg_on));
-		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_difurnace_spk_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_nuke_furnace_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_rtg_furnace_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.reinforced_lamp_on));
