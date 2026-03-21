@@ -1,6 +1,7 @@
 package com.hbm.tileentity.bomb;
 
 import com.hbm.entity.item.EntityFireworks;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
@@ -49,7 +50,7 @@ public class TileEntityFireworks extends TileEntity implements ITickable {
 					NBTTagCompound data = new NBTTagCompound();
 					data.setString("type", "vanillaExt");
 					data.setString("mode", "flame");
-					PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ), new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ), new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
 
 					index++;
 

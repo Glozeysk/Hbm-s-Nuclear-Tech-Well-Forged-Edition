@@ -5,6 +5,7 @@ import java.util.List;
 import com.hbm.entity.particle.EntitySSmokeFX;
 import com.hbm.entity.particle.EntityTSmokeFX;
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
@@ -226,7 +227,7 @@ public class TileEntityMachineTurbofan extends TileEntityLoadedBase implements I
 						NBTTagCompound vdat = new NBTTagCompound();
 						vdat.setString("type", "giblets");
 						vdat.setInteger("ent", e.getEntityId());
-						PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
 						
 						world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
 						

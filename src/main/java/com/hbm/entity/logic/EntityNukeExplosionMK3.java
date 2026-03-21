@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.logic.IChunkLoader;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
@@ -287,7 +288,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 		data.setFloat("g", g);
 		data.setFloat("b", b);
 		data.setFloat("scale", 7.5F);
-		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, x+0.5D, y+0.5D, z+0.5D), new TargetPoint(dim, x, y, z, 150));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x+0.5D, y+0.5D, z+0.5D), new TargetPoint(dim, x, y, z, 150));
 	}
 
 	public static boolean isJammed(World world, Entity entity) {

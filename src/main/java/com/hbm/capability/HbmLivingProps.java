@@ -3,6 +3,7 @@ package com.hbm.capability;
 import java.util.List;
 import java.util.UUID;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IItemHazard;
 import com.hbm.capability.HbmLivingCapability.EntityHbmProps;
 import com.hbm.capability.HbmLivingCapability.IEntityHbmProps;
@@ -118,7 +119,7 @@ public class HbmLivingProps {
 			data.setInteger("count", 50);
 			data.setInteger("block", Block.getIdFromBlock(Blocks.SOUL_SAND));
 			data.setInteger("entity", entity.getEntityId());
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, 0, 0, 0), new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, 0, 0, 0), new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
 		}
 
 		if(entity instanceof EntityPlayer) {

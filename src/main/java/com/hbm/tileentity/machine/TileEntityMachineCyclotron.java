@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.BombConfig;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.entity.effect.EntityBlackHole;
@@ -462,7 +463,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setString("type", "muke");
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
 			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.mukeExplosion, SoundCategory.BLOCKS, 15.0F, 1.0F);
 		} else if(rand < 4) {
 			EntityBalefire bf = new EntityBalefire(world).mute();
@@ -475,7 +476,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			NBTTagCompound data = new NBTTagCompound();
 			data.setString("type", "muke");
 			data.setBoolean("balefire", true);
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
 			world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.mukeExplosion, SoundCategory.BLOCKS, 15.0F, 1.0F);
 		} else if(rand < 5) {
 			EntityBlackHole bl = new EntityBlackHole(world, 1.5F + world.rand.nextFloat());

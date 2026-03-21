@@ -11,6 +11,7 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IBulletImpactBehavior;
 import com.hbm.interfaces.IBulletUpdateBehavior;
 import com.hbm.util.ArmorRegistry;
@@ -309,11 +310,11 @@ public class BulletConfigFactory {
 				data.setInteger("count", count);
 				data.setDouble("motion", motion);
 				
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
 				if(bullet.world.rand.nextFloat() < hazeChance) {
 					NBTTagCompound haze = new NBTTagCompound();
 					haze.setString("type", "haze");
-					PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(haze, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 150));
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(haze, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 150));
 				}
 			}
 		};
@@ -364,7 +365,7 @@ public class BulletConfigFactory {
 				data.setInteger("count", 15);
 				data.setDouble("motion", 0.1D);
 				
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
 			}
 		};
 		

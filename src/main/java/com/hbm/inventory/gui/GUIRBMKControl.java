@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import java.io.IOException;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerRBMKControl;
@@ -51,7 +52,7 @@ public class GUIRBMKControl extends GuiInfoContainer {
 				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 				NBTTagCompound data = new NBTTagCompound();
 				data.setDouble("level", 1.0D - (k * 0.25D));
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+				PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
 			}
 
 			//color groups
@@ -60,7 +61,7 @@ public class GUIRBMKControl extends GuiInfoContainer {
 				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 				NBTTagCompound data = new NBTTagCompound();
 				data.setInteger("color", k);
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+				PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneBoxer;
 import com.hbm.lib.RefStrings;
 import com.hbm.packet.NBTControlPacket;
@@ -53,7 +54,7 @@ public class GUICraneBoxer extends GuiInfoContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("toggle", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, boxer.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, boxer.getPos()));
         }
     }
 

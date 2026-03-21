@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
@@ -644,7 +645,7 @@ public class ModEventHandler {
 			data.setDouble("motion", 0.1D);
 			data.setString("mode", "blockdust");
 			data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, ent.posX, ent.posY + ent.height * 0.5, ent.posZ), new TargetPoint(ent.dimension, ent.posX, ent.posY, ent.posZ, 50));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, ent.posX, ent.posY + ent.height * 0.5, ent.posZ), new TargetPoint(ent.dimension, ent.posX, ent.posY, ent.posZ, 50));
 					
 			if(attacker.getDistanceSq(ent) < 25) {
 				attacker.heal(e.getAmount() * 0.5F);
@@ -865,7 +866,7 @@ public class ModEventHandler {
 			NBTTagCompound vdat = new NBTTagCompound();
 			vdat.setString("type", "giblets");
 			vdat.setInteger("ent", entity.getEntityId());
-			PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
 			
 			entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + entity.world.rand.nextFloat() * 0.2F);
 			

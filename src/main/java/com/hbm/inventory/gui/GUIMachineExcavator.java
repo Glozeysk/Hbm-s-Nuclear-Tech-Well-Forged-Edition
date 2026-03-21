@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.util.I18nUtil;
 import org.lwjgl.opengl.GL11;
 import java.io.IOException;
@@ -74,7 +75,7 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean(toggle, true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, drill.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, drill.getPos()));
 		}
 	}
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -205,7 +206,7 @@ public class GUIRBMKConsole extends GuiScreen {
 						control.setInteger("sel_" + j, j);
 				}
 				
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+				PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 			}
 			return;
@@ -232,7 +233,7 @@ public class GUIRBMKConsole extends GuiScreen {
 					control.setInteger("sel_" + j, j);
 			}
 			
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 		}
 
@@ -245,7 +246,7 @@ public class GUIRBMKConsole extends GuiScreen {
 				if(guiLeft + 6 + 40 * k <= mouseX && guiLeft + 6 + 40 * k + 18 > mouseX && guiTop + 8 + 21 * j < mouseY && guiTop + 8 + 21 * j + 18 >= mouseY) {
 					NBTTagCompound control = new NBTTagCompound();
 					control.setByte("toggle", (byte) id);
-					PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+					PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 					mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 					return;
 				}
@@ -261,7 +262,7 @@ public class GUIRBMKConsole extends GuiScreen {
 						}
 					}
 
-					PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+					PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 					mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 					return;
 				}
@@ -272,7 +273,7 @@ public class GUIRBMKConsole extends GuiScreen {
 		if(guiLeft + 62 <= mouseX && guiLeft + 72 > mouseX && guiTop + 83 < mouseY && guiTop + 93 >= mouseY) {
 			NBTTagCompound control = new NBTTagCompound();
 			control.setByte("toggle", (byte) 99);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 			return;
 		}
@@ -288,7 +289,7 @@ public class GUIRBMKConsole extends GuiScreen {
 				}
 			}
 
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, console.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, console.getPos()));
 			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 			return;
 		}

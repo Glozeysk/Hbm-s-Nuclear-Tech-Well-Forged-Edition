@@ -8,6 +8,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
 import com.hbm.handler.GunConfiguration;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IBulletImpactBehavior;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
@@ -317,7 +318,7 @@ public class GunEnergyFactory {
 				 *	at cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper.sendToAllAround(SimpleNetworkWrapper.java:210)
 				 *	at com.hbm.handler.guncfg.GunEnergyFactory$1.behaveBlockHit(GunEnergyFactory.java:150)
 				 */
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
 			}
 		};
 

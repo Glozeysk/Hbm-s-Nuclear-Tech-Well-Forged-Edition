@@ -3,6 +3,7 @@ package com.hbm.handler;
 import java.util.Arrays;
 
 import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.tool.IItemAbility;
@@ -225,7 +226,7 @@ public abstract class WeaponAbility {
 						data.setDouble("motion", 0.1D);
 						data.setString("mode", "blockdust");
 						data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-						PacketDispatcher.wrapper.sendTo(new AuxParticlePacketNT(data, living.posX, living.posY + living.height * 0.5, living.posZ), (EntityPlayerMP)player);
+						PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, living.posX, living.posY + living.height * 0.5, living.posZ), (EntityPlayerMP)player);
 					}
 
 					world.playSound(null, living.posX, living.posY + living.height * 0.5, living.posZ, HBMSoundHandler.chainsaw, SoundCategory.PLAYERS, 0.5F, 1.0F);

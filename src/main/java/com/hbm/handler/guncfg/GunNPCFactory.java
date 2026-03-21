@@ -6,6 +6,7 @@ import java.util.Random;
 import com.hbm.entity.projectile.EntityBulletBase;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IBulletImpactBehavior;
 import com.hbm.interfaces.IBulletUpdateBehavior;
 import com.hbm.util.ContaminationUtil;
@@ -335,7 +336,7 @@ public class GunNPCFactory {
 					data.setFloat("pitch", -30F + 30F * i);
 					data.setFloat("yaw", bullet.world.rand.nextFloat() * 180F);
 					data.setFloat("scale", 5F);
-					PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ),
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ),
 							new TargetPoint(bullet.world.provider.getDimension(), bullet.posX, bullet.posY, bullet.posZ, 100));
 				}
 			}

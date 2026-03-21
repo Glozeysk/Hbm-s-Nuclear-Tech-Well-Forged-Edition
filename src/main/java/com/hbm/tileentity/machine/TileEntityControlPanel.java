@@ -69,6 +69,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 				}
 			}
 		}
+
 	}
 
 	@SideOnly(Side.CLIENT)

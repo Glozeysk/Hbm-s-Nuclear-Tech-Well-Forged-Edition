@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -185,7 +186,7 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setString("name", this.field.getText());
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turret.getPos().getX(), turret.getPos().getY(), turret.getPos().getZ()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turret.getPos().getX(), turret.getPos().getY(), turret.getPos().getZ()));
 			
 			this.field.setText("");
 			return;
@@ -197,7 +198,7 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setInteger("del", this.index);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turret.getPos().getX(), turret.getPos().getY(), turret.getPos().getZ()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turret.getPos().getX(), turret.getPos().getY(), turret.getPos().getZ()));
 			return;
 		}
 	}

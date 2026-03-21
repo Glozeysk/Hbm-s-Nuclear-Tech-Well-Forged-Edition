@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import java.io.IOException;
 
+import com.hbm.handler.threading.PacketThreading;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -122,7 +123,7 @@ public class GUIRBMKControlAuto extends GuiInfoContainer {
 			data.setDouble("heatUpper", vals[2]);
 			data.setDouble("heatLower", vals[3]);
 
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+			PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
 		}
 		
 		for(int k = 0; k < 3; k++) {
@@ -133,7 +134,7 @@ public class GUIRBMKControlAuto extends GuiInfoContainer {
 				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 				NBTTagCompound data = new NBTTagCompound();
 				data.setInteger("function", k);
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
+				PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.IEquipReceiver;
 import com.hbm.items.tool.ItemSwordAbility;
 import com.hbm.main.MainRegistry;
@@ -106,7 +107,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 		nbt.setInteger("hand", hand.ordinal());
 		nbt.setString("mode", "equip");
 		nbt.setString("name", this.getRegistryName().getPath());
-		PacketDispatcher.wrapper.sendTo(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)player);
+		PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)player);
 	}
 
 }
