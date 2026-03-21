@@ -175,8 +175,6 @@ public class NetworkHandler {
 
     public void sendToServer(IMessage message) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToServer. " +
-                    "Delegating to PacketThreading.createSendToServerThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToServerThreadedPacket(packet);
             return;
         }
@@ -195,8 +193,6 @@ public class NetworkHandler {
 
     public void sendToDimension(IMessage message, int dimensionId) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToDimension. " +
-                    "Delegating to PacketThreading.createSendToDimensionThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToDimensionThreadedPacket(packet, dimensionId);
             return;
         }
@@ -216,8 +212,6 @@ public class NetworkHandler {
 
     public void sendToAllAround(IMessage message, NetworkRegistry.TargetPoint point) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllAround. " +
-                    "Delegating to PacketThreading.createAllAroundThreadedPacket.", packet.getClass().getName());
             PacketThreading.createAllAroundThreadedPacket(packet, point);
             return;
         }
@@ -237,8 +231,6 @@ public class NetworkHandler {
 
     public void sendToAllTracking(IMessage message, NetworkRegistry.TargetPoint point) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllTracking. " +
-                    "Delegating to PacketThreading.createSendToAllTrackingThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToAllTrackingThreadedPacket(packet, point);
             return;
         }
@@ -258,8 +250,6 @@ public class NetworkHandler {
 
     public void sendToAllTracking(IMessage message, Entity entity) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllTracking. " +
-                    "Delegating to PacketThreading.createSendToAllTrackingThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToAllTrackingThreadedPacket(packet, entity);
             return;
         }
@@ -279,8 +269,6 @@ public class NetworkHandler {
 
     public void sendTo(IMessage message, EntityPlayerMP player) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendTo. " +
-                    "Delegating to PacketThreading.createSendToThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToThreadedPacket(packet, player);
             return;
         }
@@ -300,8 +288,6 @@ public class NetworkHandler {
 
     public void sendToAll(IMessage message) {
         if (message instanceof ThreadedPacket packet) {
-            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAll. " +
-                    "Delegating to PacketThreading.createSendToAllThreadedPacket.", packet.getClass().getName());
             PacketThreading.createSendToAllThreadedPacket(packet);
             return;
         }

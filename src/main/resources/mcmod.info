@@ -3,8 +3,8 @@
     "modid": "hbm",
     "name": "HBM's Nuclear Tech - Waldemar Edition",
     "description": "A mod that adds all kinds of nukes and other things",
-    "version": "1.0.5",
-    "credits": "\n\nHBMMods: creator\nDrillgon200: original 1.12.2 port\nTheOriginalGolem: 1.12.2 bug fixing\nAlcater: Custom 1.12.2 version, updating and texturing\nGlozeysk:fork author, a lot of changes\n",
+    "version": "1.1.0",
+    "credits": "\n\nHBMMods: creator\nDrillgon200: original 1.12.2 port\nTheOriginalGolem: 1.12.2 bug fixing\nAlcater: Custom 1.12.2 version, updating and texturing\nGlozeysk:fork author, a lot of changes\nStefanParmezan:fork developer\n",
     "logoFile": "assets/hbm/textures/logo.png",
     "mcversion": "${mcversion}",
     "logoFile": "",
@@ -14,7 +14,8 @@
       "Drillgon200",
       "HBMMods/The Bobcat",
       "Waldemar",
-      "Glozeysk"
+      "Glozeysk",
+      "StefanParmezan"
     ],
     "credits": "",
     "parent": "",
