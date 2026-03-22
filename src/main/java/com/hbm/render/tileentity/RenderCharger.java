@@ -1,5 +1,6 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.main.MainRegistry;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.render.amlfrom1710.Vec3;
@@ -22,7 +23,6 @@ public class RenderCharger extends TileEntitySpecialRenderer<TileEntityCharger> 
 	@Override
 	public void render(TileEntityCharger te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		super.render(te, x, y, z, partialTicks, destroyStage, alpha);
-
 		if(te.isOn){
 			GL11.glPushMatrix();
 	        GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);

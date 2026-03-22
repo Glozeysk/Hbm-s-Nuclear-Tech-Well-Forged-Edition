@@ -1,22 +1,22 @@
 package com.hbm.tileentity.machine;
 
+import api.hbm.energy.IBatteryItem;
+import api.hbm.energy.IEnergyUser;
+import com.hbm.blocks.machine.MachineCharger;
+import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hbm.blocks.machine.MachineCharger;
-import com.hbm.tileentity.INBTPacketReceiver;
-import com.hbm.tileentity.TileEntityLoadedBase;
-
-import api.hbm.energy.IBatteryItem;
-import api.hbm.energy.IEnergyUser;
-import net.minecraft.util.ITickable;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.AxisAlignedBB;
-
-public class TileEntityCharger extends TileEntityLoadedBase implements ITickable, IEnergyUser, INBTPacketReceiver {
+public class TileEntityCharger extends TileEntityLoadedBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 	
 	public static final int range = 3;
 
@@ -66,28 +66,32 @@ public class TileEntityCharger extends TileEntityLoadedBase implements ITickable
 			if(isOn) {
 				lastOp--;
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("o", isOn);
-			data.setBoolean("u", pointingUp);
-			data.setLong("m", totalCapacity);
-			data.setLong("v", totalEnergy);
-			data.setLong("c", charge);
-			data.setLong("a", actualCharge);
-			INBTPacketReceiver.networkPack(this, data, 50);
-			actualCharge = 0;
+
+            networkPackNT(50);
+            actualCharge = 0;
 		}
 	}
 
-	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.isOn = nbt.getBoolean("o");
-		this.pointingUp = nbt.getBoolean("u");
-		this.totalCapacity = nbt.getLong("m");
-		this.totalEnergy = nbt.getLong("v");
-		this.charge = nbt.getLong("c");
-		this.actualCharge = nbt.getLong("a");
-	}
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(this.isOn);
+        buf.writeBoolean(this.pointingUp);
+        buf.writeLong(this.totalCapacity);
+        buf.writeLong(this.totalEnergy);
+        buf.writeLong(this.charge);
+        buf.writeLong(this.actualCharge);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.isOn = buf.readBoolean();
+        this.pointingUp = buf.readBoolean();
+        this.totalCapacity = buf.readLong();
+        this.totalEnergy = buf.readLong();
+        this.charge = buf.readLong();
+        this.actualCharge = buf.readLong();
+    }
 
 	@Override
 	public long getPower() {
@@ -137,4 +141,19 @@ public class TileEntityCharger extends TileEntityLoadedBase implements ITickable
 		
 		return power;
 	}
+
+    @Override
+    public String toString() {
+        return "TileEntityCharger{" +
+                "players=" + players +
+                ", maxChargeRate=" + maxChargeRate +
+                ", charge=" + charge +
+                ", actualCharge=" + actualCharge +
+                ", totalCapacity=" + totalCapacity +
+                ", totalEnergy=" + totalEnergy +
+                ", lastOp=" + lastOp +
+                ", isOn=" + isOn +
+                ", pointingUp=" + pointingUp +
+                '}';
+    }
 }

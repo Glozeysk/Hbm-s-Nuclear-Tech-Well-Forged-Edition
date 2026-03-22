@@ -1,5 +1,6 @@
 package com.hbm.lib;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -75,6 +76,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
+
+import static com.hbm.lib.internal.UnsafeHolder.BA_BASE;
+import static com.hbm.lib.internal.UnsafeHolder.U;
 
 @Spaghetti("this whole class")
 public class Library {
@@ -1097,4 +1101,42 @@ public static boolean canConnect(IBlockAccess world, BlockPos pos, ForgeDirectio
 	public static Explosion explosionDummy(World w, double x, double y, double z){
 		return new Explosion(w, null, x, y, z, 1000, false, false);
 	}
+
+    public static long fnv1a64(ByteBuf buf) {
+        long hash = 0xcbf29ce484222325L;
+        int len = buf.readableBytes();
+        if (buf.hasMemoryAddress()) {
+            long addr = buf.memoryAddress() + buf.readerIndex();
+            long end = addr + len;
+            for (; addr < end; addr++) {
+                hash ^= (U.getByte(addr) & 0xffL);
+                hash *= 0x100000001b3L;
+            }
+        } else if (buf.hasArray()) {
+            byte[] arr = buf.array();
+            long offset = BA_BASE + buf.arrayOffset() + buf.readerIndex();
+            long end = offset + len;
+            for (; offset < end; offset++) {
+                hash ^= (U.getByte(arr, offset) & 0xffL);
+                hash *= 0x100000001b3L;
+            }
+        } else {
+            int start = buf.readerIndex();
+            for (int i = 0; i < len; i++) {
+                hash ^= (buf.getByte(start + i) & 0xffL);
+                hash *= 0x100000001b3L;
+            }
+        }
+        return hash;
+    }
+
+    public static long fnv1a64(String s) {
+        byte[] data = s.getBytes(StandardCharsets.UTF_8);
+        long hash = 0xcbf29ce484222325L;
+        for (byte b : data) {
+            hash ^= (b & 0xFFL);
+            hash *= 0x100000001b3L;
+        }
+        return hash;
+    }
 }
