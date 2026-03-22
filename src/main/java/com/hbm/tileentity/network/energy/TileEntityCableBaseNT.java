@@ -9,7 +9,7 @@ import api.hbm.energy.PowerNet;
 import net.minecraft.util.ITickable;
 import net.minecraft.tileentity.TileEntity;
 
-public class TileEntityCableBaseNT extends TileEntity implements ITickable, IEnergyConductor {
+public class TileEntityCableBaseNT extends TileEntityLoadedBase implements ITickable, IEnergyConductor {
 	
 	protected IPowerNet network;
 

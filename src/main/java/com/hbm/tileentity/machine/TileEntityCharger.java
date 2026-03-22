@@ -141,19 +141,4 @@ public class TileEntityCharger extends TileEntityLoadedBase implements ITickable
 		
 		return power;
 	}
-
-    @Override
-    public String toString() {
-        return "TileEntityCharger{" +
-                "players=" + players +
-                ", maxChargeRate=" + maxChargeRate +
-                ", charge=" + charge +
-                ", actualCharge=" + actualCharge +
-                ", totalCapacity=" + totalCapacity +
-                ", totalEnergy=" + totalEnergy +
-                ", lastOp=" + lastOp +
-                ", isOn=" + isOn +
-                ", pointingUp=" + pointingUp +
-                '}';
-    }
 }

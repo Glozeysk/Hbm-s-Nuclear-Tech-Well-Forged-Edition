@@ -8,10 +8,12 @@ import com.hbm.lib.Library;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.util.I18nUtil;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.BlockHorizontal;
@@ -125,8 +127,8 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}
 
-	@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
-	public static class TileEntityCableGauge extends TileEntityCableBaseNT implements INBTPacketReceiver, SimpleComponent {
+    @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
+	public static class TileEntityCableGauge extends TileEntityCableBaseNT implements IBufPacketReceiver, SimpleComponent {
 
 		private long lastMeasurement = 10;
 		private long deltaSecond = 0;
@@ -147,9 +149,10 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 						if(world.getTotalWorldTime() % 20 == 0) {
 							this.deltaLastSecond = this.deltaSecond;
 							this.deltaSecond = 0;
-							NBTTagCompound data = new NBTTagCompound();
-							data.setLong("deltaS", deltaLastSecond);
-							INBTPacketReceiver.networkPack(this, data, 25);
+//							NBTTagCompound data = new NBTTagCompound();
+//							data.setLong("deltaS", deltaLastSecond);
+//							INBTPacketReceiver.networkPack(this, data, 25);
+                            networkPackNT(25);
 						}
 						this.deltaSecond += deltaTick;
 						
@@ -157,11 +160,15 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 				}
 			}
 		}
+        @Override
+        public void serialize(ByteBuf buf) {
+            buf.writeLong(deltaLastSecond);
+        }
 
-		@Override
-		public void networkUnpack(NBTTagCompound nbt) {
-			this.deltaLastSecond = Math.max(nbt.getLong("deltaS"), 0);
-		}
+        @Override
+        public void deserialize(ByteBuf buf) {
+            this.deltaLastSecond = Math.max(buf.readLong(), 0);
+        }
 	
 		@Override
 		public String getComponentName() {
@@ -172,5 +179,5 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 		public Object[] getPowerPerS(Context context, Arguments args) {
 			return new Object[] {deltaLastSecond};
 		}
-	}
+    }
 }
