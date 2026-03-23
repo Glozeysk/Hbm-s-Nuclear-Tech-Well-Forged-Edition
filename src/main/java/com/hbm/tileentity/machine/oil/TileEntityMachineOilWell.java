@@ -29,6 +29,8 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
 	// private static final int[] slots_bottom = new int[] {2, 0};
 	// private static final int[] slots_side = new int[] {0};
 
+    public static double oilSpillsSpawnDistance = 64;
+
 	public String getInventoryName() {
 		return this.hasCustomInventoryName() ? this.getCustomName() : "container.oilWell";
 	}
@@ -109,8 +111,9 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
 								this.tanks[0].fill(new FluidStack(tankTypes[0], oilCollected), true);
 								this.tanks[1].fill(new FluidStack(tankTypes[1], gasCollected), true);
 								needsUpdate = true;
-
-								ExplosionLarge.spawnOilSpills(world, pos.getX() + 0.5F, pos.getY() + 5.5F, pos.getZ() + 0.5F, 3);
+                                if(world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), oilSpillsSpawnDistance, false) != null){
+								    ExplosionLarge.spawnOilSpills(world, pos.getX() + 0.5F, pos.getY() + 5.5F, pos.getZ() + 0.5F, 3);
+                                }
 								world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_GENERIC_SWIM, SoundCategory.BLOCKS, 2.0F, 0.5F);
 
 								break;
