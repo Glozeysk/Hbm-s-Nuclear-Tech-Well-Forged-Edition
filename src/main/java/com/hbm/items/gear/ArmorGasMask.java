@@ -22,6 +22,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.util.ActionResult;
@@ -122,7 +123,6 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	public void renderHelmetOverlay(ItemStack stack, EntityPlayer player, ScaledResolution resolution, float partialTicks) {
 		if(this != ModItems.gas_mask && this != ModItems.gas_mask_m65 && this != ModItems.hazmat_helmet_red && this != ModItems.hazmat_helmet_grey)
     		return;
-    	
 
         GlStateManager.disableDepth();
         GlStateManager.depthMask(false);
@@ -241,4 +241,5 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 		}
 		return super.onItemRightClick(world, player, hand);
 	}
+
 }

@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.model.ModelBiped;
@@ -97,32 +98,41 @@ public class ModelT45MURHelmet extends ModelBiped {
 			model.rotateAngleZ = z;
 		}
 
-		@Override
-		public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
+        @Override
+        public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
 
-			if (entity instanceof EntityPlayer) {
-				EntityPlayer player = (EntityPlayer) entity;
-				if (player.isSneaking()) {
-					this.isSneak = true;
-				} else {
-					this.isSneak = false;
-				}
-			}
+            if (entity instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) entity;
+                if (player.isSneaking()) {
+                    this.isSneak = true;
+                } else {
+                    this.isSneak = false;
+                }
+            }
 
-			super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-			this.helmet.rotationPointX = this.bipedHead.rotationPointX;
-			this.helmet.rotationPointY = this.bipedHead.rotationPointY;
-			this.helmet.rotateAngleY = this.bipedHead.rotateAngleY;
-			this.helmet.rotateAngleX = this.bipedHead.rotateAngleX;
+            super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
 
-			if (this.isSneak) {
-	            this.helmet.rotationPointY = 3.7F;
-	        }
-		}
+            if (entity instanceof EntityArmorStand) {
+                EntityArmorStand stand = (EntityArmorStand) entity;
+                this.helmet.rotateAngleX = (float) Math.toRadians(stand.getHeadRotation().getX());
+                this.helmet.rotateAngleY = (float) Math.toRadians(stand.getHeadRotation().getY());
+                this.helmet.rotateAngleZ = (float) Math.toRadians(stand.getHeadRotation().getZ());
+            } else {
+                this.helmet.rotationPointX = this.bipedHead.rotationPointX;
+                this.helmet.rotationPointY = this.bipedHead.rotationPointY;
+                this.helmet.rotateAngleY = this.bipedHead.rotateAngleY;
+                this.helmet.rotateAngleX = this.bipedHead.rotateAngleX;
+            }
+
+            if (this.isSneak) {
+                this.helmet.rotationPointY = 3.7F;
+            }
+        }
 
 		@Override
 		public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
 			setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
+
 			GL11.glPushMatrix();
 			GL11.glScalef(1.13F, 1.13F, 1.13F);
 			GL11.glScalef(1.0625F, 1.0625F, 1.0625F);

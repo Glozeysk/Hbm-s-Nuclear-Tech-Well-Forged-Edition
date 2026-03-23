@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.model.ModelBiped;
@@ -72,29 +73,35 @@ public class ModelGoggles extends ModelBiped {
 		model.rotateAngleZ = z;
 	}
 
-	@Override
-	public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
+    @Override
+    public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
 
-		if (entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer) entity;
-			if (player.isSneaking()) {
-				this.isSneak = true;
-			} else {
-				this.isSneak = false;
-			}
-		}
+        if (entity instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) entity;
+            if (player.isSneaking()) {
+                this.isSneak = true;
+            } else {
+                this.isSneak = false;
+            }
+        }
 
-		super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-		this.google.rotationPointX = this.bipedHead.rotationPointX;
-		this.google.rotationPointY = this.bipedHead.rotationPointY;
-		this.google.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.google.rotateAngleX = this.bipedHead.rotateAngleX;
+        super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
 
-		if(this.isSneak) {
+        if (entity instanceof EntityArmorStand stand) {
+            this.google.rotateAngleX = (float) Math.toRadians(stand.getHeadRotation().getX());
+            this.google.rotateAngleY = (float) Math.toRadians(stand.getHeadRotation().getY());
+            this.google.rotateAngleZ = (float) Math.toRadians(stand.getHeadRotation().getZ());
+        } else {
+            this.google.rotationPointX = this.bipedHead.rotationPointX;
+            this.google.rotationPointY = this.bipedHead.rotationPointY;
+            this.google.rotateAngleY = this.bipedHead.rotateAngleY;
+            this.google.rotateAngleX = this.bipedHead.rotateAngleX;
+        }
+
+        if(this.isSneak) {
             this.google.rotationPointY = 3.73F;
         }
-	}
-
+    }
 	@Override
 	public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
 		setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
@@ -116,4 +123,6 @@ public class ModelGoggles extends ModelBiped {
 		// create relationship
 		parParent.addChild(parChild);
 	}
+
+
 }

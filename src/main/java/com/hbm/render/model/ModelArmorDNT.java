@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.main.ResourceManager;
@@ -26,10 +27,16 @@ public class ModelArmorDNT extends ModelArmorBase {
 
 	@Override
 	public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
-		
 		setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
-		
-		GL11.glPushMatrix();
+
+        if (par1Entity instanceof EntityArmorStand) {
+            EntityArmorStand stand = (EntityArmorStand) par1Entity;
+            head.rotateAngleX = (float) stand.getHeadRotation().getX() * 0.017453292F;
+            head.rotateAngleY = (float) stand.getHeadRotation().getY() * 0.017453292F;
+            head.rotateAngleZ = (float) stand.getHeadRotation().getZ() * 0.017453292F;
+        }
+
+        GL11.glPushMatrix();
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		if(this.isChild) {
 			GL11.glScalef(0.75F, 0.75F, 0.75F);

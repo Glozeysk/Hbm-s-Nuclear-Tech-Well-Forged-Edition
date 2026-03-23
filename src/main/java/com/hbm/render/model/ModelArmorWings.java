@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.main.ResourceManager;
@@ -38,9 +39,16 @@ public class ModelArmorWings extends ModelArmorBase {
 
 	@Override
 	public void render(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7) {
-		
 		setRotationAngles(par2, par3, par4, par5, par6, par7, entity);
-		//body.copyTo(wingLB);
+
+        if (entity instanceof EntityArmorStand) {
+            EntityArmorStand stand = (EntityArmorStand) entity;
+            head.rotateAngleX = (float) stand.getHeadRotation().getX() * 0.017453292F;
+            head.rotateAngleY = (float) stand.getHeadRotation().getY() * 0.017453292F;
+            head.rotateAngleZ = (float) stand.getHeadRotation().getZ() * 0.017453292F;
+        }
+
+        //body.copyTo(wingLB);
 		//body.copyTo(wingLT);
 		//body.copyTo(wingRB);
 		//body.copyTo(wingRT);
