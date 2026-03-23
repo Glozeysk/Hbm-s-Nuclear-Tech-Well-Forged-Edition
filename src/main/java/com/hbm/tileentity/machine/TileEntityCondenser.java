@@ -2,12 +2,11 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -20,9 +19,8 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-public class TileEntityCondenser extends TileEntity implements ITickable, IFluidHandler, ITankPacketAcceptor, INBTPacketReceiver {
+public class TileEntityCondenser extends TileEntityLoadedBase implements ITickable, IFluidHandler, IBufPacketReceiver {
 
 	public int age = 0;
 	public FluidTank[] tanks;
@@ -50,8 +48,6 @@ public class TileEntityCondenser extends TileEntity implements ITickable, IFluid
 			if(this.waterTimer > 0)
 				this.waterTimer--;
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks[0]), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
-			
 			int convert = Math.min(tanks[0].getFluidAmount(), tanks[1].getCapacity() - tanks[1].getFluidAmount());
 			if(convert > 0)
 				this.waterTimer = 20;
@@ -59,22 +55,23 @@ public class TileEntityCondenser extends TileEntity implements ITickable, IFluid
 			tanks[0].drain(convert, true);
 			tanks[1].fill(new FluidStack(FluidRegistry.WATER, convert), true);
 			
-			networkPack();
+			networkPackNT(150);
 			fillFluidInit(tanks[1]);
 		}
 	}
 
-	public void networkPack() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-		data.setByte("timer", (byte) this.waterTimer);
-		INBTPacketReceiver.networkPack(this, data, 150);
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
+		buf.writeByte(waterTimer);
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		FFUtils.deserializeTankArray(data.getTagList("tanks", 10), tanks);
-		this.waterTimer = data.getByte("timer");
+	public void deserialize(ByteBuf buf) {
+		tanks[0].setFluid(new FluidStack(ModForgeFluids.spentsteam, buf.readInt()));
+		tanks[1].setFluid(new FluidStack(FluidRegistry.WATER, buf.readInt()));
+		this.waterTimer = buf.readByte();
 	}
 	
 	@Override
@@ -87,7 +84,7 @@ public class TileEntityCondenser extends TileEntity implements ITickable, IFluid
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
-		nbt.setTag("steam", tanks[1].writeToNBT(new NBTTagCompound()));
+		nbt.setTag("steam", tanks[0].writeToNBT(new NBTTagCompound()));
 		nbt.setTag("water", tanks[1].writeToNBT(new NBTTagCompound()));
 		return nbt;
 	}
@@ -100,13 +97,6 @@ public class TileEntityCondenser extends TileEntity implements ITickable, IFluid
 
 	public void fillFluid(int x, int y, int z, FluidTank type) {
 		FFUtils.fillFluid(this, type, world, new BlockPos(x, y, z), type.getCapacity());
-	}
-	
-	@Override
-	public void recievePacket(NBTTagCompound[] tags){
-		if(tags.length == 1){
-			tanks[0].readFromNBT(tags[0]);
-		}
 	}
 
 	@Override

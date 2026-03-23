@@ -4,21 +4,19 @@ import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.SAFERecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFWatzCore;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.world.FWatz;
-import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.items.special.ItemCell;
-import net.minecraftforge.fluids.FluidUtil;
-import api.hbm.energy.IBatteryItem;
 
+import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyGenerator;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -38,13 +36,14 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.List;
 
-public class TileEntityFWatzCore extends TileEntityMachineBase implements IControlReceiver, ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityFWatzCore extends TileEntityMachineBase implements IControlReceiver, ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public final static long maxPower = 1000000000000L;
@@ -230,33 +229,15 @@ public class TileEntityFWatzCore extends TileEntityMachineBase implements IContr
                     if(FFUtils.fillFromFluidContainer(inventory, tanks[2], 4, 6))
                         needsUpdate = true;
 
-
-                NBTTagCompound data = new NBTTagCompound();
-                data.setInteger("progress", progress);
-                data.setLong("power", power);
-                data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-                data.setBoolean("isOn", isOn);
-                data.setBoolean("isOk", true);
-                data.setBoolean("isDo", isDoingSomething);
-                if(needsUpdate) data.setTag("inventory", inventory.serializeNBT());
-                networkPack(data, 50);
-
-                if(needsUpdate) {
-                    needsUpdate = false;
-                    this.markDirty();
-                }
             } else {
-                if(isOk){
-                    NBTTagCompound data = new NBTTagCompound();
-                    data.setInteger("progress", progress);
-                    data.setLong("power", power);
-                    data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-                    data.setBoolean("isOn", isOn);
-                    data.setBoolean("isOk", false);
-                    data.setBoolean("isDo", isDoingSomething);
-                    INBTPacketReceiver.networkPack(this, data, 50);
-                }
                 isOk = false;
+            }
+
+            networkPackNT(50);
+
+            if(needsUpdate) {
+                needsUpdate = false;
+                this.markDirty();
             }
         }
 	}
@@ -273,16 +254,35 @@ public class TileEntityFWatzCore extends TileEntityMachineBase implements IContr
     }
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-        this.progress = data.getInteger("progress");
-		this.power = data.getLong("power");
-		this.isOn = data.getBoolean("isOn");
-        this.isOk = data.getBoolean("isOk");
-        this.isDoingSomething = data.getBoolean("isDo");
-        if(data.hasKey("inventory"))
-            this.inventory.deserializeNBT(data.getCompoundTag("inventory"));
-        if(data.hasKey("tanks"))
-			FFUtils.deserializeTankArray(data.getTagList("tanks", 10), tanks);
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(this.progress);
+		buf.writeLong(this.power);
+		buf.writeBoolean(this.isOn);
+		buf.writeBoolean(this.isOk);
+		buf.writeBoolean(this.isDoingSomething);
+		for(int i = 0; i < 3; i++) {
+			buf.writeInt(this.tanks[i].getFluidAmount());
+		}
+		buf.writeBoolean(this.needsUpdate);
+		if(this.needsUpdate) {
+			ByteBufUtils.writeTag(buf, this.inventory.serializeNBT());
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.progress = buf.readInt();
+		this.power = buf.readLong();
+		this.isOn = buf.readBoolean();
+		this.isOk = buf.readBoolean();
+		this.isDoingSomething = buf.readBoolean();
+		for(int i = 0; i < 3; i++) {
+			int amount = buf.readInt();
+			this.tanks[i].setFluid(amount > 0 ? new FluidStack(tankTypes[i], amount) : null);
+		}
+		if(buf.readBoolean()) {
+			this.inventory.deserializeNBT(ByteBufUtils.readTag(buf));
+		}
 	}
 
 	private void sendSAFEPower(){
@@ -359,15 +359,6 @@ public class TileEntityFWatzCore extends TileEntityMachineBase implements IContr
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 3) {
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-			tanks[2].readFromNBT(tags[2]);
-		}
 	}
 
     @Override

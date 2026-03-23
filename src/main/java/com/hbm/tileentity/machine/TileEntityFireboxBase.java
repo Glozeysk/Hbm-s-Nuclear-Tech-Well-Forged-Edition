@@ -3,10 +3,12 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.tile.IHeatSource;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,7 +21,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements ITickable, IGUIProvider, IHeatSource {
+public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements ITickable, IGUIProvider, IHeatSource, IBufPacketReceiver {
 
 	public int maxBurnTime;
 	public int burnTime;
@@ -86,14 +88,7 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 				this.burnHeat = 0;
 			}
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("maxBurnTime", this.maxBurnTime);
-			data.setInteger("burnTime", this.burnTime);
-			data.setInteger("burnHeat", this.burnHeat);
-			data.setInteger("heatEnergy", this.heatEnergy);
-			data.setInteger("playersUsing", this.playersUsing);
-			data.setBoolean("wasOn", this.wasOn);
-			this.networkPack(data, 50);
+			networkPackNT(50);
 		} else {
 			this.prevDoorAngle = this.doorAngle;
 			float swingSpeed = (doorAngle / 10F) + 3;
@@ -133,13 +128,23 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.maxBurnTime = nbt.getInteger("maxBurnTime");
-		this.burnTime = nbt.getInteger("burnTime");
-		this.burnHeat = nbt.getInteger("burnHeat");
-		this.heatEnergy = nbt.getInteger("heatEnergy");
-		this.playersUsing = nbt.getInteger("playersUsing");
-		this.wasOn = nbt.getBoolean("wasOn");
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(this.maxBurnTime);
+		buf.writeInt(this.burnTime);
+		buf.writeInt(this.burnHeat);
+		buf.writeInt(this.heatEnergy);
+		buf.writeInt(this.playersUsing);
+		buf.writeBoolean(this.wasOn);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.maxBurnTime = buf.readInt();
+		this.burnTime = buf.readInt();
+		this.burnHeat = buf.readInt();
+		this.heatEnergy = buf.readInt();
+		this.playersUsing = buf.readInt();
+		this.wasOn = buf.readBoolean();
 	}
 	
 	@Override

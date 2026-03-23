@@ -6,10 +6,9 @@ import java.util.List;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
-import com.hbm.main.MainRegistry;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.I18nUtil;
 
@@ -18,6 +17,7 @@ import api.hbm.block.IToolable.ToolType;
 import api.hbm.energy.IEnergyUser;
 import api.hbm.energy.IEnergyConnectorBlock;
 import api.hbm.energy.IEnergyConnector.ConnectionPriority;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
@@ -37,7 +37,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -105,7 +104,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 			if(te.level < 17)
 				te.level++;
 			te.markDirty();
-			INBTPacketReceiver.networkPack((TileEntity)te, te.packValues(), 20);
+			te.networkPackNT(20);
 			return true;
 		}
 		
@@ -113,7 +112,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 			if(te.level > 1)
 				te.level--;
 			te.markDirty();
-			INBTPacketReceiver.networkPack((TileEntity)te, te.packValues(), 20);
+			te.networkPackNT(20);
 			return true;
 		}
 		
@@ -122,7 +121,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 			if(p > 2) p = 0;
 			te.priority = ConnectionPriority.values()[p];
 			te.markDirty();
-			INBTPacketReceiver.networkPack((TileEntity)te, te.packValues(), 20);
+			te.networkPackNT(20);
 			return true;
 		}
 		
@@ -162,19 +161,18 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 		return EnumBlockRenderType.MODEL;
 	}
 	
-	public static class TileEntityDiode extends TileEntityLoadedBase implements ITickable, IEnergyUser, INBTPacketReceiver {
+	public static class TileEntityDiode extends TileEntityLoadedBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 		@Override
-		public void networkUnpack(NBTTagCompound nbt){
-			level = nbt.getInteger("level");
-			priority = ConnectionPriority.values()[nbt.getByte("p")];
+		public void serialize(ByteBuf buf) {
+			buf.writeInt(level);
+			buf.writeByte((byte) priority.ordinal());
 		}
 
-		public NBTTagCompound packValues(){
-			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setInteger("level", level);
-			nbt.setByte("p", (byte) this.priority.ordinal());
-			return nbt;
+		@Override
+		public void deserialize(ByteBuf buf) {
+			level = buf.readInt();
+			priority = ConnectionPriority.values()[buf.readByte()];
 		}
 		
 		@Override
@@ -250,7 +248,6 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 			if(contingent <= 0 || pulses > 10)
 				return power;
 			
-			//this part turns "maxPower" from a glorified transfer weight into an actual transfer cap
 			long overShoot = Math.max(0, power - contingent);
 			power = Math.min(power, contingent);
 			
@@ -269,7 +266,6 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 			
 			return ret + overShoot;
 		}
-
 
 		@Override
 		public long getMaxPower() {

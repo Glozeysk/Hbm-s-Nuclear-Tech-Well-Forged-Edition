@@ -5,11 +5,13 @@ import java.util.List;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
 import com.hbm.inventory.gui.GUIFurnaceSteel;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ItemStackUtil;
 
 import api.hbm.tile.IHeatSource;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -27,11 +29,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGUIProvider, ITickable {
+public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGUIProvider, ITickable, IBufPacketReceiver {
 
 	public int[] progress = new int[3];
 	public int[] bonus = new int[3];
-	public static final int processTime = 40_000; // assuming vanilla furnace rules with 200 ticks of coal fire burning at 200HU/t
+	public static final int processTime = 40_000;
 	
 	public int heat;
 	public static final int maxHeat = 100_000;
@@ -103,12 +105,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 				}
 			}
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setIntArray("progress", progress);
-			data.setIntArray("bonus", bonus);
-			data.setInteger("heat", heat);
-			data.setBoolean("wasOn", wasOn);
-			this.networkPack(data, 50);
+			networkPackNT(50);
 		} else {
 			
 			if(this.wasOn) {
@@ -128,11 +125,19 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.progress = nbt.getIntArray("progress");
-		this.bonus = nbt.getIntArray("bonus");
-		this.heat = nbt.getInteger("heat");
-		this.wasOn = nbt.getBoolean("wasOn");
+	public void serialize(ByteBuf buf) {
+		for(int i = 0; i < 3; i++) buf.writeInt(this.progress[i]);
+		for(int i = 0; i < 3; i++) buf.writeInt(this.bonus[i]);
+		buf.writeInt(this.heat);
+		buf.writeBoolean(this.wasOn);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		for(int i = 0; i < 3; i++) this.progress[i] = buf.readInt();
+		for(int i = 0; i < 3; i++) this.bonus[i] = buf.readInt();
+		this.heat = buf.readInt();
+		this.wasOn = buf.readBoolean();
 	}
 	
 	@Override

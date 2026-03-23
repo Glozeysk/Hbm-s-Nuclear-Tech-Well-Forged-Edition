@@ -1,12 +1,13 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityTickingBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 
-public class TileEntityHadronPower extends TileEntityTickingBase implements IEnergyUser {
+public class TileEntityHadronPower extends TileEntityTickingBase implements IEnergyUser, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 1000000000;
@@ -15,9 +16,7 @@ public class TileEntityHadronPower extends TileEntityTickingBase implements IEne
 	public void update() {
 		if(!world.isRemote) {
 			this.updateStandardConnections(world, pos);
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			this.networkPack(data, 15);
+			networkPackNT(15);
 		}
 	}
 
@@ -27,8 +26,13 @@ public class TileEntityHadronPower extends TileEntityTickingBase implements IEne
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.power = nbt.getLong("power");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(power);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
 	}
 	
 	@Override

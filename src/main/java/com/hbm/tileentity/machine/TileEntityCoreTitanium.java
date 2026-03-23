@@ -4,11 +4,11 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemBattery;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
@@ -21,7 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 
-public class TileEntityCoreTitanium extends TileEntityMachineBase implements ITickable, IEnergyUser, INBTPacketReceiver {
+public class TileEntityCoreTitanium extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public int progress = 0;
 	public int progressStep = 1;
@@ -141,7 +141,7 @@ public class TileEntityCoreTitanium extends TileEntityMachineBase implements ITi
 				} else if(Library.areItemStacksEqualIgnoreCount(inventory.getStackInSlot(j), inventory.getStackInSlot(slot))) {
 					ItemStack stack = inventory.getStackInSlot(j);
 					int k = stack.getMaxStackSize() - stack.getCount();
-					if(k > 0) { //needs k items until stack is complete
+					if(k > 0) {
 
 						if(stack.getCount() + inventory.getStackInSlot(slot).getCount() <= inventory.getStackInSlot(slot).getMaxStackSize()) {
 							inventory.getStackInSlot(j).grow(inventory.getStackInSlot(slot).getCount());
@@ -203,19 +203,22 @@ public class TileEntityCoreTitanium extends TileEntityMachineBase implements ITi
 			moveToOuput(11);
 			moveToOuput(12);
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("cookTime", progress);
-			data.setInteger("speed", progressStep);
-			data.setLong("power", power);
-			this.networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.progress = nbt.getInteger("cookTime");
-		this.progressStep = nbt.getInteger("speed");
-		this.power = nbt.getLong("power");
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(progress);
+		buf.writeInt(progressStep);
+		buf.writeLong(power);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.progress = buf.readInt();
+		this.progressStep = buf.readInt();
+		this.power = buf.readLong();
 	}
 
 	public boolean isStructureValid(World world) {

@@ -14,8 +14,10 @@ import com.hbm.items.special.ItemAMSCore;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -28,10 +30,11 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityCore extends TileEntityMachineBase implements ITickable {
+public class TileEntityCore extends TileEntityMachineBase implements ITickable, IBufPacketReceiver {
 
 	public boolean hasCore = false;
 	public int field;
@@ -62,8 +65,6 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 					int mod = heat * 10;
 					
 					int size = Math.max(Math.min(fill * mod / max, 1000), 50);
-					
-					//System.out.println(fill + " * " + mod + " / " + max + " = " + size);
 
 		    		world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 100000.0F, 1.0F);
 
@@ -107,18 +108,7 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 				radiation();
 			}
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setString("tank0", tanks[0].getFluid() == null ? "HBM_EMPTY" : tanks[0].getFluid().getFluid().getName());
-			data.setString("tank1", tanks[1].getFluid() == null ? "HBM_EMPTY" : tanks[1].getFluid().getFluid().getName());
-			data.setInteger("fill0", tanks[0].getFluidAmount());
-			data.setInteger("fill1", tanks[1].getFluidAmount());
-			data.setInteger("field", field);
-			data.setInteger("heat", heat);
-			data.setInteger("color", color);
-			data.setBoolean("hasCore", hasCore);
-			networkPack(data, 250);
-			
-			//PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			networkPackNT(250);
 			
 			heat = 0;
 			field = 0;
@@ -128,25 +118,41 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 			//TODO: sick particle effects
 		}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		String s0 = data.getString("tank0");
-		String s1 = data.getString("tank1");
+	public void serialize(ByteBuf buf) {
+		String s0 = tanks[0].getFluid() == null ? "HBM_EMPTY" : tanks[0].getFluid().getFluid().getName();
+		String s1 = tanks[1].getFluid() == null ? "HBM_EMPTY" : tanks[1].getFluid().getFluid().getName();
+		ByteBufUtils.writeUTF8String(buf, s0);
+		ByteBufUtils.writeUTF8String(buf, s1);
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
+		buf.writeInt(field);
+		buf.writeInt(heat);
+		buf.writeInt(color);
+		buf.writeBoolean(hasCore);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		String s0 = ByteBufUtils.readUTF8String(buf);
+		String s1 = ByteBufUtils.readUTF8String(buf);
+		int fill0 = buf.readInt();
+		int fill1 = buf.readInt();
 		if("HBM_EMPTY".equals(s0)){
 			tanks[0].setFluid(null);
 		} else {
-			tanks[0].setFluid(new FluidStack(FluidRegistry.getFluid(s0), data.getInteger("fill0")));
+			tanks[0].setFluid(new FluidStack(FluidRegistry.getFluid(s0), fill0));
 		}
 		if("HBM_EMPTY".equals(s1)){
 			tanks[1].setFluid(null);
 		} else {
-			tanks[1].setFluid(new FluidStack(FluidRegistry.getFluid(s1), data.getInteger("fill1")));
+			tanks[1].setFluid(new FluidStack(FluidRegistry.getFluid(s1), fill1));
 		}
-		field = data.getInteger("field");
-		heat = data.getInteger("heat");
-		color = data.getInteger("color");
-		hasCore = data.getBoolean("hasCore");
+		field = buf.readInt();
+		heat = buf.readInt();
+		color = buf.readInt();
+		hasCore = buf.readBoolean();
 	}
 	
 	private void radiation() {
@@ -207,10 +213,8 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 		return true;
 	}
 	
-	//100 emitter watt = 10000 joules = 1 heat = 10mB burned
 	public long burn(long joules) {
 		
-		//check if a reaction can take place
 		if(!isReady())
 			return joules;
 		
@@ -223,7 +227,6 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 
 		demand = (int)(getCoreFuel() * demand * fuelMod);
 		
-		//check if the reaction has enough valid fuel
 		if(tanks[0].getFluidAmount() < demand || tanks[1].getFluidAmount() < demand)
 			return joules;
 		
@@ -241,8 +244,6 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable {
 		return powerOutput;
 	}
 	
-	//TODO: move stats to the AMSCORE class
-	//Alcater: ok did that
 	public int getCorePower() {
 		return ItemAMSCore.getPowerBase(inventory.getStackInSlot(1));
 	}

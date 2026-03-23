@@ -1,12 +1,11 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemLens;
-import com.hbm.packet.AuxGaugePacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,11 +15,10 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityCoreStabilizer extends TileEntityMachineBase implements ITickable, IEnergyUser {
+public class TileEntityCoreStabilizer extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 10000000000000L;
@@ -32,7 +30,6 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
 	
 	public TileEntityCoreStabilizer() {
 		super(1);
-		
 	}
 
 	@Override
@@ -90,15 +87,24 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
 				}
 			}
 			
-			PacketDispatcher.wrapper.sendToAllTracking(new AuxGaugePacket(pos, beam, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
+			networkPackNT(250);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		power = data.getLong("power");
-		watts = data.getInteger("watts");
-		isOn = data.getBoolean("isOn");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(power);
+		buf.writeInt(watts);
+		buf.writeBoolean(isOn);
+		buf.writeInt(beam);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		power = buf.readLong();
+		watts = buf.readInt();
+		isOn = buf.readBoolean();
+		beam = buf.readInt();
 	}
 	
 	@Override

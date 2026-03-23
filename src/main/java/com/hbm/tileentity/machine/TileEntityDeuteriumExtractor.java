@@ -1,13 +1,12 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,7 +18,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
-public class TileEntityDeuteriumExtractor extends TileEntityLoadedBase implements ITickable, IFluidHandler, IEnergyUser, ITankPacketAcceptor, INBTPacketReceiver {
+public class TileEntityDeuteriumExtractor extends TileEntityLoadedBase implements ITickable, IFluidHandler, IEnergyUser, IBufPacketReceiver {
 	
 	public int age = 0;
 	public long power = 0;
@@ -50,17 +49,13 @@ public class TileEntityDeuteriumExtractor extends TileEntityLoadedBase implement
 				int convert = Math.min(tanks[1].getCapacity(), tanks[0].getFluidAmount()) / 50;
 				convert = Math.min(convert, tanks[1].getCapacity() - tanks[1].getFluidAmount());
 				
-				tanks[0].drain(convert * 50, true); //dividing first, then multiplying, will remove any rounding issues
+				tanks[0].drain(convert * 50, true);
 				tanks[1].fill(new FluidStack(ModForgeFluids.heavywater, convert), true);
 				power -= this.getMaxPower() / 20;
 				this.markDirty();
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-			
-			INBTPacketReceiver.networkPack(this, data, 50);
+			networkPackNT(50);
 		}
 	}
 	
@@ -78,10 +73,19 @@ public class TileEntityDeuteriumExtractor extends TileEntityLoadedBase implement
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.power = data.getLong("power");
-		if(data.hasKey("tanks"))
-			FFUtils.deserializeTankArray(data.getTagList("tanks", 10), tanks);
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeInt(this.tanks[0].getFluidAmount());
+		buf.writeInt(this.tanks[1].getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		int amount0 = buf.readInt();
+		this.tanks[0].setFluid(amount0 > 0 ? new FluidStack(FluidRegistry.WATER, amount0) : null);
+		int amount1 = buf.readInt();
+		this.tanks[1].setFluid(amount1 > 0 ? new FluidStack(ModForgeFluids.heavywater, amount1) : null);
 	}
 
 	public boolean hasPower() {
@@ -120,16 +124,6 @@ public class TileEntityDeuteriumExtractor extends TileEntityLoadedBase implement
 	@Override
 	public long getMaxPower() {
 		return 10_000;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 2) {
-			return;
-		} else {
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-		}
 	}
 
 	@Override

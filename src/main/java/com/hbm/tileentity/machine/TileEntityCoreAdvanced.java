@@ -9,6 +9,7 @@ import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
@@ -211,20 +212,23 @@ public class TileEntityCoreAdvanced extends TileEntityMachineBase implements ITi
 			moveToOuput(25);
 			moveToOuput(26);
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("cookTime", progress);
-			data.setInteger("speed", progressStep);
-			data.setLong("power", power);
-			this.networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.progress = nbt.getInteger("cookTime");
-		this.progressStep = nbt.getInteger("speed");
-		this.power = nbt.getLong("power");
-	}
+    public void serialize(ByteBuf buf) {
+		buf.writeInt(this.progress);
+		buf.writeInt(this.progressStep);
+		buf.writeLong(this.power);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+		this.progress = buf.readInt();
+		this.progressStep = buf.readInt();
+		this.power = buf.readLong();
+    }
 
 	public boolean isStructureValid(World world) {
 		MutableBlockPos mPos = new BlockPos.MutableBlockPos();

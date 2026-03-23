@@ -6,19 +6,18 @@ import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.interfaces.ILaserable;
-import com.hbm.items.ModItems;
 import com.hbm.items.weapon.ItemCrucible;
 import com.hbm.packet.AuxParticlePacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.inventory.DFCRecipes;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.common.capabilities.Capability;
@@ -26,7 +25,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityCrateTungsten extends TileEntityLockableBase implements ITickable, ILaserable, INBTPacketReceiver {
+public class TileEntityCrateTungsten extends TileEntityLockableBase implements ITickable, ILaserable, IBufPacketReceiver {
 
 	public ItemStackHandler inventory;
 
@@ -86,23 +85,22 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase implements I
 			}
 			age++;
 			if(age > 20){
-				networkPack();
+				networkPackNT(150);
 				age = 0;
 			}
 		}
 	}
 
-	public void networkPack() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setInteger("timer", this.heatTimer);
-		data.setLong("spk", this.joules);
-		INBTPacketReceiver.networkPack(this, data, 150);
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(heatTimer);
+		buf.writeLong(joules);
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.heatTimer = data.getInteger("timer");
-		this.joules = data.getLong("spk");
+	public void deserialize(ByteBuf buf) {
+		this.heatTimer = buf.readInt();
+		this.joules = buf.readLong();
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import com.hbm.items.machine.ItemFELCrystal;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
@@ -19,6 +20,7 @@ import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.packet.PacketDispatcher;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ITickable;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -40,14 +42,14 @@ import com.hbm.lib.ForgeDirection;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityFEL extends TileEntityMachineBase implements ITickable, IEnergyUser {
+public class TileEntityFEL extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 	
 	public long power;
 	public static final long maxPower = 2000000000;
 	public static final int powerReq = 1000;
 	public EnumWavelengths mode = EnumWavelengths.NULL;
 	public boolean isOn;
-	public boolean missingValidSilex = true	;
+	public boolean missingValidSilex = true;
 	public int distance;
 	public List<EntityLivingBase> entities = new ArrayList();
 	
@@ -229,13 +231,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 			}
 			
 			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setString("mode", mode.toString());
-			data.setBoolean("isOn", isOn);
-			data.setBoolean("valid", missingValidSilex);
-			data.setInteger("distance", distance);
-			this.networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 	
@@ -250,12 +246,21 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.power = nbt.getLong("power");
-		this.mode = EnumWavelengths.valueOf(nbt.getString("mode"));
-		this.isOn = nbt.getBoolean("isOn");
-		this.distance = nbt.getInteger("distance");
-		this.missingValidSilex = nbt.getBoolean("valid");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeByte(this.mode.ordinal());
+		buf.writeBoolean(this.isOn);
+		buf.writeBoolean(this.missingValidSilex);
+		buf.writeInt(this.distance);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.mode = EnumWavelengths.values()[buf.readByte()];
+		this.isOn = buf.readBoolean();
+		this.missingValidSilex = buf.readBoolean();
+		this.distance = buf.readInt();
 	}
 
 	@Override

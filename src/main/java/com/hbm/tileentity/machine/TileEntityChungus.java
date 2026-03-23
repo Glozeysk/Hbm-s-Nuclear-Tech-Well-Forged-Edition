@@ -5,13 +5,11 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.MachineRecipes;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
-import com.hbm.packet.NBTPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyGenerator;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -27,11 +25,11 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityChungus extends TileEntityLoadedBase implements ITickable, IFluidHandler, IEnergyGenerator, INBTPacketReceiver {
+public class TileEntityChungus extends TileEntityLoadedBase implements ITickable, IFluidHandler, IEnergyGenerator, IBufPacketReceiver {
 
 	public long powerProduction = 0;
 	public long power;
@@ -62,9 +60,9 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 			
 			types[1] = (Fluid)outs[0];
 			
-			int processMax = (int) Math.ceil(tanks[0].getFluidAmount() / (Integer)outs[2]);				//the maximum amount of cycles total
-			int processSteam = tanks[0].getFluidAmount() / (Integer)outs[2];								//the maximum amount of cycles depending on steam
-			int processWater = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / (Integer)outs[1];		//the maximum amount of cycles depending on water
+			int processMax = (int) Math.ceil(tanks[0].getFluidAmount() / (Integer)outs[2]);
+			int processSteam = tanks[0].getFluidAmount() / (Integer)outs[2];
+			int processWater = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / (Integer)outs[1];
 			
 			int cycles = Math.min(processMax, Math.min(processSteam, processWater));
 			
@@ -82,7 +80,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 			if(cycles > 0)
 				turnTimer = 25;
 			
-			networkPack();
+			networkPackNT(150);
 			this.fillFluidInit(tanks[1]);
 			ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 			this.sendPower(world, pos.add(-dir.offsetX * 11, 0, -dir.offsetZ * 11), dir.getOpposite());
@@ -113,29 +111,29 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 			}
 		}
 	}
-	
-	public void networkPack() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setLong("powerP", powerProduction);
-		data.setLong("power", power);
-		data.setString("type", types[0].getName());
-		data.setInteger("operational", turnTimer);
-		data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-		data.setString("types0", types[0].getName());
-		data.setString("types1", types[1].getName());
-		INBTPacketReceiver.networkPack(this, data, 150);
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(powerProduction);
+		buf.writeLong(power);
+		buf.writeInt(turnTimer);
+		ByteBufUtils.writeUTF8String(buf, types[0].getName());
+		ByteBufUtils.writeUTF8String(buf, types[1].getName());
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		FFUtils.deserializeTankArray(data.getTagList("tanks", 10), tanks);
-		this.powerProduction = data.getLong("powerP");
-		this.power = data.getLong("power");
-		this.turnTimer = data.getInteger("operational");
-		if(data.hasKey("types0"))
-			this.types[0] = FluidRegistry.getFluid(data.getString("types0"));
-		if(data.hasKey("types1"))
-			this.types[1] = FluidRegistry.getFluid(data.getString("types1"));
+	public void deserialize(ByteBuf buf) {
+		this.powerProduction = buf.readLong();
+		this.power = buf.readLong();
+		this.turnTimer = buf.readInt();
+		this.types[0] = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+		this.types[1] = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+		int amount0 = buf.readInt();
+		int amount1 = buf.readInt();
+		tanks[0].setFluid(new FluidStack(types[0], amount0));
+		tanks[1].setFluid(new FluidStack(types[1], amount1));
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IBatteryItem;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -41,6 +42,10 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 				started = false;
 			}
 
+			if(this.isLoaded()){
+				loaded = true;
+			}
+
 			if(started) {
 				timer--;
 
@@ -52,11 +57,7 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 				explode();
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("timer", timer);
-			data.setBoolean("loaded", this.isLoaded());
-			data.setBoolean("started", started);
-			networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 	
@@ -70,13 +71,20 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 		if(meta == 1)
 			timer = value * 20;
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		timer = data.getInteger("timer");
-		started = data.getBoolean("started");
-		loaded = data.getBoolean("loaded");
-	}
+    public void serialize(ByteBuf buf) {
+		buf.writeInt(this.timer);
+        buf.writeBoolean(this.started);
+        buf.writeBoolean(this.loaded);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+		this.timer = buf.readInt();
+        this.started = buf.readBoolean();
+        this.loaded = buf.readBoolean();
+    }
 	
 	public boolean isLoaded() {
 

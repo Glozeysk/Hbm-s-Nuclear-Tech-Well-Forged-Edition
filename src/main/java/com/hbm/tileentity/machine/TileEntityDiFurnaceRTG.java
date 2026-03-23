@@ -3,9 +3,11 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.machine.MachineDiFurnaceRTG;
 import com.hbm.inventory.DiFurnaceRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -16,7 +18,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
-public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITickable, ICapabilityProvider {
+public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITickable, ICapabilityProvider, IBufPacketReceiver {
 
 	public int rtgPower;
 	public static final int maxRTGPower = 6000;
@@ -71,17 +73,20 @@ public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITi
 				MachineDiFurnaceRTG.updateBlockState(trigger, this.world, pos);
 			lastTrigger = trigger;
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setShort("progress", progress);
-			data.setInteger("rtgPower", rtgPower);
-			networkPack(data, 10);
+			networkPackNT(10);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		progress = nbt.getShort("progress");
-		rtgPower = nbt.getShort("rtgPower");
+	public void serialize(ByteBuf buf) {
+		buf.writeShort(this.progress);
+		buf.writeInt(this.rtgPower);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.progress = buf.readShort();
+		this.rtgPower = buf.readInt();
 	}
 	
 	@Override
