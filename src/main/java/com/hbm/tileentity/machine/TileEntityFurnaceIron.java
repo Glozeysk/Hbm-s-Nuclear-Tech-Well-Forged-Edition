@@ -5,9 +5,11 @@ import com.hbm.inventory.gui.GUIFurnaceIron;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -108,14 +110,8 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 			} else {
 				this.progress = 0;
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("maxBurnTime", this.maxBurnTime);
-			data.setInteger("burnTime", this.burnTime);
-			data.setInteger("progress", this.progress);
-			data.setInteger("processingTime", this.processingTime);
-			data.setBoolean("wasOn", this.wasOn);
-			this.networkPack(data, 50);
+
+			networkPackNT(50);
 		} else {
 			
 			if(this.progress > 0) {
@@ -132,16 +128,25 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 		}
 	}
 
-	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.maxBurnTime = nbt.getInteger("maxBurnTime");
-		this.burnTime = nbt.getInteger("burnTime");
-		this.progress = nbt.getInteger("progress");
-		this.processingTime = nbt.getInteger("processingTime");
-		this.wasOn = nbt.getBoolean("wasOn");
-	}
-	
-	public boolean canSmelt() {
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.maxBurnTime = buf.readInt();
+        this.burnTime = buf.readInt();
+        this.progress = buf.readInt();
+        this.processingTime = buf.readInt();
+        this.wasOn = buf.readBoolean();
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeInt(this.maxBurnTime);
+        buf.writeInt(this.burnTime);
+        buf.writeInt(this.progress);
+        buf.writeInt(this.processingTime);
+        buf.writeBoolean(this.wasOn);
+    }
+
+    public boolean canSmelt() {
 		
 		if(this.burnTime <= 0) return false;
 		if(inventory.getStackInSlot(0).isEmpty()) return false;
