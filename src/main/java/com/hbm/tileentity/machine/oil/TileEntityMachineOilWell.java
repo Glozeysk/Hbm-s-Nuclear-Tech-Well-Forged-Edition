@@ -110,7 +110,7 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
 								this.tanks[1].fill(new FluidStack(tankTypes[1], gasCollected), true);
 								needsUpdate = true;
 
-								// ExplosionLarge.spawnOilSpills(world, pos.getX() + 0.5F, pos.getY() + 5.5F, pos.getZ() + 0.5F, 3);
+								ExplosionLarge.spawnOilSpills(world, pos.getX() + 0.5F, pos.getY() + 5.5F, pos.getZ() + 0.5F, 3);
 								world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_GENERIC_SWIM, SoundCategory.BLOCKS, 2.0F, 0.5F);
 
 								break;

@@ -12,10 +12,10 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.items.special.ItemCell;
 
 import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyGenerator;
+import com.hbm.world.FWatz;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;

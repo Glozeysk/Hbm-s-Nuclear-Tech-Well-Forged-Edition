@@ -4,6 +4,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
@@ -58,23 +59,24 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 					time += speed * 2;
 				}
 			}
-
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setInteger("time", time);
-			data.setInteger("speed", speed);
-			networkPack(data, 50);
+			networkPackNT(50);
 		}
 	}
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeLong(this.power);
+        buf.writeInt(this.time);
+        buf.writeInt(this.speed);
+    }
 
-	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		power = data.getLong("power");
-		time = data.getInteger("time");
-		speed = data.getInteger("speed");
-	}
-	
-	@Override
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.power = buf.readLong();
+        this.time = buf.readInt();
+        this.speed = buf.readInt();
+    }
+
+    @Override
 	public void readFromNBT(NBTTagCompound compound) {
 		power = compound.getLong("power");
 		speed = compound.getInteger("speed");
