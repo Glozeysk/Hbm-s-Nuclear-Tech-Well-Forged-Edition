@@ -18,25 +18,24 @@ import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.DataValueString;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
-import com.hbm.tileentity.machine.rbmk.IRBMKLoadable;
 
+import io.netty.buffer.ByteBuf;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, ICopiable, IControlReceiver {
+public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, ICopiable, IControlReceiver, IBufPacketReceiver {
 	
-	//amount of "neutron energy" buffered for the next tick to use for the reaction
 	public double fluxFast;
 	public double fluxSlow;
 	public boolean hasRod;
@@ -79,7 +78,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		return ((RBMKRod)this.getBlockType()).heatproof;
 	}
 
-	@SuppressWarnings("incomplete-switch") //shut the fuck up
+	@SuppressWarnings("incomplete-switch")
 	@Override
 	public void receiveFlux(NType type, double flux) {
 		
@@ -121,7 +120,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 				}
 				
 				super.update();
-				//for spreading, we want the buffered flux to be 0 because we want to know exactly how much gets reflected back
 				this.fluxFast = 0;
 				this.fluxSlow = 0;
 
@@ -146,14 +144,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			}
 		}
 	}
-	
-	/**
-	 * SLOW: full efficiency for slow neutrons, fast neutrons have half efficiency
-	 * FAST: fast neutrons have 100% efficiency, slow only 30%
-	 * ANY: just add together whatever we have because who cares
-	 * @param type
-	 * @return
-	 */
 	
 	private double fluxFromType(NType type) {
 		
@@ -209,7 +199,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			}
 		}
 
-		//burn baby burn
 		if(te instanceof TileEntityRBMKRod) {
 			TileEntityRBMKRod rod = (TileEntityRBMKRod)te;
 			
@@ -224,7 +213,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			return 0;
 		}
 		
-		//set neutrons to slow
 		if(te instanceof TileEntityRBMKControl) {
 			TileEntityRBMKControl control = (TileEntityRBMKControl)te;
 			
@@ -236,19 +224,16 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			return flux;
 		}
 		
-		//set neutrons to slow
 		if(te instanceof TileEntityRBMKModerator) {
 			stream = NType.SLOW;
 			return flux;
 		}
 		
-		//return the neutrons back to this with no further action required
 		if(te instanceof TileEntityRBMKReflector) {
 			this.receiveFlux(this.isModerated() ? NType.SLOW : stream, flux);
 			return 0;
 		}
 		
-		//break the neutron flow and nothign else
 		if(te instanceof TileEntityRBMKAbsorber) {
 			return 0;
 		}
@@ -302,6 +287,38 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		nbt.setFloat("cherenkovG", this.cherenkovG);
 		nbt.setFloat("cherenkovB", this.cherenkovB);
 		return nbt;
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeDouble(this.fluxFast);
+		buf.writeDouble(this.fluxSlow);
+		buf.writeBoolean(this.hasRod);
+		buf.writeDouble(this.fluxOut);
+		buf.writeFloat(this.fuelR);
+		buf.writeFloat(this.fuelG);
+		buf.writeFloat(this.fuelB);
+		buf.writeFloat(this.cherenkovR);
+		buf.writeFloat(this.cherenkovG);
+		buf.writeFloat(this.cherenkovB);
+		buf.writeInt(this.DepletionToExtract);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		this.fluxFast = buf.readDouble();
+		this.fluxSlow = buf.readDouble();
+		this.hasRod = buf.readBoolean();
+		this.fluxOut = buf.readDouble();
+		this.fuelR = buf.readFloat();
+		this.fuelG = buf.readFloat();
+		this.fuelB = buf.readFloat();
+		this.cherenkovR = buf.readFloat();
+		this.cherenkovG = buf.readFloat();
+		this.cherenkovB = buf.readFloat();
+		this.DepletionToExtract = buf.readInt();
 	}
 
 	@Override
@@ -432,8 +449,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		inventory.setStackInSlot(0, ItemStack.EMPTY);
 		this.markDirty();
 	}
-
-	// control panel
 
 	@Override
 	public Map<String, DataValue> getQueryData() {

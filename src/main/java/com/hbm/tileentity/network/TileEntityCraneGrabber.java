@@ -8,14 +8,14 @@ import com.hbm.inventory.gui.GUICraneGrabber;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -23,7 +23,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIProvider, IControlReceiver, IBufPacketReceiver {
     public boolean isWhitelist = false;
     public ModulePatternMatcher matcher;
     private int tickCounter = 0;
@@ -107,11 +107,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
                 }
             }
 
-
-            NBTTagCompound data = new NBTTagCompound();
-            data.setBoolean("isWhitelist", isWhitelist);
-            this.matcher.writeToNBT(data);
-            this.networkPack(data, 15);
+            networkPackNT(15);
         }
     }
 
@@ -128,9 +124,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
         return false;
     }
 
-    //Unloads output into chests. Capability version.
     public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        //Check if we have something to output
         if(stack.isEmpty()){
             return false;
         }
@@ -158,10 +152,20 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
         return false;
     }
 
-    public void networkUnpack(NBTTagCompound nbt) {
-        this.isWhitelist = nbt.getBoolean("isWhitelist");
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(this.isWhitelist);
+        NBTTagCompound matcherData = new NBTTagCompound();
+        this.matcher.writeToNBT(matcherData);
+        ByteBufUtils.writeTag(buf, matcherData);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.isWhitelist = buf.readBoolean();
         this.matcher.modes = new String[this.matcher.modes.length];
-        this.matcher.readFromNBT(nbt);
+        NBTTagCompound matcherData = ByteBufUtils.readTag(buf);
+        this.matcher.readFromNBT(matcherData);
     }
 
     public void nextMode(int i) {

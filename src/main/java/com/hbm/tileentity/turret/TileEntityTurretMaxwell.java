@@ -6,9 +6,9 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.util.EntityDamageUtil;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -87,6 +87,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT {
 	
 	public int beam;
 	public double lastDist;
+	private boolean didShoot;
 	
 	@Override
 	public void update(){
@@ -148,6 +149,21 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT {
 	int checkDelay;
 
 	@Override
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeBoolean(this.didShoot);
+		this.didShoot = false;
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		if(buf.readBoolean()) {
+			this.beam = 5;
+		}
+	}
+
+	@Override
 	public void updateFiringTick() {
 		
 		long demand = this.getConsumption() * 10;
@@ -170,19 +186,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT {
 			}
 			
 			this.power -= demand;
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("shot", true);
-			this.networkPack(data, 250);
+			this.didShoot = true;
 		}
-	}
-
-	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		
-		if(nbt.hasKey("shot"))
-			beam = 5;
-		else
-			super.networkUnpack(nbt);
 	}
 }

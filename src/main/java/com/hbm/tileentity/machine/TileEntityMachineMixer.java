@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.config.MachineConfig;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.UpgradeManager;
 import com.hbm.inventory.container.ContainerMixer;
 import com.hbm.inventory.gui.GUIMixer;
@@ -13,10 +12,12 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.lib.Library;
 import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -27,6 +28,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.util.ITickable;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.common.capabilities.Capability;
@@ -38,7 +40,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
-public class TileEntityMachineMixer extends TileEntityMachineBase implements ITickable, IGUIProvider, IFluidHandler, IEnergyUser, ITankPacketAcceptor {
+public class TileEntityMachineMixer extends TileEntityMachineBase implements ITickable, IGUIProvider, IFluidHandler, IEnergyUser, IBufPacketReceiver {
 	
 	public long power;
 	public static final long maxPower = 10_000;
@@ -128,25 +130,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
 				if(tanks[2].getFluidAmount() > 0)
 					FFUtils.fillFluid(this, tanks[2], world, pos.getPos(), tanks[2].getCapacity() >> 1);
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			if(outputFluid != null){
-				data.setString("f", outputFluid.getName());
-			} else {
-				if(tanks[2].getFluid() != null){
-					data.setString("f", tanks[2].getFluid().getFluid().getName());
-				} else {
-					data.setString("f", "None");
-				}
-			}
-			data.setLong("power", power);
-			data.setInteger("processTime", processTime);
-			data.setInteger("progress", progress);
-			data.setBoolean("wasOn", wasOn);
-			data.setBoolean("uu", uuMixer);
-			data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-			
-			this.networkPack(data, 50);
+
+			networkPackNT(50);
 			if(!uuMixer && power > getMaxPower()) power = getMaxPower();
 			
 		} else {
@@ -232,20 +217,63 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
     }
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		if(nbt.hasKey("f")) {
-			if(nbt.getString("f").equals("None"))
-				this.outputFluid = null;
-			else
-            	this.outputFluid = FluidRegistry.getFluid(nbt.getString("f"));
-        }
-		this.power = nbt.getLong("power");
-		this.processTime = nbt.getInteger("processTime");
-		this.progress = nbt.getInteger("progress");
-		this.wasOn = nbt.getBoolean("wasOn");
-		this.uuMixer = nbt.getBoolean("uu");
-		if(nbt.hasKey("tanks")){
-			FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
+	public void serialize(ByteBuf buf) {
+		String fluidName;
+		if(outputFluid != null) {
+			fluidName = outputFluid.getName();
+		} else {
+			if(tanks[2].getFluid() != null) {
+				fluidName = tanks[2].getFluid().getFluid().getName();
+			} else {
+				fluidName = "None";
+			}
+		}
+		ByteBufUtils.writeUTF8String(buf, fluidName);
+		buf.writeLong(this.power);
+		buf.writeInt(this.processTime);
+		buf.writeInt(this.progress);
+		buf.writeBoolean(this.wasOn);
+		buf.writeBoolean(this.uuMixer);
+
+		for(int i = 0; i < 3; i++) {
+			if(tanks[i].getFluid() != null) {
+				buf.writeBoolean(true);
+				ByteBufUtils.writeUTF8String(buf, tanks[i].getFluid().getFluid().getName());
+				buf.writeInt(tanks[i].getFluidAmount());
+			} else {
+				buf.writeBoolean(false);
+			}
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		String fluidName = ByteBufUtils.readUTF8String(buf);
+		if(fluidName.equals("None")) {
+			this.outputFluid = null;
+		} else {
+			this.outputFluid = FluidRegistry.getFluid(fluidName);
+		}
+		this.power = buf.readLong();
+		this.processTime = buf.readInt();
+		this.progress = buf.readInt();
+		this.wasOn = buf.readBoolean();
+		this.uuMixer = buf.readBoolean();
+
+		for(int i = 0; i < 3; i++) {
+			boolean hasFluid = buf.readBoolean();
+			if(hasFluid) {
+				String tankFluidName = ByteBufUtils.readUTF8String(buf);
+				int amount = buf.readInt();
+				Fluid fluid = FluidRegistry.getFluid(tankFluidName);
+				if(fluid != null) {
+					tanks[i].setFluid(new FluidStack(fluid, amount));
+				} else {
+					tanks[i].setFluid(null);
+				}
+			} else {
+				tanks[i].setFluid(null);
+			}
 		}
 	}
 	
@@ -421,17 +449,6 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 3) {
-			return;
-		} else {
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-			tanks[2].readFromNBT(tags[2]);
-		}
 	}
 
 	@Override

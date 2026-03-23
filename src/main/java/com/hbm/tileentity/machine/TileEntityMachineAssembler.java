@@ -16,9 +16,11 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -39,7 +41,7 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
-public class TileEntityMachineAssembler extends TileEntityMachineBase implements ITickable, IEnergyUser {
+public class TileEntityMachineAssembler extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 2000000;
@@ -269,13 +271,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 				}
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setInteger("progress", progress);
-			data.setInteger("maxProgress", maxProgress);
-			data.setBoolean("isProgressing", isProgressing);
-			data.setInteger("recipe", !inventory.getStackInSlot(4).isEmpty() ? ItemAssemblyTemplate.getRecipeIndex(inventory.getStackInSlot(4)) : -1);
-			this.networkPack(data, 150);
+			networkPackNT(150);
 		} else {
 
 			float volume = this.getVolume(2);
@@ -343,18 +339,26 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 			audio = null;
     	}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.power = nbt.getLong("power");
-		this.progress = nbt.getInteger("progress");
-		this.maxProgress = nbt.getInteger("maxProgress");
-		this.isProgressing = nbt.getBoolean("isProgressing");
-		this.recipe = nbt.getInteger("recipe");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeInt(this.progress);
+		buf.writeInt(this.maxProgress);
+		buf.writeBoolean(this.isProgressing);
+		buf.writeInt(!inventory.getStackInSlot(4).isEmpty() ? ItemAssemblyTemplate.getRecipeIndex(inventory.getStackInSlot(4)) : -1);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.progress = buf.readInt();
+		this.maxProgress = buf.readInt();
+		this.isProgressing = buf.readBoolean();
+		this.recipe = buf.readInt();
 	}
 
 	public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
-		//validateTe sees if it's a valid inventory tile entity
 		boolean te1Valid = validateTe(te1);
 		boolean te2Valid = validateTe(te2);
 
@@ -364,7 +368,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 			boolean openSlot = false;
 			boolean existingTemplate = false;
 			boolean filledContainer = false;
-			//Check if there's an existing template and an open slot
 			for(int i = 0; i < iTe1.getSlots(); i++) {
 				if(iTe1.getStackInSlot(i).isEmpty()) {
 					openSlot = true;
@@ -375,7 +378,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 			if(!this.inventory.getStackInSlot(4).isEmpty()) {
 				existingTemplate = true;
 			}
-			//Check if there's a template in input
 			for(int i = 0; i < iTe2.getSlots(); i++) {
 				if(iTe2.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) {
 					if(openSlot && existingTemplate) {
@@ -402,7 +404,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 		return false;
 	}
 
-	//I can't believe that worked.
 	public ItemStackHandler cloneItemStackProper(IItemHandlerModifiable array) {
 		ItemStackHandler stack = new ItemStackHandler(array.getSlots());
 
@@ -416,7 +417,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 		return stack;
 	}
 
-	//Unloads output into chests
 	public boolean tryFillContainer(IInventory inv, int slot) {
 
 		int size = inv.getSizeInventory();
@@ -471,9 +471,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 		return false;
 	}
 
-	//Unloads output into chests. Capability version.
 	public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-		//Check if we have something to output
 		if(inventory.getStackInSlot(slot).isEmpty())
 			return false;
 
@@ -505,51 +503,47 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 
 		nextIngredient = nextIngredient.singulize();
 		
-		for(int k = 6; k < 18; k++) { //scaning inventory if some of the ingredients allready exist
+		for(int k = 6; k < 18; k++) {
 			if(stacksFound < stackCount){
 				ItemStack assStack = inventory.getStackInSlot(k).copy();
 				if(assStack.isEmpty()){
 					if(firstFreeSlot < 6){
 						firstFreeSlot = k;
 					}
-				} else { // check if there are already enough filled stacks is full
+				} else {
 				
 					assStack.setCount(1);
-					if(nextIngredient.isApplicable(assStack)){ // check if it is the right item
+					if(nextIngredient.isApplicable(assStack)){
 						if(inventory.getStackInSlot(k).getCount() < assStack.getMaxStackSize()) {
-							// is that stack full?
-							return k; // found a not full slot where we already have that ingredient
+							return k;
 						}
 						else
 							stacksFound++;
 					}
 				}
 			}else {
-				return -1; // All required stacks are full
+				return -1;
 			}
 		}
-		if(firstFreeSlot < 6) // nothing free in assembler inventory anymore
+		if(firstFreeSlot < 6)
 			return -2;
 		return firstFreeSlot;
 	}
 
-	//private int extractIngredient(IItemHandler container)
-
-
 	public boolean tryFillAssemblerCap(IItemHandler container, int[] allowedSlots, TileEntityMachineBase te) {
 		if(allowedSlots.length < 1)
 			return false;
-		if(AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) == ItemStack.EMPTY || AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) == null) //No recipe template found
+		if(AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) == ItemStack.EMPTY || AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) == null)
 			return false;
 		else {
-			List<AStack> recipeIngredients = new ArrayList<>(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4))); //Loading Ingredients
+			List<AStack> recipeIngredients = new ArrayList<>(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)));
 			Map<Integer, ItemStack> itemStackMap = new HashMap<Integer, ItemStack>();
 
 			for(int slot : allowedSlots) {
 				container.getStackInSlot(slot);
-				if (container.getStackInSlot(slot).isEmpty()) { // check next slot in chest if it is empty
+				if (container.getStackInSlot(slot).isEmpty()) {
 					continue;
-				} else { // found an item in chest
+				} else {
 					itemStackMap.put(slot, container.getStackInSlot(slot).copy());
 				}
 			}
@@ -559,22 +553,21 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 
 			for(int ig = 0; ig < recipeIngredients.size(); ig++) {
 
-				AStack nextIngredient = recipeIngredients.get(ig).copy(); // getting new ingredient
+				AStack nextIngredient = recipeIngredients.get(ig).copy();
 				
 				int ingredientSlot = getValidSlot(nextIngredient);
 
 
 				if(ingredientSlot < 6)
-					continue; // Ingredient filled or Assembler is full
+					continue;
 
-				int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount(); // how many items do we need to fill the stack?
+				int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount();
 				
-				if(possibleAmount == 0){ // full
+				if(possibleAmount == 0){
 					System.out.println("This should never happen method getValidSlot broke");
 					continue;
 				}
 
-				// Ok now we know what we are looking for (nexIngredient) and where to put it (ingredientSlot) - So lets see if we find some of it in containers
 				for (Map.Entry<Integer,ItemStack> set :
 						itemStackMap.entrySet()) {
 					    ItemStack stack = set.getValue();
@@ -582,7 +575,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 						ItemStack compareStack = stack.copy();
 						compareStack.setCount(1);
 
-						if(nextIngredient.isApplicable(compareStack) && (inventory.getStackInSlot(ingredientSlot).isEmpty() || Library.areItemStacksEqualIgnoreCount(inventory.getStackInSlot(ingredientSlot), container.getStackInSlot(slot)))){ // bingo found something
+						if(nextIngredient.isApplicable(compareStack) && (inventory.getStackInSlot(ingredientSlot).isEmpty() || Library.areItemStacksEqualIgnoreCount(inventory.getStackInSlot(ingredientSlot), container.getStackInSlot(slot)))){
 
 							int foundCount = Math.min(stack.getCount(), possibleAmount);
 							if(te != null && !te.canExtractItem(slot, stack, foundCount))
@@ -597,13 +590,13 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 									inventory.setStackInSlot(ingredientSlot, stack);
 
 								}else{
-									inventory.getStackInSlot(ingredientSlot).grow(foundCount); // transfer complete
+									inventory.getStackInSlot(ingredientSlot).grow(foundCount);
 								}
 								needsProcess = true;
 							}if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()){
 								break;
 							}else{
-								break; // ingredientSlot filled
+								break;
 							}
 						}
 					}
@@ -612,7 +605,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 			return true;
 	}
 
-	//boolean true: remove items, boolean false: simulation mode
 	public boolean removeItems(List<AStack> stack, IItemHandlerModifiable array) {
 		if(stack == null)
 			return false;
@@ -677,13 +669,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 
 		return false;
 	}
-
-	//Drillgon200: Method so I can check stuff like containing a fluid without checking if the compound tags are exactly equal, that way
-	//it's more compatible with capabilities.
-	//private boolean areStacksEqual(ItemStack sta1, ItemStack sta2){
-	//	return Library.areItemStacksCompatible(sta2, sta1);
-	//return ItemStack.areItemStacksEqual(sta1, sta2);
-	//	}
 
 	@Override
 	public void setPower(long i) {

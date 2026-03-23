@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.gui.GUICoreStabilizer;
-import com.hbm.packet.NBTPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityCoreStabilizer;
 
@@ -44,18 +43,19 @@ public class ContainerCoreStabilizer extends Container {
 	}
 	
 	@Override
-	public void addListener(IContainerListener listener) {
+	public void addListener(@NotNull IContainerListener listener) {
 		super.addListener(listener);
 		listener.sendWindowProperty(this, 0, nukeBoy.watts);
 	}
 	
 	@Override
 	public void detectAndSendChanges() {
+		BlockPos nukePos = nukeBoy.getPos();
 		NBTTagCompound data = new NBTTagCompound();
 		data.setLong("power", nukeBoy.power);
 		data.setInteger("watts", nukeBoy.watts);
 		data.setBoolean("isOn", nukeBoy.isOn);
-		PacketDispatcher.sendTo(new NBTPacket(data, nukeBoy.getPos()), player);
+		PacketThreading.createSendToThreadedPacket(new BufPacket(nukePos.getX(), nukePos.getY(), nukePos.getZ(), nukeBoy), player);
 		super.detectAndSendChanges();
 	}
 	

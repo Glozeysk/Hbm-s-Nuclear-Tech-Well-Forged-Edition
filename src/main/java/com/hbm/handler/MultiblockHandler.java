@@ -2,7 +2,6 @@ package com.hbm.handler;
 
 import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.NBTPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityDummy;
 

@@ -22,9 +22,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
@@ -33,6 +31,7 @@ import com.hbm.util.ItemStackUtil;
 import api.hbm.energy.IEnergyUser;
 import api.hbm.block.IDrillInteraction;
 import api.hbm.block.IMiningDrill;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
@@ -51,7 +50,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.common.capabilities.Capability;
@@ -66,7 +65,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
-public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyUser, IFluidHandler, ITickable, ITankPacketAcceptor, IControlReceiver, IGUIProvider, IMiningDrill {
+public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyUser, IFluidHandler, ITickable, IControlReceiver, IGUIProvider, IMiningDrill, IBufPacketReceiver {
 
 	public static final long maxPower = 10_000_000;
 	public long power;
@@ -80,7 +79,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 	public boolean hasNullifier = false;
 	
 	protected int ticksWorked = 0;
-	protected int targetDepth = 0; //0 is the first block below null position
+	protected int targetDepth = 0;
 	protected boolean bedrockDrilling = false;
 
 	public float drillRotation = 0F;
@@ -121,7 +120,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 	@Override
 	public void update() {
 		
-		//needs to happen on client too for GUI rendering
 		upgradeManager.eval(inventory, 2, 3);
 		int speedLevel = Math.min(upgradeManager.getLevel(UpgradeType.SPEED), 10);
 		int powerLevel = Math.min(upgradeManager.getLevel(UpgradeType.POWER), 3);
@@ -174,21 +172,8 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 				this.targetDepth = 0;
 				this.drillRating = 0;
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			tank.writeToNBT(data);
-			if(fluidType != null)
-				data.setString("f", fluidType.getName());
-            data.setBoolean("d", enableDrill);
-			data.setBoolean("c", enableCrusher);
-			data.setBoolean("w", enableWalling);
-			data.setBoolean("v", enableVeinMiner);
-			data.setBoolean("s", enableSilkTouch);
-			data.setBoolean("o", operational);
-			data.setInteger("t", targetDepth);
-			data.setInteger("g", chuteTimer);
-			data.setLong("p", power);
-			this.networkPack(data, 150);
+
+			networkPackNT(150);
 			
 		} else {
 			
@@ -254,28 +239,66 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 				new DirPos(pos.getX() - rot.offsetX * 4, pos.getY() + 1, pos.getZ() - rot.offsetZ * 4, rot.getOpposite())
 		};
 	}
-	
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.tank.readFromNBT(nbt);
-		if(nbt.hasKey("f")) {
-            this.fluidType = FluidRegistry.getFluid(nbt.getString("f"));
-        }
-		this.enableDrill = nbt.getBoolean("d");
-		this.enableCrusher = nbt.getBoolean("c");
-		this.enableWalling = nbt.getBoolean("w");
-		this.enableVeinMiner = nbt.getBoolean("v");
-		this.enableSilkTouch = nbt.getBoolean("s");
-		this.operational = nbt.getBoolean("o");
-		this.targetDepth = nbt.getInteger("t");
-		this.chuteTimer = nbt.getInteger("g");
-		this.power = nbt.getLong("p");
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		FluidStack fs = tank.getFluid();
+		buf.writeBoolean(fs != null);
+		if(fs != null) {
+			ByteBufUtils.writeUTF8String(buf, fs.getFluid().getName());
+			buf.writeInt(fs.amount);
+		}
+		buf.writeBoolean(fluidType != null);
+		if(fluidType != null) {
+			ByteBufUtils.writeUTF8String(buf, fluidType.getName());
+		}
+		buf.writeBoolean(enableDrill);
+		buf.writeBoolean(enableCrusher);
+		buf.writeBoolean(enableWalling);
+		buf.writeBoolean(enableVeinMiner);
+		buf.writeBoolean(enableSilkTouch);
+		buf.writeBoolean(operational);
+		buf.writeInt(targetDepth);
+		buf.writeInt(chuteTimer);
+		buf.writeLong(power);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		boolean hasFluid = buf.readBoolean();
+		if(hasFluid) {
+			String fluidName = ByteBufUtils.readUTF8String(buf);
+			int amount = buf.readInt();
+			Fluid fluid = FluidRegistry.getFluid(fluidName);
+			if(fluid != null) {
+				tank.setFluid(new FluidStack(fluid, amount));
+			} else {
+				tank.setFluid(null);
+			}
+		} else {
+			tank.setFluid(null);
+		}
+		boolean hasFluidType = buf.readBoolean();
+		if(hasFluidType) {
+			this.fluidType = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+		} else {
+			this.fluidType = null;
+		}
+		this.enableDrill = buf.readBoolean();
+		this.enableCrusher = buf.readBoolean();
+		this.enableWalling = buf.readBoolean();
+		this.enableVeinMiner = buf.readBoolean();
+		this.enableSilkTouch = buf.readBoolean();
+		this.operational = buf.readBoolean();
+		this.targetDepth = buf.readInt();
+		this.chuteTimer = buf.readInt();
+		this.power = buf.readLong();
 	}
 	
 	protected int getY() {
 		return pos.getY() - targetDepth - 4;
 	}
 	
-	/** Works outwards and tries to break a ring, returns true if all rings are broken (or ignorable) and the drill should extend. */
 	protected boolean tryDrill(int radius) {
 		int y = getY();
 
@@ -290,11 +313,9 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 			BlockPos bedrockOre = null;
 			bedrockDrilling = false;
 			
-			//Scanning to chgeck how much time it would take to break all of them at once
 			for(int x = pos.getX() - ring; x <= pos.getX() + ring; x++) {
 				for(int z = pos.getZ() - ring; z <= pos.getZ() + ring; z++) {
 					
-					/* Process blocks either if we are in the inner ring (1 = 3x3) or if the target block is on the outer edge */
 					if(ring == 1 || (x == pos.getX() - ring || x == pos.getX() + ring || z == pos.getZ() - ring || z == pos.getZ() + ring)) {
 						
 						BlockPos drillPos = new BlockPos(x, y, z);
@@ -352,9 +373,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		return true;
 	}
 	
-	
-	
-	/* breaks and drops all blocks in the specified ring */
 	protected void breakBlocks(int ring) {
 		int y = getY();
 		
@@ -387,7 +405,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 				breakRecursively(drillPos, 10);
 				recursionBrake.clear();
 				
-				/* move all excavated items to the last drillable position which is also within collection range */
 				List<EntityItem> items = world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1));
 				for(EntityItem item : items)
 					item.setPosition(drillPos.getX() + 0.5, drillPos.getY() + 0.5, drillPos.getZ() + 0.5);
@@ -400,7 +417,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 	
 	protected boolean isOreDictOre(Block b) {
 		
-		/* doing this isn't terribly accurate but just for figuring out if there's OD it works */
 		Item blockItem = Item.getItemFromBlock(b);
 		
 		if(blockItem != null && blockItem != Items.AIR) {
@@ -532,7 +548,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		world.destroyBlock(drillPos, false);
 	}
 	
-	/* builds a wall along the specified ring, replacing fluid blocks. if wallEverything is set, it will also wall off replacable blocks like air or grass */
 	protected void buildWall(int ring, boolean wallEverything) {
 		int y = getY();
 		
@@ -580,7 +595,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 		
-		/* try to insert into a valid container */
 		TileEntity te = world.getTileEntity(pos.add(dir.offsetX * 4, -3, dir.offsetZ * 4));
 
 		if(te == null || !te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.toEnumFacing()))
@@ -593,18 +607,14 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		}
 	}
 
-	//Unloads output into chests. Capability version.
-    public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-        //Check if we have something to output
+	public boolean tryFillContainerCap(IItemHandler chest, int slot) {
         if(inventory.getStackInSlot(slot).isEmpty())
             return false;
 
         return tryInsertItemCap(chest, inventory.getStackInSlot(slot));
     }
 
-	//Unloads output into chests. Capability version.
-    public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        //Check if we have something to output
+	public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
         if(stack.isEmpty())
             return false;
 
@@ -631,7 +641,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
         return false;
     }
 	
-	/* pulls up an AABB around the drillbit and tries to either conveyor output or buffer collected items */
 	protected void tryCollect(int radius) {
 		int yLevel = getY();
 		
@@ -639,11 +648,9 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 		
-		/* try to insert into a valid container */
 		TileEntity tile = world.getTileEntity(pos.add(dir.offsetX * 4, -3, dir.offsetZ * 4));
 		supplyContainer(tile, items, dir.getOpposite());
 		
-		/* collect remaining items in internal buffer */
 		for(EntityItem entityItem : items) {
 			if(entityItem.isDead) continue;
 
@@ -662,7 +669,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		}
 	}
 	
-	/* places all items into a connected container, if possible */
 	protected void supplyContainer(TileEntity te, List<EntityItem> items, ForgeDirection dir) {
 		if(te == null || !te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.toEnumFacing()))
 			return;
@@ -738,7 +744,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		if(data.hasKey("walling")) this.enableWalling = !this.enableWalling;
 		if(data.hasKey("veinminer")) this.enableVeinMiner = !this.enableVeinMiner;
 
-		//cant have silk and crusher together
 		if(data.hasKey("silktouch")){
 			if(!this.enableSilkTouch && this.enableCrusher){
 				this.enableCrusher = false;
@@ -849,7 +854,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 		return maxPower;
 	}
 
-	    @Override
+	@Override
     public IFluidTankProperties[] getTankProperties() {
         return new IFluidTankProperties[]{tank.getTankProperties()[0]};
     }
@@ -891,11 +896,4 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
             return super.hasCapability(capability, facing);
         }
     }
-
-    @Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 1) {
-			tank.readFromNBT(tags[0]);
-		}
-	}
 }

@@ -10,9 +10,9 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.amlfrom1710.Vec3;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.Vec3d;
 
 public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 
@@ -98,9 +98,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 				this.loaded = 0;
 			}
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("loaded", this.loaded);
-			this.networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 
@@ -131,11 +129,15 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt){
-		if(nbt.hasKey("loaded"))
-			this.loaded = nbt.getInteger("loaded");
-		else
-			super.networkUnpack(nbt);
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeInt(this.loaded);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		this.loaded = buf.readInt();
 	}
 
 	@Override
@@ -163,5 +165,4 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 		nbt.setInteger("loaded", this.loaded);
 		return super.writeToNBT(nbt);
 	}
-
 }

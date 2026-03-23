@@ -4,9 +4,11 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneRouter;
 import com.hbm.inventory.gui.GUICraneRouter;
 import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -15,12 +17,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
-public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, ITickable {
-    public ModulePatternMatcher[] patterns = new ModulePatternMatcher[6]; //why did i make six matchers???
+public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, ITickable, IBufPacketReceiver {
+    public ModulePatternMatcher[] patterns = new ModulePatternMatcher[6];
     public int[] modes = new int[6];
     public static final int MODE_NONE = 0;
     public static final int MODE_WHITELIST = 1;
@@ -43,27 +46,31 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
     @Override
     public void update() {
         if(!world.isRemote) {
-
-            NBTTagCompound data = new NBTTagCompound();
-            for(int i = 0; i < patterns.length; i++) {
-                NBTTagCompound compound = new NBTTagCompound();
-                patterns[i].writeToNBT(compound);
-                data.setTag("pattern" + i, compound);
-            }
-            data.setIntArray("modes", this.modes);
-            this.networkPack(data, 15);
+            networkPackNT(15);
         }
     }
 
     @Override
-    public void networkUnpack(NBTTagCompound data) {
-        super.networkUnpack(data);
-
+    public void serialize(ByteBuf buf) {
         for(int i = 0; i < patterns.length; i++) {
-            NBTTagCompound compound = data.getCompoundTag("pattern" + i);
+            NBTTagCompound compound = new NBTTagCompound();
+            patterns[i].writeToNBT(compound);
+            ByteBufUtils.writeTag(buf, compound);
+        }
+        for(int i = 0; i < modes.length; i++) {
+            buf.writeInt(modes[i]);
+        }
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        for(int i = 0; i < patterns.length; i++) {
+            NBTTagCompound compound = ByteBufUtils.readTag(buf);
             patterns[i].readFromNBT(compound);
         }
-        this.modes = data.getIntArray("modes");
+        for(int i = 0; i < modes.length; i++) {
+            modes[i] = buf.readInt();
+        }
     }
 
     @Override
@@ -130,6 +137,6 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         int i = data.getInteger("toggle");
         modes[i]++;
         if(modes[i] > 3)
-            modes [i] = 0;
+            modes[i] = 0;
     }
 }

@@ -4,18 +4,17 @@ import api.hbm.tile.IHeatSource;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.FluidCombustionRecipes;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.gui.GUIOilburner;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.lib.RefStrings;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -35,13 +34,13 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 
-public class TileEntityHeaterOilburner extends TileEntityMachineBase implements IGUIProvider, IHeatSource, IControlReceiver, IFluidHandler, ITickable, ITankPacketAcceptor {
+public class TileEntityHeaterOilburner extends TileEntityMachineBase implements IGUIProvider, IHeatSource, IControlReceiver, IFluidHandler, ITickable, IBufPacketReceiver {
     public boolean isOn = false;
 
     public FluidTank tank;
@@ -67,8 +66,6 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
     public void update() {
         if(!world.isRemote) {
             this.updateTankType();
-
-            PacketDispatcher.wrapper.sendToAllTracking(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tank}), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 
             if(inputValidForTank()) {
                 if(FFUtils.fillFromFluidContainer(inventory, tank, 0, 1)) {
@@ -102,15 +99,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
                 this.markDirty();
             }
 
-            NBTTagCompound data = new NBTTagCompound();
-            tank.writeToNBT(data);
-            data.setString("fluidType", fluidType.getName());
-            data.setBoolean("isOn", isOn);
-            data.setInteger("heatEnergy", heatEnergy);
-            data.setByte("setting", (byte) this.setting);
-            data.setInteger("cacheHeat", this.cacheHeat);
-
-            this.networkPack(data, 25);
+            networkPackNT(25);
         }
     }
 
@@ -141,30 +130,47 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
     }
 
     @Override
-    public void recievePacket(NBTTagCompound[] tags) {
-        if(tags.length != 1) {
-            return;
-
+    public void serialize(ByteBuf buf) {
+        FluidStack fs = tank.getFluid();
+        buf.writeBoolean(fs != null);
+        if(fs != null) {
+            ByteBufUtils.writeUTF8String(buf, fs.getFluid().getName());
+            buf.writeInt(fs.amount);
         }
-        tank.readFromNBT(tags[0]);
+        ByteBufUtils.writeUTF8String(buf, fluidType != null ? fluidType.getName() : "");
+        buf.writeBoolean(isOn);
+        buf.writeInt(heatEnergy);
+        buf.writeByte(setting);
+        buf.writeInt(cacheHeat);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        if(buf.readBoolean()) {
+            String fluidName = ByteBufUtils.readUTF8String(buf);
+            int amount = buf.readInt();
+            Fluid f = FluidRegistry.getFluid(fluidName);
+            if(f != null) {
+                tank.setFluid(new FluidStack(f, amount));
+            } else {
+                tank.setFluid(null);
+            }
+        } else {
+            tank.setFluid(null);
+        }
+        String ftName = ByteBufUtils.readUTF8String(buf);
+        if(!ftName.isEmpty()) {
+            fluidType = FluidRegistry.getFluid(ftName);
+        }
+        isOn = buf.readBoolean();
+        heatEnergy = buf.readInt();
+        setting = buf.readByte();
+        cacheHeat = buf.readInt();
     }
 
     @Override
     public String getName() {
         return "container.heaterOilburner";
-    }
-
-    @Override
-    public void networkUnpack(NBTTagCompound nbt) {
-        tank.readFromNBT(nbt);
-        if(nbt.hasKey("fluidType")) {
-            fluidType = FluidRegistry.getFluid(nbt.getString("fluidType"));
-        }
-
-        isOn = nbt.getBoolean("isOn");
-        heatEnergy = nbt.getInteger("heatEnergy");
-        setting = nbt.getByte("setting");
-        cacheHeat = nbt.getInteger("cacheHeat");
     }
 
     @Override

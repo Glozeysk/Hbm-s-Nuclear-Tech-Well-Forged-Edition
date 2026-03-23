@@ -3,19 +3,17 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.interfaces.Untested;
 import com.hbm.inventory.MachineRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.FluidTypePacketTest;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyGenerator;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -32,11 +30,11 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineLargeTurbine extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineLargeTurbine extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 100000000;
@@ -99,9 +97,9 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 				if(tanks[1].getFluid() != null && tanks[1].getFluid().getFluid() != types[1])
 					tanks[1].setFluid(null);
 
-				int processMax = (int) Math.ceil(Math.ceil(tanks[0].getFluidAmount() / 10F) / (Integer)outs[2]);		//the maximum amount of cycles based on the 10% cap
-				int processSteam = tanks[0].getFluidAmount() / (Integer)outs[2];							//the maximum amount of cycles depending on steam
-				int processWater = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / (Integer)outs[1];	//the maximum amount of cycles depending on water
+				int processMax = (int) Math.ceil(Math.ceil(tanks[0].getFluidAmount() / 10F) / (Integer)outs[2]);
+				int processSteam = tanks[0].getFluidAmount() / (Integer)outs[2];
+				int processWater = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / (Integer)outs[1];
 
 				int cycles = Math.min(processMax, Math.min(processSteam, processWater));
 
@@ -118,13 +116,8 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 
 			FFUtils.fillFluidContainer(inventory, tanks[1], 5, 6);
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tanks[0], tanks[1]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTypePacketTest(pos.getX(), pos.getY(), pos.getZ(), new Fluid[]{types[0], types[1]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setBoolean("operational", operational);
-			this.networkPack(data, 50);
+			this.shouldTurn = operational;
+			networkPackNT(50);
 		} else {
 
 			this.lastRotor = this.rotor;
@@ -138,6 +131,51 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 					this.lastRotor -= 360;
 				}
 			}
+		}
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeBoolean(this.shouldTurn);
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
+		ByteBufUtils.writeUTF8String(buf, types[0] != null ? types[0].getName() : "");
+		ByteBufUtils.writeUTF8String(buf, types[1] != null ? types[1].getName() : "");
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.shouldTurn = buf.readBoolean();
+
+		int amount0 = buf.readInt();
+		int amount1 = buf.readInt();
+		String typeName0 = ByteBufUtils.readUTF8String(buf);
+		String typeName1 = ByteBufUtils.readUTF8String(buf);
+
+		if(!typeName0.isEmpty()) {
+			types[0] = FluidRegistry.getFluid(typeName0);
+			if(types[0] != null && amount0 > 0) {
+				tanks[0].setFluid(new FluidStack(types[0], amount0));
+			} else {
+				tanks[0].setFluid(null);
+			}
+		} else {
+			types[0] = null;
+			tanks[0].setFluid(null);
+		}
+
+		if(!typeName1.isEmpty()) {
+			types[1] = FluidRegistry.getFluid(typeName1);
+			if(types[1] != null && amount1 > 0) {
+				tanks[1].setFluid(new FluidStack(types[1], amount1));
+			} else {
+				tanks[1].setFluid(null);
+			}
+		} else {
+			types[1] = null;
+			tanks[1].setFluid(null);
 		}
 	}
 	
@@ -154,12 +192,6 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 		if(stack == null || tanks[tank] == null)
 			return false;
 		return stack.getFluid() == ModForgeFluids.steam || stack.getFluid() == ModForgeFluids.hotsteam || stack.getFluid() == ModForgeFluids.superhotsteam || stack.getFluid() == ModForgeFluids.ultrahotsteam;
-	}
-	
-	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.power = data.getLong("power");
-		this.shouldTurn = data.getBoolean("operational");
 	}
 
 	public long getPowerScaled(int i) {
@@ -246,14 +278,6 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return tanks[1].drain(maxDrain, doDrain);
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 2){
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-		}
 	}
 	
 	@Override

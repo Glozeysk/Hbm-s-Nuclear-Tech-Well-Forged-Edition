@@ -4,19 +4,18 @@ import java.util.HashMap;
 
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.SILEXRecipes;
 import com.hbm.inventory.SILEXRecipes.SILEXRecipe;
 import com.hbm.items.machine.ItemFluidIcon;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
 import com.hbm.util.WeightedRandomObject;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -31,11 +30,11 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntitySILEX extends TileEntityMachineBase implements ITickable, IFluidHandler, ITankPacketAcceptor {
+public class TileEntitySILEX extends TileEntityMachineBase implements ITickable, IFluidHandler, IBufPacketReceiver {
 
 	public EnumWavelengths mode = EnumWavelengths.NULL;
 	public boolean hasLaser;
@@ -53,7 +52,6 @@ public class TileEntitySILEX extends TileEntityMachineBase implements ITickable,
 
 	public TileEntitySILEX() {
 		super(10);
-		//acid
 		tank = new FluidTank(16000);
 	}
 
@@ -84,36 +82,38 @@ public class TileEntitySILEX extends TileEntityMachineBase implements ITickable,
 			if(currentFill <= 0) {
 				current = null;
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("fill", currentFill);
-			data.setInteger("progress", progress);
-			data.setString("mode", mode.toString());
-			
-			if(this.current != null) {
-				data.setInteger("item", Item.getIdFromItem(this.current.item));
-				data.setInteger("meta", this.current.meta);
-			}
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tank), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-			this.networkPack(data, 50);
+			networkPackNT(50);
 
 			this.mode = EnumWavelengths.NULL;
 		}
 	}
-	
-	public void networkUnpack(NBTTagCompound nbt) {
-		
-		this.currentFill = nbt.getInteger("fill");
-		this.progress = nbt.getInteger("progress");
-		this.mode = EnumWavelengths.valueOf(nbt.getString("mode"));
-		
-		if(this.currentFill > 0) {
-			this.current = new ComparableStack(Item.getItemById(nbt.getInteger("item")), 1, nbt.getInteger("meta"));
-			
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeInt(this.currentFill);
+		buf.writeInt(this.progress);
+		buf.writeInt(this.mode.ordinal());
+		buf.writeBoolean(this.current != null);
+		if(this.current != null) {
+			buf.writeInt(Item.getIdFromItem(this.current.item));
+			buf.writeInt(this.current.meta);
+		}
+		ByteBufUtils.writeTag(buf, tank.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.currentFill = buf.readInt();
+		this.progress = buf.readInt();
+		this.mode = EnumWavelengths.values()[buf.readInt()];
+		boolean hasCurrent = buf.readBoolean();
+		if(hasCurrent) {
+			this.current = new ComparableStack(Item.getItemById(buf.readInt()), 1, buf.readInt());
 		} else {
 			this.current = null;
 		}
+		tank.readFromNBT(ByteBufUtils.readTag(buf));
 	}
 	
 	public void handleButtonPacket(int value, int meta) {
@@ -337,12 +337,5 @@ public class TileEntitySILEX extends TileEntityMachineBase implements ITickable,
 			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
 		}
 		return super.getCapability(capability, facing);
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags){
-		if(tags.length == 1){
-			tank.readFromNBT(tags[0]);
-		}
 	}
 }

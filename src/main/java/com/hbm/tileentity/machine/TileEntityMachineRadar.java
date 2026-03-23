@@ -6,16 +6,15 @@ import java.util.List;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.WeaponConfig;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityTickingBase;
 import com.hbm.capability.HbmLivingProps;
 
 import api.hbm.energy.IEnergyUser;
 import api.hbm.entity.IRadarDetectable;
 import api.hbm.entity.IRadarDetectable.RadarTargetType;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.EntityLivingBase;
@@ -24,16 +23,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 
-public class TileEntityMachineRadar extends TileEntityTickingBase implements ITickable, IEnergyUser {
+public class TileEntityMachineRadar extends TileEntityTickingBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public List<Entity> entList = new ArrayList();
-	public List<int[]> nearbyMissiles = new ArrayList<int[]>();
+	public volatile List<int[]> nearbyMissiles = new ArrayList<int[]>();
 	public int pingTimer = 0;
 	public int lastPower;
 	final static int maxTimer = 40;
@@ -62,14 +59,11 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 		if(pos.getY() < WeaponConfig.radarAltitude)
 			return;
 		
-		
-		
 		if(!world.isRemote) {
 
 			this.updateConnectionsExcept(world, pos, ForgeDirection.UP);
 			
 			nearbyMissiles.clear();
-
 
 			if(power > 0) {
 				allocateMissiles();
@@ -83,7 +77,6 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 			if(lastPower != getRedPower())
 				world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
 
-			sendMissileData();
 			lastPower = getRedPower();
 			
 			if(world.getBlockState(pos.down()).getBlock() != ModBlocks.muffler) {
@@ -96,7 +89,7 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 				}
 			}
 			
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			networkPackNT(15);
 		} else {
 
 			prevRotation = rotation;
@@ -169,11 +162,10 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 		}
 	}
 	
-	public int getRedPower() { //redstone output
+	public int getRedPower() {
 		
 		if(!entList.isEmpty()) {
 			
-			/// PROXIMITY ///
 			if(redMode) {
 				
 				double maxRange = WeaponConfig.radarRange * Math.sqrt(2D);
@@ -192,7 +184,6 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 				
 				return power;
 				
-			/// TIER ///
 			} else {
 				
 				int power = 0;
@@ -210,55 +201,48 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 		
 		return 0;
 	}
-	
-	private void sendMissileData() {
-		
-		NBTTagCompound data = new NBTTagCompound();
-		data.setLong("power", power);
-		data.setBoolean("scanMissiles", scanMissiles);
-		data.setBoolean("scanPlayers", scanPlayers);
-		data.setBoolean("smartMode", smartMode);
-		data.setBoolean("redMode", redMode);
-		data.setBoolean("jammed", jammed);
-		data.setInteger("count", this.nearbyMissiles.size());
 
-		for(int i = 0; i < this.nearbyMissiles.size(); i++) {
-			data.setInteger("x" + i, this.nearbyMissiles.get(i)[0]);
-			data.setInteger("z" + i, this.nearbyMissiles.get(i)[1]);
-			data.setInteger("type" + i, this.nearbyMissiles.get(i)[2]);
-			data.setInteger("y" + i, this.nearbyMissiles.get(i)[3]);
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeBoolean(this.scanMissiles);
+		buf.writeBoolean(this.scanPlayers);
+		buf.writeBoolean(this.smartMode);
+		buf.writeBoolean(this.redMode);
+		buf.writeBoolean(this.jammed);
+		buf.writeInt(this.nearbyMissiles.size());
+		for(int[] missile : this.nearbyMissiles) {
+			buf.writeInt(missile[0]);
+			buf.writeInt(missile[1]);
+			buf.writeInt(missile[2]);
+			buf.writeInt(missile[3]);
 		}
-
-		this.networkPack(data, 15);
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.nearbyMissiles.clear();
-		this.power = data.getLong("power");
-		this.scanMissiles = data.getBoolean("scanMissiles");
-		this.scanPlayers = data.getBoolean("scanPlayers");
-		this.smartMode = data.getBoolean("smartMode");
-		this.redMode = data.getBoolean("redMode");
-		this.jammed = data.getBoolean("jammed");
-
-		int count = data.getInteger("count");
-
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.scanMissiles = buf.readBoolean();
+		this.scanPlayers = buf.readBoolean();
+		this.smartMode = buf.readBoolean();
+		this.redMode = buf.readBoolean();
+		this.jammed = buf.readBoolean();
+		int count = buf.readInt();
+		List<int[]> newList = new ArrayList<int[]>();
 		for(int i = 0; i < count; i++) {
-
-			int x = data.getInteger("x" + i);
-			int z = data.getInteger("z" + i);
-			int type = data.getInteger("type" + i);
-			int y = data.getInteger("y" + i);
-
-			this.nearbyMissiles.add(new int[] {x, z, type, y});
+			int x = buf.readInt();
+			int z = buf.readInt();
+			int type = buf.readInt();
+			int y = buf.readInt();
+			newList.add(new int[] {x, z, type, y});
 		}
+		this.nearbyMissiles = newList;
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		power = compound.getLong("power");
-		scanMissiles =compound.getBoolean("scanMissiles");
+		scanMissiles = compound.getBoolean("scanMissiles");
 		scanPlayers = compound.getBoolean("scanPlayers");
 		smartMode = compound.getBoolean("smartMode");
 		redMode = compound.getBoolean("redMode");

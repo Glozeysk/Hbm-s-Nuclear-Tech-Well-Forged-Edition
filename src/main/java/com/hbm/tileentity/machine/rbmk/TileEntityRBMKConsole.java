@@ -9,11 +9,13 @@ import java.util.LinkedHashMap;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual.RBMKColor;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.BobMathUtil;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -24,6 +26,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.fml.common.Optional;
@@ -34,7 +37,7 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
-public class TileEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, ITickable, SimpleComponent {
+public class TileEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, ITickable, SimpleComponent, IBufPacketReceiver {
 	
 	private int targetX;
 	private int targetY;
@@ -42,8 +45,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 
 	protected static int lookbackLength = 40;
 	
-	//made this one-dimensional because it's a lot easier to serialize
-	public RBMKColumn[] columns = new RBMKColumn[15 * 15];
+	public volatile RBMKColumn[] columns = new RBMKColumn[15 * 15];
 
 	public RBMKScreen[] screens = new RBMKScreen[6];
 
@@ -72,7 +74,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 				prepareScreenInfo();
 				prepareGraphInfo();
 			}
-			prepareNetworkPack();
+			networkPackNT(50);
 		}
 	}
 	
@@ -94,7 +96,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 					columns[index].data.setDouble("realSimWater", rbmk.water);
 					columns[index].data.setDouble("realSimSteam", rbmk.steam);
 					if(rbmk.isModerated()) columns[index].data.setBoolean("moderated", true);
-					if(rbmk.isHeatproof()) columns[index].data.setBoolean("heatproof", true); //false is the default anyway and not setting it when we don't need to reduces cruft
+					if(rbmk.isHeatproof()) columns[index].data.setBoolean("heatproof", true);
 					
 				} else {
 					columns[index] = null;
@@ -108,7 +110,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 		setupScreensAndGraph();
 		prepareScreenInfo();
 		prepareGraphInfo();
-		prepareNetworkPack();
+		networkPackNT(50);
 	}
 
 	public void setupScreensAndGraph(){
@@ -269,69 +271,66 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 			screen.display = text;
 		}
 	}
-	
-	private void prepareNetworkPack() {
-		
-		NBTTagCompound data = new NBTTagCompound();
 
-		
-		if(this.world.getTotalWorldTime() % 10 == 0) {
-			
-			data.setBoolean("full", true);
-			
-			for(int i = 0; i < columns.length; i++) {
-				
-				if(this.columns[i] != null) {
-					data.setTag("column_" + i, this.columns[i].data);
-					data.setShort("type_" + i, (short)this.columns[i].type.ordinal());
-				}
-			}
-			
-			data.setIntArray("buffer", this.graph.dataBuffer);
-
-			for(int i = 0; i < this.screens.length; i++) {
-				RBMKScreen screen = screens[i];
-				if(screen.display != null) {
-					data.setString("t" + i, screen.display);
-				}
-			}
-		}
-		
-		for(int i = 0; i < this.screens.length; i++) {
-			RBMKScreen screen = screens[i];
-			data.setByte("s" + i, (byte) screen.type.ordinal());
-		}
-		data.setByte("g", (byte) graph.type.ordinal());
-		
-		this.networkPack(data, 50);
-	}
-	
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		
-		if(data.getBoolean("full")) {
-			this.columns = new RBMKColumn[15 * 15];
-			
-			for(int i = 0; i < columns.length; i++) {
-				
-				if(data.hasKey("type_" + i)) {
-					this.columns[i] = new RBMKColumn(ColumnType.values()[data.getShort("type_" + i)], (NBTTagCompound)data.getTag("column_" + i));
-				}
-			}
-			
-			this.graph.dataBuffer = data.getIntArray("buffer");
-			
-			for(int i = 0; i < this.screens.length; i++) {
-				RBMKScreen screen = screens[i];
-				screen.display = data.getString("t" + i);
+	public void serialize(ByteBuf buf) {
+		for(int i = 0; i < columns.length; i++) {
+			if(columns[i] != null) {
+				buf.writeBoolean(true);
+				buf.writeShort(columns[i].type.ordinal());
+				ByteBufUtils.writeTag(buf, columns[i].data);
+			} else {
+				buf.writeBoolean(false);
 			}
 		}
-		
-		for(int i = 0; i < this.screens.length; i++) {
-			RBMKScreen screen = screens[i];
-			screen.type = ScreenType.values()[data.getByte("s" + i)];
+
+		buf.writeInt(graph.dataBuffer.length);
+		for(int i = 0; i < graph.dataBuffer.length; i++) {
+			buf.writeInt(graph.dataBuffer[i]);
 		}
-		graph.type = ScreenType.values()[data.getByte("g")];
+
+		for(int i = 0; i < screens.length; i++) {
+			buf.writeByte(screens[i].type.ordinal());
+			if(screens[i].display != null) {
+				buf.writeBoolean(true);
+				ByteBufUtils.writeUTF8String(buf, screens[i].display);
+			} else {
+				buf.writeBoolean(false);
+			}
+		}
+
+		buf.writeByte(graph.type.ordinal());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		RBMKColumn[] newColumns = new RBMKColumn[15 * 15];
+		for(int i = 0; i < newColumns.length; i++) {
+			if(buf.readBoolean()) {
+				short typeOrd = buf.readShort();
+				NBTTagCompound data = ByteBufUtils.readTag(buf);
+				newColumns[i] = new RBMKColumn(ColumnType.values()[typeOrd], data);
+			}
+		}
+		this.columns = newColumns;
+
+		int bufferLen = buf.readInt();
+		int[] newBuffer = new int[bufferLen];
+		for(int i = 0; i < bufferLen; i++) {
+			newBuffer[i] = buf.readInt();
+		}
+		this.graph.dataBuffer = newBuffer;
+
+		for(int i = 0; i < screens.length; i++) {
+			screens[i].type = ScreenType.values()[buf.readByte()];
+			if(buf.readBoolean()) {
+				screens[i].display = ByteBufUtils.readUTF8String(buf);
+			} else {
+				screens[i].display = null;
+			}
+		}
+
+		graph.type = ScreenType.values()[buf.readByte()];
 	}
 
 	@Override
@@ -477,13 +476,6 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 			if(this.data == null)
 				return null;
 			
-			/*
-			 * Making a big switch with the values converted based on type by hand might seem "UnPrOfEsSiOnAl" and a major pain in the ass
-			 * but my only other solution that would not have me do things in multiple places where they shouldn't be involved passing
-			 * classes in the enum and then calling a special method from that class and quite honestly it turned out to be such a crime
-			 * against humanity that I threw the towel. It's not fancy, I get that, please fuck off.
-			 */
-			
 			List<String> stats = new ArrayList<>();
 			stats.add(TextFormatting.YELLOW + I18nUtil.resolveKey("rbmk.heat", ((int)((this.data.getDouble("heat") * 10D)) / 10D) + "°C"));
 			switch(this.type) {
@@ -619,8 +611,6 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 		}
 	}
 
-	// opencomputers interface 
-
 	@Override
 	public String getComponentName() {
 		return "rbmk_console";
@@ -698,7 +688,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 
 			return new Object[] {data_table};
 		}
-		return new Object[] {null};//return null, its better to use this to tell there is nothing rather than a string saying so
+		return new Object[] {null};
 	}
 
 	@Callback(doc = "setLevel(level:double); set retraction of all control rods given 0≤level≤1")

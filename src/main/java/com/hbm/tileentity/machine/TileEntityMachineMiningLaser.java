@@ -6,7 +6,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.gas.BlockGasBase;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.inventory.ShredderRecipes;
@@ -15,8 +14,8 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.util.InventoryUtil;
@@ -24,6 +23,7 @@ import com.hbm.util.InventoryUtil;
 import api.hbm.energy.IEnergyUser;
 import api.hbm.block.IDrillInteraction;
 import api.hbm.block.IMiningDrill;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -45,7 +45,6 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -53,7 +52,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor, IMiningDrill {
+public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver, IMiningDrill {
 
 	public long power;
 	public int age = 0;
@@ -74,9 +73,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 
 	public TileEntityMachineMiningLaser() {
 		super(0);
-		//slot 0: battery
-		//slots 1 - 8: upgrades
-		//slots 9 - 29: output
 		inventory = new ItemStackHandler(30){
 			@Override
 			protected void onContentsChanged(int slot) {
@@ -112,15 +108,12 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			
 			this.trySubscribe(world, pos.add(0, 2, 0), ForgeDirection.UP);
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 
-			//reset progress if the position changes
 			if(lastTargetX != targetX ||
 					lastTargetY != targetY ||
 					lastTargetZ != targetZ)
 				breakProgress = 0;
 
-			//set last positions for interpolation and the like
 			lastTargetX = targetX;
 			lastTargetY = targetY;
 			lastTargetZ = targetZ;
@@ -189,34 +182,45 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			this.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() - 2);
 
 			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setInteger("lastX", lastTargetX);
-			data.setInteger("lastY", lastTargetY);
-			data.setInteger("lastZ", lastTargetZ);
-			data.setInteger("x", targetX);
-			data.setInteger("y", targetY);
-			data.setInteger("z", targetZ);
-			data.setBoolean("beam", beam);
-			data.setBoolean("isOn", isOn);
-			data.setDouble("progress", clientBreakProgress);
 
-			this.networkPack(data, 250);
+			this.breakProgress = clientBreakProgress;
+			networkPackNT(250);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.power = data.getLong("power");
-		this.lastTargetX = data.getInteger("lastX");
-		this.lastTargetY = data.getInteger("lastY");
-		this.lastTargetZ = data.getInteger("lastZ");
-		this.targetX = data.getInteger("x");
-		this.targetY = data.getInteger("y");
-		this.targetZ = data.getInteger("z");
-		this.beam = data.getBoolean("beam");
-		this.isOn = data.getBoolean("isOn");
-		this.breakProgress = data.getDouble("progress");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeInt(this.lastTargetX);
+		buf.writeInt(this.lastTargetY);
+		buf.writeInt(this.lastTargetZ);
+		buf.writeInt(this.targetX);
+		buf.writeInt(this.targetY);
+		buf.writeInt(this.targetZ);
+		buf.writeBoolean(this.beam);
+		buf.writeBoolean(this.isOn);
+		buf.writeDouble(this.breakProgress);
+		buf.writeInt(this.tank.getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.lastTargetX = buf.readInt();
+		this.lastTargetY = buf.readInt();
+		this.lastTargetZ = buf.readInt();
+		this.targetX = buf.readInt();
+		this.targetY = buf.readInt();
+		this.targetZ = buf.readInt();
+		this.beam = buf.readBoolean();
+		this.isOn = buf.readBoolean();
+		this.breakProgress = buf.readDouble();
+		int oilAmount = buf.readInt();
+		if(oilAmount > 0) {
+			tank.setFluid(new FluidStack(ModForgeFluids.oil, oilAmount));
+		} else {
+			tank.setFluid(null);
+		}
 	}
 	
 	private void buildDam() {
@@ -332,7 +336,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 		breakProgress = 0;
 	}
 
-	//hahahahahahahaha he said "suck"
 	private void suckDrops() {
 
 		int rangeHor = 3;
@@ -368,7 +371,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			if(stack == null)
 				item.setDead();
 			else
-				item.setItem(stack.copy()); //copy is not necessary but i'm paranoid due to the kerfuffle of the old drill
+				item.setItem(stack.copy());
 		}
 
 		List<EntityLivingBase> mobs = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(
@@ -400,11 +403,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			for(int z = -range; z <= range; z++) {
 
 				if(world.getBlockState(new BlockPos(x + pos.getX(), targetY, z + pos.getZ())).getMaterial().isLiquid()) {
-					/*targetX = x + xCoord;
-					targetZ = z + zCoord;
-					world.func_147480_a(x + xCoord, targetY, z + zCoord, false);
-					beam = true;*/
-
 					continue;
 				}
 
@@ -694,12 +692,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return tank.drain(maxDrain, doDrain);
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 1)
-			tank.readFromNBT(tags[0]);
 	}
 	
 	@Override
