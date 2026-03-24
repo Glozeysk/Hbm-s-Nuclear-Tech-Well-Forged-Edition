@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -13,6 +14,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -33,7 +35,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver {
+public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver, IControlReceiver {
 
 	public long power;
 	public static final long maxPower = 1000000;
@@ -129,6 +131,19 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 					prevAngle -= 360;
 				}
 			}
+		}
+	}
+
+	@Override
+	public boolean hasPermission(EntityPlayer player) {
+		return player.getDistanceSq(pos) <= 256;
+	}
+
+	@Override
+	public void receiveControl(NBTTagCompound data) {
+		if(data.hasKey("dump")) {
+			tank.setFluid(null);
+			markDirty();
 		}
 	}
 

@@ -1,5 +1,12 @@
 package com.hbm.inventory.gui;
 
+import java.io.IOException;
+
+import com.hbm.handler.threading.PacketThreading;
+import com.hbm.packet.NBTControlPacket;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.FFUtils;
@@ -26,6 +33,25 @@ public class GUIPlasmaHeater extends GuiInfoContainer {
 	}
 
 	@Override
+    protected void mouseClicked(int x, int y, int i) throws IOException {
+        super.mouseClicked(x, y, i);
+
+        if(guiLeft + 49 <= x && guiLeft + 49 + 10 > x && guiTop + 38 < y && guiTop + 38 + 10 >= y) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("dump1", true);
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, microwave.getPos()));
+        }
+
+		if(guiLeft + 153 <= x && guiLeft + 153 + 10 > x && guiTop + 38 < y && guiTop + 38 + 10 >= y) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("dump2", true);
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, microwave.getPos()));
+        }
+    }
+
+	@Override
 	public void drawScreen(int mouseX, int mouseY, float f) {
 		super.drawScreen(mouseX, mouseY, f);
 
@@ -33,6 +59,8 @@ public class GUIPlasmaHeater extends GuiInfoContainer {
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 17, 16, 52, microwave.tanks[1]);
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 98, guiTop + 17, 16, 52, microwave.plasma);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 17, 16, 34, microwave.power, TileEntityMachinePlasmaHeater.maxPower);
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 49, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 153, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 

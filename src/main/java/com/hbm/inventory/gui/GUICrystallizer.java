@@ -1,5 +1,12 @@
 package com.hbm.inventory.gui;
 
+import java.io.IOException;
+
+import com.hbm.handler.threading.PacketThreading;
+import com.hbm.packet.NBTControlPacket;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.forgefluid.FFUtils;
@@ -27,6 +34,18 @@ public class GUICrystallizer extends GuiInfoContainer {
 	}
 
 	@Override
+    protected void mouseClicked(int x, int y, int i) throws IOException {
+        super.mouseClicked(x, y, i);
+
+        if(guiLeft + 5 <= x && guiLeft + 5 + 10 > x && guiTop + 48 < y && guiTop + 48 + 10 >= y) {
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("dump", true);
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, acidomatic.getPos()));
+        }
+    }
+
+	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
 		String name = this.acidomatic.hasCustomInventoryName() ? this.acidomatic.getInventoryName() : I18n.format(this.acidomatic.getInventoryName());
 
@@ -44,6 +63,7 @@ public class GUICrystallizer extends GuiInfoContainer {
 				" -Effectiveness (stacks to level 3)",
 				" -Overdrive (stacks to level 3)"};
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 117, guiTop + 22, 8, 8, guiLeft + 200, guiTop + 45, text);
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 5, guiTop + 48, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 

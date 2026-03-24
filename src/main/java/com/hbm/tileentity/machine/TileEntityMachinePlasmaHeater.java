@@ -7,6 +7,7 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineITER;
 import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IBufPacketReceiver;
@@ -14,6 +15,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -32,7 +34,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase implements ITickable, IFluidHandler, IBufPacketReceiver, IEnergyUser {
+public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase implements ITickable, IFluidHandler, IBufPacketReceiver, IEnergyUser, IControlReceiver {
 
 	public long power;
 	public static final long maxPower = 10000000000L;
@@ -176,6 +178,23 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 			}
 		} else {
 			plasma.setFluid(null);
+		}
+	}
+
+	@Override
+	public boolean hasPermission(EntityPlayer player) {
+		return player.getDistanceSq(pos) <= 256;
+	}
+
+	@Override
+	public void receiveControl(NBTTagCompound data) {
+		if(data.hasKey("dump1")) {
+			tanks[0].setFluid(null);
+			markDirty();
+		}
+		if(data.hasKey("dump2")) {
+			tanks[1].setFluid(null);
+			markDirty();
 		}
 	}
 
