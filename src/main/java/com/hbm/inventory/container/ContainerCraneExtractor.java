@@ -93,17 +93,19 @@ public class ContainerCraneExtractor extends Container  {
                 return ItemStack.EMPTY;
             }
 
-            if(slot <= this.inventorySlots.size() - 1) {
-                if(!this.mergeItemStack(var5, this.inventorySlots.size(), this.inventorySlots.size(), true)) {
+            if(slot >= 9 && slot <= 17) { // buffer -> player inventory
+                if(!this.mergeItemStack(var5, 20, 56, true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if(slot >= 20 && slot <= 55) { // player inventory -> buffer slots
+                if(!this.mergeItemStack(var5, 9, 18, false)) {
                     return ItemStack.EMPTY;
                 }
             }
 
-            if (var5.isEmpty())
-            {
+            if(var5.isEmpty()) {
                 var4.putStack(ItemStack.EMPTY);
-            }
-            else {
+            } else {
                 var4.onSlotChanged();
             }
         }

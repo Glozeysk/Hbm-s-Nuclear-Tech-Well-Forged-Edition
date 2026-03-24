@@ -206,6 +206,7 @@ import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.HbmShaderManager;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ItemModLens;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
 import com.hbm.lib.RefStrings;
@@ -2083,7 +2084,7 @@ public class ClientProxy extends ServerProxy {
             double dist = data.getDouble("dist");
 
             RenderOverhead.queuedMarkers.put(new BlockPos(x, y, z),  new RenderOverhead.Marker(color).setDist(dist).setExpire(expires > 0 ? System.currentTimeMillis() + expires : 0).withLabel(label.isEmpty() ? null : label));
-        }		
+        }
 		
 		if("sound".equals(type)){
 			String mode = data.getString("mode");
@@ -2193,6 +2194,8 @@ public class ClientProxy extends ServerProxy {
 		OBJLoader.INSTANCE.addDomain(RefStrings.MODID);
 		
 		ItemRenderLibrary.init();
+
+		MinecraftForge.EVENT_BUS.register(new ItemModLens.ClientMarkerHandler());
 		
 		ModItems.redstone_sword.setTileEntityItemStackRenderer(ItemRedstoneSwordRender.INSTANCE);
 		ModItems.assembly_template.setTileEntityItemStackRenderer(AssemblyTemplateRender.INSTANCE);

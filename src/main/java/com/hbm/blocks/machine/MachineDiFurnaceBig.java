@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import java.util.List;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
@@ -7,15 +9,20 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.TileEntityProxyInventory;
 import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceBig;
+import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 public class MachineDiFurnaceBig extends BlockDummyable {
@@ -61,6 +68,16 @@ public class MachineDiFurnaceBig extends BlockDummyable {
 	@Override
 	public int[] getDimensions() {
 		return new int[] { 3, 0, 1, 1, 1, 1 };
+	}
+
+	@Override
+	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+		list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.difurnacefueltype"));
+		list.add(TextFormatting.LIGHT_PURPLE + I18nUtil.resolveKey("fluid.nitan"));
+		list.add(TextFormatting.GREEN + I18nUtil.resolveKey("fluid.balefire"));
+		list.add(TextFormatting.LIGHT_PURPLE + I18nUtil.resolveKey("fluid.sparkfuel"));
+		list.add(TextFormatting.DARK_PURPLE + I18nUtil.resolveKey("fluid.ic2uu_matter"));
+		
 	}
 	
 	@Override

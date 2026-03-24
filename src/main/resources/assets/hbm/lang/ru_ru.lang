@@ -806,6 +806,7 @@ desc.fortune=Удача
 desc.fuelamnt=Тип топлива:
 desc.fuelcon=Потребление топлива:
 desc.fueltype=Тип топлива:
+desc.difurnacefueltype=В качестве топлива принимает:
 desc.fuse=Время взрыва:
 desc.fusioncore1=Заряжает все надетые элементы брони на %s HE
 desc.fusioncore2=Требует надеть полный сет механизированной брони

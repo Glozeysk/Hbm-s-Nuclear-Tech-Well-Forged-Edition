@@ -44,13 +44,13 @@ public class ContainerCraneInserter extends Container {
             ItemStack var5 = var4.getStack();
             var3 = var5.copy();
 
-            if (par2 <= 3) {
-                if (!this.mergeItemStack(var5, 4, this.inventorySlots.size(), true))
+            if (par2 <= 20) { // machine slots (0-20) -> player inventory
+                if (!this.mergeItemStack(var5, 21, this.inventorySlots.size(), true))
                 {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(var5, 0, 3, false))
+            else if (!this.mergeItemStack(var5, 0, 21, false)) // player inventory -> machine slots
             {
                 return ItemStack.EMPTY;
             }

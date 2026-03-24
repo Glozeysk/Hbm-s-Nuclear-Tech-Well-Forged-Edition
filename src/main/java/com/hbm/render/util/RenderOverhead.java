@@ -198,7 +198,7 @@ public class RenderOverhead {
 	}
 
 	public static final HashMap<BlockPos, Marker> queuedMarkers = new HashMap<>();
-	private static final HashMap<BlockPos, Marker> markers = new HashMap<>();
+	public static final HashMap<BlockPos, Marker> markers = new HashMap<>();
 
 	public static void renderMarkers(float partialTicks) {
 

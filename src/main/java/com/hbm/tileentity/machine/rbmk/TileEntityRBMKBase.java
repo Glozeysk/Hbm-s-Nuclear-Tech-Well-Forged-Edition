@@ -134,14 +134,16 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	}
 
 	private void jump(){
-		if(this.heat <= MachineConfig.rbmkJumpTemp && !falling)
+		double jumpTemp = isHeatproof() ? MachineConfig.rbmkJumpTemp * 2D : MachineConfig.rbmkJumpTemp;
+
+		if(this.heat <= jumpTemp && !falling)
 			return;
 
 		if(!falling){
-			if(this.heat > MachineConfig.rbmkJumpTemp){
-				if(this.jumpheight > 0 || world.rand.nextInt((int)(25D*maxHeat()/(this.heat-MachineConfig.rbmkJumpTemp+200D))+1) == 0){
-					double change = (this.heat-MachineConfig.rbmkJumpTemp)*0.0002D;
-					double heightLimit = (this.heat-MachineConfig.rbmkJumpTemp)*0.002D;
+			if(this.heat > jumpTemp){
+				if(this.jumpheight > 0 || world.rand.nextInt((int)(25D*maxHeat()/(this.heat-jumpTemp+200D))+1) == 0){
+					double change = (this.heat-jumpTemp)*0.0002D;
+					double heightLimit = (this.heat-jumpTemp)*0.002D;
 
 					this.jumpheight = this.jumpheight + change;
 					

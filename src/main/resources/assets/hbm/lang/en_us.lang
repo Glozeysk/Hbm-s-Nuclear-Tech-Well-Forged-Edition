@@ -774,6 +774,7 @@ desc.fortune=Fortune
 desc.fuelamnt=Fuel amount:
 desc.fuelcon=Fuel consumption:
 desc.fueltype=Fuel type:
+desc.difurnacefueltype=Accepts as fuel:
 desc.fuse=Fuse:
 desc.fusioncore1=Charges all worn armor pieces by %s HE
 desc.fusioncore2=Requires full electric set to be worn
