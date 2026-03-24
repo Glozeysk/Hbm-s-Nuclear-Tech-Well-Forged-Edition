@@ -7,20 +7,20 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IBatteryItem;
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.items.CapabilityItemHandler;
 
-public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineBase implements ITickable, IEnergyUser {
+public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public long power = 0;
 	public int process = 0;
@@ -110,10 +110,7 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 				process = 0;
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setInteger("progress", process);
-			this.networkPack(data, 50);
+			networkPackNT(50);
 			
 			detectAndSendChanges();
 		} else {
@@ -149,11 +146,17 @@ public class TileEntityMachineSchrabidiumTransmutator extends TileEntityMachineB
 			audio = null;
     	}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.power = data.getLong("power");
-		this.process = data.getInteger("progress");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeInt(this.process);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.process = buf.readInt();
 	}
 	
 	private long detectPower;

@@ -2,19 +2,17 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -30,12 +28,12 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 1000000;
@@ -118,12 +116,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 				}
 			}
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-
-			NBTTagCompound data = new NBTTagCompound();
-			data.setShort("progress", progress);
-			data.setLong("power", power);
-			this.networkPack(data, 25);
+			networkPackNT(25);
 		} else {
 
 			prevAngle = angle;
@@ -160,16 +153,24 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.power = data.getLong("power");
-		this.progress = data.getShort("progress");
+	public void serialize(ByteBuf buf) {
+		buf.writeShort(this.progress);
+		buf.writeLong(this.power);
+		ByteBufUtils.writeTag(buf, tank.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.progress = buf.readShort();
+		this.power = buf.readLong();
+		tank.readFromNBT(ByteBufUtils.readTag(buf));
 	}
 
 	private void processItem() {
 
 		ItemStack result = CrystallizerRecipes.getOutputItem(inventory.getStackInSlot(0));
 
-		if(result == null) //never happens but you can't be sure enough
+		if(result == null)
 			return;
 
 		if(inventory.getStackInSlot(2).isEmpty())
@@ -177,17 +178,14 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 		else if(inventory.getStackInSlot(2).getCount() + result.getCount() <= inventory.getStackInSlot(2).getMaxStackSize())
 			inventory.getStackInSlot(2).grow(result.getCount());
 
-		//Drillgon200: I think this does the same thing as decrStackSize?
 		float freeChance = this.getFreeChance();
 
 		if(freeChance == 0 || freeChance < world.rand.nextFloat())
 			inventory.getStackInSlot(0).shrink(1);
-		//this.decrStackSize(0, 1);
 	}
 
 	private boolean canProcess() {
 
-		//Is there no input?
 		if(inventory.getStackInSlot(0).isEmpty())
 			return false;
 
@@ -196,13 +194,10 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
 		ItemStack result = CrystallizerRecipes.getOutputItem(inventory.getStackInSlot(0));
 
-		//Or output?
 		if(result == null)
 			return false;
-		//Does the output not match?
 		if(!inventory.getStackInSlot(2).isEmpty() && (inventory.getStackInSlot(2).getItem() != result.getItem() || inventory.getStackInSlot(2).getItemDamage() != result.getItemDamage()))
 			return false;
-		//Or is the output slot already full?
 		if(inventory.getStackInSlot(2).getCount() >= inventory.getStackInSlot(2).getMaxStackSize())
 			return false;
 		if(inventory.getStackInSlot(0).getItem() == ModItems.powder_borax && inventory.getStackInSlot(2).getCount() >= 63)
@@ -411,12 +406,5 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 1) {
-			tank.readFromNBT(tags[0]);
-		}
 	}
 }

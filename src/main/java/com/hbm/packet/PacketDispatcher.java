@@ -101,8 +101,6 @@ public class PacketDispatcher {
         wrapper.registerMessage(TETeslaPacket.Handler.class, TETeslaPacket.class, i++, Side.CLIENT);
         //Aux Particle Packet, New Technology: like the APP but with NBT
         wrapper.registerMessage(AuxParticlePacketNT.Handler.class, AuxParticlePacketNT.class, i++, Side.CLIENT);
-        //Packet to send NBT data to tile entities
-        wrapper.registerMessage(NBTPacket.Handler.class, NBTPacket.class, i++, Side.CLIENT);
         //Packet to send sat info to players
         wrapper.registerMessage(SatPanelPacket.Handler.class, SatPanelPacket.class, i++, Side.CLIENT);
         //Signals server to do coord based satellite stuff

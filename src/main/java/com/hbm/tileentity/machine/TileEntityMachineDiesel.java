@@ -1,26 +1,22 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.lib.Library;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.EngineRecipes.FuelGrade;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyGenerator;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -29,10 +25,10 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.items.CapabilityItemHandler;
 
-public class TileEntityMachineDiesel extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineDiesel extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public int soundCycle = 0;
@@ -100,7 +96,6 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 			}
 			this.sendPower(world, pos);
 
-
 			//Tank Management
 			if(this.inputValidForTank(-1, 0))
 				if(FFUtils.fillFromFluidContainer(inventory, tank, 0, 1))
@@ -119,19 +114,24 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 			generate();
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("power", (int) power);
-			data.setInteger("powerCap", (int) powerCap);
-			this.networkPack(data, 50);
-			
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			networkPackNT(50);
 		}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		power = data.getInteger("power");
-		powerCap = data.getInteger("powerCap");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeLong(this.powerCap);
+		ByteBufUtils.writeTag(buf, tank.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.powerCap = buf.readLong();
+		tank.readFromNBT(ByteBufUtils.readTag(buf));
+		if(tank.getFluid() != null)
+			tankType = tank.getFluid().getFluid();
 	}
 	
 	public boolean hasAcceptableFuel() {
@@ -174,6 +174,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 			}
 		}
 	}
+
 	protected boolean inputValidForTank(int tank, int slot){
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			if(isValidFluid(FluidUtil.getFluidContained(inventory.getStackInSlot(slot)))){
@@ -210,15 +211,6 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 1){
-			return;
-		} else {
-			tank.readFromNBT(tags[0]);
-		}
 	}
 	
 	@Override

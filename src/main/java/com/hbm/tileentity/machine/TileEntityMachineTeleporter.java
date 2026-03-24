@@ -3,12 +3,11 @@ package com.hbm.tileentity.machine;
 import java.util.List;
 
 import com.hbm.lib.ModDamageSource;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,15 +18,12 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements ITickable, IEnergyUser, INBTPacketReceiver {
+public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public long power = 0;
 	public BlockPos target = null;
 	public boolean linked = false;
-	public boolean prevLinked = false;
-	public byte packageTimer = 0;
 	public static final int consumption = 100000000;
 	public static final int maxPower = 1000000000;
 
@@ -62,7 +58,6 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
 	@Override
 	public void update() {
 		boolean b0 = false;
-		packageTimer++;
 		if(!this.world.isRemote) {
 			this.updateStandardConnections(world, pos);
 			List<Entity> entities = this.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.getX() - 0.25, pos.getY(), pos.getZ() - 0.25, pos.getX() + 0.75, pos.getY() + 2, pos.getZ() + 0.75));
@@ -74,39 +69,37 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
 					}
 				}
 
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-			networkPack();
-			prevLinked = linked;
+			networkPackNT(150);
 		}
 
 		if(b0)
 			world.spawnParticle(EnumParticleTypes.PORTAL, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0.0D, 0.1D, 0.5D);
 	}
 
-	public void networkPack() {
-		if(linked != prevLinked || packageTimer == 0){
-			NBTTagCompound data = new NBTTagCompound();
-			if(this.target != null){
-				data.setInteger("targetX", this.target.getX());
-				data.setInteger("targetY", this.target.getY());
-				data.setInteger("targetZ", this.target.getZ());
-			}
-			data.setBoolean("linked", this.linked);
-			INBTPacketReceiver.networkPack(this, data, 150);
-			packageTimer = 40;
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeBoolean(this.linked);
+		buf.writeBoolean(this.target != null);
+		if(this.target != null) {
+			buf.writeInt(this.target.getX());
+			buf.writeInt(this.target.getY());
+			buf.writeInt(this.target.getZ());
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		if(data.hasKey("targetX")){
-			this.target = new BlockPos(data.getInteger("targetX"), data.getInteger("targetY"), data.getInteger("targetZ"));
-		}
-		if(data.hasKey("linked")){
-			this.linked = data.getBoolean("linked");
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.linked = buf.readBoolean();
+		boolean hasTarget = buf.readBoolean();
+		if(hasTarget) {
+			this.target = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+		} else {
+			this.target = null;
 		}
 	}
-	
+
 	public void teleport(Entity entity) {
 
 		if (this.power < consumption)

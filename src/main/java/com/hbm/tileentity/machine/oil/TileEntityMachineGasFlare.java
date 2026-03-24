@@ -7,7 +7,6 @@ import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.FluidCombustionRecipes;
 import com.hbm.inventory.UpgradeManager;
 import com.hbm.inventory.container.ContainerMachineGasFlare;
@@ -18,12 +17,11 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -44,12 +42,12 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 
-public class TileEntityMachineGasFlare extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor, IGUIProvider, IControlReceiver {
+public class TileEntityMachineGasFlare extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IGUIProvider, IControlReceiver, IBufPacketReceiver {
 	public long power;
 	public static final long maxPower = 1000000;
 	public Fluid tankType;
@@ -172,14 +170,8 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 			
 			power = Library.chargeItemsFromTE(inventory, 0, power, maxPower);
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("isOn", isOn);
-			data.setBoolean("doesBurn", doesBurn);
-			data.setString("tankType", tankType.getName());
-			this.networkPack(data, 25);
+			networkPackNT(25);
 
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
 			if(prevPower != power || prevAmount != tank.getFluidAmount() || needsUpdate){
 				markDirty();
 			}
@@ -187,10 +179,38 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.isOn = nbt.getBoolean("isOn");
-		this.doesBurn = nbt.getBoolean("doesBurn");
-		this.tankType = FluidRegistry.getFluid(nbt.getString("tankType"));
+	public void serialize(ByteBuf buf) {
+		buf.writeBoolean(isOn);
+		buf.writeBoolean(doesBurn);
+		ByteBufUtils.writeUTF8String(buf, tankType.getName());
+		buf.writeLong(power);
+		FluidStack fs = tank.getFluid();
+		buf.writeBoolean(fs != null);
+		if(fs != null) {
+			ByteBufUtils.writeUTF8String(buf, fs.getFluid().getName());
+			buf.writeInt(fs.amount);
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.isOn = buf.readBoolean();
+		this.doesBurn = buf.readBoolean();
+		this.tankType = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+		this.power = buf.readLong();
+		boolean hasFluid = buf.readBoolean();
+		if(hasFluid) {
+			String fluidName = ByteBufUtils.readUTF8String(buf);
+			int amount = buf.readInt();
+			Fluid fluid = FluidRegistry.getFluid(fluidName);
+			if(fluid != null) {
+				tank.setFluid(new FluidStack(fluid, amount));
+			} else {
+				tank.setFluid(null);
+			}
+		} else {
+			tank.setFluid(null);
+		}
 	}
 
 	@Override
@@ -282,15 +302,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 1) {
-			return;
-		} else {
-			tank.readFromNBT(tags[0]);
-		}
 	}
 	
 	@Override

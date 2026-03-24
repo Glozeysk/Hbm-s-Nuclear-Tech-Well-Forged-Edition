@@ -13,9 +13,11 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.TileEntityMachineChemplantBase.TypedFluidTank;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -28,10 +30,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
@@ -42,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase implements IGUIProvider {
+public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase implements IGUIProvider, IBufPacketReceiver {
 	float rotSpeed;
 	public float rot;
 	public float prevRot;
@@ -136,23 +141,8 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 				this.speed = 1;
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", this.power);
-			data.setIntArray("progress", this.progress);
-			data.setIntArray("maxProgress", this.maxProgress);
-			data.setBoolean("isProgressing", isProgressing);
-			data.setTag("tanks", serializeTanks());
-
-			NBTTagCompound tankWater = new NBTTagCompound();
-			water.writeToNBT(tankWater);
-			data.setTag("water", tankWater);
-
-			NBTTagCompound tankSteam = new NBTTagCompound();
-			steam.writeToNBT(tankSteam);
-			data.setTag("steam", tankSteam);
-
 			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
-			this.networkPack(data, 150);
+			networkPackNT(150);
 		} else {
 			float maxSpeed = 30F;
 
@@ -194,15 +184,80 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.power = nbt.getLong("power");
-		this.progress = nbt.getIntArray("progress");
-		this.maxProgress = nbt.getIntArray("maxProgress");
-		this.isProgressing = nbt.getBoolean("isProgressing");
-		this.deserializeTanks(nbt.getTagList("tanks", 10));
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeBoolean(this.isProgressing);
 
-		water.readFromNBT(nbt.getCompoundTag("water"));
-		steam.readFromNBT(nbt.getCompoundTag("steam"));
+		buf.writeInt(this.progress.length);
+		for(int p : this.progress) {
+			buf.writeInt(p);
+		}
+
+		buf.writeInt(this.maxProgress.length);
+		for(int mp : this.maxProgress) {
+			buf.writeInt(mp);
+		}
+
+		buf.writeInt(this.tanks.length);
+		for(TypedFluidTank tank : this.tanks) {
+			ByteBufUtils.writeUTF8String(buf, tank.type != null ? tank.type.getName() : "");
+			buf.writeInt(tank.tank.getFluidAmount());
+		}
+
+		buf.writeInt(water.tank.getFluidAmount());
+		buf.writeInt(steam.tank.getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.isProgressing = buf.readBoolean();
+
+		int progressLen = buf.readInt();
+		this.progress = new int[progressLen];
+		for(int i = 0; i < progressLen; i++) {
+			this.progress[i] = buf.readInt();
+		}
+
+		int maxProgressLen = buf.readInt();
+		this.maxProgress = new int[maxProgressLen];
+		for(int i = 0; i < maxProgressLen; i++) {
+			this.maxProgress[i] = buf.readInt();
+		}
+
+		int tankCount = buf.readInt();
+		for(int i = 0; i < tankCount; i++) {
+			String typeName = ByteBufUtils.readUTF8String(buf);
+			int amount = buf.readInt();
+			if(i < this.tanks.length) {
+				if(!typeName.isEmpty()) {
+					Fluid fluid = FluidRegistry.getFluid(typeName);
+					this.tanks[i].type = fluid;
+					if(fluid != null && amount > 0) {
+						this.tanks[i].tank.setFluid(new FluidStack(fluid, amount));
+					} else {
+						this.tanks[i].tank.setFluid(null);
+					}
+				} else {
+					this.tanks[i].type = null;
+					this.tanks[i].tank.setFluid(null);
+				}
+			}
+		}
+
+		int waterAmount = buf.readInt();
+		if(waterAmount > 0) {
+			water.tank.setFluid(new FluidStack(water.type, waterAmount));
+		} else {
+			water.tank.setFluid(null);
+		}
+
+		int steamAmount = buf.readInt();
+		if(steamAmount > 0) {
+			steam.tank.setFluid(new FluidStack(steam.type, steamAmount));
+		} else {
+			steam.tank.setFluid(null);
+		}
 	}
 
 	private int getWaterRequired() {

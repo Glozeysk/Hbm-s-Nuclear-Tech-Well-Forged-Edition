@@ -88,6 +88,9 @@ public class GUIITER extends GuiInfoContainer {
 		int j = (int)iter.getProgressScaled(17);
 		drawTexturedModalRect(guiLeft + 44, guiTop + 22, 176, 18, j, 7);
 
+		int k = (int)iter.getGrowProgressScaled(17);
+		drawTexturedModalRect(guiLeft + 116, guiTop + 22, 193, 18, k, 7);
+
 		for(int t = 0; t < 2; t++) {
 			FFUtils.drawLiquid(iter.tanks[t], guiLeft, guiTop, zLevel, 16, 52, 26 + 108 * t, 134);
 		}

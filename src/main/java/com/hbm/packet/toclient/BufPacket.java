@@ -52,7 +52,6 @@ public class BufPacket extends PrecompiledPacket {
         @SideOnly(Side.CLIENT)
         public IMessage onMessage(BufPacket m, MessageContext ctx) {
             if (m.buf == null) throw new NullPointerException();
-            MainRegistry.logger.info("BufPacket onMessage: " + m);
             try {
                 if (Minecraft.getMinecraft().world == null) return null;
                 TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));

@@ -8,20 +8,19 @@ import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.handler.MissileStruct;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemSoyuz;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,11 +36,10 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 1000000;
@@ -81,8 +79,6 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
 			if(isValidFluidForTank(6, 1))
 				FFUtils.fillFromFluidContainer(inventory, tanks[1], 6, 7);
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
-			
 			power = Library.chargeTEFromItems(inventory, 8, power, maxPower);
 			
 			if(!starting || !canLaunch()) {
@@ -97,13 +93,8 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
 			} else {
 				liftOff();
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setByte("mode", mode);
-			data.setBoolean("starting", starting);
-			data.setByte("type", this.getType());
-			networkPack(data, 250);
+
+			networkPackNT(250);
 		}
 		
 		if(world.isRemote) {
@@ -161,15 +152,29 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
 			return true;
 		return false;
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		power = data.getLong("power");
-		mode = data.getByte("mode");
-		starting = data.getBoolean("starting");
-		rocketType = data.getByte("type");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeByte(this.mode);
+		buf.writeBoolean(this.starting);
+		buf.writeByte(this.getType());
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
 	}
-	
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.mode = buf.readByte();
+		this.starting = buf.readBoolean();
+		this.rocketType = buf.readByte();
+		int amt0 = buf.readInt();
+		tanks[0].setFluid(amt0 > 0 ? new FluidStack(ModForgeFluids.kerosene, amt0) : null);
+		int amt1 = buf.readInt();
+		tanks[1].setFluid(amt1 > 0 ? new FluidStack(ModForgeFluids.oxygen, amt1) : null);
+	}
+
 	@Override
 	public void onChunkUnload() {
 		if(audio != null) {
@@ -419,14 +424,6 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
 		return maxPower;
 	}
 
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 2){
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-		}
-	}
-	
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){

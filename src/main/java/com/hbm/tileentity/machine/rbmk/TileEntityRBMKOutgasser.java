@@ -1,26 +1,21 @@
 package com.hbm.tileentity.machine.rbmk;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RBMKOutgasserRecipes;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIcon;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
 
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -33,14 +28,15 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IFluidHandler, ITankPacketAcceptor, IRBMKLoadable {
+public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IFluidHandler, IBufPacketReceiver, IRBMKLoadable {
 
 	public FluidTank gas;
 	public Fluid gasType;
 	public double progress = 0;
 	public double usedFlux = 0;
+	public double lastUsedFlux = 0;
 	public int duration = 10000;
 
 	public TileEntityRBMKOutgasser() {
@@ -63,10 +59,10 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 	public void update() {
 		
 		if(!world.isRemote) {
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, gas), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
-			NBTTagCompound type = new NBTTagCompound();
-			type.setString("gasType", gasType.getName());
-			networkPack(type, 50);
+			lastUsedFlux = usedFlux;
+			usedFlux = 0;
+			
+			networkPackNT(50);
 			
 			if(world.getTotalWorldTime() % 10 == 0)
 				fillFluidInit(gas);
@@ -78,14 +74,34 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		
 		super.update();
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound nbt){
-		if(nbt.hasKey("steamType")){
-			this.gasType = FluidRegistry.getFluid(nbt.getString("gasType"));
-		} else {
-			super.networkUnpack(nbt);
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		ByteBufUtils.writeUTF8String(buf, gasType.getName());
+		buf.writeInt(gas.getFluidAmount());
+		buf.writeDouble(progress);
+		buf.writeInt(duration);
+		buf.writeDouble(lastUsedFlux);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		String fluidName = ByteBufUtils.readUTF8String(buf);
+		this.gasType = FluidRegistry.getFluid(fluidName);
+		if(this.gasType == null) {
+			this.gasType = ModForgeFluids.tritium;
 		}
+		int gasAmount = buf.readInt();
+		if(gasAmount > 0) {
+			gas.setFluid(new FluidStack(gasType, gasAmount));
+		} else {
+			gas.setFluid(null);
+		}
+		this.progress = buf.readDouble();
+		this.duration = buf.readInt();
+		this.usedFlux = buf.readDouble();
 	}
 
 	@Override
@@ -108,10 +124,8 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 			ContaminationUtil.neutronActivateItem(inventory.getStackInSlot(0), (float)(flux * 0.001), 1F);
 			this.markDirty();
 		}
-		this.usedFlux = flux;
+		this.usedFlux += flux;
 	}
-	
-	
 	
 	private boolean canProcess() {
 		
@@ -134,7 +148,6 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		return inventory.getStackInSlot(1).getItem() == output.getItem() && inventory.getStackInSlot(1).getItemDamage() == output.getItemDamage() && inventory.getStackInSlot(1).getCount() + output.getCount() <= inventory.getStackInSlot(1).getMaxStackSize();
 	}
 
-	
 	private void process() {
 		
 		ItemStack output = RBMKOutgasserRecipes.getOutput(inventory.getStackInSlot(0));
@@ -180,7 +193,6 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		FFUtils.fillFluid(this, tank, world, new BlockPos(x, y, z), tank.getCapacity());
 	}
 	
-	
 	@Override
 	public void onMelt(int reduce) {
 		
@@ -203,7 +215,7 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		NBTTagCompound data = new NBTTagCompound();
 		data.setInteger("gas", this.gas.getFluidAmount());
 		data.setInteger("maxGas", this.gas.getCapacity());
-		data.setDouble("usedFlux", this.usedFlux);
+		data.setDouble("usedFlux", this.lastUsedFlux);
 		data.setDouble("progress", this.progress);
 		data.setDouble("maxProgress", this.duration);
 		return data;
@@ -237,13 +249,6 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 	@Override
 	public boolean canExtractItem(int i, ItemStack itemStack, int j) {
 		return i == 1;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags){
-		if(tags.length == 1){
-			gas.readFromNBT(tags[0]);
-		}
 	}
 
 	@Override
@@ -305,12 +310,6 @@ public class TileEntityRBMKOutgasser extends TileEntityRBMKSlottedBase implement
 		this.markDirty();
 	}
 
-	// @Override
-	// public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-	// 	return new int[] { 0, 1 };
-	// }
-
-	// control panel
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = super.getQueryData();

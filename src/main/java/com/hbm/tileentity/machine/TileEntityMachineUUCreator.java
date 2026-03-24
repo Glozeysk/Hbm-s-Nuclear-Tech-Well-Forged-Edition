@@ -1,15 +1,14 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.interfaces.ITankPacketAcceptor;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
@@ -20,11 +19,11 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineUUCreator extends TileEntityMachineBase implements IEnergyUser, IFluidHandler, ITickable, ITankPacketAcceptor {
+public class TileEntityMachineUUCreator extends TileEntityMachineBase implements IEnergyUser, IFluidHandler, ITickable, IBufPacketReceiver {
 	
 	public int[] log = new int[20];
 	public static final long rfPerMbOfUU = 1_000_000L;
@@ -74,13 +73,8 @@ public class TileEntityMachineUUCreator extends TileEntityMachineBase implements
 			this.log[this.log.length-1] = loggedProducedMB;
 
 			producedmb = getAvgUU();
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] { tank }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("isOn", isOn);
-			data.setLong("power", power);
-			data.setDouble("uuMB", producedmb);
-			this.networkPack(data, 250);
+			networkPackNT(250);
 		}
 	}
 
@@ -93,10 +87,19 @@ public class TileEntityMachineUUCreator extends TileEntityMachineBase implements
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.isOn = data.getBoolean("isOn");
-		this.power = data.getLong("power");
-		this.producedmb = data.getDouble("uuMB");
+	public void serialize(ByteBuf buf) {
+		buf.writeBoolean(this.isOn);
+		buf.writeLong(this.power);
+		buf.writeDouble(this.producedmb);
+		ByteBufUtils.writeTag(buf, tank.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.isOn = buf.readBoolean();
+		this.power = buf.readLong();
+		this.producedmb = buf.readDouble();
+		tank.readFromNBT(ByteBufUtils.readTag(buf));
 	}
 
 	@Override
@@ -177,12 +180,6 @@ public class TileEntityMachineUUCreator extends TileEntityMachineBase implements
 		return nbt;
 	}
 
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 1)
-			tank.readFromNBT(tags[0]);
-	}
-
 	//FF stuff
 	@Override
 	public IFluidTankProperties[] getTankProperties(){
@@ -198,9 +195,9 @@ public class TileEntityMachineUUCreator extends TileEntityMachineBase implements
 	}
 
 	@Override
-		public int fill(FluidStack resource, boolean doFill) {
-			return 0;
-		}
+	public int fill(FluidStack resource, boolean doFill) {
+		return 0;
+	}
 
 	@Override
 	public FluidStack drain(FluidStack resource, boolean doDrain) {

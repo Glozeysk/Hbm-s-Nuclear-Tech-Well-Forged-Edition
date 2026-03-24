@@ -2,17 +2,15 @@ package com.hbm.tileentity.network;
 
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.tileentity.INBTPacketReceiver;
-import com.hbm.packet.NBTPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ITickable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-public class TileEntityRadioTorchBase extends TileEntity implements ITickable, INBTPacketReceiver, IControlReceiver {
+public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements ITickable, IBufPacketReceiver, IControlReceiver {
 
 	/** channel we're broadcasting on/listening to */
 	public String channel = "";
@@ -31,18 +29,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements ITickable, I
 	public void update() {
 
 		if(!world.isRemote) {
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("isPolling", polling);
-			data.setBoolean("hasMapping", customMap);
-			if(channel != null) 
-				data.setString("channel", channel);
-			for(int i = 0; i < 16; i++) {
-				if(mapping[i] != null) {
-					data.setString("mapping" + i, mapping[i]);
-				}
-			}
-			this.networkPack(data, 50);
+			networkPackNT(50);
 		}
 	}
 
@@ -65,7 +52,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements ITickable, I
 		nbt.setBoolean("hasMapping", customMap);
 		nbt.setInteger("lastPower", lastState);
 		nbt.setLong("lastTime", lastUpdate);
-		if(channel != null) 
+		if(channel != null)
 			nbt.setString("channel", channel);
 		for(int i = 0; i < 16; i++) {
 			if(mapping[i] != null) {
@@ -76,19 +63,37 @@ public class TileEntityRadioTorchBase extends TileEntity implements ITickable, I
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.polling = nbt.getBoolean("isPolling");
-		this.customMap = nbt.getBoolean("hasMapping");
-		this.channel = nbt.getString("channel");
-		for(int i = 0; i < 16; i++)
-			this.mapping[i] = nbt.getString("mapping" + i);
+	public void serialize(ByteBuf buf) {
+		buf.writeBoolean(this.polling);
+		buf.writeBoolean(this.customMap);
+		writeString(buf, this.channel != null ? this.channel : "");
+		for(int i = 0; i < 16; i++) {
+			writeString(buf, this.mapping[i] != null ? this.mapping[i] : "");
+		}
 	}
 
-	public void networkPack(NBTTagCompound nbt, int range) {
-		if(!world.isRemote)
-			PacketDispatcher.wrapper.sendToAllAround(new NBTPacket(nbt, pos), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.polling = buf.readBoolean();
+		this.customMap = buf.readBoolean();
+		this.channel = readString(buf);
+		for(int i = 0; i < 16; i++) {
+			this.mapping[i] = readString(buf);
+		}
 	}
-	
+
+	private static void writeString(ByteBuf buf, String s) {
+		byte[] bytes = s.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		buf.writeShort(bytes.length);
+		buf.writeBytes(bytes);
+	}
+
+	private static String readString(ByteBuf buf) {
+		int len = buf.readShort();
+		byte[] bytes = new byte[len];
+		buf.readBytes(bytes);
+		return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+	}
 
 	@Override
 	public boolean hasPermission(EntityPlayer player) {
@@ -97,18 +102,18 @@ public class TileEntityRadioTorchBase extends TileEntity implements ITickable, I
 
 	@Override
 	public void receiveControl(NBTTagCompound data) {
-		if(data.hasKey("isPolling")) 
+		if(data.hasKey("isPolling"))
 			this.polling = data.getBoolean("isPolling");
-		if(data.hasKey("hasMapping")) 
+		if(data.hasKey("hasMapping"))
 			this.customMap = data.getBoolean("hasMapping");
-		if(data.hasKey("channel")) 
+		if(data.hasKey("channel"))
 			this.channel = data.getString("channel");
 		for(int i = 0; i < 16; i++) {
 			if(data.hasKey("mapping" + i)) {
 				this.mapping[i] = data.getString("mapping" + i);
 			}
 		}
-		
+
 		this.markDirty();
 	}
 }

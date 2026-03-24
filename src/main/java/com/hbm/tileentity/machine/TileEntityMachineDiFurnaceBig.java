@@ -5,16 +5,13 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.entity.particle.EntityGasFlameFX;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.DiFurnaceRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -37,11 +34,11 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor, INBTPacketReceiver {
+public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver {
 
 	public long power = 0;
 	public int process = 0;
@@ -366,12 +363,8 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 				process = 0;
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean("isRunning", isRunning);
-			data.setShort("process", (short) process);
-			INBTPacketReceiver.networkPack(this, data, 15);
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			networkPackNT(15);
+
 			if(prevPower != power || prevAmount != tank.getFluidAmount()){
 				markDirty();
 			}
@@ -421,9 +414,21 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.isRunning = nbt.getBoolean("isRunning");
-		this.process = nbt.getShort("process");
+	public void serialize(ByteBuf buf) {
+		buf.writeBoolean(this.isRunning);
+		buf.writeShort(this.process);
+		buf.writeLong(this.power);
+		ByteBufUtils.writeTag(buf, tank.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.isRunning = buf.readBoolean();
+		this.process = buf.readShort();
+		this.power = buf.readLong();
+		tank.readFromNBT(ByteBufUtils.readTag(buf));
+		if(tank.getFluid() != null)
+			tankType = tank.getFluid().getFluid();
 	}
 
 	protected boolean inputValidForTank(int slot){
@@ -506,15 +511,6 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
-	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length != 1) {
-			return;
-		} else {
-			tank.readFromNBT(tags[0]);
-		}
 	}
 	
 	@Override

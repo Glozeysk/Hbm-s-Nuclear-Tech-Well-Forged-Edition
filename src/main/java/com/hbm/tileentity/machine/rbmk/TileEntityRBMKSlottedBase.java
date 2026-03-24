@@ -1,8 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.lib.ItemStackHandlerWrapper;
-import com.hbm.packet.NBTPacket;
-import com.hbm.packet.PacketDispatcher;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -10,7 +8,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
@@ -25,35 +22,11 @@ public abstract class TileEntityRBMKSlottedBase extends TileEntityRBMKActiveBase
 				markDirty();
 				super.onContentsChanged(slot);
 			}
-			
-			// @Override
-			// public boolean isItemValid(int slot, ItemStack itemStack) {
-			// 	return isItemValidForSlot(slot, itemStack);
-			// }
-
-			// @Override
-			// public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-			// 	if(canInsertItem(slot, stack, stack.getCount()))
-			// 		return super.insertItem(slot, stack, simulate);
-			// 	return stack;
-			// }
-
-			// @Override
-			// public ItemStack extractItem(int slot, int amount, boolean simulate) {
-			// 	if(canExtractItem(slot, inventory.getStackInSlot(slot), amount))
-			// 		return super.extractItem(slot, amount, simulate);
-			// 	return ItemStack.EMPTY;
-			// }
 		};
 	}
 
 	public int getGaugeScaled(int i, FluidTank tank) {
 		return tank.getFluidAmount() * i / tank.getCapacity();
-	}
-
-	public void networkPack(NBTTagCompound nbt, int range) {
-		if(!world.isRemote)
-			PacketDispatcher.wrapper.sendToAllAround(new NBTPacket(nbt, pos), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
 	}
 
 	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
@@ -67,10 +40,6 @@ public abstract class TileEntityRBMKSlottedBase extends TileEntityRBMKActiveBase
 		}else{
 			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <=128;
 		}
-	}
-
-	public void networkUnpack(NBTTagCompound nbt) {
-		super.networkUnpack(nbt);
 	}
 
 	public void handleButtonPacket(int value, int meta) {
@@ -134,15 +103,4 @@ public abstract class TileEntityRBMKSlottedBase extends TileEntityRBMKActiveBase
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) || super.hasCapability(capability, facing);
 	}
-
-	// @Override
-	// public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-	// 	return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
-	// }
-	
-	// @Override
-	// public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-	// 	return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : 
-	// 		super.getCapability(capability, facing);
-	// }
 }

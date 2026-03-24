@@ -5,7 +5,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
@@ -23,7 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 
-public class TileEntityCoreAdvanced extends TileEntityMachineBase implements ITickable, IEnergyUser, INBTPacketReceiver {
+public class TileEntityCoreAdvanced extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
 	public int progress = 0;
 	public int progressStep = 1;

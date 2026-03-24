@@ -13,18 +13,17 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.CyclotronRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.init.Items;
@@ -44,13 +43,14 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
-public class TileEntityMachineCyclotron extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineCyclotron extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 100000000;
@@ -179,19 +179,18 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 		if(allowedSlots.length < 1)
 			return false;
 
-		int inputAmount = inventory.getStackInSlot(inputSlot).getMaxStackSize() - inventory.getStackInSlot(inputSlot).getCount(); // how many items do we need to fill the stack?
-		int targetAmount = inventory.getStackInSlot(targetSlot).getMaxStackSize() - inventory.getStackInSlot(targetSlot).getCount(); // how many items do we need to fill the stack?
+		int inputAmount = inventory.getStackInSlot(inputSlot).getMaxStackSize() - inventory.getStackInSlot(inputSlot).getCount();
+		int targetAmount = inventory.getStackInSlot(targetSlot).getMaxStackSize() - inventory.getStackInSlot(targetSlot).getCount();
 		AStack inputItem = new NbtComparableStack(inventory.getStackInSlot(inputSlot).copy()).singulize();
 		AStack targetItem = new NbtComparableStack(inventory.getStackInSlot(targetSlot).copy()).singulize();
 		
 		int inputDelta = inputAmount;
 		int targetDelta = targetAmount;
 		for(int slot : allowedSlots) {
-			if(container.getStackInSlot(slot) == null || container.getStackInSlot(slot).isEmpty()){ // check next slot in chest if it is empty
+			if(container.getStackInSlot(slot) == null || container.getStackInSlot(slot).isEmpty()){
 				continue;
-			}else{ // found an item in chest
+			}else{
 				ItemStack stack = container.getStackInSlot(slot).copy();
-				// check input
 				if(inventory.getStackInSlot(inputSlot) == null || inventory.getStackInSlot(inputSlot).isEmpty()){
 					if(isItemATarget(stack.getItem())){
 						inputDelta = this.moveItem(container, inputSlot, slot, inputDelta, te);
@@ -200,12 +199,11 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 				} else {
 					ItemStack compareStack = stack.copy();
 					compareStack.setCount(1);
-					if(inputDelta > 0 && inputItem.isApplicable(compareStack)){ // bingo found something
+					if(inputDelta > 0 && inputItem.isApplicable(compareStack)){
 						inputDelta = this.moveItem(container, inputSlot, slot, inputDelta, te);
 						continue;
 					}
 				}
-				// check target
 				if(inventory.getStackInSlot(targetSlot) == null || inventory.getStackInSlot(targetSlot).isEmpty()){
 					if(!isItemATarget(stack.getItem())){
 						targetDelta = this.moveItem(container, targetSlot, slot, targetDelta, te);
@@ -214,7 +212,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 				} else {
 					ItemStack compareStack = stack.copy();
 					compareStack.setCount(1);
-					if(targetDelta > 0 && targetItem.isApplicable(compareStack)){ // bingo found something
+					if(targetDelta > 0 && targetItem.isApplicable(compareStack)){
 						targetDelta = this.moveItem(container, targetSlot, slot, targetDelta, te);
 						continue;
 					}
@@ -239,7 +237,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 				inventory.setStackInSlot(inventorySlot, stack);
 
 			}else{
-				inventory.getStackInSlot(inventorySlot).grow(foundCount); // transfer complete
+				inventory.getStackInSlot(inventorySlot).grow(foundCount);
 			}
 			amount -= foundCount;
 		}
@@ -258,7 +256,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 		}
 	}
 
-	//Unloads output into chests. Capability version.
 	public boolean tryFillContainerCap(IItemHandler inv, int slot) {
 
 		int size = inv.getSlots();
@@ -396,15 +393,8 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			} else {
 				progress = 0;
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			data.setInteger("progress", progress);
-			data.setBoolean("isOn", isOn);
-			data.setByte("plugs", plugs);
-			this.networkPack(data, 25);
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, coolant, amat), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
+			networkPackNT(25);
 		}
 	}
 	
@@ -421,11 +411,23 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		this.isOn = data.getBoolean("isOn");
-		this.power = data.getLong("power");
-		this.plugs = data.getByte("plugs");
-		this.progress = data.getInteger("progress");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+		buf.writeInt(this.progress);
+		buf.writeBoolean(this.isOn);
+		buf.writeByte(this.plugs);
+		ByteBufUtils.writeTag(buf, coolant.writeToNBT(new NBTTagCompound()));
+		ByteBufUtils.writeTag(buf, amat.writeToNBT(new NBTTagCompound()));
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+		this.progress = buf.readInt();
+		this.isOn = buf.readBoolean();
+		this.plugs = buf.readByte();
+		coolant.readFromNBT(ByteBufUtils.readTag(buf));
+		amat.readFromNBT(ByteBufUtils.readTag(buf));
 	}
 	
 	@Override
@@ -745,14 +747,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return amat.drain(maxDrain, doDrain);
 	}
-	
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 2){
-			coolant.readFromNBT(tags[0]);
-			amat.readFromNBT(tags[1]);
-		}
-	}
 
 	@Override
 	public void setPower(long i) {
@@ -768,6 +762,4 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	public long getMaxPower() {
 		return maxPower;
 	}
-	
-
 }

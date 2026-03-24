@@ -2,8 +2,10 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.inventory.BreederRecipes;
 import com.hbm.inventory.BreederRecipes.BreederRecipe;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -14,7 +16,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineReactor extends TileEntityMachineBase implements ITickable {
+public class TileEntityMachineReactor extends TileEntityMachineBase implements ITickable, IBufPacketReceiver {
 
 	public int progress;
 	public int charge;
@@ -266,19 +268,22 @@ public class TileEntityMachineReactor extends TileEntityMachineBase implements I
 			if(markDirty)
 				this.markDirty();
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setShort("charge", (short)charge);
-			data.setShort("progress", (short)progress);
-			data.setByte("heat", (byte)heat);
-			this.networkPack(data, 20);
+			networkPackNT(20);
 		}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound data) {
-		charge = data.getShort("charge");
-		progress = data.getShort("progress");
-		heat = data.getByte("heat");
+	public void serialize(ByteBuf buf) {
+		buf.writeShort(this.charge);
+		buf.writeShort(this.progress);
+		buf.writeByte(this.heat);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.charge = buf.readShort();
+		this.progress = buf.readShort();
+		this.heat = buf.readByte();
 	}
 
 }

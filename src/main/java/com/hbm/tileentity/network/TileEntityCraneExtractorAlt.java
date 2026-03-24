@@ -9,7 +9,9 @@ import com.hbm.inventory.gui.GUICraneExtractorAlt;
 import com.hbm.items.ModItems;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.tileentity.IBufPacketReceiver;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,11 +27,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
-public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements IGUIProvider, IControlReceiver, IBufPacketReceiver {
     public boolean isWhitelist = false;
 
     private int tickCounter = 0;
@@ -88,20 +91,11 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                     }
                 }
 
-                EnumFacing inputSide = getInputSide(); // note the switcheroo!
+                EnumFacing inputSide = getInputSide();
                 EnumFacing outputSide = getOutputSide();
                 TileEntity te = world.getTileEntity(pos.offset(inputSide));
                 Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
-                // int[] access = null;
-                // ISidedInventory sided = null;
-
-                // if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneExtractorAlt)) {
-                //     sided = (ISidedInventory) te;
-                //     access = masquerade(sided, EnumFacing.byIndex(inputSide.getOpposite().ordinal()));
-                // }
-
-                //collect matching items
                 if(te != null) {
                     EnumFacing accessFace = inputSide.getOpposite();
                     int[] access = null;
@@ -112,7 +106,6 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                         access = masquerade(sided, accessFace);
                     }
 
-                    /* try to send items from a connected inv, if present */
                     IItemHandler inv = null;
                     if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
                         inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
@@ -150,7 +143,6 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                     }
                 }
 
-                //send buffered items
                 if(b instanceof IConveyorBelt) {
 
                     IConveyorBelt belt = (IConveyorBelt) b;
@@ -183,10 +175,7 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
                 }
             }
 
-            NBTTagCompound data = new NBTTagCompound();
-            data.setBoolean("isWhitelist", isWhitelist);
-            this.matcher.writeToNBT(data);
-            this.networkPack(data, 15);
+            networkPackNT(15);
         }
     }
 
@@ -200,9 +189,7 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
         return can;
     }
 
-    //Unloads output into chests. Capability version.
     public int tryInsertItemCap(IItemHandler chest, ItemStack stack, int[] allowed_slots) {
-        //Check if we have something to output
         if(stack.isEmpty())
             return 0;
         int filledAmount = 0;
@@ -239,10 +226,30 @@ public class TileEntityCraneExtractorAlt extends TileEntityCraneBase implements 
         return sided.getSlotsForFace(side);
     }
 
-    public void networkUnpack(NBTTagCompound nbt) {
-        this.isWhitelist = nbt.getBoolean("isWhitelist");
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(this.isWhitelist);
+        for(int i = 0; i < matcher.modes.length; i++) {
+            if(matcher.modes[i] != null) {
+                buf.writeBoolean(true);
+                ByteBufUtils.writeUTF8String(buf, matcher.modes[i]);
+            } else {
+                buf.writeBoolean(false);
+            }
+        }
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.isWhitelist = buf.readBoolean();
         this.matcher.modes = new String[this.matcher.modes.length];
-        this.matcher.readFromNBT(nbt);
+        for(int i = 0; i < matcher.modes.length; i++) {
+            if(buf.readBoolean()) {
+                matcher.modes[i] = ByteBufUtils.readUTF8String(buf);
+            } else {
+                matcher.modes[i] = null;
+            }
+        }
     }
 
     public boolean matchesFilter(ItemStack stack) {

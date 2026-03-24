@@ -7,14 +7,13 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineITER;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -29,11 +28,11 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase implements ITickable, IFluidHandler, ITankPacketAcceptor, IEnergyUser {
+public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase implements ITickable, IFluidHandler, IBufPacketReceiver, IEnergyUser {
 
 	public long power;
 	public static final long maxPower = 10000000000L;
@@ -64,7 +63,6 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 			if(this.world.getTotalWorldTime() % 20 == 0)
 				this.updateConnections();
 
-			/// START Managing all the internal stuff ///
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 
 			int maxConv = 50;
@@ -85,9 +83,6 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 				power -= convert * powerReq;
 				this.markDirty();
 			}
-			/// END Managing all the internal stuff ///
-
-			/// START Loading plasma into the ITER ///
 
 			ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getOpposite();
 			int dist = 11;
@@ -122,20 +117,66 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 				}
 			}
 
-			/// END Loading plasma into the ITER ///
-
-			/// START Notif packets ///
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tanks[0], tanks[1], plasma}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20)); 
-			NBTTagCompound data = new NBTTagCompound();
-			data.setLong("power", power);
-			this.networkPack(data, 50);
-			/// END Notif packets ///
+			networkPackNT(50);
 		}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.power = nbt.getLong("power");
+	public void serialize(ByteBuf buf) {
+		buf.writeLong(this.power);
+
+		for(int i = 0; i < 2; i++) {
+			if(tanks[i].getFluid() != null) {
+				buf.writeBoolean(true);
+				ByteBufUtils.writeUTF8String(buf, tanks[i].getFluid().getFluid().getName());
+				buf.writeInt(tanks[i].getFluidAmount());
+			} else {
+				buf.writeBoolean(false);
+			}
+		}
+
+		if(plasma.getFluid() != null) {
+			buf.writeBoolean(true);
+			ByteBufUtils.writeUTF8String(buf, plasma.getFluid().getFluid().getName());
+			buf.writeInt(plasma.getFluidAmount());
+		} else {
+			buf.writeBoolean(false);
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.power = buf.readLong();
+
+		for(int i = 0; i < 2; i++) {
+			boolean hasFluid = buf.readBoolean();
+			if(hasFluid) {
+				String name = ByteBufUtils.readUTF8String(buf);
+				int amount = buf.readInt();
+				Fluid fluid = FluidRegistry.getFluid(name);
+				if(fluid != null) {
+					tanks[i].setFluid(new FluidStack(fluid, amount));
+				} else {
+					tanks[i].setFluid(null);
+				}
+			} else {
+				tanks[i].setFluid(null);
+			}
+		}
+
+		boolean hasPlasma = buf.readBoolean();
+		if(hasPlasma) {
+			String name = ByteBufUtils.readUTF8String(buf);
+			int amount = buf.readInt();
+			Fluid fluid = FluidRegistry.getFluid(name);
+			if(fluid != null) {
+				plasma.setFluid(new FluidStack(fluid, amount));
+			} else {
+				plasma.setFluid(null);
+			}
+		} else {
+			plasma.setFluid(null);
+		}
 	}
 
 	private void updateConnections()  {
@@ -152,8 +193,6 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 	
 	private void updateType() {
 
-		//if(plasma.getFluidAmount() > 0)
-		//	return;
 		this.types[0] = tanks[0].getFluid() == null ? null : tanks[0].getFluid().getFluid();
 		this.types[1] = tanks[1].getFluid() == null ? null : tanks[1].getFluid().getFluid();
 
@@ -271,16 +310,6 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
 	}
-
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 3){
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-			plasma.readFromNBT(tags[2]);
-		}
-		
-	}
 	
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
@@ -297,5 +326,4 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 		}
 		return super.hasCapability(capability, facing);
 	}
-
 }

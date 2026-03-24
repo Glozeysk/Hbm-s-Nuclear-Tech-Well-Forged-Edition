@@ -3,7 +3,6 @@ package com.hbm.tileentity;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.lib.ItemStackHandlerWrapper;
-import com.hbm.packet.NBTPacket;
 import com.hbm.packet.PacketDispatcher;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,7 +17,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 @Spaghetti("Not spaghetti in itself, but for the love of god please use this base class for all machines")
-public abstract class TileEntityMachineBase extends TileEntityLoadedBase implements INBTPacketReceiver {
+public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 
 	public ItemStackHandler inventory;
 
@@ -77,22 +76,6 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
 	public int getGaugeScaled(int i, FluidTank tank) {
 		return tank.getFluidAmount() * i / tank.getCapacity();
 	}
-	
-	public void networkPack(NBTTagCompound nbt, int range) {
-
-		if(!world.isRemote)
-			PacketDispatcher.wrapper.sendToAllAround(new NBTPacket(nbt, pos), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
-	}
-	
-	public void networkUnpack(NBTTagCompound nbt) { }
-	
-    public void serialize(ByteBuf buf) {
-        buf.writeBoolean(muffled);
-    }
-
-    public void deserialize(ByteBuf buf) {
-        this.muffled = buf.readBoolean();
-    }
 
 	public void handleButtonPacket(int value, int meta) { }
 	

@@ -2,11 +2,13 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.inventory.container.ContainerRadioThermal;
 import com.hbm.inventory.gui.GUIRadioThermal;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
 
 import api.hbm.tile.IHeatSource;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -19,9 +21,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implements IHeatSource, ITickable, IGUIProvider {
+public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implements IHeatSource, ITickable, IGUIProvider, IBufPacketReceiver {
     
     public int heatGen;
     public int heatEnergy;
@@ -43,10 +44,8 @@ public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implemen
             this.heatGen = RTGUtil.updateRTGs(inventory, new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}) * 10;
             this.heatEnergy += heatGen;
             if(heatEnergy > maxHeatEnergy) this.heatEnergy = maxHeatEnergy;
-            NBTTagCompound data = new NBTTagCompound();
-            data.setInteger("hg", this.heatGen);
-            data.setInteger("h", this.heatEnergy);
-            networkPack(data, 25);
+
+            networkPackNT(25);
         }
     }
 
@@ -56,9 +55,15 @@ public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implemen
     }
 
     @Override
-    public void networkUnpack(NBTTagCompound nbt) {
-        this.heatGen = nbt.getInteger("hg");
-        this.heatEnergy = nbt.getInteger("h");
+    public void serialize(ByteBuf buf) {
+        buf.writeInt(this.heatGen);
+        buf.writeInt(this.heatEnergy);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.heatGen = buf.readInt();
+        this.heatEnergy = buf.readInt();
     }
     
     @Override

@@ -5,8 +5,10 @@ import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.RefineryRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.util.Tuple.Quartet;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -15,15 +17,17 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineFractionTower extends TileEntity  implements INBTPacketReceiver, ITickable, IFluidHandler {
+public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements IBufPacketReceiver, ITickable, IFluidHandler {
 	
 	public FluidTank[] tanks;
 	public Fluid[] types;
@@ -90,32 +94,41 @@ public class TileEntityMachineFractionTower extends TileEntity  implements INBTP
 			if(world.getTotalWorldTime() % 10 == 0) {
 				fillFluidInit(tanks[1]);
 				fillFluidInit(tanks[2]);
-				networkPack();
+			}
+
+			networkPackNT(25);
+		}
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		for(int i = 0; i < tanks.length; i++) {
+			if(types[i] != null) {
+				buf.writeBoolean(true);
+				ByteBufUtils.writeUTF8String(buf, types[i].getName());
+				buf.writeInt(tanks[i].getFluidAmount());
+			} else {
+				buf.writeBoolean(false);
 			}
 		}
 	}
 
-	public void networkPack(){
-		NBTTagCompound data = new NBTTagCompound();
-		for(int i=0; i<tanks.length; i++){
-			if(types[i] != null){
-				tanks[i].setFluid(new FluidStack(types[i], tanks[i].getFluidAmount()));
-			} else {
-				tanks[i].setFluid(null);
-			}
-		}
-		data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-		INBTPacketReceiver.networkPack(this, data, 25);
-	}
-	
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
-		for(int i=0; i<tanks.length; i++){
-			if(tanks[i].getFluid() != null){
-				types[i] = tanks[i].getFluid().getFluid();
+	public void deserialize(ByteBuf buf) {
+		for(int i = 0; i < tanks.length; i++) {
+			if(buf.readBoolean()) {
+				String fluidName = ByteBufUtils.readUTF8String(buf);
+				int amount = buf.readInt();
+				Fluid fluid = FluidRegistry.getFluid(fluidName);
+				types[i] = fluid;
+				if(fluid != null) {
+					tanks[i].setFluid(new FluidStack(fluid, amount));
+				} else {
+					tanks[i].setFluid(null);
+				}
 			} else {
 				types[i] = null;
+				tanks[i].setFluid(null);
 			}
 		}
 	}

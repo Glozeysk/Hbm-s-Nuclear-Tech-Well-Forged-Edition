@@ -9,9 +9,9 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
@@ -96,9 +96,6 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
 				this.lastDist = length;
 			}
 			
-			if(beam > 0)
-				beam--;
-			
 			this.lastSpin = this.spin;
 			
 			if(this.tPos != null) {
@@ -110,7 +107,15 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
 				this.lastSpin -= 360F;
 			}
 		}
+
+		if(beam > 0)
+			beam--;
+
 		super.update();
+
+		if(!world.isRemote) {
+			networkPackNT(250);
+		}
 	}
 
 	@Override
@@ -126,9 +131,7 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
 				this.conusmeAmmo(conf.ammo);
 				this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.tauShoot, SoundCategory.BLOCKS, 4.0F, 0.9F + world.rand.nextFloat() * 0.3F);
 				
-				NBTTagCompound data = new NBTTagCompound();
-				data.setBoolean("shot", true);
-				this.networkPack(data, 250);
+				this.beam = 3;
 				
 				Vec3 pos = new Vec3(this.getTurretPos());
 				Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
@@ -144,10 +147,14 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt){
-		if(nbt.hasKey("shot"))
-			beam = 3;
-		else
-			super.networkUnpack(nbt);
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeInt(this.beam);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		this.beam = buf.readInt();
 	}
 }

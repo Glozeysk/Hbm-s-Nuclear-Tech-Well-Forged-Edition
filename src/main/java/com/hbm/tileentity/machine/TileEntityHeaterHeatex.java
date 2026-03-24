@@ -5,20 +5,17 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.HeatRecipes;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.inventory.gui.GUIHeaterHeatex;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.FluidTypePacketTest;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -36,14 +33,14 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, ITickable, ITankPacketAcceptor, IFluidHandler {
+public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, ITickable, IBufPacketReceiver, IFluidHandler {
 
     public FluidTank[] tanks;
 
@@ -76,28 +73,48 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
 
         if (!world.isRemote) {
 
-            // first, update current tank settings
             setFluidType();
-
-            PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tanks[0], tanks[1]}), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-            PacketDispatcher.wrapper.sendToAllAround(new FluidTypePacketTest(pos.getX(), pos.getY(), pos.getZ(), tankTypes), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 
             this.heatEnergy *= 0.999;
 
             this.tryConvert();
 
-            NBTTagCompound data = new NBTTagCompound();
-            data.setInteger("heatGen", heatGen);
-            data.setInteger("heatEnergy", heatEnergy);
-            data.setInteger("toCool", amountToCool);
-            data.setInteger("delay", tickDelay);
-            data.setString("tankTypes0", tankTypes[0].getName());
-            data.setString("tankTypes1", tankTypes[1].getName());
-            data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-            INBTPacketReceiver.networkPack(this, data, 25);
+            networkPackNT(25);
 
             fillFluidInit(tanks[1]);
             markDirty();
+        }
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeInt(this.heatGen);
+        buf.writeInt(this.heatEnergy);
+        buf.writeInt(this.amountToCool);
+        buf.writeInt(this.tickDelay);
+        ByteBufUtils.writeUTF8String(buf, this.tankTypes[0].getName());
+        ByteBufUtils.writeUTF8String(buf, this.tankTypes[1].getName());
+        buf.writeInt(this.tanks[0].getFluidAmount());
+        buf.writeInt(this.tanks[1].getFluidAmount());
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.heatGen = buf.readInt();
+        this.heatEnergy = buf.readInt();
+        this.amountToCool = buf.readInt();
+        this.tickDelay = buf.readInt();
+        Fluid type0 = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+        Fluid type1 = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
+        int amount0 = buf.readInt();
+        int amount1 = buf.readInt();
+        if(type0 != null) {
+            this.tankTypes[0] = type0;
+            this.tanks[0].setFluid(new FluidStack(type0, amount0));
+        }
+        if(type1 != null) {
+            this.tankTypes[1] = type1;
+            this.tanks[1].setFluid(new FluidStack(type1, amount1));
         }
     }
 
@@ -109,20 +126,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         FFUtils.fillFluid(this, tank, world, pos.add(dir.offsetX * 2 - rot.offsetX, 0, dir.offsetZ * 2 - rot.offsetZ), 12000);
         FFUtils.fillFluid(this, tank, world, pos.add(-dir.offsetX * 2 + rot.offsetX, 0, -dir.offsetZ * 2 + rot.offsetZ), 12000);
         FFUtils.fillFluid(this, tank, world, pos.add(-dir.offsetX * 2 - rot.offsetX, 0, -dir.offsetZ * 2 - rot.offsetZ), 12000);
-    }
-
-    @Override
-    public void networkUnpack(NBTTagCompound nbt) {
-        this.heatGen = nbt.getInteger("heatGen");
-        this.heatEnergy = nbt.getInteger("heatEnergy");
-        this.amountToCool = nbt.getInteger("toCool");
-        this.tickDelay = nbt.getInteger("delay");
-
-        if(nbt.hasKey("tankTypes0")) tankTypes[0] = FluidRegistry.getFluid(nbt.getString("tankTypes0"));
-        if(nbt.hasKey("tankTypes1")) tankTypes[1] = FluidRegistry.getFluid(nbt.getString("tankTypes1"));
-        if (nbt.hasKey("tanks")) {
-            FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
-        }
     }
 
     public void setFluidType(){
@@ -137,7 +140,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         if(HeatRecipes.hasCoolRecipe(f) && tankTypes[0] != f) {
             tankTypes[0] = f;
             tankTypes[1] = HeatRecipes.getCoolFluid(f);
-            // clear input tank fluid
             tanks[0].setFluid(new FluidStack(f, 0));
             tanks[1].setFluid(new FluidStack(tankTypes[1], 0));
             this.markDirty();
@@ -203,16 +205,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
     @Override
     public void useUpHeat(int heat) {
         this.heatEnergy = Math.max(0, this.heatEnergy - heat);
-    }
-
-    @Override
-    public void recievePacket(NBTTagCompound[] tags) {
-        if (tags.length != 2) {
-            return;
-        } else {
-            tanks[0].readFromNBT(tags[0]);
-            tanks[1].readFromNBT(tags[1]);
-        }
     }
 
     @Override

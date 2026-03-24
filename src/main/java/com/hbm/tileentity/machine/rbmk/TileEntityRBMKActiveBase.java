@@ -14,7 +14,4 @@ public abstract class TileEntityRBMKActiveBase extends TileEntityRBMKBase {
 		}
 	}
 
-	public void markChanged() {
-        this.world.markChunkDirty(this.pos, this);
-    }
 }

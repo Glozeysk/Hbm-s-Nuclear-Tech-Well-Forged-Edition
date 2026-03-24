@@ -7,7 +7,9 @@ import com.hbm.inventory.container.ContainerCraneBoxer;
 import com.hbm.inventory.gui.GUICraneBoxer;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.tileentity.IBufPacketReceiver;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,14 +23,13 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIProvider, IControlReceiver, IBufPacketReceiver {
 
     public byte mode = 0;
     public static final byte MODE_1 = 0;
@@ -166,9 +167,7 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
                 }
             }
 
-            NBTTagCompound data = new NBTTagCompound();
-            data.setByte("mode", mode);
-            this.networkPack(data, 15);
+            networkPackNT(15);
         }
     }
 
@@ -193,7 +192,6 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
     }
 
     public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-        //Check if we have something to output
         if(inventory.getStackInSlot(slot).isEmpty())
             return false;
 
@@ -201,7 +199,6 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
     }
 
     public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        //Check if we have something to output
         if(stack.isEmpty())
             return false;
 
@@ -275,7 +272,12 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
     }
 
     @Override
-    public void networkUnpack(NBTTagCompound nbt) { 
-        this.mode = nbt.getByte("mode");
+    public void serialize(ByteBuf buf) {
+        buf.writeByte(this.mode);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.mode = buf.readByte();
     }
 }

@@ -9,15 +9,14 @@ import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.interfaces.ITankPacketAcceptor;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -30,9 +29,9 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IFluidHandler, ITankPacketAcceptor, IControlReceiver {
+public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IFluidHandler, IControlReceiver, IBufPacketReceiver {
 	
 	public FluidTank feed;
 	public FluidTank steam;
@@ -73,11 +72,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 				gameruleBoilerHeatConsumption = RBMKDials.getBoilerHeatConsumption(world);
 			}
 
-			if(feed.getFluidAmount() < 10000*20 || steam.getFluidAmount() > 0)
-				PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, feed, steam), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
-			NBTTagCompound data = new NBTTagCompound();
-			data.setString("steamType2", steamType.getName());
-			networkPack(data, 50);
+			networkPackNT(50);
 			
 			double heatCap = this.getHeatFromSteam(steamType);
 			double heatProvided = this.heat - heatCap;
@@ -100,7 +95,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 		super.update();
 	}
 
-	public int makeLossless(int water, Fluid type){ //rounds down to the lower base 10 so it stays int
+	public int makeLossless(int water, Fluid type){
 		if(type == ModForgeFluids.ultrahotsteam)
 			return ((int)(water * 0.1)) * 10;
 		return water;
@@ -185,6 +180,36 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 	}
 
 	@Override
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		ByteBufUtils.writeUTF8String(buf, steamType.getName());
+		buf.writeInt(feed.getFluidAmount());
+		buf.writeInt(steam.getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		String fluidName = ByteBufUtils.readUTF8String(buf);
+		this.steamType = FluidRegistry.getFluid(fluidName);
+		if(this.steamType == null) {
+			this.steamType = ModForgeFluids.steam;
+		}
+		int feedAmount = buf.readInt();
+		if(feedAmount > 0) {
+			feed.setFluid(new FluidStack(FluidRegistry.WATER, feedAmount));
+		} else {
+			feed.setFluid(null);
+		}
+		int steamAmount = buf.readInt();
+		if(steamAmount > 0) {
+			steam.setFluid(new FluidStack(steamType, steamAmount));
+		} else {
+			steam.setFluid(null);
+		}
+	}
+
+	@Override
 	public boolean hasPermission(EntityPlayer player) {
 		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
 	}
@@ -221,18 +246,6 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 	}
 	
 	@Override
-	public void networkUnpack(NBTTagCompound nbt){
-		if(nbt.hasKey("steamType2")){
-			this.steamType = FluidRegistry.getFluid(nbt.getString("steamType2"));
-			if (this.steamType == null) {
-				this.steamType = ModForgeFluids.steam;
-			}
-		} else {
-			super.networkUnpack(nbt);
-		}
-	}
-	
-	@Override
 	public void onMelt(int reduce) {
 		
 		int count = 1 + world.rand.nextInt(2);
@@ -258,14 +271,6 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 		data.setInteger("maxSteam", this.steam.getCapacity());
 		data.setString("type", steamType.getName());
 		return data;
-	}
-	
-	@Override
-	public void recievePacket(NBTTagCompound[] tags){
-		if(tags.length == 2){
-			feed.readFromNBT(tags[0]);
-			steam.readFromNBT(tags[1]);
-		}
 	}
 
 	@Override
@@ -306,7 +311,6 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 		return super.getCapability(capability, facing);
 	}
 
-	// control panel
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = super.getQueryData();

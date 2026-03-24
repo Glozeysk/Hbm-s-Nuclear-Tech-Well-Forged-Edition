@@ -4,25 +4,19 @@ import java.util.Map;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.items.ModItems;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.HeatRecipes;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
 
-import net.minecraft.entity.player.EntityPlayer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -34,14 +28,11 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidHandler, IBufPacketReceiver {
 
-public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidHandler, ITankPacketAcceptor {
-
-	public static final double TU_PER_DEGREE = 3_000D; //based on 1mB of water absorbing 200 TU as well as 0.1°C from an RBMK column
+	public static final double TU_PER_DEGREE = 3_000D;
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
 	
@@ -66,7 +57,6 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 		
 		if(!world.isRemote) {
 			setFluidType();
-            PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
 
 			if(HeatRecipes.hasBoilRecipe(tankTypes[0])) {
 				Fluid hotFluid = HeatRecipes.getBoilFluid(tankTypes[0]);
@@ -88,11 +78,7 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 				}
 			}
 
-			NBTTagCompound data = new NBTTagCompound();
-            data.setTag("tanks", FFUtils.serializeTankArray(tanks));
-            data.setString("tankTypes0", tankTypes[0].getName());
-			data.setString("tankTypes1", tankTypes[1].getName());
-            networkPack(data, 25);
+			networkPackNT(50);
 
 			if(tanks[1].getFluidAmount() > 0){
 				fillFluidInit(tanks[1]);
@@ -103,14 +89,36 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 	}
 
 	@Override
-    public void networkUnpack(NBTTagCompound nbt) {
-    	super.networkUnpack(nbt);
-        if (nbt.hasKey("tanks")) {
-            FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
-        }
-        if(nbt.hasKey("tankTypes0")) tankTypes[0] = FluidRegistry.getFluid(nbt.getString("tankTypes0"));
-		if(nbt.hasKey("tankTypes1")) tankTypes[1] = FluidRegistry.getFluid(nbt.getString("tankTypes1"));
-    }
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		ByteBufUtils.writeUTF8String(buf, tankTypes[0].getName());
+		ByteBufUtils.writeUTF8String(buf, tankTypes[1].getName());
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		String type0 = ByteBufUtils.readUTF8String(buf);
+		String type1 = ByteBufUtils.readUTF8String(buf);
+		tankTypes[0] = FluidRegistry.getFluid(type0);
+		tankTypes[1] = FluidRegistry.getFluid(type1);
+		if(tankTypes[0] == null) tankTypes[0] = ModForgeFluids.coolant;
+		if(tankTypes[1] == null) tankTypes[1] = ModForgeFluids.hotcoolant;
+		int amount0 = buf.readInt();
+		int amount1 = buf.readInt();
+		if(amount0 > 0) {
+			tanks[0].setFluid(new FluidStack(tankTypes[0], amount0));
+		} else {
+			tanks[0].setFluid(null);
+		}
+		if(amount1 > 0) {
+			tanks[1].setFluid(new FluidStack(tankTypes[1], amount1));
+		} else {
+			tanks[1].setFluid(null);
+		}
+	}
 
 	public void setFluidType(){
 		ItemStack inFluid = this.inventory.getStackInSlot(0);
@@ -124,7 +132,6 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 		if(HeatRecipes.hasBoilRecipe(f) && tankTypes[0] != f) {
             tankTypes[0] = f;
             tankTypes[1] = HeatRecipes.getBoilFluid(f);
-            // clear input tank fluid
             tanks[0].setFluid(new FluidStack(f, 0));
             tanks[1].setFluid(new FluidStack(tankTypes[1], 0));
             this.markDirty();
@@ -185,16 +192,6 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 		
 		return nbt;
 	}
-
-	@Override
-    public void recievePacket(NBTTagCompound[] tags) {
-        if (tags.length != 2) {
-            return;
-        } else {
-            tanks[0].readFromNBT(tags[0]);
-            tanks[1].readFromNBT(tags[1]);
-        }
-    }
 	
 	@Override
 	public void onMelt(int reduce) {
@@ -266,7 +263,6 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 		return super.getCapability(capability, facing);
 	}
 
-	// control panel
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = super.getQueryData();

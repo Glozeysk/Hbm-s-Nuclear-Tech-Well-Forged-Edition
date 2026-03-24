@@ -1,10 +1,8 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
 
-import api.hbm.energy.IEnergyConductor;
-import api.hbm.energy.IEnergyConnector;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -42,20 +40,15 @@ public class TileEntityMachineFENSU extends TileEntityMachineBattery {
 	}
 
 	@Override
-	public NBTTagCompound packNBT(){
-		NBTTagCompound nbt = super.packNBT();
-		nbt.setByte("color", (byte) this.color.getMetadata());
-		return nbt;
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeByte(this.color.getMetadata());
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) { 
-		this.power = nbt.getLong("power");
-		this.powerDelta = nbt.getLong("powerDelta");
-		this.redLow = nbt.getShort("redLow");
-		this.redHigh = nbt.getShort("redHigh");
-		this.color = EnumDyeColor.byMetadata(nbt.getByte("color"));
-		this.priority = ConnectionPriority.values()[nbt.getByte("priority")];
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		this.color = EnumDyeColor.byMetadata(buf.readByte());
 	}
 
 	@Override

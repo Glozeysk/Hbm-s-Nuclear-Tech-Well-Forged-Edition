@@ -1,13 +1,13 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.main.MainRegistry;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.INBTPacketReceiver;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyUser;
 import api.hbm.tile.IHeatSource;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.ITickable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -16,9 +16,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IHeatSource, IEnergyUser, ITickable, INBTPacketReceiver {
+public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IHeatSource, IEnergyUser, ITickable, IBufPacketReceiver {
 	
 	public long power;
 	public int heatEnergy;
@@ -30,7 +29,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 		
 		if(!world.isRemote) {
 			
-			if(world.getTotalWorldTime() % 20 == 0) { //doesn't have to happen constantly
+			if(world.getTotalWorldTime() % 20 == 0) {
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 				this.trySubscribe(world, pos.add(dir.offsetX * 3, 0, dir.offsetZ * 3), dir);
 			}
@@ -46,19 +45,22 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 				this.isOn = true;
 			}
 			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setByte("s", (byte) this.setting);
-			data.setInteger("h", this.heatEnergy);
-			data.setBoolean("o", isOn);
-			INBTPacketReceiver.networkPack(this, data, 25);
+			networkPackNT(25);
 		}
 	}
 
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		this.setting = nbt.getByte("s");
-		this.heatEnergy = nbt.getInteger("h");
-		this.isOn = nbt.getBoolean("o");
+	public void serialize(ByteBuf buf) {
+		buf.writeByte(this.setting);
+		buf.writeInt(this.heatEnergy);
+		buf.writeBoolean(this.isOn);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		this.setting = buf.readByte();
+		this.heatEnergy = buf.readInt();
+		this.isOn = buf.readBoolean();
 	}
 	
 	@Override
@@ -104,7 +106,6 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 			setting = 10;
 	}
 
-
 	@Override
 	public long getPower() {
 		return power;
@@ -140,15 +141,15 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 	
 	AxisAlignedBB bb = null;
 	@Override
-    @Nonnull
-    public AxisAlignedBB getRenderBoundingBox() {
+	@Nonnull
+	public AxisAlignedBB getRenderBoundingBox() {
 
-        if (bb == null) {
-            bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 1, pos.getZ() + 2);
-        }
+		if(bb == null) {
+			bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 1, pos.getZ() + 2);
+		}
 
-        return bb;
-    }
+		return bb;
+	}
 	
 	@Override
 	@SideOnly(Side.CLIENT)

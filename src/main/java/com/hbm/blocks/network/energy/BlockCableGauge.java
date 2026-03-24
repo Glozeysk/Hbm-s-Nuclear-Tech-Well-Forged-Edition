@@ -9,7 +9,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.IBufPacketReceiver;
-import com.hbm.tileentity.INBTPacketReceiver;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.util.I18nUtil;
 
@@ -149,9 +148,6 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 						if(world.getTotalWorldTime() % 20 == 0) {
 							this.deltaLastSecond = this.deltaSecond;
 							this.deltaSecond = 0;
-//							NBTTagCompound data = new NBTTagCompound();
-//							data.setLong("deltaS", deltaLastSecond);
-//							INBTPacketReceiver.networkPack(this, data, 25);
                             networkPackNT(25);
 						}
 						this.deltaSecond += deltaTick;

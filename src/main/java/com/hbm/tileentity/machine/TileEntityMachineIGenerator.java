@@ -1,8 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.HashBiMap;
@@ -10,15 +8,14 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyGenerator;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,18 +23,17 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineIGenerator extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, ITankPacketAcceptor {
+public class TileEntityMachineIGenerator extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
 	public static final long maxPower = 1000000;
@@ -59,6 +55,8 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 	public IGenRTG[] pellets = new IGenRTG[12];
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
+
+	private int displayHeat;
 	
 	public TileEntityMachineIGenerator() {
 		super(13);
@@ -107,7 +105,7 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 			if(temperature > maxTemperature)
 				temperature = maxTemperature;
 			
-			int displayHeat = temperature;
+			displayHeat = temperature;
 			
 			rtgAction();
 			
@@ -115,27 +113,9 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 			generatorAction();
 			
 			this.power = Library.chargeItemsFromTE(inventory, 6, power, maxPower);
+
+			networkPackNT(250);
 			
-			NBTTagCompound data = new NBTTagCompound();
-			int[] rtgs = new int[pellets.length];
-			
-			for(int i = 0; i < pellets.length; i++) {
-				if(pellets[i] != null)
-					rtgs[i] = pellets[i].ordinal();
-				else
-					rtgs[i] = -1;
-			}
-			
-			data.setIntArray("rtgs", rtgs);
-			data.setInteger("temp", displayHeat);
-			data.setInteger("torque", torque);
-			data.setInteger("power", (int)power);
-			data.setShort("burn", (short) burnTime);
-			data.setShort("lastBurn", (short) lastBurnTime);
-			data.setFloat("dial", limiter);
-			this.networkPack(data, 250);
-			
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks[0], tanks[1], tanks[2]), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 		} else {
 			
 			this.prevRotation = this.rotation;
@@ -148,33 +128,67 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 			}
 		}
 	}
-	
+
 	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		int[] rtgs = nbt.getIntArray("rtgs");
-		
-		if(rtgs != null) {
-			for(int i = 0; i < pellets.length; i++) {
-				
-				int pellet = rtgs[i];
-				if(pellet >= 0 && pellet < IGenRTG.values().length) {
-					pellets[i] = IGenRTG.values()[pellet];
-				} else {
-					pellets[i] = null;
-				}
+	public void serialize(ByteBuf buf) {
+		for(int i = 0; i < pellets.length; i++) {
+			buf.writeInt(pellets[i] != null ? pellets[i].ordinal() : -1);
+		}
+		buf.writeInt(displayHeat);
+		buf.writeInt(torque);
+		buf.writeInt((int) power);
+		buf.writeShort(burnTime);
+		buf.writeShort(lastBurnTime);
+		buf.writeFloat(limiter);
+
+		for(int i = 0; i < 3; i++) {
+			FluidStack fs = tanks[i].getFluid();
+			buf.writeBoolean(fs != null);
+			if(fs != null) {
+				ByteBufUtils.writeUTF8String(buf, fs.getFluid().getName());
+				buf.writeInt(fs.amount);
+			}
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		for(int i = 0; i < pellets.length; i++) {
+			int pellet = buf.readInt();
+			if(pellet >= 0 && pellet < IGenRTG.values().length) {
+				pellets[i] = IGenRTG.values()[pellet];
+			} else {
+				pellets[i] = null;
 			}
 		}
 
-		this.temperature = nbt.getInteger("temp");
-		this.torque = nbt.getInteger("torque");
-		this.power = nbt.getInteger("power");
-		this.burnTime = nbt.getShort("burn");
-		this.lastBurnTime = nbt.getShort("lastBurn");
-		
+		this.temperature = buf.readInt();
+		this.torque = buf.readInt();
+		this.power = buf.readInt();
+		this.burnTime = buf.readShort();
+		this.lastBurnTime = buf.readShort();
+
+		float dialValue = buf.readFloat();
 		if(ignoreNext <= 0) {
-			this.limiter = nbt.getFloat("dial");
+			this.limiter = dialValue;
 		} else {
 			ignoreNext--;
+		}
+
+		for(int i = 0; i < 3; i++) {
+			boolean hasFluid = buf.readBoolean();
+			if(hasFluid) {
+				String fluidName = ByteBufUtils.readUTF8String(buf);
+				int amount = buf.readInt();
+				Fluid fluid = FluidRegistry.getFluid(fluidName);
+				if(fluid != null) {
+					tanks[i].setFluid(new FluidStack(fluid, amount));
+				} else {
+					tanks[i].setFluid(null);
+				}
+			} else {
+				tanks[i].setFluid(null);
+			}
 		}
 	}
 	
@@ -365,7 +379,6 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 		if(pellets[0] == null)
 			return;
 		
-		//i don't feel like adding null checks because they won't trigger anyway
 		inventory.setStackInSlot(2, new ItemStack(rtgPellets.inverse().get(pellets[0])));
 		
 		for(int i = 0; i < pellets.length - 1; i++) {
@@ -444,15 +457,6 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase implement
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
-	}
-	
-	@Override
-	public void recievePacket(NBTTagCompound[] tags) {
-		if(tags.length == 3){
-			tanks[0].readFromNBT(tags[0]);
-			tanks[1].readFromNBT(tags[1]);
-			tanks[2].readFromNBT(tags[2]);
-		}
 	}
 	
 	@Override

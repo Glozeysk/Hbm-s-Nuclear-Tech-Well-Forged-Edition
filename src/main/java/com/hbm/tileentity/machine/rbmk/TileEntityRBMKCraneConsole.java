@@ -11,19 +11,16 @@ import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.machine.ItemRBMKRod;
-import com.hbm.packet.NBTPacket;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.inventory.control_panel.ControlEventSystem;
 import com.hbm.inventory.control_panel.ControlEvent;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.INBTPacketReceiver;
-import com.hbm.tileentity.machine.rbmk.IRBMKLoadable;
+import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
-
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -34,7 +31,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.fml.common.Optional;
@@ -45,7 +41,7 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
-public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements ITickable, INBTPacketReceiver, SimpleComponent, IControllable {
+public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements ITickable, IBufPacketReceiver, SimpleComponent, IControllable {
 	
 	public int centerX;
 	public int centerY;
@@ -88,9 +84,9 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 	private boolean craneUp = false;
 	private boolean craneDown = false;
 
-	private static final double speed = 0.05D; // 1/coolDown DO NOT CHANGE
-	private static final short coolDown = 20; //in Ticks DO NOT CHANGE
-	private short ticksSince = 0; //ticks since button press
+	private static final double speed = 0.05D;
+	private static final short coolDown = 20;
+	private short ticksSince = 0;
 
 	public TileEntityRBMKCraneConsole() {
 		super(1);
@@ -145,9 +141,9 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 		}
 
 		if(isCooledDown()){
-			if(craneUp != up || craneDown != down || craneLeft != left || craneRight != right) //activating cooldown bc of change in direction
+			if(craneUp != up || craneDown != down || craneLeft != left || craneRight != right)
 				ticksSince = 1;
-			else if(craneUp || craneDown || craneLeft  || craneRight) //activating cooldown bc to keep going if moving
+			else if(craneUp || craneDown || craneLeft  || craneRight)
 				ticksSince = 1;
 			craneUp = up;
 			craneDown = down;
@@ -169,7 +165,6 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 				posLeft -= speed;
 		}
 
-		//Player input for next update
 		double xCoord = pos.getX();
 		double yCoord = pos.getY();
 		double zCoord = pos.getZ();
@@ -224,26 +219,53 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 				this.loadedEnrichment = 20;
 			}
 			
-			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setBoolean("crane", setUpCrane);
-			
-			if(setUpCrane) { //no need to send any of this if there's NO FUCKING CRANE THERE
-				nbt.setInteger("centerX", centerX);
-				nbt.setInteger("centerY", centerY);
-				nbt.setInteger("centerZ", centerZ);
-				nbt.setInteger("spanF", spanF);
-				nbt.setInteger("spanB", spanB);
-				nbt.setInteger("spanL", spanL);
-				nbt.setInteger("spanR", spanR);
-				nbt.setInteger("height", height);
-				nbt.setDouble("posFront", posFront);
-				nbt.setDouble("posLeft", posLeft);
-				nbt.setBoolean("loaded", this.hasItemLoaded());
-				nbt.setDouble("loadedHeat", loadedHeat);
-				nbt.setDouble("loadedEnrichment", loadedEnrichment);
-				nbt.setBoolean("goesDown", goesDown);
-			}
-			PacketDispatcher.wrapper.sendToAllAround(new NBTPacket(nbt, pos), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
+			networkPackNT(250);
+		}
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		buf.writeBoolean(setUpCrane);
+		if(setUpCrane) {
+			buf.writeInt(centerX);
+			buf.writeInt(centerY);
+			buf.writeInt(centerZ);
+			buf.writeInt(spanF);
+			buf.writeInt(spanB);
+			buf.writeInt(spanL);
+			buf.writeInt(spanR);
+			buf.writeInt(height);
+			buf.writeDouble(posFront);
+			buf.writeDouble(posLeft);
+			buf.writeBoolean(hasItemLoaded());
+			buf.writeDouble(loadedHeat);
+			buf.writeDouble(loadedEnrichment);
+			buf.writeBoolean(goesDown);
+		}
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		lastPosFront = posFront;
+		lastPosLeft = posLeft;
+		lastProgress = progress;
+
+		this.setUpCrane = buf.readBoolean();
+		if(setUpCrane) {
+			this.centerX = buf.readInt();
+			this.centerY = buf.readInt();
+			this.centerZ = buf.readInt();
+			this.spanF = buf.readInt();
+			this.spanB = buf.readInt();
+			this.spanL = buf.readInt();
+			this.spanR = buf.readInt();
+			this.height = buf.readInt();
+			this.posFront = buf.readDouble();
+			this.posLeft = buf.readDouble();
+			this.hasLoaded = buf.readBoolean();
+			this.loadedHeat = buf.readDouble();
+			this.loadedEnrichment = buf.readDouble();
+			this.goesDown = buf.readBoolean();
 		}
 	}
 
@@ -335,31 +357,6 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 		
 		return null;
 	}
-
-	@Override
-	public void networkUnpack(NBTTagCompound nbt) {
-		
-		lastPosFront = posFront;
-		lastPosLeft = posLeft;
-		lastProgress = progress;
-		
-		this.setUpCrane = nbt.getBoolean("crane");
-		this.centerX = nbt.getInteger("centerX");
-		this.centerY = nbt.getInteger("centerY");
-		this.centerZ = nbt.getInteger("centerZ");
-		this.spanF = nbt.getInteger("spanF");
-		this.spanB = nbt.getInteger("spanB");
-		this.spanL = nbt.getInteger("spanL");
-		this.spanR = nbt.getInteger("spanR");
-		this.height = nbt.getInteger("height");
-		this.posFront = nbt.getDouble("posFront");
-		this.posLeft = nbt.getDouble("posLeft");
-		this.hasLoaded = nbt.getBoolean("loaded");
-		this.posLeft = nbt.getDouble("posLeft");
-		this.loadedHeat = nbt.getDouble("loadedHeat");
-		this.loadedEnrichment = nbt.getDouble("loadedEnrichment");
-		this.goesDown = nbt.getBoolean("goesDown");
-	}
 	
 	public void setTarget(int x, int y, int z) {
 		this.centerX = x;
@@ -426,8 +423,6 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
 	}
-	
-	// opencomputers interface
 
 	@Override
 	public String getName() {
@@ -547,7 +542,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 	public Object[] loadUnload(Context context, Arguments args) {
 		if (setUpCrane) {
 			if(!isCraneLoading()){
-				goesDown = true; // Robert, it goes down.
+				goesDown = true;
 				return new Object[] {"Loading initiated"};
 			} else {
 				return new Object[] {"Crane is already loading"};
@@ -563,8 +558,6 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 		return new Object[] {"No crane found"};
 	}
 
-
-	// control panel
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = new HashMap<>();
