@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.gui.GUICoreStabilizer;
+import com.hbm.packet.toclient.BufPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityCoreStabilizer;
 
@@ -13,7 +15,9 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerCoreStabilizer extends Container {
 

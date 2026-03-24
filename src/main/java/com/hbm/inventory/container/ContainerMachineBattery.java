@@ -9,7 +9,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineBattery extends Container {
@@ -39,7 +38,6 @@ public class ContainerMachineBattery extends Container {
 		}
 	}
 	
-	//Drillgon200: I have no idea how this method works.
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int par2) {
 		ItemStack var3 = ItemStack.EMPTY;
@@ -75,18 +73,8 @@ public class ContainerMachineBattery extends Container {
 	
 	@Override
 	public void detectAndSendChanges() {
-		NBTTagCompound nbt = new NBTTagCompound();
-
-		nbt.setLong("power", diFurnace.power);
-		nbt.setLong("powerDelta", diFurnace.powerDelta);
-		nbt.setShort("redLow", diFurnace.redLow);
-		nbt.setShort("redHigh", diFurnace.redHigh);
-		nbt.setByte("priority", (byte)diFurnace.priority.ordinal());
-		if(diFurnace instanceof TileEntityMachineFENSU)
-			nbt.setByte("color", (byte) ((TileEntityMachineFENSU)diFurnace).color.getMetadata());
-		
-		diFurnace.networkPack(nbt, 10);
 		super.detectAndSendChanges();
+		diFurnace.networkPackNT(10);
 	}
 	
 	@Override
