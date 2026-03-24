@@ -166,7 +166,6 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 			PacketDispatcher.wrapper.sendToAllTracking(new AuxLongPacket(pos, prev, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
 			prevWatts = watts;
 			
-			//this.networkPack(data, 250);
 		}
 	}
 
