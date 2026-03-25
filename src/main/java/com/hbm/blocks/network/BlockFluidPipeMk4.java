@@ -6,6 +6,7 @@ import java.util.List;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.lib.Library;
 import com.hbm.util.I18nUtil;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
@@ -246,7 +247,12 @@ public class BlockFluidPipeMk4 extends BlockContainer implements IToolable, ILoo
 			text.add("§7" + I18nUtil.resolveKey("desc.none"));
 		} else{
 			int color = ModForgeFluids.getFluidColor(ductFluid);
-			text.add("&[" + color + "&]" +I18nUtil.resolveKey(ductFluid.getUnlocalizedName()));
+			text.add("&[" + color + "&]" + I18nUtil.resolveKey(ductFluid.getUnlocalizedName()));
+		}
+		
+		if(te instanceof TileEntityFFFluidDuctMk4) {
+			TileEntityFFFluidDuctMk4 duct = (TileEntityFFFluidDuctMk4) te;
+			text.add("§e" + Library.getShortNumber(duct.power) + "/" + Library.getShortNumber(TileEntityFFFluidDuctMk4.maxPower) + " HE");
 		}
 		
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);

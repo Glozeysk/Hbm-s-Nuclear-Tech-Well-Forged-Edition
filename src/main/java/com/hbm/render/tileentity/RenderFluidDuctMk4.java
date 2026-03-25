@@ -9,10 +9,14 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk4;
 
+import api.hbm.energy.IEnergyConductor;
+import api.hbm.energy.IEnergyUser;
+
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.fluids.Fluid;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 
 public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileEntitySpecialRenderer<T> {
 	
@@ -24,18 +28,17 @@ public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileE
 		GlStateManager.enableLighting();
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
-		boolean pX = te.connections[3] != null;
-		boolean nX = te.connections[5] != null;
-		boolean pY = te.connections[0] != null;
-		boolean nY = te.connections[1] != null;
-		boolean pZ = te.connections[4] != null;
-		boolean nZ = te.connections[2] != null;
+		boolean pX = te.connections[3] != null || isEnergyNeighbor(te, EnumFacing.EAST);
+		boolean nX = te.connections[5] != null || isEnergyNeighbor(te, EnumFacing.WEST);
+		boolean pY = te.connections[0] != null || isEnergyNeighbor(te, EnumFacing.UP);
+		boolean nY = te.connections[1] != null || isEnergyNeighbor(te, EnumFacing.DOWN);
+		boolean pZ = te.connections[4] != null || isEnergyNeighbor(te, EnumFacing.SOUTH);
+		boolean nZ = te.connections[2] != null || isEnergyNeighbor(te, EnumFacing.NORTH);
 
 		int mask = 0 + (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
 
 		GL11.glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
 
-		// First pass - base texture without color tint
 		GlStateManager.color(1, 1, 1, 1);
 		if(te instanceof TileEntityFFFluidSuccMk4){
 			bindTexture(ResourceManager.pipe_neo_mk4_succ_tex);
@@ -44,7 +47,6 @@ public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileE
 		}
 		renderParts(mask, pX, nX, pY, nY, pZ, nZ);
 
-		// Second pass - overlay with fluid color
 		if(te.getType() != null){
 			GlStateManager.enableBlend();
 			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -58,6 +60,16 @@ public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileE
 		GlStateManager.color(1, 1, 1, 1);
 		GL11.glTranslated(-x - 0.5F, -y - 0.5F, -z - 0.5F);
 		GL11.glPopMatrix();
+	}
+
+	private boolean isEnergyNeighbor(T te, EnumFacing facing) {
+		if(!(te instanceof com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4))
+			return false;
+		BlockPos neighborPos = te.getPos().offset(facing);
+		TileEntity neighbor = te.getWorld().getTileEntity(neighborPos);
+		if(neighbor == null) return false;
+		if(neighbor instanceof TileEntityFFDuctBaseMk2) return false;
+		return neighbor instanceof IEnergyConductor || neighbor instanceof IEnergyUser;
 	}
 
 	private void renderParts(int mask, boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
@@ -94,6 +106,12 @@ public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileE
 			if(!pX && !nY && !nZ) ResourceManager.pipe_neo_mk4.renderPart("Core");
 			if(!nX && !nY && !pZ) ResourceManager.pipe_neo_mk4.renderPart("Core");
 			if(!nX && !nY && !nZ) ResourceManager.pipe_neo_mk4.renderPart("Core");
+
+			int connectionCount = (pX ? 1 : 0) + (nX ? 1 : 0) + (pY ? 1 : 0) + (nY ? 1 : 0) + (pZ ? 1 : 0) + (nZ ? 1 : 0);
+
+			if(connectionCount > 2) {
+				ResourceManager.pipe_neo_mk4.renderPart("Core");
+			}
 		}
 	}
 }
