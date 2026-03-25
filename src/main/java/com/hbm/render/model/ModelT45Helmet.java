@@ -120,6 +120,8 @@ public class ModelT45Helmet extends ModelBiped {
         } else {
             this.helmet.rotationPointX = this.bipedHead.rotationPointX;
             this.helmet.rotationPointY = this.bipedHead.rotationPointY;
+			this.helmet.rotationPointZ = this.bipedHead.rotationPointZ;
+			this.helmet.rotateAngleZ = this.bipedHead.rotateAngleZ;
             this.helmet.rotateAngleY = this.bipedHead.rotateAngleY;
             this.helmet.rotateAngleX = this.bipedHead.rotateAngleX;
         }

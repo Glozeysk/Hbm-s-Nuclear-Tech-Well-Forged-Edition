@@ -44,7 +44,7 @@ public class ModelArmorAJRAlpha extends ModelArmorBase {
 		}
 		if(type == 3) {
 			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_helmet);
-			head.render(par7*1.001F);
+			head.render(par7*1.01F);
 		}
 		if(this.isChild) {
 			GL11.glScalef(0.75F, 0.75F, 0.75F);
