@@ -25,89 +25,8 @@ import com.hbm.tileentity.bomb.TileEntityNukePrototype;
 import com.hbm.tileentity.bomb.TileEntityNukeSolinium;
 import com.hbm.tileentity.bomb.TileEntityNukeTsar;
 import com.hbm.tileentity.bomb.TileEntityRailgun;
-import com.hbm.tileentity.machine.TileEntityAMSBase;
-import com.hbm.tileentity.machine.TileEntityAMSEmitter;
-import com.hbm.tileentity.machine.TileEntityAMSLimiter;
-import com.hbm.tileentity.machine.TileEntityBarrel;
-import com.hbm.tileentity.machine.TileEntityControlPanel;
-import com.hbm.tileentity.machine.TileEntityCore;
-import com.hbm.tileentity.machine.TileEntityCoreAdvanced;
-import com.hbm.tileentity.machine.TileEntityCoreEmitter;
-import com.hbm.tileentity.machine.TileEntityCoreInjector;
-import com.hbm.tileentity.machine.TileEntityCoreReceiver;
-import com.hbm.tileentity.machine.TileEntityCoreStabilizer;
-import com.hbm.tileentity.machine.TileEntityCoreTitanium;
-import com.hbm.tileentity.machine.TileEntityCrateIron;
-import com.hbm.tileentity.machine.TileEntityCrateSteel;
-import com.hbm.tileentity.machine.TileEntityCrateTungsten;
-import com.hbm.tileentity.machine.TileEntityCrateDesh;
-import com.hbm.tileentity.machine.TileEntityDiFurnace;
-import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
-import com.hbm.tileentity.machine.TileEntityFWatzCore;
-import com.hbm.tileentity.machine.TileEntityForceField;
-import com.hbm.tileentity.machine.TileEntityHadron;
-import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
-import com.hbm.tileentity.machine.TileEntityITER;
-import com.hbm.tileentity.machine.TileEntityMachineArcFurnace;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
-import com.hbm.tileentity.machine.TileEntityMachineBattery;
-import com.hbm.tileentity.machine.TileEntityMachineBoiler;
-import com.hbm.tileentity.machine.TileEntityMachineBoilerElectric;
-import com.hbm.tileentity.machine.TileEntityMachineBoilerRTG;
-import com.hbm.tileentity.machine.TileEntityMachineCMBFactory;
-import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
-import com.hbm.tileentity.machine.TileEntityMachineChemplant;
-import com.hbm.tileentity.machine.TileEntityMachineCoal;
-import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
-import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
-import com.hbm.tileentity.machine.TileEntityMachineDiesel;
-import com.hbm.tileentity.machine.TileEntityMachineDiFurnaceBig;
-import com.hbm.tileentity.machine.TileEntityMachineEPress;
-import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
-import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
-import com.hbm.tileentity.machine.TileEntityMachineGasCent;
-import com.hbm.tileentity.machine.TileEntityMachineUUCreator;
+import com.hbm.tileentity.machine.*;
 import com.hbm.tileentity.machine.oil.*;
-import com.hbm.tileentity.machine.TileEntityMachineGenerator;
-import com.hbm.tileentity.machine.TileEntityMachineIGenerator;
-import com.hbm.tileentity.machine.TileEntityMachineKeyForge;
-import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
-import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
-import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
-import com.hbm.tileentity.machine.TileEntityMachinePlasmaHeater;
-import com.hbm.tileentity.machine.TileEntityMachinePress;
-import com.hbm.tileentity.machine.TileEntityMachinePuF6Tank;
-import com.hbm.tileentity.machine.TileEntityMachineRTG;
-import com.hbm.tileentity.machine.TileEntityMachineRadGen;
-import com.hbm.tileentity.machine.TileEntityMachineRadar;
-import com.hbm.tileentity.machine.TileEntityMachineReactor;
-import com.hbm.tileentity.machine.TileEntityMachineReactorLarge;
-import com.hbm.tileentity.machine.TileEntityMachineReactorSmall;
-import com.hbm.tileentity.machine.TileEntityMachineSatDock;
-import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
-import com.hbm.tileentity.machine.TileEntityMachineSchrabidiumTransmutator;
-import com.hbm.tileentity.machine.TileEntityMachineSeleniumEngine;
-import com.hbm.tileentity.machine.TileEntityMachineShredder;
-import com.hbm.tileentity.machine.TileEntityMachineShreddermk2;
-import com.hbm.tileentity.machine.TileEntityMachineSiren;
-import com.hbm.tileentity.machine.TileEntityMachineTeleLinker;
-import com.hbm.tileentity.machine.TileEntityMachineTeleporter;
-import com.hbm.tileentity.machine.TileEntityMachineTurbine;
-import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
-import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
-import com.hbm.tileentity.machine.TileEntityMicrowave;
-import com.hbm.tileentity.machine.TileEntityNukeFurnace;
-import com.hbm.tileentity.machine.TileEntityReactorControl;
-import com.hbm.tileentity.machine.TileEntityRtgFurnace;
-import com.hbm.tileentity.machine.TileEntitySILEX;
-import com.hbm.tileentity.machine.TileEntityFEL;
-import com.hbm.tileentity.machine.TileEntitySafe;
-import com.hbm.tileentity.machine.TileEntitySoyuzCapsule;
-import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
-import com.hbm.tileentity.machine.TileEntityStorageDrum;
-import com.hbm.tileentity.machine.TileEntityWasteDrum;
-import com.hbm.tileentity.machine.TileEntityWasteDrumt2;
-import com.hbm.tileentity.machine.TileEntityWatzCore;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBoiler;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlAuto;
@@ -179,6 +98,11 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerMachineAssembler(player.inventory, (TileEntityMachineAssembler) entity);
 			}
 			return null;
+        case ModBlocks.guiID_machine_assembly:
+            if(entity instanceof TileEntityMachineAssembly) {
+                return new ContainerMachineAssembly(player.inventory, (TileEntityMachineAssembly) entity);
+            }
+            return null;
 		case ModBlocks.guiID_machine_chemplant:
 			if(entity instanceof TileEntityMachineChemplant) {
 				return new ContainerMachineChemplant(player.inventory, (TileEntityMachineChemplant) entity);
@@ -769,19 +693,19 @@ public class GuiHandler implements IGuiHandler {
 		if(entity instanceof IGUIProvider) {
 			return ((IGUIProvider) entity).provideGUI(ID, player, world, x, y, z);
 		}
-		
+
 		IBlockState b = world.getBlockState(new BlockPos(x, y, z));
-		
+
 		if(b instanceof IGUIProvider) {
 			return ((IGUIProvider) b).provideGUI(ID, player, world, x, y, z);
 		}
-		
+
 		ItemStack item = player.getHeldItemMainhand();
-		
+
 		if(item != null && item.getItem() instanceof IGUIProvider) {
 			return ((IGUIProvider) item.getItem()).provideGUI(ID, player, world, x, y, z);
 		}
-		
+
 		switch(ID) {
 		case ModBlocks.guiID_machine_press:
 			if(entity instanceof TileEntityMachinePress) {
@@ -802,6 +726,13 @@ public class GuiHandler implements IGuiHandler {
 				return new GUIMachineAssembler(player.inventory, (TileEntityMachineAssembler) entity);
 			}
 			return null;
+
+        case ModBlocks.guiID_machine_assembly:
+            if(entity instanceof TileEntityMachineAssembly) {
+                return new GUIMachineAssembly(player.inventory, (TileEntityMachineAssembly) entity);
+            }
+        return null;
+
 		case ModBlocks.guiID_machine_chemplant:
 			if(entity instanceof TileEntityMachineChemplant) {
 				return new GUIMachineChemplant(player.inventory, (TileEntityMachineChemplant) entity);
@@ -1277,7 +1208,7 @@ public class GuiHandler implements IGuiHandler {
 				return new GuiControlEdit(player.inventory, (TileEntityControlPanel)entity);
 			}
 			return null;
-		case ModBlocks.guiID_crate_tungsten: 
+		case ModBlocks.guiID_crate_tungsten:
 			if(entity instanceof TileEntityCrateTungsten) {
 				return new GUICrateTungsten(player.inventory, (TileEntityCrateTungsten) entity);
 			}
@@ -1402,7 +1333,6 @@ public class GuiHandler implements IGuiHandler {
 		case ModItems.guiID_item_guide:
 			return new GUIScreenGuide(player);
 		}
-		
 		return null;
 	}
 

@@ -321,6 +321,33 @@ public class ItemRenderLibrary {
 		        GL11.glPopMatrix();
 			}});
 
+        renderers.put(Item.getItemFromBlock(ModBlocks.machine_assembly), new ItemRenderBase() {
+            public void renderInventory() {
+                GL11.glScaled(3.5, 3.5, 3.5);
+            }
+            public void renderCommon() {
+                bindTexture(ResourceManager.assembly_body_tex); ResourceManager.assembly_body.renderAll();
+                bindTexture(ResourceManager.assembly_slider_tex); ResourceManager.assembly_slider.renderAll();
+                bindTexture(ResourceManager.assembly_arm_tex); ResourceManager.assembly_arm.renderAll();
+                bindTexture(ResourceManager.assembly_cog_tex);
+                GL11.glPushMatrix();
+                GL11.glTranslated(-0.6, 0.75, 1.0625);
+                ResourceManager.assembly_cog.renderAll();
+                GL11.glPopMatrix();
+                GL11.glPushMatrix();
+                GL11.glTranslated(0.6, 0.75, 1.0625);
+                ResourceManager.assembly_cog.renderAll();
+                GL11.glPopMatrix();
+                GL11.glPushMatrix();
+                GL11.glTranslated(-0.6, 0.75, -1.0625);
+                ResourceManager.assembly_cog.renderAll();
+                GL11.glPopMatrix();
+                GL11.glPushMatrix();
+                GL11.glTranslated(0.6, 0.75, -1.0625);
+                ResourceManager.assembly_cog.renderAll();
+                GL11.glPopMatrix();
+            }});
+
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_chemplant), new ItemRenderBase() {
 			public void renderInventory() {
 				GL11.glTranslated(0, -2, 0);

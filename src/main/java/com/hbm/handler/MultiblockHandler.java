@@ -76,6 +76,10 @@ public class MultiblockHandler {
 	public static final int[] assemblerDimensionEast  = new int[] { 2, 1, 1, 0, 2, 1 };
 	public static final int[] assemblerDimensionSouth = new int[] { 1, 2, 1, 0, 2, 1 };
 	public static final int[] assemblerDimensionWest  = new int[] { 1, 2, 1, 0, 1, 2 };
+    public static final int[] assemblyDimensionNorth = new int[] { 2, 1, 1, 0, 1, 2 };
+    public static final int[] assemblyDimensionEast  = new int[] { 2, 1, 1, 0, 2, 1 };
+    public static final int[] assemblyDimensionSouth = new int[] { 1, 2, 1, 0, 2, 1 };
+    public static final int[] assemblyDimensionWest  = new int[] { 1, 2, 1, 0, 1, 2 };
 	public static final int[] chemplantDimensionNorth = new int[] { 2, 1, 2, 0, 1, 2 };
 	public static final int[] chemplantDimensionEast  = new int[] { 2, 1, 2, 0, 2, 1 };
 	public static final int[] chemplantDimensionSouth = new int[] { 1, 2, 2, 0, 2, 1 };
