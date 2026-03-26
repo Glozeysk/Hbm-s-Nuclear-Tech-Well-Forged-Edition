@@ -27,10 +27,10 @@ public class ModelJetPack extends ModelBiped {
 		float x = 0F;
 		float y = 0F;
 		float z = -2F;
-		
+
 		JetPack = new ModelRenderer(this, 0, 0);
 		JetPack.setRotationPoint(x, y, z);
-		
+
 		Pack = new ModelRenderer(this, 12, 10);
 		Pack.addBox(0F, 0F, 0F, 4, 6, 1);
 		Pack.setRotationPoint(-2F, 3F, 0F);
@@ -96,7 +96,7 @@ public class ModelJetPack extends ModelBiped {
 		convertToChild(JetPack, Thruster2);
 	}
 
-	
+
 	@Override
 	public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5) {
 		//super.render(entity, f, f1, f2, f3, f4, f5);
@@ -118,38 +118,22 @@ public class ModelJetPack extends ModelBiped {
 		model.rotateAngleZ = z;
 	}
 
-	@Override
-	public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
-		if (entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer) entity;
-			if (player.isSneaking()) {
-				this.isSneak = true;
-			} else {
-				this.isSneak = false;
-			}
-			/*ItemStack itemstack = player.inventory.getCurrentItem();
-			this.heldItemRight = itemstack != null ? 1 : 0;
-
-			if (itemstack != null && player.getItemInUseCount() > 0) {
-				EnumAction enumaction = itemstack.getItemUseAction();
-
-				if (enumaction == EnumAction.block) {
-					this.heldItemRight = 3;
-				} else if (enumaction == EnumAction.bow) {
-					this.aimedBow = true;
-				}
-			}*/
-		}
-		//float s = 1 / 16;
-
-		super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-		this.JetPack.rotationPointX = this.bipedBody.rotationPointX;
-		this.JetPack.rotationPointY = this.bipedBody.rotationPointY;
-		this.JetPack.rotationPointZ = this.bipedBody.rotationPointZ;
-		this.JetPack.rotateAngleX = this.bipedBody.rotateAngleX;
-		this.JetPack.rotateAngleY = this.bipedBody.rotateAngleY + (float)Math.toRadians(f3);
-		this.JetPack.rotateAngleZ = this.bipedBody.rotateAngleZ;
-	}
+    @Override
+    public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
+        super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
+        this.JetPack.rotationPointX = this.bipedBody.rotationPointX;
+        this.JetPack.rotationPointY = this.bipedBody.rotationPointY;
+        this.JetPack.rotationPointZ = this.bipedBody.rotationPointZ;
+        this.JetPack.rotateAngleX = this.bipedBody.rotateAngleX;
+        this.JetPack.rotateAngleY = this.bipedBody.rotateAngleY + (float)Math.toRadians(f3);
+        this.JetPack.rotateAngleZ = this.bipedBody.rotateAngleZ;
+        if (entity instanceof EntityPlayer && ((EntityPlayer)entity).isSneaking()) {
+            this.JetPack.rotationPointY += 2.0F;
+        }
+        if (entity instanceof EntityPlayer && ((EntityPlayer)entity).isPlayerSleeping()){
+            this.JetPack.isHidden = true;
+        }
+    }
 
 	protected void convertToChild(ModelRenderer parParent, ModelRenderer parChild) {
 		parChild.rotationPointX -= parParent.rotationPointX;
