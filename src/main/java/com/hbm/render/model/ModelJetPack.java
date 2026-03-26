@@ -127,12 +127,7 @@ public class ModelJetPack extends ModelBiped {
         this.JetPack.rotateAngleX = this.bipedBody.rotateAngleX;
         this.JetPack.rotateAngleY = this.bipedBody.rotateAngleY + (float)Math.toRadians(f3);
         this.JetPack.rotateAngleZ = this.bipedBody.rotateAngleZ;
-        if (entity instanceof EntityPlayer && ((EntityPlayer)entity).isSneaking()) {
-            this.JetPack.rotationPointY += 2.0F;
-        }
-        if (entity instanceof EntityPlayer && ((EntityPlayer)entity).isPlayerSleeping()){
-            this.JetPack.isHidden = true;
-        }
+        this.JetPack.isHidden = entity instanceof EntityPlayer && (((EntityPlayer) entity).isPlayerSleeping()) || (entity.isInWater() && entity.height < 1.0F);
     }
 
 	protected void convertToChild(ModelRenderer parParent, ModelRenderer parChild) {
