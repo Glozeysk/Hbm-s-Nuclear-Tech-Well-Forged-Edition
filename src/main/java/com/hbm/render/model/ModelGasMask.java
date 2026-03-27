@@ -1,5 +1,10 @@
 package com.hbm.render.model;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
@@ -78,11 +83,7 @@ public class ModelGasMask extends ModelBiped {
 
         if (entity instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) entity;
-            if (player.isSneaking()) {
-                this.isSneak = true;
-            } else {
-                this.isSneak = false;
-            }
+            this.isSneak = player.isSneaking();
         }
 
         super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
@@ -94,23 +95,40 @@ public class ModelGasMask extends ModelBiped {
         } else {
             this.mask.rotationPointX = this.bipedHead.rotationPointX;
             this.mask.rotationPointY = this.bipedHead.rotationPointY;
-            this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
+            this.mask.rotationPointZ = this.bipedHead.rotationPointZ;
             this.mask.rotateAngleX = this.bipedHead.rotateAngleX;
-        }
-
-        if (this.isSneak) {
-            this.mask.rotationPointY = 3.73F;
+            this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
+            this.mask.rotateAngleZ = this.bipedHead.rotateAngleZ;
         }
     }
 
-	@Override
-	public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
-		setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
-		GL11.glPushMatrix();
-		GL11.glScalef(1.15F, 1.15F, 1.15F);
-		this.mask.render(par7);
-		GL11.glPopMatrix();
-	}
+    @Override
+    public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
+        setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
+
+        if (par1Entity instanceof EntityLivingBase && !(par1Entity instanceof EntityArmorStand)) {
+            try {
+                Render<?> entityRenderer = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(par1Entity);
+                if (entityRenderer instanceof RenderLivingBase) {
+                    ModelBase mainModel = ((RenderLivingBase<?>) entityRenderer).getMainModel();
+                    if (mainModel instanceof ModelBiped) {
+                        ModelBiped m = (ModelBiped) mainModel;
+                        this.mask.rotateAngleX = m.bipedHead.rotateAngleX;
+                        this.mask.rotateAngleY = m.bipedHead.rotateAngleY;
+                        this.mask.rotateAngleZ = m.bipedHead.rotateAngleZ;
+                        this.mask.rotationPointX = m.bipedHead.rotationPointX;
+                        this.mask.rotationPointY = m.bipedHead.rotationPointY;
+                        this.mask.rotationPointZ = m.bipedHead.rotationPointZ;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        GL11.glPushMatrix();
+        GL11.glScalef(1.15F, 1.15F, 1.15F);
+        this.mask.render(par7);
+        GL11.glPopMatrix();
+    }
 
 	protected void convertToChild(ModelRenderer parParent, ModelRenderer parChild) {
 		// move child rotation point to be relative to parent

@@ -17,12 +17,14 @@ import com.hbm.packet.KeybindPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.RenderHelper;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.render.model.ModelHelmetFSB;
 import com.hbm.util.I18nUtil;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
@@ -58,8 +60,13 @@ public class ArmorFSB extends ItemArmor {
 
 	public static Field nextStepDistance = null;
 	public static Field distanceWalkedOnStepModified = null;
-	
-	@SideOnly(Side.CLIENT)
+    @SideOnly(Side.CLIENT)
+    private ModelBiped helmetModel;
+
+    public boolean glassLayer = false;
+
+
+    @SideOnly(Side.CLIENT)
 	public static boolean flashlightPress;
 	
 	private String texture = "";
@@ -357,7 +364,19 @@ public class ArmorFSB extends ItemArmor {
 			flashlightPress = ClientProxy.fsbFlashlight.isKeyDown();
 		}
 	}
-	
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default) {
+        if (armorSlot == EntityEquipmentSlot.HEAD) {
+            if (helmetModel == null) {
+                helmetModel = new ModelHelmetFSB(glassLayer);
+            }
+            return helmetModel;
+        }
+        return super.getArmorModel(entityLiving, itemStack, armorSlot, _default);
+    }
+
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity e, int itemSlot, boolean isSelected) {
 
@@ -624,4 +643,8 @@ public class ArmorFSB extends ItemArmor {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 	}
 
+    public ArmorFSB setHasGlassLayer(boolean glass) {
+        this.glassLayer = glass;
+        return this;
+    }
 }

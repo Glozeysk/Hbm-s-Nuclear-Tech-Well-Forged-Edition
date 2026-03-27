@@ -6,6 +6,11 @@
 
 package com.hbm.render.model;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.entity.item.EntityArmorStand;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.handler.ArmorUtil;
@@ -102,64 +107,93 @@ public class ModelM65 extends ModelBiped {
 		convertToChild(filter, filter2);
 	}
 
-	@Override
-	public void setRotationAngles(float f2, float f3, float f4, float f5, float f6, float f7, Entity entity) {
-		
-		if(entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer) entity;
-			if (player.isSneaking()) {
-				this.isSneak = true;
-			} else {
-				this.isSneak = false;
-			}
-		}
-		super.setRotationAngles(f2, f3, f4, f5, f6, f7, entity);
-		this.mask.rotationPointX = this.bipedHead.rotationPointX;
-		this.mask.rotationPointY = this.bipedHead.rotationPointY;
-		this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.mask.rotateAngleX = this.bipedHead.rotateAngleX;
-		this.filter.rotationPointX = this.bipedHead.rotationPointX;
-		this.filter.rotationPointY = this.bipedHead.rotationPointY;
-		this.filter.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.filter.rotateAngleX = this.bipedHead.rotateAngleX;
-
-		if(this.isSneak) {
-            this.mask.rotationPointY = 3.73F;
-            this.filter.rotationPointY = 3.73F;
+    @Override
+    public void setRotationAngles(float f2, float f3, float f4, float f5, float f6, float f7, Entity entity) {
+        if (entity instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) entity;
+            this.isSneak = player.isSneaking();
         }
-	}
+        super.setRotationAngles(f2, f3, f4, f5, f6, f7, entity);
 
-	@Override
-	public void render(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7) {
-		setRotationAngles(par2, par3, par4, par5, par6, par7, entity);
-		
-		if(this.isChild) {
-			float f6 = 2.0F;
-			GL11.glPushMatrix();
-			GL11.glScalef(1.5F / f6, 1.5F / f6, 1.5F / f6);
-			GL11.glTranslatef(0.0F, 16.0F * par7, 0.0F);
-			double d = 1D / 16D * 18D;
-			GL11.glScaled(d, d, d);
-			GL11.glScaled(1.01D, 1.01D, 1.01D);
-			this.mask.render(par7);
-			
-			if(!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase)entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
-				this.filter.render(par7);
-			
-			GL11.glPopMatrix();
-		} else {
-			GL11.glPushMatrix();
-			double d = 1D / 16D * 18D;
-			GL11.glScaled(d, d, d);
-			GL11.glScaled(1.01D, 1.01D, 1.01D);
-			this.mask.render(par7);
-			
-			if(!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase)entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
-				this.filter.render(par7);
-			
-			GL11.glPopMatrix();
-		}
-	}
+        if (entity instanceof EntityArmorStand) {
+            EntityArmorStand stand = (EntityArmorStand) entity;
+            this.mask.rotateAngleX = (float) Math.toRadians(stand.getHeadRotation().getX());
+            this.mask.rotateAngleY = (float) Math.toRadians(stand.getHeadRotation().getY());
+            this.mask.rotateAngleZ = (float) Math.toRadians(stand.getHeadRotation().getZ());
+            this.filter.rotateAngleX = this.mask.rotateAngleX;
+            this.filter.rotateAngleY = this.mask.rotateAngleY;
+            this.filter.rotateAngleZ = this.mask.rotateAngleZ;
+        } else {
+            this.mask.rotationPointX = this.bipedHead.rotationPointX;
+            this.mask.rotationPointY = this.bipedHead.rotationPointY;
+            this.mask.rotationPointZ = this.bipedHead.rotationPointZ;
+            this.mask.rotateAngleX = this.bipedHead.rotateAngleX;
+            this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
+            this.mask.rotateAngleZ = this.bipedHead.rotateAngleZ;
+            this.filter.rotationPointX = this.bipedHead.rotationPointX;
+            this.filter.rotationPointY = this.bipedHead.rotationPointY;
+            this.filter.rotationPointZ = this.bipedHead.rotationPointZ;
+            this.filter.rotateAngleX = this.bipedHead.rotateAngleX;
+            this.filter.rotateAngleY = this.bipedHead.rotateAngleY;
+            this.filter.rotateAngleZ = this.bipedHead.rotateAngleZ;
+        }
+    }
+
+    @Override
+    public void render(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7) {
+        setRotationAngles(par2, par3, par4, par5, par6, par7, entity);
+
+        if (entity instanceof EntityLivingBase && !(entity instanceof EntityArmorStand)) {
+            try {
+                Render<?> entityRenderer = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entity);
+                if (entityRenderer instanceof RenderLivingBase) {
+                    ModelBase mainModel = ((RenderLivingBase<?>) entityRenderer).getMainModel();
+                    if (mainModel instanceof ModelBiped) {
+                        ModelBiped m = (ModelBiped) mainModel;
+                        this.mask.rotateAngleX = m.bipedHead.rotateAngleX;
+                        this.mask.rotateAngleY = m.bipedHead.rotateAngleY;
+                        this.mask.rotateAngleZ = m.bipedHead.rotateAngleZ;
+                        this.mask.rotationPointX = m.bipedHead.rotationPointX;
+                        this.mask.rotationPointY = m.bipedHead.rotationPointY;
+                        this.mask.rotationPointZ = m.bipedHead.rotationPointZ;
+                        this.filter.rotateAngleX = m.bipedHead.rotateAngleX;
+                        this.filter.rotateAngleY = m.bipedHead.rotateAngleY;
+                        this.filter.rotateAngleZ = m.bipedHead.rotateAngleZ;
+                        this.filter.rotationPointX = m.bipedHead.rotationPointX;
+                        this.filter.rotationPointY = m.bipedHead.rotationPointY;
+                        this.filter.rotationPointZ = m.bipedHead.rotationPointZ;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (this.isChild) {
+            float f6 = 2.0F;
+            GL11.glPushMatrix();
+            GL11.glScalef(1.5F / f6, 1.5F / f6, 1.5F / f6);
+            GL11.glTranslatef(0.0F, 16.0F * par7, 0.0F);
+            double d = 1D / 16D * 18D;
+            GL11.glScaled(d, d, d);
+            GL11.glScaled(1.01D, 1.01D, 1.01D);
+            this.mask.render(par7);
+
+            if (!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase) entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
+                this.filter.render(par7);
+
+            GL11.glPopMatrix();
+        } else {
+            GL11.glPushMatrix();
+            double d = 1D / 16D * 18D;
+            GL11.glScaled(d, d, d);
+            GL11.glScaled(1.01D, 1.01D, 1.01D);
+            this.mask.render(par7);
+
+            if (!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase) entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
+                this.filter.render(par7);
+
+            GL11.glPopMatrix();
+        }
+    }
 
 	private void setRotation(ModelRenderer model, float x, float y, float z) {
 		model.rotateAngleX = x;

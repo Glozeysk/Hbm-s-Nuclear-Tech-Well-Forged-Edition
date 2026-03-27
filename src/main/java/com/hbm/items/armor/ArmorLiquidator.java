@@ -3,6 +3,7 @@ package com.hbm.items.armor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.render.model.ModelGasMask;
 import net.minecraft.entity.Entity;
 import org.lwjgl.opengl.GL11;
 
@@ -58,22 +59,11 @@ public class ArmorLiquidator extends ArmorFSB implements IGasMask {
                 if (this.model == null) {
                     this.model = new ModelM65();
                 }
-                return new ModelM65() {
-                    @Override
-                    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
-                        if (entityIn instanceof EntityArmorStand) {
-                            EntityArmorStand stand = (EntityArmorStand) entityIn;
-                            netHeadYaw = (float) Math.toRadians(stand.getHeadRotation().getY());
-                            headPitch = (float) Math.toRadians(stand.getHeadRotation().getX());
-                        }
-                        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-                    }
-                };
+                return this.model;
             }
         }
         return super.getArmorModel(entityLiving, itemStack, armorSlot, _default);
     }
-
     @Override
     public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot) {
         Multimap<String, AttributeModifier> map = super.getItemAttributeModifiers(equipmentSlot);

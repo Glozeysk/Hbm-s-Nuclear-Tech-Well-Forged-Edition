@@ -79,30 +79,16 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
         if (armorSlot != EntityEquipmentSlot.HEAD) return null;
 
         if (this == ModItems.gas_mask) {
-            return new ModelGasMask() {
-                @Override
-                public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
-                    if (entityIn instanceof EntityArmorStand) {
-                        EntityArmorStand stand = (EntityArmorStand) entityIn;
-                        netHeadYaw = (float) Math.toRadians(stand.getHeadRotation().getY());
-                        headPitch = (float) Math.toRadians(stand.getHeadRotation().getX());
-                    }
-                    super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-                }
-            };
+            if (this.modelGas == null) {
+                this.modelGas = new ModelGasMask();
+            }
+            return this.modelGas;
         }
         if (this == ModItems.gas_mask_m65 || this == ModItems.hazmat_helmet_red || this == ModItems.hazmat_helmet_grey || this == ModItems.gas_mask_mono || this == ModItems.hazmat_paa_helmet) {
-            return new ModelM65() {
-                @Override
-                public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
-                    if (entityIn instanceof EntityArmorStand) {
-                        EntityArmorStand stand = (EntityArmorStand) entityIn;
-                        netHeadYaw = (float) Math.toRadians(stand.getHeadRotation().getY());
-                        headPitch = (float) Math.toRadians(stand.getHeadRotation().getX());
-                    }
-                    super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-                }
-            };
+            if (this.modelM65 == null) {
+                this.modelM65 = new ModelM65();
+            }
+            return this.modelM65;
         }
         return null;
     }
