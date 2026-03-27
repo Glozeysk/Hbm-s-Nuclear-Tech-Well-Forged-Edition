@@ -1,6 +1,7 @@
 package com.hbm.packet;
 
 import com.hbm.interfaces.ITankPacketAcceptor;
+import com.hbm.packet.threading.PrecompiledPacket;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -16,7 +17,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class FluidTankPacket implements IMessage {
+public class FluidTankPacket extends PrecompiledPacket {
 
 	int x;
 	int y;
@@ -89,7 +90,6 @@ public class FluidTankPacket implements IMessage {
 					((ITankPacketAcceptor)te).recievePacket(m.tags);
 				}
 			});
-			
 
 			return null;
 		}

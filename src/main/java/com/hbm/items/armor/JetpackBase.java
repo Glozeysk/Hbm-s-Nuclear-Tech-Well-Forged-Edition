@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import java.util.List;
 
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.main.MainRegistry;
@@ -80,33 +81,7 @@ public class JetpackBase extends ItemArmorMod {
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void modRender(Pre event, ItemStack armor) {
-
-		ModelBiped modelJetpack = getArmorModel(event.getEntityLiving(), null, EntityEquipmentSlot.CHEST, null);
-		
-		EntityPlayer player = event.getEntityPlayer();
-
-		RenderPlayer renderer = event.getRenderer();
-		ModelBiped model = renderer.getMainModel();
-		modelJetpack.isSneak = model.isSneak;
-		
-		float interp = event.getPartialRenderTick();
-		float yaw = player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset)*interp;
-		float yawWrapped = MathHelper.wrapDegrees(yaw+180);
-		float pitch = player.rotationPitch;
-		
-		Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(this.getArmorTexture(armor, event.getEntity(), this.getEquipmentSlot(armor), null)));
-
-		EntityPlayer me = MainRegistry.proxy.me();
-		boolean isMe = player == me;
-		if(!isMe){
-			GL11.glPushMatrix();
-			offset(player, me, interp);
-		}
-		modelJetpack.render(event.getEntityPlayer(), 0.0F, 0.0F, 0, yawWrapped, pitch, 0.0625F);
-		if(!isMe){
-			GL11.glPopMatrix();
-		}
+	public void modRender(RenderPlayerEvent.Pre event, ItemStack armor) {
 	}
 	
 	@Override

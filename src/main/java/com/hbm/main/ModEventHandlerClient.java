@@ -1164,32 +1164,28 @@ public class ModEventHandlerClient {
 	
 	//Sus
 	@SubscribeEvent
-	public void onArmorRenderEvent(RenderPlayerEvent.Pre event){
+	public void onArmorRenderEvent(RenderPlayerEvent.Pre event) {
 		EntityPlayer player = event.getEntityPlayer();
-		GL11.glPushMatrix();
-		GL11.glTranslated(0, player.isSneaking() ? 1.1 : 1.4, 0);
-		GL11.glRotated(180, 0, 0, 1);
-		
+
 		for(int i = 0; i < 4; i++) {
-			
+
 			ItemStack armor = player.inventory.armorItemInSlot(i);
-			
+
 			if(armor != null && ArmorModHandler.hasMods(armor)) {
-				
+
 				for(ItemStack mod : ArmorModHandler.pryMods(armor)) {
-					
+
 					if(mod != null && mod.getItem() instanceof ItemArmorMod) {
-						((ItemArmorMod)mod.getItem()).modRender(event, armor);
+						((ItemArmorMod) mod.getItem()).modRender(event, armor);
 					}
 				}
 			}
-			
-			//because armor that isn't ItemArmor doesn't render at all
+
+			// because armor that isn't ItemArmor doesn't render at all
 			if(armor != null && armor.getItem() instanceof JetpackBase) {
-				((ItemArmorMod)armor.getItem()).modRender(event, armor);
+				((ItemArmorMod) armor.getItem()).modRender(event, armor);
 			}
 		}
-		GL11.glPopMatrix();
 	}
 	
 	@SubscribeEvent

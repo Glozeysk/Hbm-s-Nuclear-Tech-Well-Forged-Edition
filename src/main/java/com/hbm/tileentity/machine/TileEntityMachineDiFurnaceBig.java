@@ -370,8 +370,13 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 			}
 		} else {
 			if(isRunning) {
-				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
-				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+				process++;
+				if(process >= getProcessSpeed()) {
+					process = 0;
+				}
+
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
 				if(this.world.getTotalWorldTime() % 2 == 0) {
 					switch (dir)
@@ -423,12 +428,19 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 
 	@Override
 	public void deserialize(ByteBuf buf) {
+		boolean wasRunning = this.isRunning;
 		this.isRunning = buf.readBoolean();
-		this.process = buf.readShort();
+		int serverProcess = buf.readShort();
 		this.power = buf.readLong();
 		tank.readFromNBT(ByteBufUtils.readTag(buf));
 		if(tank.getFluid() != null)
 			tankType = tank.getFluid().getFluid();
+
+		if(!isRunning) {
+			this.process = 0;
+		} else if(!wasRunning) {
+			this.process = serverProcess;
+		}
 	}
 
 	protected boolean inputValidForTank(int slot){

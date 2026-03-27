@@ -1,27 +1,27 @@
 package com.hbm.packet;
 
 import com.hbm.main.MainRegistry;
+import com.hbm.packet.threading.ThreadedPacket;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class AuxParticlePacket implements IMessage {
+public class AuxParticlePacket extends ThreadedPacket {
 
-	double x;
-	double y;
-	double z;
-	int type;
+	private double x;
+	private double y;
+	private double z;
+	private int type;
 
-	public AuxParticlePacket()
-	{
-		
+	public AuxParticlePacket() {
 	}
 
-	public AuxParticlePacket(double x, double y, double z, int type)
-	{
+	public AuxParticlePacket(double x, double y, double z, int type) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -45,18 +45,14 @@ public class AuxParticlePacket implements IMessage {
 	}
 
 	public static class Handler implements IMessageHandler<AuxParticlePacket, IMessage> {
-		
+
 		@Override
+		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(AuxParticlePacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
-				try {
-					
-					MainRegistry.proxy.particleControl(m.x, m.y, m.z, m.type);
-					
-				} catch(Exception x) { }
+				if (Minecraft.getMinecraft().world == null) return;
+				MainRegistry.proxy.particleControl(m.x, m.y, m.z, m.type);
 			});
-			
-			
 			return null;
 		}
 	}

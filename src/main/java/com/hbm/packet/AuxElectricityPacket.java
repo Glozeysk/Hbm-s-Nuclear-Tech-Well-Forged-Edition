@@ -1,6 +1,7 @@
 package com.hbm.packet;
 
 import api.hbm.energy.IEnergyUser;
+import com.hbm.packet.threading.ThreadedPacket;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -12,30 +13,27 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class AuxElectricityPacket implements IMessage {
+public class AuxElectricityPacket extends ThreadedPacket {
 
-	int x;
-	int y;
-	int z;
-	long charge;
+	private int x;
+	private int y;
+	private int z;
+	private long charge;
 
-	public AuxElectricityPacket()
-	{
-		
+	public AuxElectricityPacket() {
 	}
 
-	public AuxElectricityPacket(BlockPos pos, long charge)
-	{
+	public AuxElectricityPacket(BlockPos pos, long charge) {
 		this.x = pos.getX();
 		this.y = pos.getY();
 		this.z = pos.getZ();
 		this.charge = charge;
 	}
 
-	public AuxElectricityPacket(int x2, int y2, int z2, long power) {
-		this.x = x2;
-		this.y = y2;
-		this.z = z2;
+	public AuxElectricityPacket(int x, int y, int z, long power) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.charge = power;
 	}
 
@@ -56,23 +54,18 @@ public class AuxElectricityPacket implements IMessage {
 	}
 
 	public static class Handler implements IMessageHandler<AuxElectricityPacket, IMessage> {
-		
+
 		@Override
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(AuxElectricityPacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null) return;
 				BlockPos pos = new BlockPos(m.x, m.y, m.z);
-				try {
-					TileEntity te = Minecraft.getMinecraft().world.getTileEntity(pos);
-
-					if (te != null && te instanceof IEnergyUser) {
-						
-						IEnergyUser gen = (IEnergyUser) te;
-						gen.setPower(m.charge);
-					}
-				} catch (Exception x) { }
+				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(pos);
+				if (te instanceof IEnergyUser) {
+					((IEnergyUser) te).setPower(m.charge);
+				}
 			});
-			
 			return null;
 		}
 	}

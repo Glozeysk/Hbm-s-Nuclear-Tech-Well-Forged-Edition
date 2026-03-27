@@ -220,6 +220,7 @@ import com.hbm.handler.GuiHandler;
 import com.hbm.handler.HTTPHandler;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.HbmKeybinds;
+import com.hbm.handler.JetpackLayerRegistration;
 import com.hbm.handler.MultiblockBBHandler;
 import com.hbm.handler.crt.NTMCraftTweaker;
 import com.hbm.hazard.HazardRegistry;
@@ -1086,6 +1087,7 @@ public class MainRegistry {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
+		JetpackLayerRegistration.init();
 		ModItems.init();
 		ModBlocks.init();
         PacketThreading.init();

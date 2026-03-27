@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 
 import io.netty.buffer.ByteBuf;
@@ -12,23 +13,22 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class PipeUpdatePacket implements IMessage {
+public class PipeUpdatePacket extends ThreadedPacket {
 
-	BlockPos pos;
-	int id;
-	
+	private BlockPos pos;
+	private int id;
+
 	public PipeUpdatePacket() {
 	}
-	
+
 	public PipeUpdatePacket(BlockPos pos) {
 		this(pos, 0);
 	}
-	
+
 	public PipeUpdatePacket(BlockPos pos, int id) {
 		this.pos = pos;
 		this.id = id;
 	}
-	
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -38,35 +38,35 @@ public class PipeUpdatePacket implements IMessage {
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		
 		buf.writeInt(pos.getX());
 		buf.writeInt(pos.getY());
 		buf.writeInt(pos.getZ());
 		buf.writeInt(id);
 	}
-	
+
 	public static class Handler implements IMessageHandler<PipeUpdatePacket, IMessage> {
 
 		@Override
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(PipeUpdatePacket message, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null) return;
+
 				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(message.pos);
-				
-				if(te instanceof TileEntityFFDuctBaseMk2){
-					switch(message.id){
-					case 0:
-						break;
-					case 1:
-						TileEntityFFDuctBaseMk2.rebuildNetworks(Minecraft.getMinecraft().world, message.pos);
-						break;
-					default:
-						break;
+
+				if (te instanceof TileEntityFFDuctBaseMk2) {
+					switch (message.id) {
+						case 0:
+							break;
+						case 1:
+							TileEntityFFDuctBaseMk2.rebuildNetworks(Minecraft.getMinecraft().world, message.pos);
+							break;
+						default:
+							break;
 					}
 				}
 			});
 			return null;
 		}
-		
 	}
 }
