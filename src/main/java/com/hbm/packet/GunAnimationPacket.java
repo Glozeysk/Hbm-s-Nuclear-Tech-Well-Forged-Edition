@@ -1,7 +1,9 @@
 package com.hbm.packet;
 
 import com.hbm.items.weapon.ItemGunBase;
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.render.anim.HbmAnimations.AnimType;
+
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,10 +15,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class GunAnimationPacket implements IMessage {
+public class GunAnimationPacket extends ThreadedPacket {
 
-	int type;
-	EnumHand hand;
+	private int type;
+	private EnumHand hand;
 
 	public GunAnimationPacket() { }
 
@@ -42,28 +44,22 @@ public class GunAnimationPacket implements IMessage {
 		@Override
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(GunAnimationPacket m, MessageContext ctx) {
-
-			try {
+			Minecraft.getMinecraft().addScheduledTask(() -> {
 				EntityPlayer player = Minecraft.getMinecraft().player;
+				if (player == null) return;
+
 				ItemStack stack = player.getHeldItem(m.hand);
 				int slot = player.inventory.currentItem;
-				if(m.hand == EnumHand.OFF_HAND)
+				if (m.hand == EnumHand.OFF_HAND)
 					slot = 9;
 
-				if(stack == null)
-					return null;
+				if (stack.isEmpty()) return;
+				if (!(stack.getItem() instanceof ItemGunBase)) return;
+				if (m.type < 0 || m.type >= AnimType.values().length) return;
 
-				if(!(stack.getItem() instanceof ItemGunBase))
-					return null;
-
-				if(m.type < 0 || m.type >= AnimType.values().length)
-					return null;
-				
-				
 				AnimType type = AnimType.values()[m.type];
 				((ItemGunBase) stack.getItem()).startAnim(player, stack, slot, type);
-
-			} catch(Exception x) { }
+			});
 
 			return null;
 		}

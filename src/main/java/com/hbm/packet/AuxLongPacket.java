@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.tileentity.machine.TileEntityCoreEmitter;
 import com.hbm.tileentity.machine.TileEntityCoreReceiver;
 
@@ -13,16 +14,15 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class AuxLongPacket implements IMessage {
+public class AuxLongPacket extends ThreadedPacket {
 
-	int x;
-	int y;
-	int z;
-	long value;
-	int id;
+	private int x;
+	private int y;
+	private int z;
+	private long value;
+	private int id;
 
 	public AuxLongPacket() {
-
 	}
 
 	public AuxLongPacket(int x, int y, int z, long value, int id) {
@@ -61,16 +61,16 @@ public class AuxLongPacket implements IMessage {
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(AuxLongPacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
-				try {
-					TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
-					if(te instanceof TileEntityCoreEmitter){
-						if(m.id == 0)
-							((TileEntityCoreEmitter) te).prev = m.value;
-					} else if(te instanceof TileEntityCoreReceiver){
-						if(m.id == 0)
-							((TileEntityCoreReceiver)te).joules = m.value;
-					}
-				} catch(Exception x) {
+				if (Minecraft.getMinecraft().world == null) return;
+
+				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
+
+				if (te instanceof TileEntityCoreEmitter) {
+					if (m.id == 0)
+						((TileEntityCoreEmitter) te).prev = m.value;
+				} else if (te instanceof TileEntityCoreReceiver) {
+					if (m.id == 0)
+						((TileEntityCoreReceiver) te).joules = m.value;
 				}
 			});
 

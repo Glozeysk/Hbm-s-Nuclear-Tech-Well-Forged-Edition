@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.tileentity.turret.TileEntityTurretBase;
 
 import io.netty.buffer.ByteBuf;
@@ -13,21 +14,23 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TETurretPacket implements IMessage {
+public class TETurretPacket extends ThreadedPacket {
 
-	public int x, y, z;
-	public boolean isAI;
-	
+	private int x;
+	private int y;
+	private int z;
+	private boolean isAI;
+
 	public TETurretPacket() {
 	}
-	
+
 	public TETurretPacket(int x, int y, int z, boolean isAI) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.isAI = isAI;
 	}
-	
+
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		x = buf.readInt();
@@ -43,25 +46,25 @@ public class TETurretPacket implements IMessage {
 		buf.writeInt(z);
 		buf.writeBoolean(isAI);
 	}
-	
+
 	public static class Handler implements IMessageHandler<TETurretPacket, IMessage> {
 
 		@Override
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(TETurretPacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
-				BlockPos pos = new BlockPos(m.x, m.y, m.z);
 				World world = Minecraft.getMinecraft().world;
-				if(world.isBlockLoaded(pos)){
+				if (world == null) return;
+
+				BlockPos pos = new BlockPos(m.x, m.y, m.z);
+				if (world.isBlockLoaded(pos)) {
 					TileEntity te = world.getTileEntity(pos);
-					if(te instanceof TileEntityTurretBase){
-						((TileEntityTurretBase)te).isAI = m.isAI;
+					if (te instanceof TileEntityTurretBase) {
+						((TileEntityTurretBase) te).isAI = m.isAI;
 					}
 				}
 			});
 			return null;
 		}
-		
 	}
-
 }

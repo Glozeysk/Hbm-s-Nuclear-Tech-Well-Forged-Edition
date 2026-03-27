@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.tileentity.machine.TileEntityForceField;
 
 import io.netty.buffer.ByteBuf;
@@ -12,21 +13,20 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TEFFPacket implements IMessage {
+public class TEFFPacket extends ThreadedPacket {
 
-	int x;
-	int y;
-	int z;
-	float rad;
-	int health;
-	int maxHealth;
-	int power;
-	boolean isOn;
-	int color;
-	int cooldown;
+	private int x;
+	private int y;
+	private int z;
+	private float rad;
+	private int health;
+	private int maxHealth;
+	private int power;
+	private boolean isOn;
+	private int color;
+	private int cooldown;
 
 	public TEFFPacket() {
-
 	}
 
 	public TEFFPacket(BlockPos pos, float rad, int health, int maxHealth, int power, boolean isOn, int color, int cooldown) {
@@ -76,26 +76,22 @@ public class TEFFPacket implements IMessage {
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(TEFFPacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null) return;
+
 				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
 
-				try {
-					
-					if(te instanceof TileEntityForceField) {
-						TileEntityForceField ff = (TileEntityForceField)te;
-
-						ff.radius = m.rad;
-						ff.health = m.health;
-						ff.maxHealth = m.maxHealth;
-						ff.power = m.power;
-						ff.isOn = m.isOn;
-						ff.color = m.color;
-						ff.cooldown = m.cooldown;
-					}
-					
-				} catch (Exception x) {
+				if (te instanceof TileEntityForceField) {
+					TileEntityForceField ff = (TileEntityForceField) te;
+					ff.radius = m.rad;
+					ff.health = m.health;
+					ff.maxHealth = m.maxHealth;
+					ff.power = m.power;
+					ff.isOn = m.isOn;
+					ff.color = m.color;
+					ff.cooldown = m.cooldown;
 				}
 			});
-			
+
 			return null;
 		}
 	}

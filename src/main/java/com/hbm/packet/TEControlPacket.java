@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 
 import io.netty.buffer.ByteBuf;
@@ -12,29 +13,28 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TEControlPacket implements IMessage {
+public class TEControlPacket extends ThreadedPacket {
 
-	int x;
-	int y;
-	int z;
-	int hullHeat;
-	int coreHeat;
-	int fuel;
-	int water;
-	int cool;
-	int steam;
-	int maxWater;
-	int maxCool;
-	int maxSteam;
-	int compression;
-	int rods;
-	int maxRods;
-	boolean isOn;
-	boolean auto;
-	boolean isLinked;
+	private int x;
+	private int y;
+	private int z;
+	private int hullHeat;
+	private int coreHeat;
+	private int fuel;
+	private int water;
+	private int cool;
+	private int steam;
+	private int maxWater;
+	private int maxCool;
+	private int maxSteam;
+	private int compression;
+	private int rods;
+	private int maxRods;
+	private boolean isOn;
+	private boolean auto;
+	private boolean isLinked;
 
 	public TEControlPacket() {
-
 	}
 
 	public TEControlPacket(int x, int y, int z, int hullHeat, int coreHeat, int fuel, int water, int cool, int steam, int maxWater, int maxCool, int maxSteam, int compression, int rods, int maxRods, boolean isOn, boolean auto, boolean isLinked) {
@@ -108,34 +108,31 @@ public class TEControlPacket implements IMessage {
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(TEControlPacket m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null) return;
+
 				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
 
-				try {
-					
-					if(te instanceof TileEntityReactorControl) {
-						TileEntityReactorControl control = (TileEntityReactorControl)te;
+				if (te instanceof TileEntityReactorControl) {
+					TileEntityReactorControl control = (TileEntityReactorControl) te;
 
-						control.hullHeat = m.hullHeat;
-						control.coreHeat = m.coreHeat;
-						control.fuel = m.fuel;
-						control.water = m.water;
-						control.cool = m.cool;
-						control.steam = m.steam;
-						control.maxWater = m.maxWater;
-						control.maxCool = m.maxCool;
-						control.maxSteam = m.maxSteam;
-						control.compression = m.compression;
-						control.rods = m.rods;
-						control.maxRods = m.maxRods;
-						control.isOn = m.isOn;
-						control.auto = m.auto;
-						control.isLinked = m.isLinked;
-					}
-					
-				} catch (Exception x) {
+					control.hullHeat = m.hullHeat;
+					control.coreHeat = m.coreHeat;
+					control.fuel = m.fuel;
+					control.water = m.water;
+					control.cool = m.cool;
+					control.steam = m.steam;
+					control.maxWater = m.maxWater;
+					control.maxCool = m.maxCool;
+					control.maxSteam = m.maxSteam;
+					control.compression = m.compression;
+					control.rods = m.rods;
+					control.maxRods = m.maxRods;
+					control.isOn = m.isOn;
+					control.auto = m.auto;
+					control.isLinked = m.isLinked;
 				}
 			});
-			
+
 			return null;
 		}
 	}
