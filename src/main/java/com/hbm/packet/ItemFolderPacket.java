@@ -3,9 +3,7 @@ package com.hbm.packet;
 import java.io.IOException;
 
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemCassette;
-import com.hbm.items.machine.ItemChemistryTemplate;
 import com.hbm.lib.Library;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -72,23 +70,6 @@ public class ItemFolderPacket implements IMessage {
 					
 					p.inventory.addItemStackToInventory(stack.copy());
 					return;
-				}
-
-				if(stack.getItem() instanceof ItemAssemblyTemplate) {
-					if(Library.hasInventoryItem(p.inventory, Items.PAPER) && Library.hasInventoryItem(p.inventory, Items.DYE)) {
-						Library.consumeInventoryItem(p.inventory, Items.PAPER);
-						Library.consumeInventoryItem(p.inventory, Items.DYE);
-						if(!p.inventory.addItemStackToInventory(stack.copy()))
-							p.dropItem(stack, true);
-					}
-				}
-				if(stack.getItem() instanceof ItemChemistryTemplate) {
-					if(Library.hasInventoryItem(p.inventory, Items.PAPER) && Library.hasInventoryItem(p.inventory, Items.DYE)) {
-						Library.consumeInventoryItem(p.inventory, Items.PAPER);
-						Library.consumeInventoryItem(p.inventory, Items.DYE);
-						if(!p.inventory.addItemStackToInventory(stack.copy()))
-							p.dropItem(stack, true);
-					}
 				}
 				if(stack.getItem() instanceof ItemCassette) {
 					if(Library.hasInventoryItem(p.inventory, ModItems.plate_polymer) && Library.hasInventoryOreDict(p.inventory, "plateSteel")) {

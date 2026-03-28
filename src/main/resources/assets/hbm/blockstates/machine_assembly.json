@@ -1,8 +1,5 @@
 {
 	"variants": {
-		"facing=2": { "model": "hbm:machine_assembly" },
-		"facing=3": { "model": "hbm:machine_assembly" },
-		"facing=4": { "model": "hbm:machine_assembly" },
-		"facing=5": { "model": "hbm:machine_assembly" }
+		"normal": { "model": "hbm:machine_assembly" }
 	}
 }

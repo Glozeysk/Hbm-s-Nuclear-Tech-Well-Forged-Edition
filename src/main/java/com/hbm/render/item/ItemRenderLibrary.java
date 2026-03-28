@@ -324,14 +324,14 @@ public class ItemRenderLibrary {
         renderers.put(Item.getItemFromBlock(ModBlocks.machine_assembly), new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -2.75, 0);
-                GlStateManager.rotate(-90, 1, 0, 1);
                 GlStateManager.scale(4.5, 4.5, 4.5);
             }
             public void renderCommon(ItemStack item) {
-                GlStateManager.scale(0.6, 0.6, 0.6);
+                GlStateManager.rotate(90, 0, 1, 0);
+                GlStateManager.scale(0.75, 0.75, 0.75);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 bindTexture(ResourceManager.assembly_machine_tex);
-                ResourceManager.assembly_machine.renderAll();
+                ResourceManager.assembly_machine.renderAllExcept("Frame");
                 GlStateManager.shadeModel(GL11.GL_FLAT);
             }});
 

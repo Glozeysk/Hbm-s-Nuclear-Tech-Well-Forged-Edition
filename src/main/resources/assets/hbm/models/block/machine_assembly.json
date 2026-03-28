@@ -1,6 +1,6 @@
 {
 	"parent": "block/cube_all",
 	"textures": {
-		"all": "hbm:blocks/machine_assembler"
+		"all": "hbm:blocks/machine_assembly"
 	}
 }
