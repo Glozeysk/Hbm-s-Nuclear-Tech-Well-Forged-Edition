@@ -190,7 +190,7 @@ public class AnvilRecipes {
 						new ComparableStack(ModItems.motor, 2 * ukModifier),
 						new ComparableStack(ModItems.circuit_aluminium, 1 * ukModifier)
 				},
-				new AnvilOutput(new ItemStack(ModBlocks.machine_assembler))).setTier(2));
+				new AnvilOutput(new ItemStack(ModBlocks.machine_assembly))).setTier(2));
 		
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {

@@ -167,8 +167,8 @@ public class EntityFBI extends EntityMob implements IRangedAttackMob {
 		canDestroy.add(Blocks.TRAPDOOR);
 		canDestroy.add(ModBlocks.machine_press);
 		canDestroy.add(ModBlocks.machine_epress);
+		canDestroy.add(ModBlocks.machine_assembly);
 		canDestroy.add(ModBlocks.dummy_block_assembler);
-        canDestroy.add(ModBlocks.dummy_block_assembly);
 		canDestroy.add(ModBlocks.dummy_block_chemplant);
 		canDestroy.add(ModBlocks.dummy_block_centrifuge);
 		canDestroy.add(ModBlocks.dummy_block_gascent);

@@ -10,7 +10,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -35,7 +34,7 @@ public class GUIMachineAssembly extends GuiInfoContainer {
     public void drawScreen(int mouseX, int mouseY, float f) {
         super.drawScreen(mouseX, mouseY, f);
         this.renderHoveredToolTip(mouseX, mouseY);
-        this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 70 - 52, 16, 52, assembly.power, TileEntityMachineAssembler.maxPower);
+        this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 70 - 52, 16, 52, assembly.power, TileEntityMachineAssembly.maxPower);
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
 

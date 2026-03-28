@@ -323,29 +323,16 @@ public class ItemRenderLibrary {
 
         renderers.put(Item.getItemFromBlock(ModBlocks.machine_assembly), new ItemRenderBase() {
             public void renderInventory() {
-                GL11.glScaled(3.5, 3.5, 3.5);
+                GlStateManager.translate(0, -2.75, 0);
+                GlStateManager.rotate(-90, 1, 0, 1);
+                GlStateManager.scale(4.5, 4.5, 4.5);
             }
-            public void renderCommon() {
-                bindTexture(ResourceManager.assembly_body_tex); ResourceManager.assembly_body.renderAll();
-                bindTexture(ResourceManager.assembly_slider_tex); ResourceManager.assembly_slider.renderAll();
-                bindTexture(ResourceManager.assembly_arm_tex); ResourceManager.assembly_arm.renderAll();
-                bindTexture(ResourceManager.assembly_cog_tex);
-                GL11.glPushMatrix();
-                GL11.glTranslated(-0.6, 0.75, 1.0625);
-                ResourceManager.assembly_cog.renderAll();
-                GL11.glPopMatrix();
-                GL11.glPushMatrix();
-                GL11.glTranslated(0.6, 0.75, 1.0625);
-                ResourceManager.assembly_cog.renderAll();
-                GL11.glPopMatrix();
-                GL11.glPushMatrix();
-                GL11.glTranslated(-0.6, 0.75, -1.0625);
-                ResourceManager.assembly_cog.renderAll();
-                GL11.glPopMatrix();
-                GL11.glPushMatrix();
-                GL11.glTranslated(0.6, 0.75, -1.0625);
-                ResourceManager.assembly_cog.renderAll();
-                GL11.glPopMatrix();
+            public void renderCommon(ItemStack item) {
+                GlStateManager.scale(0.6, 0.6, 0.6);
+                GlStateManager.shadeModel(GL11.GL_SMOOTH);
+                bindTexture(ResourceManager.assembly_machine_tex);
+                ResourceManager.assembly_machine.renderAll();
+                GlStateManager.shadeModel(GL11.GL_FLAT);
             }});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_chemplant), new ItemRenderBase() {

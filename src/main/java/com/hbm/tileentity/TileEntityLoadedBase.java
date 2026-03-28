@@ -4,6 +4,7 @@ import api.hbm.energy.ILoadedTile;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.BufPacket;
+import com.hbm.sound.AudioWrapper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -38,6 +39,19 @@ public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBu
 	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		nbt.setBoolean("muffled", muffled);
 		return super.writeToNBT(nbt);
+	}
+
+    public AudioWrapper createAudioLoop() { return null; } //Vidarin: Remember to override this if you use rebootAudio!!
+
+	public AudioWrapper rebootAudio(AudioWrapper wrapper) {
+		wrapper.stopSound();
+		AudioWrapper audio = createAudioLoop();
+		audio.startSound();
+		return audio;
+	}
+
+    public float getVolume(float baseVolume) {
+		return muffled ? baseVolume * 0.1F : baseVolume;
 	}
 
     public void markChanged() {

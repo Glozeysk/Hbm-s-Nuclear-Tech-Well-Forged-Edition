@@ -75,6 +75,14 @@ public class BobMathUtil {
 
 		return angle;
 	}
+
+	public static double interp(double x, double y, float interp) {
+        return x + (y - x) * interp;
+    }
+
+    public static double interp(double x, double y, double interp) {
+        return x + (y - x) * interp;
+    }
 	
 	public static double getCrossAngle(Vec3 vel, Vec3 rel) {
 
@@ -114,12 +122,7 @@ public class BobMathUtil {
 		double pitch = Math.toDegrees(Math.atan2(vec.yCoord, sqrt));
 		return Vec3.createVectorHelper(yaw, pitch, 0);
 	}
-	
-	/**
-	 *
-	 * @param normal vector
-	 * @return vec3 containing yaw, pitch, nothing.
-	 */
+
 	public static Vec3d getEulerAngles(Vec3d vec) {
 		double yaw = Math.toDegrees(Math.atan2(vec.x, vec.z));
 		double sqrt = MathHelper.sqrt(vec.x * vec.x + vec.z * vec.z);

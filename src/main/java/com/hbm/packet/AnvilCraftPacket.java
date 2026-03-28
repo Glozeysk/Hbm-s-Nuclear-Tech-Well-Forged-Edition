@@ -67,7 +67,7 @@ public class AnvilCraftPacket implements IMessage {
 
 						if(recipe.output.get(0).stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_difurnace_off))
 							AdvancementManager.grantAchievement(p, AdvancementManager.bobMetalworks);
-						if(recipe.output.get(0).stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_assembler))
+						if(recipe.output.get(0).stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_assembly))
 							AdvancementManager.grantAchievement(p, AdvancementManager.bobAssembly);
 						
 					} else {

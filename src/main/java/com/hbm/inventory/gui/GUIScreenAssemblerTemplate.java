@@ -12,6 +12,9 @@ import com.hbm.lib.RefStrings;
 import com.hbm.packet.ItemAssTemplatePacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineAssembler;
+import com.hbm.tileentity.machine.TileEntityMachineAssembly;
+import com.hbm.tileentity.machine.TileEntityMachineChemplant;
+import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
@@ -82,8 +85,6 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 		this.allStacks = new ArrayList<>();
 
     	//Assembly Templates
-    	//for(int i = 0; i < ItemAssemblyTemplate.recipes.size(); i++)
-    	//	stacks.add(new ItemStack(ModItems.assembly_template, 1, i));
 		if(tile instanceof TileEntityMachineAssembler){
 			for (int i = 0; i < AssemblerRecipes.recipeList.size(); ++i) {
 				NBTTagCompound tag = new NBTTagCompound();
@@ -93,8 +94,22 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 				allStacks.add(stack);
 			}
 		}
+		if(tile instanceof TileEntityMachineAssembly){
+			for (int i = 0; i < AssemblerRecipes.recipeList.size(); ++i) {
+				NBTTagCompound tag = new NBTTagCompound();
+				tag.setInteger("type", i);
+				ItemStack stack = new ItemStack(ModItems.assembly_template, 1, 0);
+				stack.setTagCompound(tag);
+				allStacks.add(stack);
+			}
+		}
 		//Chemistry Templates
-		if(!(tile instanceof TileEntityMachineAssembler)){
+		if(tile instanceof TileEntityMachineChemplant){
+			for (int i: ChemplantRecipes.recipeNames.keySet()){
+				allStacks.add(new ItemStack(ModItems.chemistry_template, 1, i));
+			}
+		}
+		if(tile instanceof TileEntityMachineChemfac){
 			for (int i: ChemplantRecipes.recipeNames.keySet()){
 				allStacks.add(new ItemStack(ModItems.chemistry_template, 1, i));
 			}
@@ -260,8 +275,12 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 				if(stack != null) {
 					if(tile instanceof TileEntityMachineAssembler && stack.getItem() == ModItems.assembly_template)
 						itemRender.renderItemAndEffectIntoGUI(player, AssemblerRecipes.getOutputFromTempate(stack), xPos + 1, yPos + 1);
-					else if((!(tile instanceof TileEntityMachineAssembler)) && stack.getItem() == ModItems.chemistry_template)
+					else if((tile instanceof TileEntityMachineChemplant) && stack.getItem() == ModItems.chemistry_template)
 						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
+					else if((tile instanceof TileEntityMachineChemfac) && stack.getItem() == ModItems.chemistry_template)
+						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
+					else if(tile instanceof TileEntityMachineAssembly && stack.getItem() == ModItems.assembly_template)
+						itemRender.renderItemAndEffectIntoGUI(player, AssemblerRecipes.getOutputFromTempate(stack), xPos + 1, yPos + 1);
 				}
 				RenderHelper.disableStandardItemLighting();
 			} catch(Exception x) { }

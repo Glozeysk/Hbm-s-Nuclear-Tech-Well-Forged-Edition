@@ -235,6 +235,11 @@ public final class HBMSoundHandler {
 	public static SoundEvent hatch_open;
 	public static SoundEvent sliding_seal_open;
 	public static SoundEvent sliding_seal_stop;
+
+	public static SoundEvent assemblerStrike;
+    public static SoundEvent assemblerStart;
+    public static SoundEvent assemblerStop;
+	public static SoundEvent motor;
 	
 	public static SoundEvent alarmHatch = registerBypass("alarm.hatch");
 	public static SoundEvent alarmAutopilot = registerBypass("alarm.autopilot");
@@ -499,6 +504,10 @@ public final class HBMSoundHandler {
 		hatch_open = register("block.door.hatch_open");
 		sliding_seal_open = register("block.door.sliding_seal_open");
 		sliding_seal_stop = register("block.door.sliding_seal_stop");
+		assemblerStrike = register("block.assemblerStrike");
+        assemblerStart = register("block.assemblerStart");
+        assemblerStop = register("block.assemblerStop");
+		motor = register("block.motor");
 		
 		geigerSounds = new SoundEvent[]{geiger1, geiger2, geiger3, geiger4, geiger5, geiger6, geiger7, geiger8};
 		voiceSounds = new SoundEvent[]{voices1, voices2, voices3, voices4, voices5, voices6, voices7, voices8};

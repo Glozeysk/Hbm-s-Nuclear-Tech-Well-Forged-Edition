@@ -2,7 +2,6 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.SlotMachineOutput;
 import com.hbm.items.machine.ItemAssemblyTemplate;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 
 import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import net.minecraft.entity.player.EntityPlayer;

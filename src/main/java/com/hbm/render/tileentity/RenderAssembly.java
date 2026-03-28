@@ -1,207 +1,129 @@
 package com.hbm.render.tileentity;
 
-import com.hbm.tileentity.machine.TileEntityMachineAssembly;
-import org.lwjgl.opengl.GL11;
+import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.AssemblerRecipes;
+import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
-
+import com.hbm.render.item.ItemRenderBase;
+import com.hbm.tileentity.machine.TileEntityMachineAssembly;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.ForgeHooksClient;
+import org.lwjgl.opengl.GL11;
 
 public class RenderAssembly extends TileEntitySpecialRenderer<TileEntityMachineAssembly> {
 
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachineAssembly te) {
-        return true;
-    }
+    public static EntityItem dummy;
 
     @Override
-    public void render(TileEntityMachineAssembly assembler, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
-    {
-        Vec3d start = new Vec3d(assembler.getPos().getX()+0.05, assembler.getPos().getY()+1.5, assembler.getPos().getZ()+3.1);
-        //RenderHelper.renderFlashLight(start, start.add(-20, 0, 0), 20, 1, ResourceManager.fl_cookie, partialTicks);
-        //FlashlightRenderer.addFlashlight(start, start.add(-20, 0, 0), 20, 20, ResourceManager.fl_cookie, true, true);
-        //LightRenderer.addPointLight(start, new Vec3d(1, 0.4, 0.1), 10);
-        GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5D, y, z + 0.5D);
-        // GL11.glPushMatrix();
-        // GL11.glTranslated(0, 5, 0);
-        //GlStateManager.bindTexture(RenderHelper.deferredNormalTex);
-        // ResourceManager.test.draw();
-        //GL11.glPopMatrix();
-        switch(assembler.getBlockMetadata())
-        {
-            case 2:
-                GL11.glRotatef(180, 0F, 1F, 0F);
-                GL11.glTranslated(-0.5D, 0.0D, 0.5D); break;
-            case 4:
-                GL11.glRotatef(270, 0F, 1F, 0F);
-                GL11.glTranslated(-0.5D, 0.0D, 0.5D); break;
-            case 3:
-                GL11.glRotatef(0, 0F, 1F, 0F);
-                GL11.glTranslated(-0.5D, 0.0D, 0.5D); break;
-            case 5:
-                GL11.glRotatef(90, 0F, 1F, 0F);
-                GL11.glTranslated(-0.5D, 0.0D, 0.5D); break;
+    public void render(TileEntityMachineAssembly tileEntity, double x, double y, double z, float interp, int destroyStage, float alpha) {
+        GlStateManager.enableAlpha();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(x + 0.5, y, z + 0.5);
+        GlStateManager.rotate(90, 0, 1, 0);
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+        switch (tileEntity.getBlockMetadata() - BlockDummyable.offset) {
+            case 2 -> GlStateManager.rotate(0, 0F, 1F, 0F);
+            case 4 -> GlStateManager.rotate(90, 0F, 1F, 0F);
+            case 3 -> GlStateManager.rotate(180, 0F, 1F, 0F);
+            case 5 -> GlStateManager.rotate(270, 0F, 1F, 0F);
         }
 
-        bindTexture(ResourceManager.assembler_body_tex);
-        ResourceManager.assembly_body.renderAll();
+        bindTexture(ResourceManager.assembly_machine_tex);
+        ResourceManager.assembly_machine.renderPart("Base");
+        if(tileEntity.frame) ResourceManager.assembly_machine.renderPart("Frame");
 
-        if(assembler.recipe != -1) {
-            GL11.glPushMatrix();
-            GL11.glTranslated(-1, 0.875, 0);
+        GlStateManager.pushMatrix();
+        // idk somehow rebooting my laptop made IDE decide that GLStateManager.rotate doesn't accept doubles anymore
+        double spin = BobMathUtil.interp(tileEntity.prevRing, tileEntity.ring, interp);
+        double[] arm1 = tileEntity.arms[0].getPositions(interp);
+        double[] arm2 = tileEntity.arms[1].getPositions(interp);
 
-            try {
-                ItemStack stack = AssemblerRecipes.recipeList.get(assembler.recipe).toStack();
+        GlStateManager.rotate((float) spin, 0, 1, 0);
+        ResourceManager.assembly_machine.renderPart("Ring");
 
-                GL11.glTranslated(1, 0, 1);
-                if(!(stack.getItem() instanceof ItemBlock)) {
-                    GL11.glRotatef(-90, 1F, 0F, 0F);
+        GlStateManager.pushMatrix(); {
+            GlStateManager.translate(0, 1.625, 0.9375);
+            GlStateManager.rotate((float) arm1[0], 1, 0, 0);
+            GlStateManager.translate(0, -1.625, -0.9375);
+            ResourceManager.assembly_machine.renderPart("ArmLower1");
+
+            GlStateManager.translate(0, 2.375, 0.9375);
+            GlStateManager.rotate((float) arm1[1], 1, 0, 0);
+            GlStateManager.translate(0, -2.375, -0.9375);
+            ResourceManager.assembly_machine.renderPart("ArmUpper1");
+
+            GlStateManager.translate(0, 2.375, 0.4375);
+            GlStateManager.rotate((float) arm1[2], 1, 0, 0);
+            GlStateManager.translate(0, -2.375, -0.4375);
+            ResourceManager.assembly_machine.renderPart("Head1");
+            GlStateManager.translate(0, arm1[3], 0);
+            ResourceManager.assembly_machine.renderPart("Spike1");
+        } GlStateManager.popMatrix();
+
+        GlStateManager.pushMatrix(); {
+            GlStateManager.translate(0, 1.625, -0.9375);
+            GlStateManager.rotate((float) -arm2[0], 1, 0, 0);
+            GlStateManager.translate(0, -1.625, 0.9375);
+            ResourceManager.assembly_machine.renderPart("ArmLower2");
+
+            GlStateManager.translate(0, 2.375, -0.9375);
+            GlStateManager.rotate((float) -arm2[1], 1, 0, 0);
+            GlStateManager.translate(0, -2.375, 0.9375);
+            ResourceManager.assembly_machine.renderPart("ArmUpper2");
+
+            GlStateManager.translate(0, 2.375, -0.4375);
+            GlStateManager.rotate((float) -arm2[2], 1, 0, 0);
+            GlStateManager.translate(0, -2.375, 0.4375);
+            ResourceManager.assembly_machine.renderPart("Head2");
+            GlStateManager.translate(0, arm2[3], 0);
+            ResourceManager.assembly_machine.renderPart("Spike2");
+        } GlStateManager.popMatrix();
+
+        GlStateManager.popMatrix();
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+
+        if (tileEntity.recipe != -1 && MainRegistry.proxy.me().getDistanceSq(tileEntity.getPos().getX() + 0.5, tileEntity.getPos().getY() + 1, tileEntity.getPos().getZ() + 0.5) < 35 * 35) {
+
+            GlStateManager.pushMatrix();
+
+            GlStateManager.translate(0, 1.0625, 0);
+
+            ItemStack stack = AssemblerRecipes.recipeList.get(tileEntity.recipe).toStack();
+            if (stack != null && !stack.isEmpty()) {
+                stack.setCount(1);
+
+                IBakedModel model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(stack, tileEntity.getWorld(), null);
+                // note: these are not from upstream at all. these values I've inputted aren't perfect but they should suffice.
+                if (model.isGui3d()) {
+                    GlStateManager.translate(0, 0.125, 0);
+                    GlStateManager.scale(1.25, 1.25, 1.25);
                 } else {
-                    GL11.glScaled(0.5, 0.5, 0.5);
-                    GL11.glTranslated(0, -0.875, -2);
+                    GlStateManager.translate(0, 0.015, 0);
+                    GlStateManager.rotate(-90F, 1F, 0F, 0F);
+                    GlStateManager.rotate(-90F, 0F, 0F, 1F);
+                    GlStateManager.scale(0.85, 0.85, 0.85);
                 }
 
-                IBakedModel model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(stack, assembler.getWorld(), null);
-                model = ForgeHooksClient.handleCameraTransforms(model, TransformType.FIXED, false);
-                Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-                GL11.glTranslatef(0.0F, 1.0F - 0.0625F * 165/100, 0.0F);
-                Minecraft.getMinecraft().getRenderItem().renderItem(stack, model);
-            } catch(Exception ex) { }
+                Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
+            }
 
-            GL11.glPopMatrix();
-        }
-        /*GL11.glTranslated(-0.5, 3.6, -0.5);
-        bindTexture(ResourceManager.hatch_tex);
-        AnimationWrapper w = new AnimationWrapper(0, ResourceManager.silo_hatch_open);
-        ResourceManager.silo_hatch.controller.setAnim(w);
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        ResourceManager.silo_hatch.renderAnimated(5000);
-        GlStateManager.shadeModel(GL11.GL_FLAT);*/
-
-        GL11.glPopMatrix();
-
-
-        renderSlider(assembler, x, y, z, partialTicks);
-    }
-
-    public void renderSlider(TileEntityMachineAssembly tileEntity, double x, double y, double z, float f)
-    {
-        GL11.glPushMatrix();
-        GL11.glTranslated(x, y, z);
-        GlStateManager.enableLighting();
-        GlStateManager.disableCull();
-        GL11.glRotatef(180, 0F, 1F, 0F);
-        switch(tileEntity.getBlockMetadata())
-        {
-            case 2:
-                GL11.glTranslated(-1, 0, 0);
-                GL11.glRotatef(180, 0F, 1F, 0F); break;
-            case 4:
-                GL11.glRotatef(270, 0F, 1F, 0F); break;
-            case 3:
-                GL11.glTranslated(0, 0, -1);
-                GL11.glRotatef(0, 0F, 1F, 0F); break;
-            case 5:
-                GL11.glTranslated(-1, 0, -1);
-                GL11.glRotatef(90, 0F, 1F, 0F); break;
+            GlStateManager.popMatrix();
         }
 
-
-        bindTexture(ResourceManager.assembly_slider_tex);
-
-        int offset = (int) (System.currentTimeMillis() % 5000) / 5;
-
-        if(offset > 500)
-            offset = 500 - (offset - 500);
-
-        TileEntityMachineAssembly assembler = (TileEntityMachineAssembly) tileEntity;
-
-        if(assembler.isProgressing)
-            GL11.glTranslated(offset * 0.003 - 0.75, 0, 0);
-
-        ResourceManager.assembly_slider.renderAll();
-
-        bindTexture(ResourceManager.assembler_arm_tex);
-
-        double sway = (System.currentTimeMillis() % 2000) / 2;
-
-        sway = Math.sin(sway / Math.PI / 50);
-
-        if(assembler.isProgressing)
-            GL11.glTranslated(0, 0, sway * 0.3);
-        ResourceManager.assembly_arm.renderAll();
-
-        GL11.glPopMatrix();
-
-        renderCogs(tileEntity, x, y, z, f);
+        GlStateManager.popMatrix();
     }
-
-    public void renderCogs(TileEntityMachineAssembly tileEntity, double x, double y, double z, float f) {
-        GL11.glPushMatrix();
-        GL11.glTranslated(x, y, z);
-        GlStateManager.enableLighting();
-        GlStateManager.disableCull();
-        GL11.glRotatef(180, 0F, 1F, 0F);
-        switch(tileEntity.getBlockMetadata())
-        {
-            case 2:
-                GL11.glTranslated(-1, 0, 0);
-                GL11.glRotatef(180, 0F, 1F, 0F); break;
-            case 4:
-                GL11.glRotatef(270, 0F, 1F, 0F); break;
-            case 3:
-                GL11.glTranslated(0, 0, -1);
-                GL11.glRotatef(0, 0F, 1F, 0F); break;
-            case 5:
-                GL11.glTranslated(-1, 0, -1);
-                GL11.glRotatef(90, 0F, 1F, 0F); break;
-        }
-
-
-        bindTexture(ResourceManager.assembler_cog_tex);
-
-        int rotation = (int) (System.currentTimeMillis() % (360 * 5)) / 5;
-
-        TileEntityMachineAssembly assembler = (TileEntityMachineAssembly) tileEntity;
-
-        if(!assembler.isProgressing)
-            rotation = 0;
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(-0.6, 0.75, 1.0625);
-        GL11.glRotatef(-rotation, 0F, 0F, 1F);
-        ResourceManager.assembly_cog.renderAll();
-        GL11.glPopMatrix();
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(0.6, 0.75, 1.0625);
-        GL11.glRotatef(rotation, 0F, 0F, 1F);
-        ResourceManager.assembly_cog.renderAll();
-        GL11.glPopMatrix();
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(-0.6, 0.75, -1.0625);
-        GL11.glRotatef(-rotation, 0F, 0F, 1F);
-        ResourceManager.assembly_cog.renderAll();
-        GL11.glPopMatrix();
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(0.6, 0.75, -1.0625);
-        GL11.glRotatef(rotation, 0F, 0F, 1F);
-        ResourceManager.assembly_cog.renderAll();
-        GL11.glPopMatrix();
-
-        GL11.glPopMatrix();
-    }
+    
 }

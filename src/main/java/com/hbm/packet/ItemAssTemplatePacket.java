@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemChemistryTemplate;
 import com.hbm.tileentity.machine.TileEntityMachineAssembler;
+import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import com.hbm.tileentity.machine.TileEntityMachineChemplant;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import io.netty.buffer.ByteBuf;
@@ -96,6 +97,19 @@ public class ItemAssTemplatePacket implements IMessage {
 
                 if (te instanceof TileEntityMachineAssembler) {
                     TileEntityMachineAssembler gen = (TileEntityMachineAssembler) te;
+                    if (stack.getItem() instanceof ItemAssemblyTemplate) {
+
+                        // Update TileEntity
+                        gen.inventory.setStackInSlot(slot, stack.copy());
+                        gen.markDirty(); // Fix: Mark dirty to ensure data saves/syncs
+
+                        // Fix: Force block update to sync TileEntity data to client
+                        IBlockState state = p.world.getBlockState(pos);
+                        p.world.notifyBlockUpdate(pos, state, state, 3);
+                    }
+                }
+                if (te instanceof TileEntityMachineAssembly) {
+                    TileEntityMachineAssembly gen = (TileEntityMachineAssembly) te;
                     if (stack.getItem() instanceof ItemAssemblyTemplate) {
 
                         // Update TileEntity

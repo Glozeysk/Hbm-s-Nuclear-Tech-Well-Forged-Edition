@@ -2,6 +2,7 @@ package com.hbm.handler.jei;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
+import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.inventory.ShredderRecipes;
@@ -78,6 +79,7 @@ public class JEIConfig implements IModPlugin {
 
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_autocrafter), VanillaRecipeCategoryUid.CRAFTING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_assembler), ASSEMBLY);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_assembly), ASSEMBLY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_chemplant), CHEMPLANT);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_mixer), MIXER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_cyclotron), CYCLOTRON);
@@ -127,7 +129,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.fwatz_core), SAFE_REACTOR);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.crate_tungsten), DFC);
 		
-		// registry.addRecipes(ItemAssemblyTemplate.recipes, ASSEMBLY);
+		// registry.addRecipes(AssemblerRecipes.getRecipeFromTempate(), ASSEMBLY);
 		registry.addRecipes(JeiRecipes.getChemistryRecipes(), CHEMPLANT);
 		registry.addRecipes(JeiRecipes.getMixerRecipes(), MIXER);
 		registry.addRecipes(JeiRecipes.getCyclotronRecipes(), CYCLOTRON);
@@ -167,6 +169,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(DFCRecipes.getDFCRecipes(), DFC);
 
 		registry.addRecipeClickArea(GUIAutocrafter.class, 97, 39, 17, 17, VanillaRecipeCategoryUid.CRAFTING);
+		registry.addRecipeClickArea(GUIMachineAssembly.class, 45, 83, 82, 30, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineAssembler.class, 45, 83, 82, 30, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineChemplant.class, 45, 90, 85, 15, CHEMPLANT);
 		registry.addRecipeClickArea(GUIMixer.class, 62, 36, 52, 44, MIXER);

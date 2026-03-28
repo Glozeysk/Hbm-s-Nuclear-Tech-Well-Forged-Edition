@@ -6,7 +6,6 @@ import api.hbm.block.IEnterableBlock;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneInserter;
 import com.hbm.tileentity.TileEntityMachineBase;

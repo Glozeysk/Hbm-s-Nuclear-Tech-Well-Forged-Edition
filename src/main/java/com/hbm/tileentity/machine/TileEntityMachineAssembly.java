@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.inventory.AssemblerRecipes;
@@ -12,15 +14,18 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemAssemblyTemplate;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.BobMathUtil;
 
 import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -52,6 +57,13 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	int age = 0;
 	int consumption = 100;
 	int speed = 100;
+	public boolean frame = false;
+	public AssemblerArm[] arms = new AssemblerArm[] { new AssemblerArm(), new AssemblerArm() };
+    public double prevRing;
+    public double ring;
+    public double ringSpeed;
+    public double ringTarget;
+    public int ringDelay;
 
 	@SideOnly(Side.CLIENT)
 	public int recipe;
@@ -70,14 +82,14 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 			}
 			@Override
 			public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-				if(canInsertItem(slot, stack, stack.getCount()))
+				if(slot != 4)
 					return super.insertItem(slot, stack, simulate);
 				return stack;
 			}
 
 			@Override
 			public ItemStack extractItem(int slot, int amount, boolean simulate) {
-				if(canExtractItem(slot, inventory.getStackInSlot(slot), amount))
+				if(slot != 4)
 					return super.extractItem(slot, amount, simulate);
 				return ItemStack.EMPTY;
 			}
@@ -89,21 +101,60 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	}
 
 	@Override
-	public boolean canInsertItem(int slot, ItemStack itemStack, int amount){
-		if(slot == 4) {
+	public boolean canInsertItem(int slot, ItemStack itemStack, int amount) {
+		if(slot < 6 || slot > 17) {
 			return false;
 		}
-		return true;
+
+		if(itemStack.isEmpty()) {
+			return false;
+		}
+
+		ItemStack templateStack = inventory.getStackInSlot(4);
+		if(templateStack.isEmpty()) {
+			return false;
+		}
+
+		List<AStack> recipe = AssemblerRecipes.getRecipeFromTempate(templateStack);
+		if(recipe == null) {
+			return false;
+		}
+
+		ItemStack output = AssemblerRecipes.getOutputFromTempate(templateStack);
+		if(output == null || output.isEmpty()) {
+			return false;
+		}
+
+		ItemStack compareStack = itemStack.copy();
+		compareStack.setCount(1);
+
+		for(AStack ingredient : recipe) {
+			AStack sing = ingredient.copy();
+			sing.singulize();
+
+			if(sing.isApplicable(compareStack)) {
+				int validSlot = getValidSlot(ingredient.copy());
+				if(validSlot == slot) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 	
 	@Override
 	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
-		if(slot == 4) {
-			return false;
+		if(slot == 5) {
+			return true;
 		}
-		return true;
+		return false;
 	}
 
+	@Override
+	public int[] getAccessibleSlotsFromSide(EnumFacing face) {
+		return new int[] { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+	}
 
 	@Override
 	public String getName() {
@@ -217,74 +268,69 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				progress = 0;
 			}
 
-
-			int meta = this.getBlockMetadata();
-			TileEntity te = null;
-			TileEntity te2 = null;
-			if(meta == 2) {
-				te2 = world.getTileEntity(pos.add(-2, 0, 0));
-				te = world.getTileEntity(pos.add(3, 0, -1));
-			}
-			if(meta == 3) {
-				te2 = world.getTileEntity(pos.add(2, 0, 0));
-				te = world.getTileEntity(pos.add(-3, 0, 1));
-			}
-			if(meta == 4) {
-				te2 = world.getTileEntity(pos.add(0, 0, 2));
-				te = world.getTileEntity(pos.add(-1, 0, -3));
-			}
-			if(meta == 5) {
-				te2 = world.getTileEntity(pos.add(0, 0, -2));
-				te = world.getTileEntity(pos.add(1, 0, 3));
-			}
-
-			if(!isProgressing){
-				tryExchangeTemplates(te, te2);
-			}
-
-			if(te != null) {
-				ICapabilityProvider capte = te;
-				if(capte.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY())) {
-					IItemHandler cap = capte.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY());
-					if (cap != null){
-						tryFillContainerCap(cap, 5);
-					}
-				}
-			}
-
-			if(te2 != null) {
-				ICapabilityProvider capte = te2;
-				if(capte.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY())) {
-					IItemHandler cap = capte.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, MultiblockHandler.intToEnumFacing(meta).rotateY());
-					int[] slots;
-					if(te2 instanceof TileEntityMachineBase){
-						slots = ((TileEntityMachineBase)te2).getAccessibleSlotsFromSide(MultiblockHandler.intToEnumFacing(meta).rotateY());
-						tryFillAssemblerCap(cap, slots, (TileEntityMachineBase)te2);
-					}
-					else if(cap != null){
-						slots = new int[cap.getSlots()];
-						for(int i = 0; i< slots.length; i++)
-							slots[i] = i;
-						tryFillAssemblerCap(cap, slots, null);
-					}
-					
-				}
-			}
-
 			networkPackNT(150);
 		} else {
+
+			if(world.getTotalWorldTime() % 20 == 0) {
+				frame = world.getBlockState(pos.up(3)).getBlock() != Blocks.AIR;
+			}
+
+			for(AssemblerArm arm : arms) {
+				arm.updateInterp();
+				if(isProgressing) {
+					arm.updateArm();
+				} else {
+					arm.returnToNullPos();
+				}
+
+				if(arm.prevAngles[3] != arm.angles[3] && arm.angles[3] == -0.75) {
+					world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStrike, SoundCategory.BLOCKS, this.getVolume(0.5F), 1F, false);
+				}
+			}
+
+			this.prevRing = this.ring;
+
+			if(isProgressing) {
+				if(this.ring != this.ringTarget) {
+					double ringDelta = Math.abs(this.ringTarget - this.ring);
+					if(ringDelta <= this.ringSpeed) this.ring = this.ringTarget;
+					if(this.ringTarget > this.ring) this.ring += this.ringSpeed;
+					if(this.ringTarget < this.ring) this.ring -= this.ringSpeed;
+					if(this.ringTarget == this.ring) {
+						if(ringTarget >= 360) {
+							this.ringTarget -= 360D;
+							this.ring -= 360D;
+							this.prevRing -= 360D;
+						}
+						if(ringTarget <= -360) {
+							this.ringTarget += 360D;
+							this.ring += 360D;
+							this.prevRing += 360D;
+						}
+						this.ringDelay = 20 + world.rand.nextInt(21);
+					}
+				} else {
+					if(this.ringDelay > 0) this.ringDelay--;
+					if(this.ringDelay <= 0) {
+						this.ringTarget += (world.rand.nextDouble() * 2 - 1) * 135;
+						this.ringSpeed = 10D + world.rand.nextDouble() * 5D;
+					}
+				}
+			}
 
 			float volume = this.getVolume(2);
 
 			if(isProgressing && volume > 0) {
-
 				if(audio == null) {
-					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.assemblerOperate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
-					audio.startSound();
+					audio = MainRegistry.proxy.getLoopedSoundStartStop(world, HBMSoundHandler.motor, HBMSoundHandler.assemblerStart, HBMSoundHandler.assemblerStop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					if(audio != null) {
+						audio.startSound();
+					}
+				} else {
+					audio.keepAlive();
+					audio.updateVolume(volume);
 				}
-
 			} else {
-
 				if(audio != null) {
 					audio.stopSound();
 					audio = null;
@@ -295,32 +341,22 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	}
 
 	private void updateConnections() {
-		int meta = this.getBlockMetadata();
+
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
+
+		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
+		this.trySubscribe(world, pos.add(0, 0, -2), ForgeDirection.NORTH);
+		this.trySubscribe(world, pos.add(1, 0, -2), ForgeDirection.NORTH);
+		this.trySubscribe(world, pos.add(-1, 0, 2), ForgeDirection.SOUTH);
+		this.trySubscribe(world, pos.add(0, 0, 2), ForgeDirection.SOUTH);
+		this.trySubscribe(world, pos.add(1, 0, 2), ForgeDirection.SOUTH);
+		this.trySubscribe(world, pos.add(-2, 0, -1), ForgeDirection.WEST);
+		this.trySubscribe(world, pos.add(-2, 0, 0), ForgeDirection.WEST);
+		this.trySubscribe(world, pos.add(-2, 0, 1), ForgeDirection.WEST);
+		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
+		this.trySubscribe(world, pos.add(2, 0, 0), ForgeDirection.EAST);
+		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
 		
-		if(meta == 5) {
-			this.trySubscribe(world, pos.add(-2, 0, 0), Library.NEG_X);
-			this.trySubscribe(world, pos.add(-2, 0, 1), Library.NEG_X);
-			this.trySubscribe(world, pos.add(3, 0, 0), Library.POS_X);
-			this.trySubscribe(world, pos.add(3, 0, 1), Library.POS_X);
-			
-		} else if(meta == 3) {
-			this.trySubscribe(world, pos.add(0, 0, -2), Library.NEG_Z);
-			this.trySubscribe(world, pos.add(-1, 0, -2), Library.NEG_Z);
-			this.trySubscribe(world, pos.add(0, 0, 3), Library.POS_Z);
-			this.trySubscribe(world, pos.add(-1, 0, 3), Library.POS_Z);
-			
-		} else if(meta == 4) {
-			this.trySubscribe(world, pos.add(2, 0, 0), Library.POS_X);
-			this.trySubscribe(world, pos.add(2, 0, -1), Library.POS_X);
-			this.trySubscribe(world, pos.add(-3, 0, 0), Library.NEG_X);
-			this.trySubscribe(world, pos.add(-3, 0, -1), Library.NEG_X);
-			
-		} else if(meta == 2) {
-			this.trySubscribe(world, pos.add(0, 0, 2), Library.POS_Z);
-			this.trySubscribe(world, pos.add(1, 0, 2), Library.POS_Z);
-			this.trySubscribe(world, pos.add(0, 0, -3), Library.NEG_Z);
-			this.trySubscribe(world, pos.add(1, 0, -3), Library.NEG_Z);
-		}
 	}
 
 	@Override
@@ -358,52 +394,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		this.recipe = buf.readInt();
 	}
 
-	public boolean tryExchangeTemplates(TileEntity te1, TileEntity te2) {
-		boolean te1Valid = validateTe(te1);
-		boolean te2Valid = validateTe(te2);
-
-		if(te1Valid && te2Valid) {
-			IItemHandlerModifiable iTe1 = (IItemHandlerModifiable) te1.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			IItemHandlerModifiable iTe2 = (IItemHandlerModifiable) te2.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			boolean openSlot = false;
-			boolean existingTemplate = false;
-			boolean filledContainer = false;
-			for(int i = 0; i < iTe1.getSlots(); i++) {
-				if(iTe1.getStackInSlot(i).isEmpty()) {
-					openSlot = true;
-					break;
-				}
-
-			}
-			if(!this.inventory.getStackInSlot(4).isEmpty()) {
-				existingTemplate = true;
-			}
-			for(int i = 0; i < iTe2.getSlots(); i++) {
-				if(iTe2.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) {
-					if(openSlot && existingTemplate) {
-						filledContainer = tryFillContainerCap(iTe1, 4);
-					}
-					if(filledContainer || !existingTemplate) {
-						ItemStack copy = iTe2.getStackInSlot(i).copy();
-						iTe2.setStackInSlot(i, ItemStack.EMPTY);
-						this.inventory.setStackInSlot(4, copy);
-						return false;
-					}
-				}
-
-			}
-
-		}
-		return false;
-
-	}
-
-	private boolean validateTe(TileEntity te) {
-		if(te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null) && te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null) instanceof IItemHandlerModifiable)
-			return true;
-		return false;
-	}
-
 	public ItemStackHandler cloneItemStackProper(IItemHandlerModifiable array) {
 		ItemStackHandler stack = new ItemStackHandler(array.getSlots());
 
@@ -415,84 +405,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		;
 
 		return stack;
-	}
-
-	public boolean tryFillContainer(IInventory inv, int slot) {
-
-		int size = inv.getSizeInventory();
-
-		for(int i = 0; i < size; i++) {
-			if(inv.getStackInSlot(i) != null) {
-
-				if(inventory.getStackInSlot(slot).getItem() == Items.AIR)
-					return false;
-
-				ItemStack sta1 = inv.getStackInSlot(i).copy();
-				ItemStack sta2 = inventory.getStackInSlot(slot).copy();
-				if(sta1 != null && sta2 != null) {
-					sta1.setCount(1);
-					sta2.setCount(1);
-
-					if(isItemAcceptable(sta1, sta2) && inventory.getStackInSlot(i).getCount() < inventory.getStackInSlot(i).getMaxStackSize()) {
-						inventory.getStackInSlot(slot).shrink(1);
-
-						if(inventory.getStackInSlot(slot).isEmpty())
-							inventory.setStackInSlot(slot, ItemStack.EMPTY);
-
-						ItemStack sta3 = inventory.getStackInSlot(i).copy();
-						sta3.grow(1);
-						inv.setInventorySlotContents(i, sta3);
-
-						return true;
-					}
-				}
-			}
-		}
-		for(int i = 0; i < size; i++) {
-
-			if(inventory.getStackInSlot(slot).getItem() == Items.AIR)
-				return false;
-
-			ItemStack sta2 = inventory.getStackInSlot(slot).copy();
-			if(inv.getStackInSlot(i) == null && sta2 != null) {
-				sta2.setCount(1);
-				inventory.getStackInSlot(slot).shrink(1);
-				;
-
-				if(inventory.getStackInSlot(slot).isEmpty())
-					inventory.setStackInSlot(slot, ItemStack.EMPTY);
-
-				inv.setInventorySlotContents(i, sta2);
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-		if(inventory.getStackInSlot(slot).isEmpty())
-			return false;
-
-		for(int i = 0; i < chest.getSlots(); i++) {
-			
-			ItemStack outputStack = inventory.getStackInSlot(slot).copy();
-			if(outputStack.isEmpty())
-				return false;
-
-			ItemStack chestItem = chest.getStackInSlot(i).copy();
-			if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-				inventory.getStackInSlot(slot).shrink(1);
-
-				outputStack.setCount(1);
-				chest.insertItem(i, outputStack, false);
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private int getValidSlot(AStack nextIngredient){
@@ -528,81 +440,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		if(firstFreeSlot < 6)
 			return -2;
 		return firstFreeSlot;
-	}
-
-	public boolean tryFillAssemblerCap(IItemHandler container, int[] allowedSlots, TileEntityMachineBase te) {
-		if(allowedSlots.length < 1)
-			return false;
-		if(AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) == ItemStack.EMPTY || AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) == null)
-			return false;
-		else {
-			List<AStack> recipeIngredients = new ArrayList<>(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)));
-			Map<Integer, ItemStack> itemStackMap = new HashMap<Integer, ItemStack>();
-
-			for(int slot : allowedSlots) {
-				container.getStackInSlot(slot);
-				if (container.getStackInSlot(slot).isEmpty()) {
-					continue;
-				} else {
-					itemStackMap.put(slot, container.getStackInSlot(slot).copy());
-				}
-			}
-			if(itemStackMap.size() == 0){
-				return true;
-			}
-
-			for(int ig = 0; ig < recipeIngredients.size(); ig++) {
-
-				AStack nextIngredient = recipeIngredients.get(ig).copy();
-				
-				int ingredientSlot = getValidSlot(nextIngredient);
-
-
-				if(ingredientSlot < 6)
-					continue;
-
-				int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount();
-				
-				if(possibleAmount == 0){
-					System.out.println("This should never happen method getValidSlot broke");
-					continue;
-				}
-
-				for (Map.Entry<Integer,ItemStack> set :
-						itemStackMap.entrySet()) {
-					    ItemStack stack = set.getValue();
-						int slot = set.getKey();
-						ItemStack compareStack = stack.copy();
-						compareStack.setCount(1);
-
-						if(nextIngredient.isApplicable(compareStack) && (inventory.getStackInSlot(ingredientSlot).isEmpty() || Library.areItemStacksEqualIgnoreCount(inventory.getStackInSlot(ingredientSlot), container.getStackInSlot(slot)))){
-
-							int foundCount = Math.min(stack.getCount(), possibleAmount);
-							if(te != null && !te.canExtractItem(slot, stack, foundCount))
-								continue;
-							if(foundCount > 0){
-								possibleAmount -= foundCount;
-								container.extractItem(slot, foundCount, false);
-								inventory.getStackInSlot(ingredientSlot);
-								if(inventory.getStackInSlot(ingredientSlot).isEmpty()){
-
-									stack.setCount(foundCount);
-									inventory.setStackInSlot(ingredientSlot, stack);
-
-								}else{
-									inventory.getStackInSlot(ingredientSlot).grow(foundCount);
-								}
-								needsProcess = true;
-							}if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()){
-								break;
-							}else{
-								break;
-							}
-						}
-					}
-				}
-			}
-			return true;
 	}
 
 	public boolean removeItems(List<AStack> stack, IItemHandlerModifiable array) {
@@ -710,4 +547,135 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 
 		return count;
 	}
+
+	public static class AssemblerArm {
+
+        public double[] angles = new double[4];
+        public double[] prevAngles = new double[4];
+        public double[] targetAngles = new double[4];
+        public double[] speed = new double[4];
+
+        Random rand = new Random();
+        ArmActionState state = ArmActionState.ASSUME_POSITION;
+        int actionDelay = 0;
+
+        public static enum ArmActionState {
+            ASSUME_POSITION,
+            EXTEND_STRIKER,
+            RETRACT_STRIKER
+        }
+
+        public AssemblerArm() {
+            this.resetSpeed();
+        }
+
+        private void updateInterp() {
+            for(int i = 0; i < angles.length; i++) {
+                prevAngles[i] = angles[i];
+            }
+        }
+
+        private void returnToNullPos() {
+            for(int i = 0; i < 4; i++) this.targetAngles[i] = 0;
+            for(int i = 0; i < 3; i++) this.speed[i] = 3;
+            this.speed[3] = 0.25;
+            this.state = ArmActionState.RETRACT_STRIKER;
+
+            this.move();
+        }
+
+        private void resetSpeed() {
+            speed[0] = 15;	//Pivot
+            speed[1] = 15;	//Arm
+            speed[2] = 15;	//Piston
+            speed[3] = 0.5;	//Striker
+        }
+
+        public void updateArm() {
+            resetSpeed();
+
+            if(actionDelay > 0) {
+                actionDelay--;
+                return;
+            }
+
+            switch(state) {
+                // Move. If done moving, set a delay and progress to EXTEND
+                case ASSUME_POSITION:
+                    if(move()) {
+                        actionDelay = 2;
+                        state = ArmActionState.EXTEND_STRIKER;
+                        targetAngles[3] = -0.75D;
+                    }
+                    break;
+                case EXTEND_STRIKER:
+                    if(move()) {
+                        state = ArmActionState.RETRACT_STRIKER;
+                        targetAngles[3] = 0D;
+                    }
+                    break;
+                case RETRACT_STRIKER:
+                    if(move()) {
+                        actionDelay = 2 + rand.nextInt(5);
+                        chooseNewArmPoistion();
+                        state = ArmActionState.ASSUME_POSITION;
+                    }
+                    break;
+
+            }
+        }
+
+        private double[][] pos = new double[][] { // possible positions for the arms
+                {45, -15, -5},
+                {15, 15, -15},
+                {25, 10, -15},
+                {30, 0, -10},
+                {70, -10, -25},
+        }; // sure it's not truly random like with the old assemfac, but at least now the striker always hits the center and doesn't clip through the board
+
+        public void chooseNewArmPoistion() {
+            int chosen = rand.nextInt(pos.length);
+            this.targetAngles[0] = pos[chosen][0];
+            this.targetAngles[1] = pos[chosen][1];
+            this.targetAngles[2] = pos[chosen][2];
+        }
+
+        private boolean move() {
+            boolean didMove = false;
+
+            for(int i = 0; i < angles.length; i++) {
+                if(angles[i] == targetAngles[i])
+                    continue;
+
+                didMove = true;
+
+                double angle = angles[i];
+                double target = targetAngles[i];
+                double turn = speed[i];
+                double delta = Math.abs(angle - target);
+
+                if(delta <= turn) {
+                    angles[i] = targetAngles[i];
+                    continue;
+                }
+
+                if(angle < target) {
+                    angles[i] += turn;
+                } else {
+                    angles[i] -= turn;
+                }
+            }
+
+            return !didMove;
+        }
+
+        public double[] getPositions(float interp) {
+            return new double[] {
+                    BobMathUtil.interp(this.prevAngles[0], this.angles[0], interp),
+                    BobMathUtil.interp(this.prevAngles[1], this.angles[1], interp),
+                    BobMathUtil.interp(this.prevAngles[2], this.angles[2], interp),
+                    BobMathUtil.interp(this.prevAngles[3], this.angles[3], interp)
+            };
+        }
+    }
 }

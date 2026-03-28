@@ -1,7 +1,7 @@
 {
 	"display": {
 		"icon": {
-			"item": "hbm:machine_assembler"
+			"item": "hbm:machine_assembly"
 		},
 		"title": {
 			"translate": "hbm.achievement.progress_assembler"
@@ -17,7 +17,7 @@
             "conditions": {
                 "items": [
                     {
-                        "item": "hbm:machine_assembler"
+                        "item": "hbm:machine_assembly"
                     }
                 ]
             }

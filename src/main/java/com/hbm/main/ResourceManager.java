@@ -46,11 +46,8 @@ public class ResourceManager {
 	public static final IModelCustom assembler_slider = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_slider.obj")).asVBO();
 	public static final IModelCustom assembler_arm = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_arm.obj")).asVBO();
 
-    //Assembly
-    public static final IModelCustom assembly_body = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_body.obj")).asVBO();
-    public static final IModelCustom assembly_cog = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_cog.obj")).asVBO();
-    public static final IModelCustom assembly_slider = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_slider.obj")).asVBO();
-    public static final IModelCustom assembly_arm = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/assembler_new_arm.obj")).asVBO();
+    //Assembly(new)
+    public static final IModelCustom assembly_machine = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/assembly_machine.obj")).asVBO();
 
 	//Chemplant
 	public static final IModelCustom chemplant_new = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/chemplant_main_new.obj")).asVBO();
@@ -734,11 +731,8 @@ public class ResourceManager {
 	public static final ResourceLocation assembler_slider_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_slider_new.png");
 	public static final ResourceLocation assembler_arm_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_arm_new.png");
 
-    //Assembly
-    public static final ResourceLocation assembly_body_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_base_new.png");
-    public static final ResourceLocation assembly_cog_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_cog_new.png");
-    public static final ResourceLocation assembly_slider_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_slider_new.png");
-    public static final ResourceLocation assembly_arm_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembler_arm_new.png");
+    //Assembly(new)
+    public static final ResourceLocation assembly_machine_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/assembly_machine.png");
 	
 	//Chemplant
 	public static final ResourceLocation chemplant_body_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/chemplant_base_new.png");

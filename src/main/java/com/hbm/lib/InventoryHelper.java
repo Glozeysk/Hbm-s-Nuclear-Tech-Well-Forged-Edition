@@ -25,9 +25,10 @@ public class InventoryHelper {
         IItemHandler inventory = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         for (int i = 0; i < inventory.getSlots(); ++i) {
             if(inventory.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate) continue;
+            if(inventory.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate) continue;
             ItemStack itemstack = inventory.getStackInSlot(i);
 
-            if (!itemstack.isEmpty() && (!(inventory.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate)))
+            if (!itemstack.isEmpty() && (!(inventory.getStackInSlot(i).getItem() instanceof ItemChemistryTemplate)) && (!(inventory.getStackInSlot(i).getItem() instanceof ItemAssemblyTemplate)))
             {
                 spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
             }

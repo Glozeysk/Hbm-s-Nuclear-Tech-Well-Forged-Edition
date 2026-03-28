@@ -32,6 +32,10 @@
     "block.pipePlaced": {"category": "block", "sounds": [{"name": "hbm:block/pipePlaced", "stream": false}]},
     "block.missileAssembly": {"category": "block", "sounds": [{"name": "hbm:block/missileAssembly", "stream": false}]},
     "block.missileAssembly2": {"category": "block", "sounds": [{"name": "hbm:block/missileAssembly2", "stream": false}]},
+    "block.assemblerStrike": {"category": "block", "sounds": ["hbm:block/assemblerStrike1", "hbm:block/assemblerStrike2"]},
+    "block.assemblerStart": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStart", "stream": false}]},
+    "block.assemblerStop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStop", "stream": false}]},
+    "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
 
 	"item.techBleep": {"category": "player", "sounds": [{"name": "hbm:tool/techBleep", "stream": false}]},
     "item.techBoop": {"category": "player", "sounds": [{"name": "hbm:tool/techBoop", "stream": false}]},

@@ -617,6 +617,7 @@ public class MainRegistry {
 		NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
 		GameRegistry.registerTileEntity(TileEntityDummy.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy"));
 		GameRegistry.registerTileEntity(TileEntityMachineAssembler.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_assembler"));
+		GameRegistry.registerTileEntity(TileEntityMachineAssembly.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_assembly"));
 		GameRegistry.registerTileEntity(TileEntityDiFurnace.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace"));
 		GameRegistry.registerTileEntity(TileEntityDiFurnaceRTG.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace_rtg"));
 		GameRegistry.registerTileEntity(TileEntityMachineDiFurnaceBig.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_difurnace_big"));
