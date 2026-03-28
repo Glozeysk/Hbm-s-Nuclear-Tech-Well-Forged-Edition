@@ -79,7 +79,6 @@ public class MachineITER extends BlockDummyable {
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack itemStack) {
 		if(!(player instanceof EntityPlayer))
 			return;
-		EnumHand hand = player.getHeldItemMainhand() == itemStack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
@@ -115,24 +114,15 @@ public class MachineITER extends BlockDummyable {
 		if(!checkRequirement(world, x, y, z, dir, o)) {
 
 			if(!pl.capabilities.isCreativeMode) {
-				ItemStack stack = pl.getHeldItem(hand);
-				Item item = Item.getItemFromBlock(this);
-
-				if(stack == null || stack.isEmpty()) {
-					pl.setHeldItem(hand, new ItemStack(this));
-				} else {
-					if(stack.getItem() != item || stack.getCount() == stack.getMaxStackSize()) {
-						pl.inventory.addItemStackToInventory(new ItemStack(this));
-					} else {
-						pl.getHeldItem(hand).grow(1);
-					}
-				}
+				pl.inventory.addItemStackToInventory(new ItemStack(this));
 			}
 
 			return;
 		}
 
-		pl.getHeldItem(hand).shrink(1);
+		if(!pl.capabilities.isCreativeMode) {
+			itemStack.shrink(1);
+		}
 
 		world.setBlockState(new BlockPos(x + dir.offsetX * o , y + dir.offsetY * o + height, z + dir.offsetZ * o), this.getDefaultState().withProperty(META, dir.ordinal() + offset), 3);
 		safeRem = true;
@@ -148,15 +138,7 @@ public class MachineITER extends BlockDummyable {
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
 		if(i >= 12 && drop) {
-
-            for(int l = 0; l < 4; l++)
-            	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.fusion_conductor, 64)));
-
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.fusion_conductor, 36)));
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.fusion_center, 64)));
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.fusion_motor, 4)));
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.reinforced_glass, 8)));
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.struct_iter_core, 1)));
+        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.iter, 1)));
     	}
 
 		super.breakBlock(world, pos, state);

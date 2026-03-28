@@ -54,6 +54,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public boolean needsProcess = true;
 	public int maxProgress = 100;
 	public boolean isProgressing;
+	private boolean wasProgressing = false;
 	int age = 0;
 	int consumption = 100;
 	int speed = 100;
@@ -284,7 +285,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				}
 
 				if(arm.prevAngles[3] != arm.angles[3] && arm.angles[3] == -0.75) {
-					world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStrike, SoundCategory.BLOCKS, this.getVolume(0.5F), 1F, false);
+					world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStrike, SoundCategory.BLOCKS, 0.5F, 1F, false);
 				}
 			}
 
@@ -320,15 +321,25 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 
 			float volume = this.getVolume(2);
 
-			if(isProgressing && volume > 0) {
+			if(isProgressing && !wasProgressing) {
+				world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStart, SoundCategory.BLOCKS, 0.25F, 1.25F + world.rand.nextFloat() * 0.25F, false);
+			}
+			if(!isProgressing && wasProgressing) {
+				world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStop, SoundCategory.BLOCKS, 0.25F, 1.5F, false);
+			}
+			wasProgressing = isProgressing;
+
+			if(isProgressing) {
 				if(audio == null) {
-					audio = MainRegistry.proxy.getLoopedSoundStartStop(world, HBMSoundHandler.motor, HBMSoundHandler.assemblerStart, HBMSoundHandler.assemblerStop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.motor, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1.0F, 0.75F);
 					if(audio != null) {
+						audio.updateRange(15F);
+						audio.updateVolume(0F);
 						audio.startSound();
 					}
 				} else {
-					audio.keepAlive();
-					audio.updateVolume(volume);
+					boolean ringMoving = this.ring != this.ringTarget;
+					audio.updateVolume(ringMoving ? this.getVolume(0.5F) : 0F);
 				}
 			} else {
 				if(audio != null) {
@@ -364,16 +375,16 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;
-    	}
+		}
 	}
 	
 	@Override
 	public void invalidate() {
 		super.invalidate();
-    	if(audio != null) {
+		if(audio != null) {
 			audio.stopSound();
 			audio = null;
-    	}
+		}
 	}
 
 	@Override

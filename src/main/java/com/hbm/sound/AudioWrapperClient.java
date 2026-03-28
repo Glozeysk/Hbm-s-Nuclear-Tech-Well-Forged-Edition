@@ -19,6 +19,11 @@ public class AudioWrapperClient extends AudioWrapper {
 		if(sound != null)
 			sound.setPosition(x, y, z);
 	}
+
+	public void updateRange(float range) {
+		if(sound != null)
+			sound.setRange(range);
+	}
 	
 	public void updateVolume(float volume) {
 		if(sound != null)

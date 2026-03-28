@@ -670,6 +670,17 @@ public class AssemblerRecipes {
 				new ComparableStack(ModItems.circuit_red_copper, 8),
 				new OreDictStack(KEY_CIRCUIT_BISMUTH, 1)
 			}, 600);
+		makeRecipe(new ComparableStack(ModBlocks.iter, 1), new AStack[] {
+				new ComparableStack(ModBlocks.fusion_conductor, 292),
+				new ComparableStack(ModBlocks.fusion_center, 64),
+				new ComparableStack(ModBlocks.reinforced_glass, 8),
+				new ComparableStack(ModBlocks.fusion_motor, 4),
+				new ComparableStack(ModBlocks.struct_iter_core, 1)
+			}, 600);
+		makeRecipe(new ComparableStack(ModBlocks.plasma_heater, 1), new AStack[] {
+				new ComparableStack(ModBlocks.fusion_heater, 135),
+				new ComparableStack(ModBlocks.struct_plasma_core, 1)
+			}, 600);
 		makeRecipe(new ComparableStack(ModBlocks.machine_large_turbine, 1), new AStack[] { new ComparableStack(ModItems.hull_big_steel, 1), new OreDictStack(STEEL.plate(), 12), new ComparableStack(ModItems.turbine_titanium, 3), new ComparableStack(ModItems.rotor_steel, 2), new ComparableStack(ModItems.generator_steel, 2), new ComparableStack(ModItems.bolt_compound, 3), new ComparableStack(ModItems.pipes_steel, 1), new ComparableStack(ModItems.circuit_aluminium, 1), }, 300);
 
 		makeRecipe(new ComparableStack(ModItems.pellet_chlorophyte, 2), new AStack[] { new ComparableStack(ModItems.powder_chlorophyte, 2), new ComparableStack(ModItems.powder_balefire, 2), new ComparableStack(ModItems.nugget_radspice, 12), }, 50);

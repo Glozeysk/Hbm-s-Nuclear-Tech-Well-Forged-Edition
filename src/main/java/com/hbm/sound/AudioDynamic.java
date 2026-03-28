@@ -20,6 +20,12 @@ public class AudioDynamic extends MovingSound {
 		this.attenuationType = ISound.AttenuationType.NONE;
 		this.intendedVolume = 10;
 	}
+
+	private float range = -1F;
+
+	public void setRange(float r) {
+		this.range = r;
+	}
 	
 	public void setPosition(float x, float y, float z) {
 		this.xPosF = x;
@@ -38,19 +44,14 @@ public class AudioDynamic extends MovingSound {
 		float f = 0;
 		if(player != null) {
 			if(attenuationType == ISound.AttenuationType.LINEAR){
-				/*float f3 = intendedVolume;
-                float f2 = 16.0F;
 
-                if (f3 > 1.0F)
-                {
-                    f2 *= f3;
-                }
-                f = (float)Math.sqrt(Math.pow(xPosF - player.posX, 2) + Math.pow(yPosF - player.posY, 2) + Math.pow(zPosF - player.posZ, 2));
-                volume = 1-f2/f;
-                System.out.println(volume);*/
 			} else {
 				f = (float)Math.sqrt(Math.pow(xPosF - player.posX, 2) + Math.pow(yPosF - player.posY, 2) + Math.pow(zPosF - player.posZ, 2));
-				volume = func(f, intendedVolume);
+				if(range > 0) {
+					volume = Math.max(0, func(f, range)) * intendedVolume;
+				} else {
+					volume = func(f, intendedVolume);
+				}
 			}
 		} else {
 			volume = intendedVolume;
