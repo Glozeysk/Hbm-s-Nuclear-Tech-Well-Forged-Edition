@@ -6,17 +6,21 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.network.energy.TileEntityPylonBase;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.BlockContainer;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemDye;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 public abstract class PylonBase extends BlockContainer implements ITooltipProvider
 {
@@ -26,7 +30,48 @@ public abstract class PylonBase extends BlockContainer implements ITooltipProvid
         this.setRegistryName(s);
         ModBlocks.ALL_BLOCKS.add(this);
     }
-    
+
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        ItemStack held = player.getHeldItem(hand);
+
+        if (!held.isEmpty() && held.getItem() instanceof ItemDye) {
+            if (!world.isRemote) {
+                TileEntity te = world.getTileEntity(pos);
+                if (te instanceof TileEntityPylonBase) {
+                    TileEntityPylonBase pylon = (TileEntityPylonBase) te;
+                    EnumDyeColor dyeColor = EnumDyeColor.byDyeDamage(held.getMetadata());
+
+                    int r, g, b;
+                    if (dyeColor == EnumDyeColor.ORANGE) {
+                        r = 216;
+                        g = 64;
+                        b = 10;
+                    } else if (dyeColor == EnumDyeColor.BLACK) {
+                        r = 16;
+                        g = 16;
+                        b = 16;
+                    } else {
+                        int color = dyeColor.getColorValue();
+                        r = (color >> 16) & 0xFF;
+                        g = (color >> 8) & 0xFF;
+                        b = color & 0xFF;
+                    }
+
+                    pylon.setCableColor(r, g, b);
+
+                    if (!player.isCreative()) {
+                        held.shrink(1);
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntity te = world.getTileEntity(pos);
         if (te != null && te instanceof TileEntityPylonBase) {
@@ -34,31 +79,38 @@ public abstract class PylonBase extends BlockContainer implements ITooltipProvid
         }
         super.breakBlock(world, pos, state);
     }
-    
+
+    @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
     }
-    
+
+    @Override
     public boolean isOpaqueCube(IBlockState state) {
         return false;
     }
-    
+
+    @Override
     public boolean isBlockNormalCube(IBlockState state) {
         return false;
     }
-    
+
+    @Override
     public boolean isNormalCube(IBlockState state) {
         return false;
     }
-    
+
+    @Override
     public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos) {
         return false;
     }
-    
+
+    @Override
     public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
         return false;
     }
-    
+
+    @Override
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
         this.addStandardInfo((List)list);
         super.addInformation(stack, worldIn, (List)list, flagIn);
