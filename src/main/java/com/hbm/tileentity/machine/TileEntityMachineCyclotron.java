@@ -504,7 +504,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 
 			if(inventory.getStackInSlot(i+6).isEmpty())
 				return true;
-			if(Library.areItemStacksCompatible(out, inventory.getStackInSlot(i+6), false) && inventory.getStackInSlot(i+6).getCount() < out.getMaxStackSize())
+			if(Library.areItemStacksCompatible(out, inventory.getStackInSlot(i+6), false) && inventory.getStackInSlot(i+6).getCount() + out.getCount() <= out.getMaxStackSize())
 				return true;
 		}
 
@@ -529,16 +529,16 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 				amat.fill(new FluidStack(ModForgeFluids.amat, (Integer)res[1]), true);
 				inventory.getStackInSlot(i).shrink(1);
 				inventory.getStackInSlot(i+3).shrink(1);
-				inventory.setStackInSlot(i+6, out);
+				inventory.setStackInSlot(i+6, out.copy());
 				continue;
 			}
 
-			if(inventory.getStackInSlot(i+6).getItem() == out.getItem() && inventory.getStackInSlot(i+6).getItemDamage() == out.getItemDamage() && inventory.getStackInSlot(i+6).getCount() < out.getMaxStackSize()) {
+			if(inventory.getStackInSlot(i+6).getItem() == out.getItem() && inventory.getStackInSlot(i+6).getItemDamage() == out.getItemDamage() && inventory.getStackInSlot(i+6).getCount() + out.getCount() <= out.getMaxStackSize()) {
 
 				amat.fill(new FluidStack(ModForgeFluids.amat, (Integer)res[1]), true);
 				inventory.getStackInSlot(i).shrink(1);
 				inventory.getStackInSlot(i+3).shrink(1);
-				inventory.getStackInSlot(i+6).grow(1);
+				inventory.getStackInSlot(i+6).grow(out.getCount());
 			}
 		}
 	}
