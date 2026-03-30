@@ -7,6 +7,7 @@ import com.hbm.items.machine.ItemChemistryTemplate;
 import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import com.hbm.tileentity.machine.TileEntityMachineChemplant;
+import com.hbm.tileentity.machine.TileEntityMachineChemical;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -123,6 +124,19 @@ public class ItemAssTemplatePacket implements IMessage {
                 }
 				if (te instanceof TileEntityMachineChemplant) {
                     TileEntityMachineChemplant gen = (TileEntityMachineChemplant) te;
+                    if (stack.getItem() instanceof ItemChemistryTemplate) {
+
+                        // Update TileEntity
+                        gen.inventory.setStackInSlot(slot, stack.copy());
+                        gen.markDirty(); // Fix: Mark dirty to ensure data saves/syncs
+
+                        // Fix: Force block update to sync TileEntity data to client
+                        IBlockState state = p.world.getBlockState(pos);
+                        p.world.notifyBlockUpdate(pos, state, state, 3);
+                    }
+                }
+                if (te instanceof TileEntityMachineChemical) {
+                    TileEntityMachineChemical gen = (TileEntityMachineChemical) te;
                     if (stack.getItem() instanceof ItemChemistryTemplate) {
 
                         // Update TileEntity

@@ -336,6 +336,10 @@ public class BobMathUtil {
 		return ticksToDate(ticks, 1000);
 	}
 
+	public static double sps(double x) {
+        return Math.sin(Math.PI / 2D * Math.cos(x));
+    }
+
 	public static String ticksToDateString(long ticks, int tickHour) {
 		return toDate(ticksToDate(ticks, tickHour));
 	}

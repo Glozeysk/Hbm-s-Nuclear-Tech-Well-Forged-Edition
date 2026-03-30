@@ -52,6 +52,8 @@ public class ItemModGoggles extends ItemArmorMod {
 	
 	@Override
 	public void modUpdate(EntityLivingBase entity, ItemStack armor){
+		if(entity.world.isRemote) return;
+
 		ItemArmor item = (ItemArmor)armor.getItem();
 		IHBMData props = HbmCapability.getData(entity);
 		
@@ -59,9 +61,12 @@ public class ItemModGoggles extends ItemArmorMod {
 
 			if(this == ModItems.night_goggles) {
 				if(props.getEnableGoggles()){
-				entity.addPotionEffect(new PotionEffect(MobEffects.NIGHT_VISION, 210, 0, false, false));
-				} else if(!props.getEnableGoggles()){
-				entity.removePotionEffect(MobEffects.NIGHT_VISION);
+					entity.addPotionEffect(new PotionEffect(MobEffects.NIGHT_VISION, 210, 0, false, false));
+				} else {
+					PotionEffect effect = entity.getActivePotionEffect(MobEffects.NIGHT_VISION);
+					if(effect != null && effect.getDuration() <= 210 && effect.getAmplifier() == 0) {
+						entity.removePotionEffect(MobEffects.NIGHT_VISION);
+					}
 				}
 			}
 		}

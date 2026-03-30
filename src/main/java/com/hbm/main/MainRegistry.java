@@ -220,7 +220,6 @@ import com.hbm.handler.GuiHandler;
 import com.hbm.handler.HTTPHandler;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.HbmKeybinds;
-import com.hbm.handler.JetpackLayerRegistration;
 import com.hbm.handler.MultiblockBBHandler;
 import com.hbm.handler.crt.NTMCraftTweaker;
 import com.hbm.hazard.HazardRegistry;
@@ -624,6 +623,7 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityMachinePress.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_press"));
 		GameRegistry.registerTileEntity(TileEntityTestRender.class, new ResourceLocation(RefStrings.MODID, "tileentity_testrenderer"));
 		GameRegistry.registerTileEntity(TileEntityMachineChemplant.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_chemplant"));
+		GameRegistry.registerTileEntity(TileEntityMachineChemical.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_chemical"));
 		GameRegistry.registerTileEntity(TileEntityMachineChemfac.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_chemfac"));
 		GameRegistry.registerTileEntity(TileEntityMachineMixer.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_mixer"));
 		GameRegistry.registerTileEntity(TileEntityDummyPort.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy_port"));
@@ -1088,10 +1088,10 @@ public class MainRegistry {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		JetpackLayerRegistration.init();
+		proxy.init(event);
 		ModItems.init();
 		ModBlocks.init();
-        PacketThreading.init();
+		PacketThreading.init();
 		HazmatRegistry.registerHazmats();
 		registerReactorFuels();
 		ControlRegistry.init();

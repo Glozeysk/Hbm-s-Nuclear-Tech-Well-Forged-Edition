@@ -13,6 +13,7 @@ import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.render.entity.item.RenderMovingPackage;
 import com.hbm.tileentity.machine.*;
 import com.hbm.tileentity.network.TileEntityCraneSplitter;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -205,6 +206,7 @@ import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.HbmShaderManager;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.handler.JetpackLayerRegistration;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemModLens;
 import com.hbm.lib.HBMSoundHandler;
@@ -641,6 +643,7 @@ public class ClientProxy extends ServerProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembly.class, new RenderAssembly());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTestRender.class, new RenderTestRender());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineChemplant.class, new RenderChemplant());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineChemical.class, new RenderChemical());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineChemfac.class, new RenderChemfac());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineMixer.class, new RenderMixer());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityNukeMan.class, new RenderNukeMan());
@@ -2355,6 +2358,11 @@ public class ClientProxy extends ServerProxy {
 		AudioWrapperClientStartStop audio = new AudioWrapperClientStartStop(world, sound, start, stop, volume, cat);
 		audio.updatePosition(x, y, z);
 		return audio;
+	}
+
+	@Override
+	public void init(FMLInitializationEvent event) {
+		JetpackLayerRegistration.init();
 	}
 	
 	public static int boxcarCalllist;

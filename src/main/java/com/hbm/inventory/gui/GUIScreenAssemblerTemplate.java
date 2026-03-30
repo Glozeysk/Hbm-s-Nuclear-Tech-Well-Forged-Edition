@@ -14,6 +14,7 @@ import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import com.hbm.tileentity.machine.TileEntityMachineChemplant;
+import com.hbm.tileentity.machine.TileEntityMachineChemical;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -110,6 +111,11 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 			}
 		}
 		if(tile instanceof TileEntityMachineChemfac){
+			for (int i: ChemplantRecipes.recipeNames.keySet()){
+				allStacks.add(new ItemStack(ModItems.chemistry_template, 1, i));
+			}
+		}
+		if(tile instanceof TileEntityMachineChemical){
 			for (int i: ChemplantRecipes.recipeNames.keySet()){
 				allStacks.add(new ItemStack(ModItems.chemistry_template, 1, i));
 			}
@@ -278,6 +284,8 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 					else if((tile instanceof TileEntityMachineChemplant) && stack.getItem() == ModItems.chemistry_template)
 						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
 					else if((tile instanceof TileEntityMachineChemfac) && stack.getItem() == ModItems.chemistry_template)
+						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
+					else if((tile instanceof TileEntityMachineChemical) && stack.getItem() == ModItems.chemistry_template)
 						itemRender.renderItemAndEffectIntoGUI(player, new ItemStack(ModItems.chemistry_icon, 1, stack.getItemDamage()), xPos + 1, yPos + 1);
 					else if(tile instanceof TileEntityMachineAssembly && stack.getItem() == ModItems.assembly_template)
 						itemRender.renderItemAndEffectIntoGUI(player, AssemblerRecipes.getOutputFromTempate(stack), xPos + 1, yPos + 1);

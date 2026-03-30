@@ -87,8 +87,8 @@ public class ItemStarterKit extends Item {
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_press, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_difurnace_off, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_difurnace_ext, 1));
-			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_assembler, 1));
-			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_chemplant, 1));
+			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_assembly, 1));
+			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_chemical, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_gascent, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_reactor, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_reactor_small, 1));
@@ -129,7 +129,7 @@ public class ItemStarterKit extends Item {
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_radgen, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_rtg_grey, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_assembler, 3));
-			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_chemplant, 2));
+			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_chemical, 2));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.machine_fluidtank, 1));
 			player.inventory.addItemStackToInventory(new ItemStack(ModBlocks.red_cable, 32));
 			player.inventory.addItemStackToInventory(new ItemStack(ModItems.pellet_rtg, 1));

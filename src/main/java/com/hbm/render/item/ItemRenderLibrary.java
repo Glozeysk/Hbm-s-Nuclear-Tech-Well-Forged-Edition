@@ -351,6 +351,21 @@ public class ItemRenderLibrary {
 		        ResourceManager.chemplant_spinner.renderAll();
 		        GlStateManager.enableCull();
 			}});
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_chemical), new ItemRenderBase() {
+			public void renderInventory() {
+				GlStateManager.translate(0, -2.75, 0);
+                GlStateManager.scale(4.5, 4.5, 4.5);
+			}
+			public void renderCommon() {
+		        GlStateManager.rotate(90F, 0F, 1F, 0F);
+                GlStateManager.scale(0.75, 0.75, 0.75);
+                GlStateManager.shadeModel(GL11.GL_SMOOTH);
+                bindTexture(ResourceManager.chemical_tex);
+                ResourceManager.chemical.renderPart("Base");
+                ResourceManager.chemical.renderPart("Slider");
+                ResourceManager.chemical.renderPart("Spinner");
+                GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_chemfac), new ItemRenderBase( ) {
 			public void renderInventory() {
 				GL11.glScaled(2.5, 2.5, 2.5);

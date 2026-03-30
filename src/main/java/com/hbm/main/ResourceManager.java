@@ -57,6 +57,7 @@ public class ResourceManager {
 	public static final IModelCustom chemplant_fluid = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/chemplant_new_fluid.hmf")).asVBO();
 	public static final IModelCustom chemplant_fluidcap = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/chemplant_new_fluidcap.hmf")).asVBO();
 	public static final IModelCustom chemfac = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/chemfac.obj")).asVBO();
+	public static final IModelCustom chemical = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/chemical_plant.obj")).asVBO();
 	
 	//Mixer
 	public static final IModelCustom mixer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/mixer.obj")).asVBO();
@@ -740,6 +741,7 @@ public class ResourceManager {
     public static final ResourceLocation chemplant_piston_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/chemplant_piston_new.png");
     public static final ResourceLocation chemplant_fluid_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/lavabase_small.png");
 	public static final ResourceLocation chemfac_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/chemfac.png");
+	public static final ResourceLocation chemical_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/chemical_plant.png");
 
 	//Mixer
 	public static final ResourceLocation mixer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/mixer.png");

@@ -1120,8 +1120,10 @@ public class ModBlocks {
 	public static final int guiID_machine_assembly = 135;
 
 	public static final Block machine_chemplant = new MachineChemplant(Material.IRON, "machine_chemplant").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block machine_chemical = new MachineChemical(Material.IRON, "machine_chemical").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_chemfac = new MachineChemfac(Material.IRON, "machine_chemfac").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_chemplant = 49;
+	public static final int guiID_machine_chemical = 139;
 	
 	public static final Block machine_mixer = new MachineMixer(Material.IRON, "machine_mixer").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
 

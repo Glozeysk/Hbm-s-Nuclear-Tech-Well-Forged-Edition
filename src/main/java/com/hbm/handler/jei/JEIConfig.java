@@ -81,6 +81,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_assembler), ASSEMBLY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_assembly), ASSEMBLY);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_chemplant), CHEMPLANT);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_chemical), CHEMPLANT);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_mixer), MIXER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_cyclotron), CYCLOTRON);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_schrabidium_transmutator), TRANSMUTATION);
@@ -172,6 +173,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineAssembly.class, 45, 83, 82, 30, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineAssembler.class, 45, 83, 82, 30, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineChemplant.class, 45, 90, 85, 15, CHEMPLANT);
+		registry.addRecipeClickArea(GUIMachineChemical.class, 45, 90, 85, 15, CHEMPLANT);
 		registry.addRecipeClickArea(GUIMixer.class, 62, 36, 52, 44, MIXER);
 		registry.addRecipeClickArea(GUIMachineCyclotron.class, 50, 24, 40, 40, CYCLOTRON);
 		registry.addRecipeClickArea(GUIMachinePress.class, 80, 35, 15, 15, PRESS);

@@ -1648,6 +1648,8 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.machine_assembly, 1), new Object[] { "WWW", "MCM", "ISI", 'W', KEY_ANYPANE, 'M', ModItems.motor, 'C', ModItems.circuit_aluminium, 'I', CU.block(), 'S', STEEL.block() });
 		addShapelessAuto(new ItemStack(ModBlocks.machine_assembly, 1), new Object[] { ModBlocks.machine_assembler });
 		addShapelessAuto(new ItemStack(ModBlocks.machine_assembler, 1), new Object[] { ModBlocks.machine_assembly });
+		addShapelessAuto(new ItemStack(ModBlocks.machine_chemical, 1), new Object[] { ModBlocks.machine_chemplant });
+		addShapelessAuto(new ItemStack(ModBlocks.machine_chemplant, 1), new Object[] { ModBlocks.machine_chemical });
 		addRecipeAuto(new ItemStack(ModItems.template_folder, 1), new Object[] { "LPL", "BPB", "LPL", 'P', Items.PAPER, 'L', "dyeBlue", 'B', "dyeWhite" });
 		addRecipeAuto(new ItemStack(ModItems.turret_control, 1), new Object[] { "R12", "PPI", "  I", 'R', Items.REDSTONE, '1', ModItems.circuit_aluminium, '2', ModItems.circuit_red_copper, 'P', STEEL.plate(), 'I', STEEL.ingot() });
 		addRecipeAuto(new ItemStack(ModItems.pellet_antimatter, 1), new Object[] { "###", "###", "###", '#', new IngredientContainsTag(ItemCell.getFullCell(ModForgeFluids.amat)) });

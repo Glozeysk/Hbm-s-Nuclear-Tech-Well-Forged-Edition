@@ -108,6 +108,12 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerMachineChemplant(player.inventory, (TileEntityMachineChemplant) entity);
 			}
 			return null;
+
+		case ModBlocks.guiID_machine_chemical:
+			if(entity instanceof TileEntityMachineChemical) {
+				return new ContainerMachineChemical(player.inventory, (TileEntityMachineChemical) entity);
+			}
+			return null;
 		case ModBlocks.guiID_nuke_man:
 			if(entity instanceof TileEntityNukeMan) {
 				return new ContainerNukeMan(player.inventory, (TileEntityNukeMan) entity);
@@ -736,6 +742,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_chemplant:
 			if(entity instanceof TileEntityMachineChemplant) {
 				return new GUIMachineChemplant(player.inventory, (TileEntityMachineChemplant) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_chemical:
+			if(entity instanceof TileEntityMachineChemical) {
+				return new GUIMachineChemical(player.inventory, (TileEntityMachineChemical) entity);
 			}
 			return null;
 		case ModBlocks.guiID_nuke_man:
