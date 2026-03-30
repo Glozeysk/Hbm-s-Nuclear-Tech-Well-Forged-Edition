@@ -3,29 +3,32 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Waldemar Edition";
-	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.1.0";
-	public static final String CHANGELOG = "Update 1.1.0\n" +
-            "\n" +
-            "- Added more interactions between barrels and contained fluids;\n" +
-            "- Added big fluid blast furnace;\n" +
-            "- Removed SPK-Blast furnace;\n" +
-            "- Added template switch system and template crafting system;\n" +
-            "- Added duds to neutrino lens list;\n" +
-            "- Added advanced alloy stamps for press;\n" +
-            "- Added inventory radiation for yellow and vitrified barrel;\n" +
-            "- Added electricity connectors;\n" +
-            "- Added simple corrosion resistance to universal pipes;\n" +
-            "- Added Alpha AJR armor variant;\n" +
-            "- Changed armor battery upgrades textures;\n" +
-            "- Changed crystallizer model to CE model;\n" +
-            "- Changed magnetic pipes texture;\n" +
-            "- Changed yellowcake properties;\n" +
-            "- Fixed some bugs with fluid tank;\n" +
-            "- Fixed bug with new AJR armor variants;\n" +
-            "- Fixed bug with chargers not charging armor with battery mod correctly;\n" +
-            "- Fixed an issue with loading items into the nuclear furnace with connected tiles;\n" +
-            "- Fixed vertical conveyor elements bugs;\n" +
-            "- Fixed pipes not being melted correctly.";
+	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.0";
+	public static final String CHANGELOG = "Update 1.2.0\n" +
+			"- Added grow progress bar in ITER GUI;\n" +
+			"- Added speed change in ITER breeder which depends on required heat and actual heat;\n" +
+			"- Added flux summary in RBMK outgasser;\n" +
+			"- Added bedrock ore to neutrino lens;\n" +
+			"- Added tooltip to Big Furnace;\n" +
+			"- Added void buttons for crystallizer and plasma heater fluid tanks;\n" +
+			"- Added compatibility armor with Quark emotes.\n" +
+			"\n" +
+			"- Injected and tested new BufPacket serialization/deserialization system;\n" +
+			"- Fully reworked magnetic ducts;\n" +
+			"- Changed magnetic ducts craft;\n" +
+			"- Changed arsenic nugget craft;\n" +
+			"- Ported Machine Assembly model, sounds, animations;\n" +
+			"- Ported Machine Chemplant model and animations;\n" +
+			"- Added wire recoloring and changed wiring_red_copper texture and craft.\n" +
+			"\n" +
+			"- Fixed Oil Spill particles in MachineOilWell;\n" +
+			"- Fixed armor helmet rotation issues on armor stands;\n" +
+			"- Fixed neutrino lens visual bugs;\n" +
+			"- Fixed lid jumping on heatproof columns;\n" +
+			"- Fixed shift+click interactions on conveyor extractors/inserters;\n" +
+			"- Fixed jetpacks model sync;\n" +
+			"- Fixed cyclotron recipes bug;\n" +
+			"- Fixed night goggles effect bug.";
 	//HBM's Beta Naming Convention:
 	//V T (X)
 	//V -> next release version
