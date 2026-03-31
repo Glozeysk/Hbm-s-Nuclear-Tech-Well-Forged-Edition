@@ -34,50 +34,7 @@ import com.hbm.handler.guncfg.GunGrenadeFactory;
 import com.hbm.handler.guncfg.GunOSIPRFactory;
 import com.hbm.handler.guncfg.GunRocketFactory;
 import com.hbm.interfaces.IItemHazard;
-import com.hbm.items.armor.ArmorAJR;
-import com.hbm.items.armor.ArmorAJRO;
-import com.hbm.items.armor.ArmorAJRAlpha;
-import com.hbm.items.armor.ArmorAJRMUR;
-import com.hbm.items.armor.ArmorRPA;
-import com.hbm.items.armor.ArmorAshGlasses;
-import com.hbm.items.armor.ArmorBJ;
-import com.hbm.items.armor.ArmorBJJetpack;
-import com.hbm.items.armor.ArmorDNT;
-import com.hbm.items.armor.ArmorDigamma;
-import com.hbm.items.armor.ArmorHEV;
-import com.hbm.items.armor.ArmorHat;
-import com.hbm.items.armor.ArmorLiquidator;
-import com.hbm.items.armor.ItemModAuto;
-import com.hbm.items.armor.ItemModBandaid;
-import com.hbm.items.armor.ItemModBathwater;
-import com.hbm.items.armor.ItemModBattery;
-import com.hbm.items.armor.ItemModCladding;
-import com.hbm.items.armor.ItemModGasmask;
-import com.hbm.items.armor.ItemModHealth;
-import com.hbm.items.armor.ItemModInk;
-import com.hbm.items.armor.ItemModInsert;
-import com.hbm.items.armor.ItemModIron;
-import com.hbm.items.armor.ItemModKnife;
-import com.hbm.items.armor.ItemModLodestone;
-import com.hbm.items.armor.ItemModMedal;
-import com.hbm.items.armor.ItemModMilk;
-import com.hbm.items.armor.ItemModMorningGlory;
-import com.hbm.items.armor.ItemModObsidian;
-import com.hbm.items.armor.ItemModCharm;
-import com.hbm.items.armor.ItemModLens;
-import com.hbm.items.armor.ItemModPads;
-import com.hbm.items.armor.ItemModPolish;
-import com.hbm.items.armor.ItemModQuartz;
-import com.hbm.items.armor.ItemModRadar;
-import com.hbm.items.armor.ItemModRevive;
-import com.hbm.items.armor.ItemModSerum;
-import com.hbm.items.armor.ItemModServos;
-import com.hbm.items.armor.ItemModGoggles;
-import com.hbm.items.armor.ItemModShackles;
-import com.hbm.items.armor.ItemModTesla;
-import com.hbm.items.armor.ItemModV1;
-import com.hbm.items.armor.ItemModWD40;
-import com.hbm.items.armor.WingsMurk;
+import com.hbm.items.armor.*;
 import com.hbm.items.bomb.ItemBoy;
 import com.hbm.items.bomb.ItemFleija;
 import com.hbm.items.bomb.ItemGadget;
@@ -831,6 +788,29 @@ public class ModItems {
 	public static final Item t45_legs = new ArmorT45(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.LEGS, 1000000, 10000, 1000, 5, "t45_legs").cloneStats((ArmorFSB) t45_helmet).setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item t45_boots = new ArmorT45(MainRegistry.enumArmorMaterialT45, -1, EntityEquipmentSlot.FEET, 1000000, 10000, 1000, 5, "t45_boots").cloneStats((ArmorFSB) t45_helmet).setCreativeTab(CreativeTabs.COMBAT);
 
+	public static final Item t51_helmet = new ArmorT51(MainRegistry.enumArmorMaterialT51, 7, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 1000000, 10000, 1000, 5, "t51_helmet")
+			.setCap(20F).setMod(0.5F)
+			.setFireproof(true)
+			.enableVATS(true)
+			.addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 0))
+			.addEffect(new PotionEffect(MobEffects.SPEED, 30, 0))
+			.setBlastProtection(0.5F)
+			.setProtectionLevel(100F)
+			.addResistance("fall", 0)
+			.setCreativeTab(CreativeTabs.COMBAT);
+
+	public static final Item t51_plate = new ArmorT51(MainRegistry.enumArmorMaterialT51, 7, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 1000000, 10000, 1000, 5, "t51_plate")
+			.cloneStats((ArmorFSB) t51_helmet)
+			.setCreativeTab(CreativeTabs.COMBAT);
+
+	public static final Item t51_legs = new ArmorT51(MainRegistry.enumArmorMaterialT51, 7, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 1000000, 10000, 1000, 5, "t51_legs")
+			.cloneStats((ArmorFSB) t51_helmet)
+			.setCreativeTab(CreativeTabs.COMBAT);
+
+	public static final Item t51_boots = new ArmorT51(MainRegistry.enumArmorMaterialT51, 7, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 1000000, 10000, 1000, 5, "t51_boots")
+			.cloneStats((ArmorFSB) t51_helmet)
+			.setCreativeTab(CreativeTabs.COMBAT);
+
 	public static final Item t45_mur_helmet = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.HEAD, 1500000, 10000, 1000, 5, "t45_mur_helmet").setCap(16F).setMod(0.45F)
 			.setFireproof(true)
 			.enableVATS(true)
@@ -844,7 +824,7 @@ public class ModItems {
 	public static final Item t45_mur_plate = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.CHEST, 1500000, 10000, 1000, 5, "t45_mur_plate").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item t45_mur_legs = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.LEGS, 1500000, 10000, 1000, 5, "t45_mur_legs").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item t45_mur_boots = new ArmorT45MUR(MainRegistry.enumArmorMaterialT45Mur, -1, EntityEquipmentSlot.FEET, 1500000, 10000, 1000, 5, "t45_mur_boots").cloneStats((ArmorFSB) t45_mur_helmet).setCreativeTab(CreativeTabs.COMBAT);
-	
+
 	public static final Item ajr_helmet = new ArmorAJR(MainRegistry.aMatAJR, 7, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ajr_helmet").setMod(0.25F).setCap(6.0F).setThreshold(4F)
 			.setFireproof(true)
 			.enableVATS(true)
