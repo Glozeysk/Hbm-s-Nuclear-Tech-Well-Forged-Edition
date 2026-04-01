@@ -5225,3 +5225,4 @@ item.stamp_advanced_plate.name=Штамп пластины (Продвинуты
 item.stamp_advanced_flat.name=Плоский штамп (Продвинутый сплав)
 item.stamp_advanced_circuit.name=Штамп микросхемы (Продвинутый сплав)
 item.stamp_advanced_wire.name=Штамп провода (Продвинутый сплав)
+message.crate.split=Возьмите 1 ящик в руку!

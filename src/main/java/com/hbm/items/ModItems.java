@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.hbm.blocks.generic.BlockStorageCrate;
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.config.BombConfig;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockModDoor;
@@ -3775,18 +3777,22 @@ public class ModItems {
 	
 	public static final Item mysteryshovel = new ItemMS("mysteryshovel").setFull3D().setMaxStackSize(1).setCreativeTab(CreativeTabs.TOOLS);
 	public static final Item memory = new ItemBattery(Long.MAX_VALUE / 100L, 100000000000000L, 100000000000000L, "memory").setMaxStackSize(1).setCreativeTab(null);
-	
+
 	public static void preInit(){
 		for(Item item : ALL_ITEMS){
 			ForgeRegistries.ITEMS.register(item);
 		}
-		
+
 		for(Block block : ModBlocks.ALL_BLOCKS){
 			if(block instanceof IItemHazard){
 				ForgeRegistries.ITEMS.register(new ItemBlockHazard(block).setRegistryName(block.getRegistryName()));
 			} else if(block == ModBlocks.block_scrap){
 				ForgeRegistries.ITEMS.register(new ItemBlockScrap(block).setRegistryName(block.getRegistryName()));
 			} else if(block instanceof BlockModDoor){
+				// ничего
+			} else if(block instanceof BlockStorageCrate && block != ModBlocks.safe){
+				// Специальный ItemBlock для ящиков (кроме сейфа)
+				ForgeRegistries.ITEMS.register(new ItemBlockStorageCrate(block).setRegistryName(block.getRegistryName()));
 			} else {
 				ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
 			}

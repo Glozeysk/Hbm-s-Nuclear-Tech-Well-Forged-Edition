@@ -5127,3 +5127,4 @@ item.stamp_advanced_plate.name=Plate Stamp (Advanced Alloy)
 item.stamp_advanced_flat.name=Flat Stamp (Advanced Alloy)
 item.stamp_advanced_circuit.name=Circuit Stamp (Advanced Alloy)
 item.stamp_advanced_wire.name=Wire Stamp (Advanced Alloy)
+message.crate.split=Take 1 crate in your hand!

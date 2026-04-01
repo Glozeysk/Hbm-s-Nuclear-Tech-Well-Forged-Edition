@@ -3,6 +3,7 @@ package com.hbm.handler;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.interfaces.Spaghetti;
+import com.hbm.inventory.InventoryCrateItem;
 import com.hbm.inventory.container.*;
 import com.hbm.inventory.control_panel.ContainerControlEdit;
 import com.hbm.inventory.control_panel.GuiControlEdit;
@@ -60,7 +61,31 @@ public class GuiHandler implements IGuiHandler {
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-		
+
+		if (y == -999) {
+			ItemStack heldItem = player.getHeldItemMainhand();
+
+			if (ID == ModBlocks.guiID_crate_iron) {
+				InventoryCrateItem inv = new InventoryCrateItem(heldItem, 36, player);
+				return new ContainerCrateItemIron(player.inventory, inv, heldItem);
+			}
+        /*
+        if (ID == ModBlocks.guiID_crate_steel) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 54, player);
+            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
+        }
+        if (ID == ModBlocks.guiID_crate_tungsten) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 27, player);
+            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
+        }
+        if (ID == ModBlocks.guiID_crate_desh) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 104, player);
+            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
+        }
+        */
+			return null;
+		}
+
 		TileEntity entity = world.getTileEntity(new BlockPos(x, y, z));
 		if(entity instanceof IGUIProvider) {
 			return ((IGUIProvider) entity).provideContainer(ID, player, world, x, y, z);
@@ -693,6 +718,30 @@ public class GuiHandler implements IGuiHandler {
 
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+
+		if (y == -999) {
+			ItemStack heldItem = player.getHeldItemMainhand();
+
+			if (ID == ModBlocks.guiID_crate_iron) {
+				InventoryCrateItem inv = new InventoryCrateItem(heldItem, 36, player);
+				return new GUICrateItemIron(player.inventory, inv, heldItem);
+			}
+        /*
+        if (ID == ModBlocks.guiID_crate_steel) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 54, player);
+            return new GUICrateItemIron(player.inventory, inv, heldItem);
+        }
+        if (ID == ModBlocks.guiID_crate_tungsten) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 27, player);
+            return new GUICrateItemIron(player.inventory, inv, heldItem);
+        }
+        if (ID == ModBlocks.guiID_crate_desh) {
+            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 104, player);
+            return new GUICrateItemIron(player.inventory, inv, heldItem);
+        }
+        */
+			return null;
+		}
 
 		TileEntity entity = world.getTileEntity(new BlockPos(x, y, z));
 
