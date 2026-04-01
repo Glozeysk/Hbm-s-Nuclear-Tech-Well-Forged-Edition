@@ -65,7 +65,7 @@ public class CraftingManager {
 	public static void init(){
 		if(!GeneralConfig.recipes) {
 			return;
-		}
+		} 
 		addCrafting();
 		addSmelting();
 		registerArmorConversionRecipes();

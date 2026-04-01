@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
 
 public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements IControlReceiver {
-	
+
 	public RBMKFunction function = RBMKFunction.LINEAR;
 	public double levelLower;
 	public double levelUpper;
@@ -26,50 +26,47 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 	public boolean hasPermission(EntityPlayer player) {
 		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
 	}
-	
+
 	@Override
 	public void update() {
-		
+
 		if(!world.isRemote) {
-			
+
 			double fauxLevel = 0;
 
 			double lowerBound = Math.min(this.heatLower, this.heatUpper);
 			double upperBound = Math.max(this.heatLower, this.heatUpper);
-			
+
 			if(this.heat < lowerBound) {
 				fauxLevel = this.levelLower;
-				
+
 			} else if(this.heat > upperBound) {
 				fauxLevel = this.levelUpper;
-				
+
 			} else {
-	
+
 				switch(this.function) {
-				case LINEAR:
-					// my brain hasn't been this challenged since my math finals in
-					// '19
-					fauxLevel = (this.heat - this.heatLower) * ((this.levelUpper - this.levelLower) / (this.heatUpper - this.heatLower)) + this.levelLower;
-					break;
-	
-				case QUAD_UP:
-					// so this is how we roll, huh?
-					fauxLevel = Math.pow((this.heat - this.heatLower) / (this.heatUpper - this.heatLower), 2) * (this.levelUpper - this.levelLower) + this.levelLower;
-					break;
-				case QUAD_DOWN:
-					// sometimes my genius is almost frightening
-					fauxLevel = Math.pow((this.heat - this.heatUpper) / (this.heatLower - this.heatUpper), 2) * (this.levelLower - this.levelUpper) + this.levelUpper;
-					break;
+					case LINEAR:
+						fauxLevel = (this.heat - this.heatLower) * ((this.levelUpper - this.levelLower) / (this.heatUpper - this.heatLower)) + this.levelLower;
+						break;
+
+					case QUAD_UP:
+						fauxLevel = Math.pow((this.heat - this.heatLower) / (this.heatUpper - this.heatLower), 2) * (this.levelUpper - this.levelLower) + this.levelLower;
+						break;
+
+					case QUAD_DOWN:
+						fauxLevel = Math.pow((this.heat - this.heatUpper) / (this.heatLower - this.heatUpper), 2) * (this.levelLower - this.levelUpper) + this.levelUpper;
+						break;
 				}
 			}
-			
+
 			this.targetLevel = fauxLevel * 0.01D;
 			this.targetLevel = MathHelper.clamp(this.targetLevel, 0D, 1D);
 		}
-		
+
 		super.update();
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
@@ -78,13 +75,13 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 		this.levelUpper = nbt.getDouble("levelUpper");
 		this.heatLower = nbt.getDouble("heatLower");
 		this.heatUpper = nbt.getDouble("heatUpper");
-		
+
 		if(nbt.hasKey("function"))
 			this.function = RBMKFunction.values()[nbt.getInteger("function")];
 		else
-			this.function = null;
+			this.function = RBMKFunction.LINEAR;
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
@@ -93,32 +90,35 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 		nbt.setDouble("levelUpper", levelUpper);
 		nbt.setDouble("heatLower", heatLower);
 		nbt.setDouble("heatUpper", heatUpper);
-		
+
 		if(function != null)
 			nbt.setInteger("function", function.ordinal());
-		
+
 		return nbt;
 	}
 
 	@Override
 	public void receiveControl(NBTTagCompound data) {
-		
-		if(data.hasKey("function")) {
-			int c = Math.abs(data.getInteger("function")) % RBMKColor.values().length;
-			this.function = RBMKFunction.values()[c];
-			
-		} else {
 
+		if(data.hasKey("function")) {
+			int c = Math.abs(data.getInteger("function")) % RBMKFunction.values().length;
+			this.function = RBMKFunction.values()[c];
+
+		} else {
 			this.levelLower = data.getDouble("levelLower");
 			this.levelUpper = data.getDouble("levelUpper");
 			this.heatLower = data.getDouble("heatLower");
 			this.heatUpper = data.getDouble("heatUpper");
 		}
-		
+
 		this.markDirty();
+
+		if (!world.isRemote) {
+			world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+		}
 	}
-	
-	public static enum RBMKFunction {
+
+	public enum RBMKFunction {
 		LINEAR,
 		QUAD_UP,
 		QUAD_DOWN
