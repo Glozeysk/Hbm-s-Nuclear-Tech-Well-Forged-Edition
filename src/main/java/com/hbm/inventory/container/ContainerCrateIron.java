@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.tileentity.machine.TileEntityCrateIron;
 
 import invtweaks.api.container.ChestContainer;
@@ -10,6 +11,7 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.items.SlotItemHandler;
 
 @ChestContainer(rowSize = 9)
@@ -21,7 +23,6 @@ public class ContainerCrateIron extends Container {
 	public ContainerCrateIron(InventoryPlayer invPlayer, TileEntityCrateIron tedf) {
 		crate = tedf;
 
-		// Если открыт из руки - запоминаем слот
 		if (crate.isFromItemStack()) {
 			lockedSlotIndex = crate.getSourceSlotIndex();
 		}
@@ -101,6 +102,14 @@ public class ContainerCrateIron extends Container {
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
 		return crate.isUseableByPlayer(player);
+	}
+
+	@Override
+	public void onContainerClosed(EntityPlayer player) {
+		super.onContainerClosed(player);
+		if (crate.isFromItemStack() && !player.world.isRemote) {
+			player.world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
 	}
 
 	private class SlotCrate extends SlotItemHandler {

@@ -6,7 +6,9 @@
     "misc.nullRadar": {"category": "player", "sounds": [{"name": "hbm:misc/null", "stream": false}]},
 
 	"block.crateBreak": {"category": "block", "sounds": ["hbm:block/cratebreak1", "hbm:block/cratebreak2", "hbm:block/cratebreak3", "hbm:block/cratebreak4", "hbm:block/cratebreak5"]},
-	"block.shutdown": {"category": "block", "sounds": [{"name": "hbm:block/shutdown", "stream": false}]},
+    "block.crateopen": {"category": "block", "sounds": [{"name": "hbm:block/crateopen", "stream": false}]},
+    "block.crateclose": {"category": "block", "sounds": [{"name": "hbm:block/crateclose", "stream": false}]},
+    "block.shutdown": {"category": "block", "sounds": [{"name": "hbm:block/shutdown", "stream": false}]},
     "block.assembleroperate": {"category": "block", "sounds": [{"name": "hbm:block/assemblerOperate", "stream": false}]},
     "block.fel": {"category": "block", "sounds": [{"name": "hbm:block/fel", "stream": false}]},
     "block.chemplantOperate": {"category": "block", "sounds": [{"name": "hbm:block/chemplantOperate", "stream": false}]},
@@ -36,6 +38,7 @@
     "block.assemblerStart": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStart", "stream": false}]},
     "block.assemblerStop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStop", "stream": false}]},
     "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
+
 
 	"item.techBleep": {"category": "player", "sounds": [{"name": "hbm:tool/techBleep", "stream": false}]},
     "item.techBoop": {"category": "player", "sounds": [{"name": "hbm:tool/techBoop", "stream": false}]},

@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 
 import net.minecraft.block.Block;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
@@ -37,6 +39,7 @@ public class ItemBlockStorageCrate extends ItemBlock {
             int guiId = getGuiId(block);
 
             if (guiId != -1) {
+                world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 player.openGui(MainRegistry.instance, guiId, world, 0, -999, 0);
                 return new ActionResult<>(EnumActionResult.SUCCESS, stack);
             }

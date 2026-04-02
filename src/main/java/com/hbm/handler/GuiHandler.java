@@ -38,21 +38,16 @@ public class GuiHandler implements IGuiHandler {
 
 			if (ID == ModBlocks.guiID_crate_iron) {
 				return new ContainerCrateIron(player.inventory, TileEntityCrateIron.fromItemStack(heldItem, player));
-			} 
-        /*
-        if (ID == ModBlocks.guiID_crate_steel) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 54, player);
-            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
-        }
-        if (ID == ModBlocks.guiID_crate_tungsten) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 27, player);
-            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
-        }
-        if (ID == ModBlocks.guiID_crate_desh) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 104, player);
-            return new ContainerCrateItemIron(player.inventory, inv, heldItem);
-        }
-        */
+			}
+			if (ID == ModBlocks.guiID_crate_steel) {
+				return new ContainerCrateSteel(player.inventory, TileEntityCrateSteel.fromItemStack(heldItem, player));
+			}
+			if (ID == ModBlocks.guiID_crate_desh) {
+				return new ContainerCrateDesh(player.inventory, TileEntityCrateDesh.fromItemStack(heldItem, player));
+			}
+			if (ID == ModBlocks.guiID_crate_tungsten) {
+				return new ContainerCrateTungsten(player.inventory, TileEntityCrateTungsten.fromItemStack(heldItem, player));
+			}
 			return null;
 		}
 
@@ -695,20 +690,15 @@ public class GuiHandler implements IGuiHandler {
 			if (ID == ModBlocks.guiID_crate_iron) {
 				return new GUICrateIron(player.inventory, TileEntityCrateIron.fromItemStack(heldItem, player));
 			}
-        /*
-        if (ID == ModBlocks.guiID_crate_steel) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 54, player);
-            return new GUICrateItemIron(player.inventory, inv, heldItem);
-        }
-        if (ID == ModBlocks.guiID_crate_tungsten) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 27, player);
-            return new GUICrateItemIron(player.inventory, inv, heldItem);
-        }
-        if (ID == ModBlocks.guiID_crate_desh) {
-            InventoryCrateItem inv = new InventoryCrateItem(heldItem, 104, player);
-            return new GUICrateItemIron(player.inventory, inv, heldItem);
-        }
-        */
+			if (ID == ModBlocks.guiID_crate_steel) {
+				return new GUICrateSteel(player.inventory, TileEntityCrateSteel.fromItemStack(heldItem, player));
+			}
+			if (ID == ModBlocks.guiID_crate_desh) {
+				return new GUICrateDesh(player.inventory, TileEntityCrateDesh.fromItemStack(heldItem, player));
+			}
+			if (ID == ModBlocks.guiID_crate_tungsten) {
+				return new GUICrateTungsten(player.inventory, TileEntityCrateTungsten.fromItemStack(heldItem, player));
+			}
 			return null;
 		}
 

@@ -97,6 +97,8 @@ public final class HBMSoundHandler {
 	public static SoundEvent follyAquired;
 	public static SoundEvent chopperDrop;
 	public static SoundEvent crateBreak;
+	public static SoundEvent crateOpen;
+	public static SoundEvent crateClose;
 	public static SoundEvent itemUnpack;
 	public static SoundEvent centrifugeOperate;
 	public static SoundEvent buttonNo;
@@ -368,6 +370,8 @@ public final class HBMSoundHandler {
 		follyAquired = register("weapon.follyAquired");
 		chopperDrop = register("entity.chopperDrop");
 		crateBreak = register("block.crateBreak");
+		crateOpen = register("block.crateopen");
+		crateClose = register("block.crateclose");
 		itemUnpack = register("item.unpack");
 		centrifugeOperate = register("block.centrifugeOperate");
 		buttonNo = register("block.buttonNo");

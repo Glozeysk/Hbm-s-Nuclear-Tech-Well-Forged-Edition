@@ -3791,7 +3791,6 @@ public class ModItems {
 			} else if(block instanceof BlockModDoor){
 				// ничего
 			} else if(block instanceof BlockStorageCrate && block != ModBlocks.safe){
-				// Специальный ItemBlock для ящиков (кроме сейфа)
 				ForgeRegistries.ITEMS.register(new ItemBlockStorageCrate(block).setRegistryName(block.getRegistryName()));
 			} else {
 				ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
