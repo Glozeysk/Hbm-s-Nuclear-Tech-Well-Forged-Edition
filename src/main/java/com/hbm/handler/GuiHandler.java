@@ -3,51 +3,22 @@ package com.hbm.handler;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.interfaces.Spaghetti;
-import com.hbm.inventory.InventoryCrateItem;
 import com.hbm.inventory.container.*;
 import com.hbm.inventory.control_panel.ContainerControlEdit;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import com.hbm.inventory.gui.*;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.bomb.TileEntityBombMulti;
-import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
-import com.hbm.tileentity.bomb.TileEntityLaunchPad;
-import com.hbm.tileentity.bomb.TileEntityLaunchTable;
-import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
-import com.hbm.tileentity.bomb.TileEntityNukeBoy;
-import com.hbm.tileentity.bomb.TileEntityNukeCustom;
-import com.hbm.tileentity.bomb.TileEntityNukeFleija;
-import com.hbm.tileentity.bomb.TileEntityNukeGadget;
-import com.hbm.tileentity.bomb.TileEntityNukeMan;
-import com.hbm.tileentity.bomb.TileEntityNukeMike;
-import com.hbm.tileentity.bomb.TileEntityNukeN2;
-import com.hbm.tileentity.bomb.TileEntityNukePrototype;
-import com.hbm.tileentity.bomb.TileEntityNukeSolinium;
-import com.hbm.tileentity.bomb.TileEntityNukeTsar;
-import com.hbm.tileentity.bomb.TileEntityRailgun;
+import com.hbm.tileentity.bomb.*;
 import com.hbm.tileentity.machine.*;
-import com.hbm.tileentity.machine.oil.*;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBoiler;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlAuto;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKOutgasser;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKRod;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKStorage;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKHeater;
-import com.hbm.tileentity.turret.TileEntityTurretChekhov;
-import com.hbm.tileentity.turret.TileEntityTurretFriendly;
-import com.hbm.tileentity.turret.TileEntityTurretFritz;
-import com.hbm.tileentity.turret.TileEntityTurretHoward;
-import com.hbm.tileentity.turret.TileEntityTurretJeremy;
-import com.hbm.tileentity.turret.TileEntityTurretMaxwell;
-import com.hbm.tileentity.turret.TileEntityTurretRichard;
-import com.hbm.tileentity.turret.TileEntityTurretTauon;
-import com.hbm.tileentity.network.TileEntityRadioTorchSender;
+import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
+import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
+import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
+import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
-
-import net.minecraft.block.Block;
+import com.hbm.tileentity.network.TileEntityRadioTorchSender;
+import com.hbm.tileentity.turret.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -66,9 +37,8 @@ public class GuiHandler implements IGuiHandler {
 			ItemStack heldItem = player.getHeldItemMainhand();
 
 			if (ID == ModBlocks.guiID_crate_iron) {
-				InventoryCrateItem inv = new InventoryCrateItem(heldItem, 36, player);
-				return new ContainerCrateItemIron(player.inventory, inv, heldItem);
-			}
+				return new ContainerCrateIron(player.inventory, TileEntityCrateIron.fromItemStack(heldItem, player));
+			} 
         /*
         if (ID == ModBlocks.guiID_crate_steel) {
             InventoryCrateItem inv = new InventoryCrateItem(heldItem, 54, player);
@@ -723,8 +693,7 @@ public class GuiHandler implements IGuiHandler {
 			ItemStack heldItem = player.getHeldItemMainhand();
 
 			if (ID == ModBlocks.guiID_crate_iron) {
-				InventoryCrateItem inv = new InventoryCrateItem(heldItem, 36, player);
-				return new GUICrateItemIron(player.inventory, inv, heldItem);
+				return new GUICrateIron(player.inventory, TileEntityCrateIron.fromItemStack(heldItem, player));
 			}
         /*
         if (ID == ModBlocks.guiID_crate_steel) {

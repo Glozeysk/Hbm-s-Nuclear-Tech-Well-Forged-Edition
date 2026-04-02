@@ -16,40 +16,109 @@ import net.minecraftforge.items.ItemStackHandler;
 public class TileEntityCrateIron extends TileEntityLockableBase {
 
 	public ItemStackHandler inventory;
-	
+
 	private String customName;
-	
+
+	private ItemStack sourceStack = ItemStack.EMPTY;
+	private EntityPlayer sourcePlayer = null;
+	private int sourceSlotIndex = -1;
+
 	public TileEntityCrateIron() {
-		inventory = new ItemStackHandler(36){
+		this(36);
+	}
+
+	public TileEntityCrateIron(int size) {
+		inventory = new ItemStackHandler(size){
 			@Override
 			protected void onContentsChanged(int slot) {
 				markDirty();
+				saveToSourceStack();
 				super.onContentsChanged(slot);
 			}
 		};
 	}
 
+	public static TileEntityCrateIron fromItemStack(ItemStack stack, EntityPlayer player) {
+		TileEntityCrateIron te = new TileEntityCrateIron();
+		te.sourceStack = stack;
+		te.sourcePlayer = player;
+		te.sourceSlotIndex = player.inventory.currentItem;
+		te.loadFromItemStack();
+		return te;
+	}
+
+	private void loadFromItemStack() {
+		if (sourceStack.hasTagCompound()) {
+			NBTTagCompound nbt = sourceStack.getTagCompound();
+			for (int i = 0; i < inventory.getSlots(); i++) {
+				if (nbt.hasKey("slot" + i)) {
+					inventory.setStackInSlot(i, new ItemStack(nbt.getCompoundTag("slot" + i)));
+				}
+			}
+		}
+	}
+
+	private void saveToSourceStack() {
+		if (sourceStack.isEmpty() || sourcePlayer == null) return;
+
+		ItemStack currentStack = sourcePlayer.inventory.getStackInSlot(sourceSlotIndex);
+		if (currentStack != sourceStack) return;
+
+		NBTTagCompound nbt = sourceStack.hasTagCompound() ? sourceStack.getTagCompound() : new NBTTagCompound();
+
+		for (int i = 0; i < inventory.getSlots(); i++) {
+			nbt.removeTag("slot" + i);
+		}
+
+		for (int i = 0; i < inventory.getSlots(); i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
+			if (!stack.isEmpty()) {
+				NBTTagCompound slot = new NBTTagCompound();
+				stack.writeToNBT(slot);
+				nbt.setTag("slot" + i, slot);
+			}
+		}
+
+		if (nbt.isEmpty()) {
+			sourceStack.setTagCompound(null);
+		} else {
+			sourceStack.setTagCompound(nbt);
+		}
+	}
+
+	public boolean isFromItemStack() {
+		return !sourceStack.isEmpty();
+	}
+
+	public ItemStack getSourceStack() {
+		return sourceStack;
+	}
+
+	public int getSourceSlotIndex() {
+		return sourceSlotIndex;
+	}
+
 	public boolean canAccess(EntityPlayer player) {
-		
+
 		if(!this.isLocked() || player == null) {
 			return true;
 		} else {
 			ItemStack stack = player.getHeldItemMainhand();
-			
+
 			if(stack.getItem() instanceof ItemKeyPin && ItemKeyPin.getPins(stack) == this.lock) {
-	        	world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+				world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				return true;
 			}
-			
+
 			if(stack.getItem() == ModItems.key_red) {
-	        	world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+				world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				return true;
 			}
-			
+
 			return this.tryPick(player);
 		}
 	}
-	
+
 	public String getInventoryName() {
 		return this.hasCustomInventoryName() ? this.customName : "container.crateIron";
 	}
@@ -61,33 +130,38 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 	public void setCustomName(String name) {
 		this.customName = name;
 	}
-	
+
 	public boolean isUseableByPlayer(EntityPlayer player) {
+		if (isFromItemStack()) {
+			ItemStack currentStack = player.inventory.getStackInSlot(sourceSlotIndex);
+			return currentStack == sourceStack && sourcePlayer == player;
+		}
+
 		if (world.getTileEntity(pos) != this) {
 			return false;
 		} else {
 			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
 		}
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		if(compound.hasKey("inventory"))
 			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
 		super.readFromNBT(compound);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setTag("inventory", inventory.serializeNBT());
 		return super.writeToNBT(compound);
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : super.getCapability(capability, facing);
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
