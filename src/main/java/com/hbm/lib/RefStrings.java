@@ -3,8 +3,8 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Waldemar Edition";
-	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.1";
-	public static final String CHANGELOG = "Update 1.2.1\n" +
+	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.2";
+	public static final String CHANGELOG = "Update 1.2.2\n" +
 			"- Added grow progress bar in ITER GUI;\n" +
 			"- Added speed change in ITER breeder which depends on required heat and actual heat;\n" +
 			"- Added flux summary in RBMK outgasser;\n" +

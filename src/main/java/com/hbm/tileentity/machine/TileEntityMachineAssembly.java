@@ -1,17 +1,10 @@
 package com.hbm.tileentity.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
+import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.handler.MultiblockHandler;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.lib.ForgeDirection;
@@ -22,29 +15,24 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
-
-import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.List;
+import java.util.Random;
 
 public class TileEntityMachineAssembly extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
 
@@ -60,17 +48,17 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	int speed = 100;
 	public boolean frame = false;
 	public AssemblerArm[] arms = new AssemblerArm[] { new AssemblerArm(), new AssemblerArm() };
-    public double prevRing;
-    public double ring;
-    public double ringSpeed;
-    public double ringTarget;
-    public int ringDelay;
+	public double prevRing;
+	public double ring;
+	public double ringSpeed;
+	public double ringTarget;
+	public int ringDelay;
 
 	@SideOnly(Side.CLIENT)
 	public int recipe;
 
-	private AudioWrapper audio;
-	
+	private AudioWrapper audioMotor;
+
 	public TileEntityMachineAssembly() {
 
 		super(18);
@@ -143,7 +131,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 
 		return false;
 	}
-	
+
 	@Override
 	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
 		if(slot == 5) {
@@ -229,38 +217,38 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					}
 				}
 			}
-		this.speed = (int) s;
-		this.consumption = (int) c;
+			this.speed = (int) s;
+			this.consumption = (int) c;
 
-		if(speed < 2)
-			speed = 2;
-		if(consumption < 2)
-			consumption = 2;
+			if(speed < 2)
+				speed = 2;
+			if(consumption < 2)
+				consumption = 2;
 			isProgressing = false;
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 			if(needsProcess && (AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) != ItemStack.EMPTY && AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) != null)) {
 				this.maxProgress = (ItemAssemblyTemplate.getProcessTime(inventory.getStackInSlot(4)) * speed) / 100;
 				if(removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), cloneItemStackProper(inventory))) {
 					if(power >= consumption ){
-					if(inventory.getStackInSlot(5).isEmpty() || (!inventory.getStackInSlot(5).isEmpty() && inventory.getStackInSlot(5).getItem() == AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getItem()) && inventory.getStackInSlot(5).getCount() + AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount() <= inventory.getStackInSlot(5).getMaxStackSize()) {
-						progress++;
-						isProgressing = true;
+						if(inventory.getStackInSlot(5).isEmpty() || (!inventory.getStackInSlot(5).isEmpty() && inventory.getStackInSlot(5).getItem() == AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getItem()) && inventory.getStackInSlot(5).getCount() + AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount() <= inventory.getStackInSlot(5).getMaxStackSize()) {
+							progress++;
+							isProgressing = true;
 
-						if(progress >= maxProgress) {
-							progress = 0;
-							if(inventory.getStackInSlot(5).isEmpty()) {
-								inventory.setStackInSlot(5, AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy());
-							} else {
-								inventory.getStackInSlot(5).grow(AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount());
+							if(progress >= maxProgress) {
+								progress = 0;
+								if(inventory.getStackInSlot(5).isEmpty()) {
+									inventory.setStackInSlot(5, AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy());
+								} else {
+									inventory.getStackInSlot(5).grow(AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount());
+								}
+
+								removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), inventory);
+								if(inventory.getStackInSlot(0).getItem() == ModItems.meteorite_sword_alloyed)
+									inventory.setStackInSlot(0, new ItemStack(ModItems.meteorite_sword_machined));
 							}
 
-							removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), inventory);
-							if(inventory.getStackInSlot(0).getItem() == ModItems.meteorite_sword_alloyed)
-								inventory.setStackInSlot(0, new ItemStack(ModItems.meteorite_sword_machined));
-						}
-
-						power -= consumption;
-					}}
+							power -= consumption;
+						}}
 				} else{
 					progress = 0;
 					needsProcess = false;
@@ -285,7 +273,9 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				}
 
 				if(arm.prevAngles[3] != arm.angles[3] && arm.angles[3] == -0.75) {
-					world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStrike, SoundCategory.BLOCKS, 0.5F, 1F, false);
+					world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+							HBMSoundHandler.assemblerStrike, SoundCategory.BLOCKS,
+							this.getVolume(0.5F), 1F, false);
 				}
 			}
 
@@ -297,6 +287,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					if(ringDelta <= this.ringSpeed) this.ring = this.ringTarget;
 					if(this.ringTarget > this.ring) this.ring += this.ringSpeed;
 					if(this.ringTarget < this.ring) this.ring -= this.ringSpeed;
+
 					if(this.ringTarget == this.ring) {
 						if(ringTarget >= 360) {
 							this.ringTarget -= 360D;
@@ -315,39 +306,43 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					if(this.ringDelay <= 0) {
 						this.ringTarget += (world.rand.nextDouble() * 2 - 1) * 135;
 						this.ringSpeed = 10D + world.rand.nextDouble() * 5D;
+						world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+								HBMSoundHandler.assemblerStart, SoundCategory.BLOCKS,
+								this.getVolume(0.25F), 1.25F + world.rand.nextFloat() * 0.25F, false);
 					}
 				}
 			}
-
-			float volume = this.getVolume(2);
-
-			if(isProgressing && !wasProgressing) {
-				world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStart, SoundCategory.BLOCKS, 0.25F, 1.25F + world.rand.nextFloat() * 0.25F, false);
-			}
-			if(!isProgressing && wasProgressing) {
-				world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.assemblerStop, SoundCategory.BLOCKS, 0.25F, 1.5F, false);
-			}
-			wasProgressing = isProgressing;
 
 			if(isProgressing) {
-				if(audio == null) {
-					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.motor, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1.0F, 0.75F);
-					if(audio != null) {
-						audio.updateRange(15F);
-						audio.updateVolume(0F);
-						audio.startSound();
+				if(audioMotor == null) {
+					audioMotor = MainRegistry.proxy.getLoopedSound(
+							HBMSoundHandler.motor, SoundCategory.BLOCKS,
+							pos.getX(), pos.getY(), pos.getZ(),
+							0.5F, 0.75F
+					);
+					if(audioMotor != null) {
+						audioMotor.updateRange(15F);
+						audioMotor.updateVolume(this.getVolume(0.5F));
+						audioMotor.startSound();
 					}
 				} else {
-					boolean ringMoving = this.ring != this.ringTarget;
-					audio.updateVolume(ringMoving ? this.getVolume(0.5F) : 0F);
+					audioMotor.keepAlive();
+					audioMotor.updateVolume(this.getVolume(0.5F));
 				}
 			} else {
-				if(audio != null) {
-					audio.stopSound();
-					audio = null;
+				if(audioMotor != null) {
+					audioMotor.stopSound();
+					audioMotor = null;
 				}
 			}
 
+			if(!isProgressing && wasProgressing) {
+				world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+						HBMSoundHandler.assemblerStop, SoundCategory.BLOCKS,
+						this.getVolume(0.25F), 1.5F, false);
+			}
+
+			wasProgressing = isProgressing;
 		}
 	}
 
@@ -367,23 +362,23 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 0), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
-		
+
 	}
 
 	@Override
 	public void onChunkUnload() {
-		if(audio != null) {
-			audio.stopSound();
-			audio = null;
+		if(audioMotor != null) {
+			audioMotor.stopSound();
+			audioMotor = null;
 		}
 	}
-	
+
 	@Override
 	public void invalidate() {
 		super.invalidate();
-		if(audio != null) {
-			audio.stopSound();
-			audio = null;
+		if(audioMotor != null) {
+			audioMotor.stopSound();
+			audioMotor = null;
 		}
 	}
 
@@ -425,7 +420,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		int stacksFound = 0;
 
 		nextIngredient = nextIngredient.singulize();
-		
+
 		for(int k = 6; k < 18; k++) {
 			if(stacksFound < stackCount){
 				ItemStack assStack = inventory.getStackInSlot(k).copy();
@@ -434,7 +429,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 						firstFreeSlot = k;
 					}
 				} else {
-				
+
 					assStack.setCount(1);
 					if(nextIngredient.isApplicable(assStack)){
 						if(inventory.getStackInSlot(k).getCount() < assStack.getMaxStackSize()) {
@@ -545,7 +540,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
 	}
-	
+
 	@Override
 	public int countMufflers() {
 
@@ -561,132 +556,131 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 
 	public static class AssemblerArm {
 
-        public double[] angles = new double[4];
-        public double[] prevAngles = new double[4];
-        public double[] targetAngles = new double[4];
-        public double[] speed = new double[4];
+		public double[] angles = new double[4];
+		public double[] prevAngles = new double[4];
+		public double[] targetAngles = new double[4];
+		public double[] speed = new double[4];
 
-        Random rand = new Random();
-        ArmActionState state = ArmActionState.ASSUME_POSITION;
-        int actionDelay = 0;
+		Random rand = new Random();
+		ArmActionState state = ArmActionState.ASSUME_POSITION;
+		int actionDelay = 0;
 
-        public static enum ArmActionState {
-            ASSUME_POSITION,
-            EXTEND_STRIKER,
-            RETRACT_STRIKER
-        }
+		public static enum ArmActionState {
+			ASSUME_POSITION,
+			EXTEND_STRIKER,
+			RETRACT_STRIKER
+		}
 
-        public AssemblerArm() {
-            this.resetSpeed();
-        }
+		public AssemblerArm() {
+			this.resetSpeed();
+		}
 
-        private void updateInterp() {
-            for(int i = 0; i < angles.length; i++) {
-                prevAngles[i] = angles[i];
-            }
-        }
+		private void updateInterp() {
+			for(int i = 0; i < angles.length; i++) {
+				prevAngles[i] = angles[i];
+			}
+		}
 
-        private void returnToNullPos() {
-            for(int i = 0; i < 4; i++) this.targetAngles[i] = 0;
-            for(int i = 0; i < 3; i++) this.speed[i] = 3;
-            this.speed[3] = 0.25;
-            this.state = ArmActionState.RETRACT_STRIKER;
+		private void returnToNullPos() {
+			for(int i = 0; i < 4; i++) this.targetAngles[i] = 0;
+			for(int i = 0; i < 3; i++) this.speed[i] = 3;
+			this.speed[3] = 0.25;
+			this.state = ArmActionState.RETRACT_STRIKER;
 
-            this.move();
-        }
+			this.move();
+		}
 
-        private void resetSpeed() {
-            speed[0] = 15;	//Pivot
-            speed[1] = 15;	//Arm
-            speed[2] = 15;	//Piston
-            speed[3] = 0.5;	//Striker
-        }
+		private void resetSpeed() {
+			speed[0] = 15;
+			speed[1] = 15;
+			speed[2] = 15;
+			speed[3] = 0.5;
+		}
 
-        public void updateArm() {
-            resetSpeed();
+		public void updateArm() {
+			resetSpeed();
 
-            if(actionDelay > 0) {
-                actionDelay--;
-                return;
-            }
+			if(actionDelay > 0) {
+				actionDelay--;
+				return;
+			}
 
-            switch(state) {
-                // Move. If done moving, set a delay and progress to EXTEND
-                case ASSUME_POSITION:
-                    if(move()) {
-                        actionDelay = 2;
-                        state = ArmActionState.EXTEND_STRIKER;
-                        targetAngles[3] = -0.75D;
-                    }
-                    break;
-                case EXTEND_STRIKER:
-                    if(move()) {
-                        state = ArmActionState.RETRACT_STRIKER;
-                        targetAngles[3] = 0D;
-                    }
-                    break;
-                case RETRACT_STRIKER:
-                    if(move()) {
-                        actionDelay = 2 + rand.nextInt(5);
-                        chooseNewArmPoistion();
-                        state = ArmActionState.ASSUME_POSITION;
-                    }
-                    break;
+			switch(state) {
+				case ASSUME_POSITION:
+					if(move()) {
+						actionDelay = 2;
+						state = ArmActionState.EXTEND_STRIKER;
+						targetAngles[3] = -0.75D;
+					}
+					break;
+				case EXTEND_STRIKER:
+					if(move()) {
+						state = ArmActionState.RETRACT_STRIKER;
+						targetAngles[3] = 0D;
+					}
+					break;
+				case RETRACT_STRIKER:
+					if(move()) {
+						actionDelay = 2 + rand.nextInt(5);
+						chooseNewArmPoistion();
+						state = ArmActionState.ASSUME_POSITION;
+					}
+					break;
 
-            }
-        }
+			}
+		}
 
-        private double[][] pos = new double[][] { // possible positions for the arms
-                {45, -15, -5},
-                {15, 15, -15},
-                {25, 10, -15},
-                {30, 0, -10},
-                {70, -10, -25},
-        }; // sure it's not truly random like with the old assemfac, but at least now the striker always hits the center and doesn't clip through the board
+		private double[][] pos = new double[][] {
+				{45, -15, -5},
+				{15, 15, -15},
+				{25, 10, -15},
+				{30, 0, -10},
+				{70, -10, -25},
+		};
 
-        public void chooseNewArmPoistion() {
-            int chosen = rand.nextInt(pos.length);
-            this.targetAngles[0] = pos[chosen][0];
-            this.targetAngles[1] = pos[chosen][1];
-            this.targetAngles[2] = pos[chosen][2];
-        }
+		public void chooseNewArmPoistion() {
+			int chosen = rand.nextInt(pos.length);
+			this.targetAngles[0] = pos[chosen][0];
+			this.targetAngles[1] = pos[chosen][1];
+			this.targetAngles[2] = pos[chosen][2];
+		}
 
-        private boolean move() {
-            boolean didMove = false;
+		private boolean move() {
+			boolean didMove = false;
 
-            for(int i = 0; i < angles.length; i++) {
-                if(angles[i] == targetAngles[i])
-                    continue;
+			for(int i = 0; i < angles.length; i++) {
+				if(angles[i] == targetAngles[i])
+					continue;
 
-                didMove = true;
+				didMove = true;
 
-                double angle = angles[i];
-                double target = targetAngles[i];
-                double turn = speed[i];
-                double delta = Math.abs(angle - target);
+				double angle = angles[i];
+				double target = targetAngles[i];
+				double turn = speed[i];
+				double delta = Math.abs(angle - target);
 
-                if(delta <= turn) {
-                    angles[i] = targetAngles[i];
-                    continue;
-                }
+				if(delta <= turn) {
+					angles[i] = targetAngles[i];
+					continue;
+				}
 
-                if(angle < target) {
-                    angles[i] += turn;
-                } else {
-                    angles[i] -= turn;
-                }
-            }
+				if(angle < target) {
+					angles[i] += turn;
+				} else {
+					angles[i] -= turn;
+				}
+			}
 
-            return !didMove;
-        }
+			return !didMove;
+		}
 
-        public double[] getPositions(float interp) {
-            return new double[] {
-                    BobMathUtil.interp(this.prevAngles[0], this.angles[0], interp),
-                    BobMathUtil.interp(this.prevAngles[1], this.angles[1], interp),
-                    BobMathUtil.interp(this.prevAngles[2], this.angles[2], interp),
-                    BobMathUtil.interp(this.prevAngles[3], this.angles[3], interp)
-            };
-        }
-    }
+		public double[] getPositions(float interp) {
+			return new double[] {
+					BobMathUtil.interp(this.prevAngles[0], this.angles[0], interp),
+					BobMathUtil.interp(this.prevAngles[1], this.angles[1], interp),
+					BobMathUtil.interp(this.prevAngles[2], this.angles[2], interp),
+					BobMathUtil.interp(this.prevAngles[3], this.angles[3], interp)
+			};
+		}
+	}
 }

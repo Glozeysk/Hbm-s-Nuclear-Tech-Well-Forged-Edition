@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
@@ -11,11 +12,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+
+import javax.annotation.Nonnull;
 
 public class TileEntityCrateSteel extends TileEntityLockableBase {
 
 	public ItemStackHandler inventory;
+	private IItemHandler filteredInventory;
 
 	private String customName;
 
@@ -24,7 +29,11 @@ public class TileEntityCrateSteel extends TileEntityLockableBase {
 	private int sourceSlotIndex = -1;
 
 	public TileEntityCrateSteel() {
-		inventory = new ItemStackHandler(54){
+		this(54);
+	}
+
+	public TileEntityCrateSteel(int size) {
+		inventory = new ItemStackHandler(size){
 			@Override
 			protected void onContentsChanged(int slot) {
 				markDirty();
@@ -32,6 +41,7 @@ public class TileEntityCrateSteel extends TileEntityLockableBase {
 				super.onContentsChanged(slot);
 			}
 		};
+		filteredInventory = new FilteredItemHandler(inventory);
 	}
 
 	public static TileEntityCrateSteel fromItemStack(ItemStack stack, EntityPlayer player) {
@@ -154,12 +164,55 @@ public class TileEntityCrateSteel extends TileEntityLockableBase {
 	}
 
 	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(filteredInventory);
+		}
+		return super.getCapability(capability, facing);
+	}
+
+	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : super.getCapability(capability, facing);
+	private class FilteredItemHandler implements IItemHandler {
+
+		private final ItemStackHandler wrapped;
+
+		public FilteredItemHandler(ItemStackHandler wrapped) {
+			this.wrapped = wrapped;
+		}
+
+		@Override
+		public int getSlots() {
+			return wrapped.getSlots();
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			return wrapped.getStackInSlot(slot);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+			if (ItemBlockStorageCrate.isContainer(stack)) {
+				return stack;
+			}
+			return wrapped.insertItem(slot, stack, simulate);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			return wrapped.extractItem(slot, amount, simulate);
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return wrapped.getSlotLimit(slot);
+		}
 	}
 }

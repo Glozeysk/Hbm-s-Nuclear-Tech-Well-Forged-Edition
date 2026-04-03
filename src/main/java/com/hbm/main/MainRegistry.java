@@ -10,6 +10,7 @@ import java.util.Random;
 import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.tileentity.network.*;
+import com.hbm.util.UpdateChecker;
 import org.apache.logging.log4j.Logger;
 
 import com.hbm.blocks.ModBlocks;
@@ -546,6 +547,7 @@ public class MainRegistry {
 
 		MinecraftForge.EVENT_BUS.register(oreMan); //OreRegisterEvent
 
+		MinecraftForge.EVENT_BUS.register(new UpdateChecker());
 		MinecraftForge.EVENT_BUS.register(new ModEventHandler());
 		MinecraftForge.TERRAIN_GEN_BUS.register(new ModEventHandler());
 		MinecraftForge.ORE_GEN_BUS.register(new ModEventHandler());

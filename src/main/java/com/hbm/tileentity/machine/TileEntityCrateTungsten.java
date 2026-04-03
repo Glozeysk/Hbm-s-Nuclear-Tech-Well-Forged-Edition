@@ -1,52 +1,50 @@
 package com.hbm.tileentity.machine;
 
-import java.util.Random;
-
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.interfaces.ILaserable;
-import com.hbm.items.weapon.ItemCrucible;
-import com.hbm.packet.AuxParticlePacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.inventory.DFCRecipes;
-import com.hbm.tileentity.IBufPacketReceiver;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-public class TileEntityCrateTungsten extends TileEntityLockableBase implements ITickable, ILaserable, IBufPacketReceiver {
+import javax.annotation.Nonnull;
+
+public class TileEntityCrateTungsten extends TileEntityLockableBase {
 
 	public ItemStackHandler inventory;
+	private IItemHandler filteredInventory;
 
-	private Random rand = new Random();
-
-	public int heatTimer = 0;
-	public int age = 0;
-	public long joules = 0;
+	private String customName;
 
 	private ItemStack sourceStack = ItemStack.EMPTY;
 	private EntityPlayer sourcePlayer = null;
 	private int sourceSlotIndex = -1;
 
+	public int heatTimer = 0;
+	public long joules = 0;
+
 	public TileEntityCrateTungsten() {
-		inventory = new ItemStackHandler(27){
+		this(27);
+	}
+
+	public TileEntityCrateTungsten(int size) {
+		inventory = new ItemStackHandler(size){
 			@Override
-			protected void onContentsChanged(int slot){
+			protected void onContentsChanged(int slot) {
 				markDirty();
 				saveToSourceStack();
+				super.onContentsChanged(slot);
 			}
 		};
+		filteredInventory = new FilteredItemHandler(inventory);
 	}
 
 	public static TileEntityCrateTungsten fromItemStack(ItemStack stack, EntityPlayer player) {
@@ -109,19 +107,6 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase implements I
 		return sourceSlotIndex;
 	}
 
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		if (isFromItemStack()) {
-			ItemStack currentStack = player.inventory.getStackInSlot(sourceSlotIndex);
-			return currentStack == sourceStack && sourcePlayer == player;
-		}
-
-		if (world.getTileEntity(pos) != this) {
-			return false;
-		} else {
-			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
-		}
-	}
-
 	public boolean canAccess(EntityPlayer player) {
 
 		if(!this.isLocked() || player == null) {
@@ -143,88 +128,54 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase implements I
 		}
 	}
 
-	@Override
-	public void update() {
-		if (isFromItemStack()) return;
+	public String getInventoryName() {
+		return this.hasCustomInventoryName() ? this.customName : "container.crateTungsten";
+	}
 
-		if(!world.isRemote) {
-			if(heatTimer > 0)
-				heatTimer--;
+	public boolean hasCustomInventoryName() {
+		return this.customName != null && this.customName.length() > 0;
+	}
 
-			if(heatTimer > 0) {
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacket(pos.getX(), pos.getY(), pos.getZ(), 4), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
-			}
-			age++;
-			if(age > 20){
-				networkPackNT(150);
-				age = 0;
-			}
+	public void setCustomName(String name) {
+		this.customName = name;
+	}
+
+	public boolean isUseableByPlayer(EntityPlayer player) {
+		if (isFromItemStack()) {
+			ItemStack currentStack = player.inventory.getStackInSlot(sourceSlotIndex);
+			return currentStack == sourceStack && sourcePlayer == player;
 		}
-	}
 
-	@Override
-	public void serialize(ByteBuf buf) {
-		buf.writeInt(heatTimer);
-		buf.writeLong(joules);
-	}
-
-	@Override
-	public void deserialize(ByteBuf buf) {
-		this.heatTimer = buf.readInt();
-		this.joules = buf.readLong();
-	}
-
-	@Override
-	public void addEnergy(long energy, EnumFacing dir) {
-		if (isFromItemStack()) return;
-
-		heatTimer = 5;
-
-		for(int i = 0; i < inventory.getSlots(); i++) {
-
-			if(inventory.getStackInSlot(i).isEmpty())
-				continue;
-
-			ItemStack result = FurnaceRecipes.instance().getSmeltingResult(inventory.getStackInSlot(i));
-
-			long requiredEnergy = DFCRecipes.getRequiredFlux(inventory.getStackInSlot(i));
-			int count = inventory.getStackInSlot(i).getCount();
-			requiredEnergy *= 0.9D;
-			if(requiredEnergy > -1 && energy > requiredEnergy){
-				if(0.001D > count * rand.nextDouble() * ((double)requiredEnergy/(double)energy)){
-					result = DFCRecipes.getOutput(inventory.getStackInSlot(i));
-				}
-			}
-
-			if(inventory.getStackInSlot(i).getItem() == ModItems.crucible && ItemCrucible.getCharges(inventory.getStackInSlot(i)) < 3 && energy > 10000000)
-				ItemCrucible.charge(inventory.getStackInSlot(i));
-
-			if(result != null && !result.isEmpty()){
-				int size = inventory.getStackInSlot(i).getCount();
-
-				if(result.getCount() * size <= result.getMaxStackSize()) {
-					inventory.setStackInSlot(i, result.copy());
-					inventory.getStackInSlot(i).setCount(inventory.getStackInSlot(i).getCount()*size);
-				}
-			}
+		if (world.getTileEntity(pos) != this) {
+			return false;
+		} else {
+			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
 		}
-		joules = energy;
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		if(compound.hasKey("inventory"))
 			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
-		if(compound.hasKey("heatTimer"))
-			this.heatTimer = compound.getInteger("heatTimer");
+		this.heatTimer = compound.getInteger("heatTimer");
+		this.joules = compound.getLong("joules");
 		super.readFromNBT(compound);
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setTag("inventory", inventory.serializeNBT());
-		compound.setInteger("heatTimer", this.heatTimer);
+		compound.setInteger("heatTimer", heatTimer);
+		compound.setLong("joules", joules);
 		return super.writeToNBT(compound);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(filteredInventory);
+		}
+		return super.getCapability(capability, facing);
 	}
 
 	@Override
@@ -232,8 +183,43 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase implements I
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : super.getCapability(capability, facing);
+	private class FilteredItemHandler implements IItemHandler {
+
+		private final ItemStackHandler wrapped;
+
+		public FilteredItemHandler(ItemStackHandler wrapped) {
+			this.wrapped = wrapped;
+		}
+
+		@Override
+		public int getSlots() {
+			return wrapped.getSlots();
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			return wrapped.getStackInSlot(slot);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+			if (ItemBlockStorageCrate.isContainer(stack)) {
+				return stack;
+			}
+			return wrapped.insertItem(slot, stack, simulate);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			return wrapped.extractItem(slot, amount, simulate);
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return wrapped.getSlotLimit(slot);
+		}
 	}
 }

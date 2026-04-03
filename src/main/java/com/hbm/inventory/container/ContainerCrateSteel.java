@@ -27,6 +27,14 @@ public class ContainerCrateSteel extends Container {
 			lockedSlotIndex = crate.getSourceSlotIndex();
 		}
 
+		if (!invPlayer.player.world.isRemote) {
+			if (crate.isFromItemStack()) {
+				invPlayer.player.world.playSound(null, invPlayer.player.posX, invPlayer.player.posY, invPlayer.player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			} else {
+				invPlayer.player.world.playSound(null, tedf.getPos(), HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			}
+		}
+
 		for(int i = 0; i < 6; i++) {
 			for(int j = 0; j < 9; j++) {
 				this.addSlotToContainer(new SlotCrate(tedf.inventory, j + i * 9, 8 + j * 18, 18 + i * 18));
@@ -107,8 +115,12 @@ public class ContainerCrateSteel extends Container {
 	@Override
 	public void onContainerClosed(EntityPlayer player) {
 		super.onContainerClosed(player);
-		if (crate.isFromItemStack() && !player.world.isRemote) {
-			player.world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		if (!player.world.isRemote) {
+			if (crate.isFromItemStack()) {
+				player.world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			} else {
+				player.world.playSound(null, crate.getPos(), HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			}
 		}
 	}
 
