@@ -1926,6 +1926,8 @@ public class ModItems {
 	public static final Item peas = new ItemPeas("peas").setCreativeTab(MainRegistry.consumableTab);
 	public static final Item marshmallow = new ItemLemon(2, 2, false, "marshmallow").setMaxStackSize(1).setFull3D().setCreativeTab(MainRegistry.consumableTab);
 	public static final Item marshmallow_roasted = new ItemLemon(6, 6, false, "marshmallow_roasted").setMaxStackSize(1).setFull3D().setCreativeTab(MainRegistry.consumableTab);
+	public static final Item strange_parmezan = new ItemLemon(200, 200, false, "strange_parmezan").setCreativeTab(MainRegistry.consumableTab);
+
 	//Bongespob arcarmoni
 	public static final Item spongebob_macaroni = new ItemLemon(5, 5, false, "spongebob_macaroni").setCreativeTab(MainRegistry.consumableTab);
 	

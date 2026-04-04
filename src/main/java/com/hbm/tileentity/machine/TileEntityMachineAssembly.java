@@ -25,12 +25,17 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
@@ -58,6 +63,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public int recipe;
 
 	private AudioWrapper audioMotor;
+	private IItemHandler exposedInventory;
 
 	public TileEntityMachineAssembly() {
 
@@ -83,6 +89,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				return ItemStack.EMPTY;
 			}
 		};
+		exposedInventory = new ExposedItemHandler(inventory);
 	}
 
 	public void OnContentsChanged(int slot){
@@ -552,6 +559,69 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					count++;
 
 		return count;
+	}
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			return true;
+		}
+		return super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(exposedInventory);
+		}
+		return super.getCapability(capability, facing);
+	}
+
+	private class ExposedItemHandler implements IItemHandler {
+
+		private final ItemStackHandler wrapped;
+		private final int[] accessibleSlots = new int[] { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+
+		public ExposedItemHandler(ItemStackHandler wrapped) {
+			this.wrapped = wrapped;
+		}
+
+		@Override
+		public int getSlots() {
+			return accessibleSlots.length;
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			if(slot < 0 || slot >= accessibleSlots.length) return ItemStack.EMPTY;
+			return wrapped.getStackInSlot(accessibleSlots[slot]);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+			if(slot < 0 || slot >= accessibleSlots.length) return stack;
+			int realSlot = accessibleSlots[slot];
+			if(realSlot == 5) return stack;
+			if(!canInsertItem(realSlot, stack, stack.getCount())) return stack;
+			return wrapped.insertItem(realSlot, stack, simulate);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			if(slot < 0 || slot >= accessibleSlots.length) return ItemStack.EMPTY;
+			int realSlot = accessibleSlots[slot];
+			if(realSlot != 5) return ItemStack.EMPTY;
+			return wrapped.extractItem(realSlot, amount, simulate);
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			if(slot < 0 || slot >= accessibleSlots.length) return 0;
+			return wrapped.getSlotLimit(accessibleSlots[slot]);
+		}
 	}
 
 	public static class AssemblerArm {

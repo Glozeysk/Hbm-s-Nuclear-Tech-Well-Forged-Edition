@@ -69,6 +69,10 @@ public class ItemLemon extends ItemFood {
 			list.add("Expired 600 years ago!");
 		}
 
+		if(this == ModItems.strange_parmezan) {
+			list.add("He looks at you suspiciously.");
+		}
+
 		if(this == ModItems.canned_beef) {
 			list.add("A few centuries ago, a cow died for this.");
 		}

@@ -190,6 +190,14 @@ public class HadronRecipes {
 				new ItemStack(ModItems.nugget),
 				false
 				));
+		recipes.add(new HadronRecipe(
+				new ItemStack(Items.MILK_BUCKET),
+				new ItemStack(Items.MILK_BUCKET),
+				100,
+				new ItemStack(ModItems.strange_parmezan),
+				new ItemStack(ModItems.strange_parmezan),
+				false
+		));
 	}
 
 	public static EnumHadronState returnCode = EnumHadronState.NORESULT;

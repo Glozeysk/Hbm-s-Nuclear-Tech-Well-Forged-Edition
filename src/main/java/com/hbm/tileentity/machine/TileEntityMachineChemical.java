@@ -1,30 +1,17 @@
 package com.hbm.tileentity.machine;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.machine.MachineChemical;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemChemistryTemplate;
-import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.AuxParticlePacket;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.LoopedSoundPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.TEChemicalPacket;
+import com.hbm.lib.Library;
+import com.hbm.packet.*;
 import com.hbm.tileentity.TileEntityMachineBase;
-
-import api.hbm.energy.IEnergyUser;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -36,8 +23,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -50,10 +35,10 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.List;
 
 public class TileEntityMachineChemical extends TileEntityMachineBase implements IEnergyUser, ITankPacketAcceptor, ITickable {
 
