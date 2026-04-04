@@ -68,7 +68,7 @@ public class CraftingManager {
 		} 
 		addCrafting();
 		addSmelting();
-		registerArmorConversionRecipes();
+		// registerArmorConversionRecipes();
 		hack.getRegistry().register(new SmallReactorFuelCraftingHandler().setRegistryName(new ResourceLocation(RefStrings.MODID, "reactor_fuel_crafting_handler")));
 		hack.getRegistry().register(new RBMKFuelCraftingHandler().setRegistryName(new ResourceLocation(RefStrings.MODID, "rbmk_fuel_crafting_handler")));
 		hack.getRegistry().register(new MKUCraftingHandler().setRegistryName(new ResourceLocation(RefStrings.MODID, "mku_crafting_handler")));
@@ -1994,14 +1994,14 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.t51_plate, 1), new Object[] { "MPM", "TBT", "PPP", 'M', ModItems.motor, 'P', ModItems.plate_armor_titanium, 'T', ModItems.gas_canister, 'B', ModItems.titanium_plate });
 		addRecipeAuto(new ItemStack(ModItems.t51_legs, 1), new Object[] { "MPM", "PBP", "P P", 'M', ModItems.motor, 'P', ModItems.plate_armor_titanium, 'B', ModItems.titanium_legs });
 		addRecipeAuto(new ItemStack(ModItems.t51_boots, 1), new Object[] { "P P", "PBP", 'P', ModItems.plate_armor_titanium, 'B', ModItems.titanium_boots });
-//		addShapelessAuto(new ItemStack(ModItems.t45_helmet, 1), new Object[] {ModItems.t51_helmet});
-//		addShapelessAuto(new ItemStack(ModItems.t45_plate, 1), new Object[] {ModItems.t51_plate});
-//		addShapelessAuto(new ItemStack(ModItems.t45_legs, 1), new Object[] {ModItems.t51_legs});
-//		addShapelessAuto(new ItemStack(ModItems.t45_boots, 1), new Object[] {ModItems.t51_boots});
-//		addShapelessAuto(new ItemStack(ModItems.t51_helmet, 1), new Object[] {ModItems.t45_helmet});
-//		addShapelessAuto(new ItemStack(ModItems.t51_plate, 1), new Object[] {ModItems.t45_plate});
-//		addShapelessAuto(new ItemStack(ModItems.t51_legs, 1), new Object[] {ModItems.t45_legs});
-//		addShapelessAuto(new ItemStack(ModItems.t51_boots, 1), new Object[] {ModItems.t45_boots});
+		addShapelessAuto(new ItemStack(ModItems.t45_helmet, 1), new Object[] {ModItems.t51_helmet});
+		addShapelessAuto(new ItemStack(ModItems.t45_plate, 1), new Object[] {ModItems.t51_plate});
+		addShapelessAuto(new ItemStack(ModItems.t45_legs, 1), new Object[] {ModItems.t51_legs});
+		addShapelessAuto(new ItemStack(ModItems.t45_boots, 1), new Object[] {ModItems.t51_boots});
+		addShapelessAuto(new ItemStack(ModItems.t51_helmet, 1), new Object[] {ModItems.t45_helmet});
+		addShapelessAuto(new ItemStack(ModItems.t51_plate, 1), new Object[] {ModItems.t45_plate});
+		addShapelessAuto(new ItemStack(ModItems.t51_legs, 1), new Object[] {ModItems.t45_legs});
+		addShapelessAuto(new ItemStack(ModItems.t51_boots, 1), new Object[] {ModItems.t45_boots});
 		addRecipeAuto(new ItemStack(ModItems.bj_helmet, 1), new Object[] { "SBS", " C ", " I ", 'S', Items.STRING, 'B', new ItemStack(Blocks.WOOL, 1, 15), 'C', ModItems.circuit_targeting_tier4, 'I', STAR.ingot() });
 		addRecipeAuto(new ItemStack(ModItems.bj_plate, 1), new Object[] { "N N", "MSM", "NCN", 'N', ModItems.plate_armor_lunar, 'M', ModItems.motor_desh, 'S', ModItems.starmetal_plate, 'C', ModItems.circuit_targeting_tier5 });
 		addRecipeAuto(new ItemStack(ModItems.bj_plate_jetpack, 1), new Object[] { "NFN", "TPT", "ICI", 'N', ModItems.plate_armor_lunar, 'F', ModItems.fins_quad_titanium, 'T', new IngredientContainsTag(ItemFluidTank.getFullTank(ModForgeFluids.xenon)), 'P', ModItems.bj_plate, 'I', ModItems.mp_thruster_10_xenon, 'C', P_RED.crystal() });
@@ -3312,24 +3312,24 @@ public class CraftingManager {
 
 	}
 
-	private static void registerArmorConversionRecipes() {
-		registerConversion(ModItems.t51_helmet, ModItems.t45_helmet, "t51_to_t45_helmet");
-		registerConversion(ModItems.t51_plate, ModItems.t45_plate, "t51_to_t45_plate");
-		registerConversion(ModItems.t51_legs, ModItems.t45_legs, "t51_to_t45_legs");
-		registerConversion(ModItems.t51_boots, ModItems.t45_boots, "t51_to_t45_boots");
+	// private static void registerArmorConversionRecipes() {
+	// 	registerConversion(ModItems.t51_helmet, ModItems.t45_helmet, "t51_to_t45_helmet");
+	// 	registerConversion(ModItems.t51_plate, ModItems.t45_plate, "t51_to_t45_plate");
+	// 	registerConversion(ModItems.t51_legs, ModItems.t45_legs, "t51_to_t45_legs");
+	// 	registerConversion(ModItems.t51_boots, ModItems.t45_boots, "t51_to_t45_boots");
 
-		registerConversion(ModItems.t45_helmet, ModItems.t51_helmet, "t45_to_t51_helmet");
-		registerConversion(ModItems.t45_plate, ModItems.t51_plate, "t45_to_t51_plate");
-		registerConversion(ModItems.t45_legs, ModItems.t51_legs, "t45_to_t51_legs");
-		registerConversion(ModItems.t45_boots, ModItems.t51_boots, "t45_to_t51_boots");
-	}
+	// 	registerConversion(ModItems.t45_helmet, ModItems.t51_helmet, "t45_to_t51_helmet");
+	// 	registerConversion(ModItems.t45_plate, ModItems.t51_plate, "t45_to_t51_plate");
+	// 	registerConversion(ModItems.t45_legs, ModItems.t51_legs, "t45_to_t51_legs");
+	// 	registerConversion(ModItems.t45_boots, ModItems.t51_boots, "t45_to_t51_boots");
+	// }
 
-	private static void registerConversion(Item input, Item output, String name) {
-		RecipeArmorConversion recipe = new RecipeArmorConversion(
-				input,
-				output,
-				new ResourceLocation(RefStrings.MODID, name)
-		);
-		ForgeRegistries.RECIPES.register(recipe);
-	}
+	// private static void registerConversion(Item input, Item output, String name) {
+	// 	RecipeArmorConversion recipe = new RecipeArmorConversion(
+	// 			input,
+	// 			output,
+	// 			new ResourceLocation(RefStrings.MODID, name)
+	// 	);
+	// 	ForgeRegistries.RECIPES.register(recipe);
+	// }
 }

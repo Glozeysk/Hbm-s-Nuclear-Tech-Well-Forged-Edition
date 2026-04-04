@@ -38,6 +38,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TileEntityMachineChemical extends TileEntityMachineBase implements IEnergyUser, ITankPacketAcceptor, ITickable {
@@ -128,19 +129,101 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		ItemStack compareStack = itemStack.copy();
 		compareStack.setCount(1);
 
-		for(AStack ingredient : recipe) {
-			AStack sing = ingredient.copy();
+		int ingredientIndex = -1;
+		for(int i = 0; i < recipe.size(); i++) {
+			AStack sing = recipe.get(i).copy();
 			sing.singulize();
-
 			if(sing.isApplicable(compareStack)) {
-				int validSlot = getValidSlot(ingredient.copy());
-				if(validSlot == slot) {
-					return true;
-				}
+				ingredientIndex = i;
+				break;
 			}
 		}
 
-		return false;
+		if(ingredientIndex == -1) {
+			return false;
+		}
+
+		List<Integer> validSlots = getValidSlotsForIngredient(recipe, ingredientIndex);
+		return validSlots.contains(slot);
+	}
+
+	private List<Integer> getValidSlotsForIngredient(List<AStack> recipe, int ingredientIndex) {
+		List<Integer> result = new ArrayList<>();
+		
+		int[] slotOwner = new int[21];
+		for(int k = 0; k < 21; k++) {
+			slotOwner[k] = -1;
+		}
+		
+		for(int k = 13; k < 17; k++) {
+			ItemStack slotStack = inventory.getStackInSlot(k);
+			if(!slotStack.isEmpty()) {
+				ItemStack compare = slotStack.copy();
+				compare.setCount(1);
+				for(int i = 0; i < recipe.size(); i++) {
+					AStack sing = recipe.get(i).copy();
+					sing.singulize();
+					if(sing.isApplicable(compare)) {
+						slotOwner[k] = i;
+						break;
+					}
+				}
+			}
+		}
+		
+		AStack ingredient = recipe.get(ingredientIndex);
+		AStack singularized = ingredient.copy();
+		singularized.singulize();
+		
+		float maxStackSize = ingredient.getStack().getMaxStackSize();
+		int stackCount = (int) Math.ceil(ingredient.count() / maxStackSize);
+		int stacksFound = 0;
+		
+		for(int k = 13; k < 17; k++) {
+			if(slotOwner[k] == ingredientIndex) {
+				stacksFound++;
+				ItemStack slotStack = inventory.getStackInSlot(k);
+				if(slotStack.getCount() < slotStack.getMaxStackSize()) {
+					result.add(k);
+				}
+			}
+		}
+		
+		int reservedFreeSlots = 0;
+		for(int i = 0; i < ingredientIndex; i++) {
+			AStack prevIngredient = recipe.get(i);
+			float prevMaxStack = prevIngredient.getStack().getMaxStackSize();
+			int prevStackCount = (int) Math.ceil(prevIngredient.count() / prevMaxStack);
+			
+			int prevStacksFound = 0;
+			for(int k = 13; k < 17; k++) {
+				if(slotOwner[k] == i) {
+					prevStacksFound++;
+				}
+			}
+			
+			reservedFreeSlots += Math.max(0, prevStackCount - prevStacksFound);
+		}
+		
+		int freeSlotsNeeded = stackCount - stacksFound;
+		if(freeSlotsNeeded > 0) {
+			int skipped = 0;
+			for(int k = 13; k < 17; k++) {
+				if(slotOwner[k] == -1 && inventory.getStackInSlot(k).isEmpty()) {
+					if(skipped < reservedFreeSlots) {
+						skipped++;
+						continue;
+					}
+					result.add(k);
+					freeSlotsNeeded--;
+					if(freeSlotsNeeded <= 0) {
+						break;
+					}
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	@Override

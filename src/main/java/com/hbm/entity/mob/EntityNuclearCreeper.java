@@ -266,16 +266,16 @@ public class EntityNuclearCreeper extends EntityMob implements IRadiationImmune 
 			if(i == 9) {
 				switch(rand.nextInt(4)){
 				case 0:
-					this.dropItem(ModItems.t45_helmet, 1);
+					this.dropItem(ModItems.t51_helmet, 1);
 					break;
 				case 1:
-					this.dropItem(ModItems.t45_plate, 1);
+					this.dropItem(ModItems.t51_plate, 1);
 					break;
 				case 2:
-					this.dropItem(ModItems.t45_legs, 1);
+					this.dropItem(ModItems.t51_legs, 1);
 					break;
 				case 3:
-					this.dropItem(ModItems.t45_boots, 1);
+					this.dropItem(ModItems.t51_boots, 1);
 					break;
 				}
 				this.dropItem(ModItems.fusion_core, 1);

@@ -78,36 +78,6 @@ public class TileEntityMachineKeyForge extends TileEntity implements ITickable {
 			if(inventory.getStackInSlot(2).getItem() instanceof ItemKeyPin && ((ItemKeyPin)inventory.getStackInSlot(2).getItem()).canTransfer()) {
 				ItemKeyPin.setPins(inventory.getStackInSlot(2), world.rand.nextInt(900) + 100);
 			}
-
-			//DEBUG, remove later
-			//Drillgon200: Later is now.
-			/*if(slots[2] != null && slots[2].getItem() == Items.wheat_seeds) {
-				slots[2] = new ItemStack(ModItems.nuke_starter_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.bone) {
-				slots[2] = new ItemStack(ModItems.nuke_advanced_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.feather) {
-				slots[2] = new ItemStack(ModItems.nuke_commercially_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.apple) {
-				slots[2] = new ItemStack(ModItems.nuke_electric_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.clay_ball) {
-				slots[2] = new ItemStack(ModItems.t45_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.stick) {
-				slots[2] = new ItemStack(ModItems.missile_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.string) {
-				slots[2] = new ItemStack(ModItems.grenade_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == Items.reeds) {
-				slots[2] = new ItemStack(ModItems.man_kit);
-			}
-			if(slots[2] != null && slots[2].getItem() == ModItems.battery_generic) {
-				slots[2] = new ItemStack(ModItems.memory);
-			}*/
 		}
 	}
 	

@@ -231,6 +231,7 @@ public class ArmorUtil {
 			ArmorUtil.checkArmor(player, ModItems.hazmat_helmet_grey, ModItems.hazmat_plate_grey, ModItems.hazmat_legs_grey, ModItems.hazmat_boots_grey) || 
 			ArmorUtil.checkArmor(player, ModItems.t45_helmet, ModItems.t45_plate, ModItems.t45_legs, ModItems.t45_boots) || 
 			ArmorUtil.checkArmor(player, ModItems.t45_mur_helmet, ModItems.t45_mur_plate, ModItems.t45_mur_legs, ModItems.t45_mur_boots) || 
+			ArmorUtil.checkArmor(player, ModItems.t51_helmet, ModItems.t51_plate, ModItems.t51_legs, ModItems.t51_boots) || 
 			ArmorUtil.checkArmor(player, ModItems.schrabidium_helmet, ModItems.schrabidium_plate, ModItems.schrabidium_legs, ModItems.schrabidium_boots) || 
 			checkForHaz2(player)) {
 	
@@ -420,6 +421,10 @@ public class ArmorUtil {
 			return true;
 		}
 		if(checkArmorPiece(player, ModItems.t45_helmet, 3))
+		{
+			return true;
+		}
+		if(checkArmorPiece(player, ModItems.t51_helmet, 3))
 		{
 			return true;
 		}

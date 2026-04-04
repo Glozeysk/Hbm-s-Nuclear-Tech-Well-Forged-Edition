@@ -8,51 +8,69 @@ public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
 
 	private ItemStackHandler handle;
 	private int[] validSlots;
-	
+
 	public ItemStackHandlerWrapper(ItemStackHandler handle) {
 		this.handle = handle;
-		validSlots = new int[]{};
+		this.validSlots = new int[]{};
 	}
-	
+
 	public ItemStackHandlerWrapper(ItemStackHandler handle, int[] validSlots) {
 		this.handle = handle;
 		this.validSlots = validSlots;
 	}
-	
+
 	@Override
 	public int getSlots() {
-		return handle.getSlots();
+		return validSlots.length;
+	}
+
+	private int mapSlot(int externalSlot) {
+		if(externalSlot < 0 || externalSlot >= validSlots.length)
+			return -1;
+		return validSlots[externalSlot];
+	}
+
+	public int mapSlotPublic(int externalSlot) {
+		return mapSlot(externalSlot);
 	}
 
 	@Override
 	public ItemStack getStackInSlot(int slot) {
-		return handle.getStackInSlot(slot);
+		int mapped = mapSlot(slot);
+		if(mapped == -1)
+			return ItemStack.EMPTY;
+		return handle.getStackInSlot(mapped);
 	}
 
 	@Override
 	public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-		for(int i : validSlots)
-			if(i == slot)
-				return handle.insertItem(slot, stack, simulate);
-		return stack;
+		int mapped = mapSlot(slot);
+		if(mapped == -1)
+			return stack;
+		return handle.insertItem(mapped, stack, simulate);
 	}
 
 	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		for(int i : validSlots)
-			if(i == slot)
-				return handle.extractItem(slot, amount, simulate);
-		return ItemStack.EMPTY;
+		int mapped = mapSlot(slot);
+		if(mapped == -1)
+			return ItemStack.EMPTY;
+		return handle.extractItem(mapped, amount, simulate);
 	}
 
 	@Override
 	public int getSlotLimit(int slot) {
-		return handle.getSlotLimit(slot);
+		int mapped = mapSlot(slot);
+		if(mapped == -1)
+			return 0;
+		return handle.getSlotLimit(mapped);
 	}
 
 	@Override
 	public void setStackInSlot(int slot, ItemStack stack) {
-		handle.setStackInSlot(slot, stack);
+		int mapped = mapSlot(slot);
+		if(mapped == -1)
+			return;
+		handle.setStackInSlot(mapped, stack);
 	}
-
 }
