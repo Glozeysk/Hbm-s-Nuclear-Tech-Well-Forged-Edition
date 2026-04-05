@@ -1,5 +1,5 @@
 package com.hbm.tileentity.machine;
-
+import net.minecraftforge.items.IItemHandlerModifiable;
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
@@ -184,7 +184,7 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 
-	private class FilteredItemHandler implements IItemHandler {
+	private class FilteredItemHandler implements IItemHandlerModifiable {
 
 		private final ItemStackHandler wrapped;
 
@@ -201,6 +201,13 @@ public class TileEntityCrateIron extends TileEntityLockableBase {
 		@Override
 		public ItemStack getStackInSlot(int slot) {
 			return wrapped.getStackInSlot(slot);
+		}
+
+		@Override
+		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+			if (!ItemBlockStorageCrate.isContainer(stack)) {
+				wrapped.setStackInSlot(slot, stack);
+			}
 		}
 
 		@Nonnull

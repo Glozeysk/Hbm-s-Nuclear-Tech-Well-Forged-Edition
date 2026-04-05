@@ -211,16 +211,28 @@ public class BlockStorageCrate extends BlockContainer {
 		TileEntity te = world.getTileEntity(pos);
 
 		if(te != null && stack.hasTagCompound()) {
-			IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-
 			NBTTagCompound nbt = stack.getTagCompound();
-			for(int i = 0; i < inventory.getSlots(); i++) {
-				inventory.insertItem(i, new ItemStack(nbt.getCompoundTag("slot" + i)), false);
+
+			boolean hasSlotFormat = false;
+			for(int i = 0; i < 104; i++) {
+				if(nbt.hasKey("slot" + i)) {
+					hasSlotFormat = true;
+					break;
+				}
 			}
-			
+
+			if(hasSlotFormat) {
+				IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				for(int i = 0; i < inventory.getSlots(); i++) {
+					if(nbt.hasKey("slot" + i)) {
+						inventory.insertItem(i, new ItemStack(nbt.getCompoundTag("slot" + i)), false);
+					}
+				}
+			}
+
 			if(te instanceof TileEntityLockableBase) {
 				TileEntityLockableBase lockable = (TileEntityLockableBase) te;
-				
+
 				if(nbt.hasKey("lock")) {
 					lockable.setPins(nbt.getInteger("lock"));
 					lockable.setMod(nbt.getDouble("lockMod"));

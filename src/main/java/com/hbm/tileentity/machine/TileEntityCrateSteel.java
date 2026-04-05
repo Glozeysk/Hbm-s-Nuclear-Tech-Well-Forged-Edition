@@ -13,6 +13,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
@@ -184,7 +185,7 @@ public class TileEntityCrateSteel extends TileEntityLockableBase {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 
-	private class FilteredItemHandler implements IItemHandler {
+	private class FilteredItemHandler implements IItemHandlerModifiable {
 
 		private final ItemStackHandler wrapped;
 
@@ -201,6 +202,13 @@ public class TileEntityCrateSteel extends TileEntityLockableBase {
 		@Override
 		public ItemStack getStackInSlot(int slot) {
 			return wrapped.getStackInSlot(slot);
+		}
+
+		@Override
+		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+			if (!ItemBlockStorageCrate.isContainer(stack)) {
+				wrapped.setStackInSlot(slot, stack);
+			}
 		}
 
 		@Nonnull
