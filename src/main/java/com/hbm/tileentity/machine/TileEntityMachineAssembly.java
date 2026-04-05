@@ -25,17 +25,13 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -63,7 +59,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public int recipe;
 
 	private AudioWrapper audioMotor;
-	private IItemHandler exposedInventory;
 
 	public TileEntityMachineAssembly() {
 
@@ -89,7 +84,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				return ItemStack.EMPTY;
 			}
 		};
-		exposedInventory = new ExposedItemHandler(inventory);
 	}
 
 	public void OnContentsChanged(int slot){
@@ -124,19 +118,101 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		ItemStack compareStack = itemStack.copy();
 		compareStack.setCount(1);
 
-		for(AStack ingredient : recipe) {
-			AStack sing = ingredient.copy();
+		int ingredientIndex = -1;
+		for(int i = 0; i < recipe.size(); i++) {
+			AStack sing = recipe.get(i).copy();
 			sing.singulize();
-
 			if(sing.isApplicable(compareStack)) {
-				int validSlot = getValidSlot(ingredient.copy());
-				if(validSlot == slot) {
-					return true;
-				}
+				ingredientIndex = i;
+				break;
 			}
 		}
 
-		return false;
+		if(ingredientIndex == -1) {
+			return false;
+		}
+
+		List<Integer> validSlots = getValidSlotsForIngredient(recipe, ingredientIndex);
+		return validSlots.contains(slot);
+	}
+
+	private List<Integer> getValidSlotsForIngredient(List<AStack> recipe, int ingredientIndex) {
+		List<Integer> result = new ArrayList<>();
+		
+		int[] slotOwner = new int[18];
+		for(int k = 0; k < 18; k++) {
+			slotOwner[k] = -1;
+		}
+		
+		for(int k = 6; k < 18; k++) {
+			ItemStack slotStack = inventory.getStackInSlot(k);
+			if(!slotStack.isEmpty()) {
+				ItemStack compare = slotStack.copy();
+				compare.setCount(1);
+				for(int i = 0; i < recipe.size(); i++) {
+					AStack sing = recipe.get(i).copy();
+					sing.singulize();
+					if(sing.isApplicable(compare)) {
+						slotOwner[k] = i;
+						break;
+					}
+				}
+			}
+		}
+		
+		AStack ingredient = recipe.get(ingredientIndex);
+		AStack singularized = ingredient.copy();
+		singularized.singulize();
+		
+		float maxStackSize = ingredient.getStack().getMaxStackSize();
+		int stackCount = (int) Math.ceil(ingredient.count() / maxStackSize);
+		int stacksFound = 0;
+		
+		for(int k = 6; k < 18; k++) {
+			if(slotOwner[k] == ingredientIndex) {
+				stacksFound++;
+				ItemStack slotStack = inventory.getStackInSlot(k);
+				if(slotStack.getCount() < slotStack.getMaxStackSize()) {
+					result.add(k);
+				}
+			}
+		}
+		
+		int reservedFreeSlots = 0;
+		for(int i = 0; i < ingredientIndex; i++) {
+			AStack prevIngredient = recipe.get(i);
+			float prevMaxStack = prevIngredient.getStack().getMaxStackSize();
+			int prevStackCount = (int) Math.ceil(prevIngredient.count() / prevMaxStack);
+			
+			int prevStacksFound = 0;
+			for(int k = 6; k < 18; k++) {
+				if(slotOwner[k] == i) {
+					prevStacksFound++;
+				}
+			}
+			
+			reservedFreeSlots += Math.max(0, prevStackCount - prevStacksFound);
+		}
+		
+		int freeSlotsNeeded = stackCount - stacksFound;
+		if(freeSlotsNeeded > 0) {
+			int skipped = 0;
+			for(int k = 6; k < 18; k++) {
+				if(slotOwner[k] == -1 && inventory.getStackInSlot(k).isEmpty()) {
+					if(skipped < reservedFreeSlots) {
+						skipped++;
+						continue;
+					}
+					result.add(k);
+					freeSlotsNeeded--;
+					if(freeSlotsNeeded <= 0) {
+						break;
+					}
+				}
+			}
+		}
+		
+		return result;
 	}
 
 	@Override
@@ -559,69 +635,6 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					count++;
 
 		return count;
-	}
-
-	@Override
-	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return true;
-		}
-		return super.hasCapability(capability, facing);
-	}
-
-	@Override
-	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(exposedInventory);
-		}
-		return super.getCapability(capability, facing);
-	}
-
-	private class ExposedItemHandler implements IItemHandler {
-
-		private final ItemStackHandler wrapped;
-		private final int[] accessibleSlots = new int[] { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-
-		public ExposedItemHandler(ItemStackHandler wrapped) {
-			this.wrapped = wrapped;
-		}
-
-		@Override
-		public int getSlots() {
-			return accessibleSlots.length;
-		}
-
-		@Nonnull
-		@Override
-		public ItemStack getStackInSlot(int slot) {
-			if(slot < 0 || slot >= accessibleSlots.length) return ItemStack.EMPTY;
-			return wrapped.getStackInSlot(accessibleSlots[slot]);
-		}
-
-		@Nonnull
-		@Override
-		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-			if(slot < 0 || slot >= accessibleSlots.length) return stack;
-			int realSlot = accessibleSlots[slot];
-			if(realSlot == 5) return stack;
-			if(!canInsertItem(realSlot, stack, stack.getCount())) return stack;
-			return wrapped.insertItem(realSlot, stack, simulate);
-		}
-
-		@Nonnull
-		@Override
-		public ItemStack extractItem(int slot, int amount, boolean simulate) {
-			if(slot < 0 || slot >= accessibleSlots.length) return ItemStack.EMPTY;
-			int realSlot = accessibleSlots[slot];
-			if(realSlot != 5) return ItemStack.EMPTY;
-			return wrapped.extractItem(realSlot, amount, simulate);
-		}
-
-		@Override
-		public int getSlotLimit(int slot) {
-			if(slot < 0 || slot >= accessibleSlots.length) return 0;
-			return wrapped.getSlotLimit(accessibleSlots[slot]);
-		}
 	}
 
 	public static class AssemblerArm {

@@ -167,10 +167,6 @@ public class HbmChestContents {
 			new WeightedRandomChestContentFrom1710(Item.getItemFromBlock(ModBlocks.yellow_barrel), 0, 1, 3, 3) };
 
 	private static WeightedRandomChestContentFrom1710[] vertibird = new WeightedRandomChestContentFrom1710[] {
-			new WeightedRandomChestContentFrom1710(ModItems.t45_helmet, 0, 1, 1, 15),
-			new WeightedRandomChestContentFrom1710(ModItems.t45_plate, 0, 1, 1, 15),
-			new WeightedRandomChestContentFrom1710(ModItems.t45_legs, 0, 1, 1, 15),
-			new WeightedRandomChestContentFrom1710(ModItems.t45_boots, 0, 1, 1, 15),
 			new WeightedRandomChestContentFrom1710(ModItems.t45_kit, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.t51_helmet, 0, 1, 1, 15),
 			new WeightedRandomChestContentFrom1710(ModItems.t51_plate, 0, 1, 1, 15),

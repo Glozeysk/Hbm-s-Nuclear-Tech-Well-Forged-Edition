@@ -127,17 +127,25 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null){
 			if(facing == null)
 				return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory);
-			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, getAccessibleSlotsFromSide(facing)){
+			
+			final int[] accessibleSlots = getAccessibleSlotsFromSide(facing);
+			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, accessibleSlots){
 				@Override
 				public ItemStack extractItem(int slot, int amount, boolean simulate) {
-					if(canExtractItem(slot, inventory.getStackInSlot(slot), amount))
+					int realSlot = mapSlotPublic(slot);
+					if(realSlot == -1)
+						return ItemStack.EMPTY;
+					if(canExtractItem(realSlot, inventory.getStackInSlot(realSlot), amount))
 						return super.extractItem(slot, amount, simulate);
 					return ItemStack.EMPTY;
 				}
 				
 				@Override
 				public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-					if(canInsertItem(slot, stack, stack.getCount()))
+					int realSlot = mapSlotPublic(slot);
+					if(realSlot == -1)
+						return stack;
+					if(canInsertItem(realSlot, stack, stack.getCount()))
 						return super.insertItem(slot, stack, simulate);
 					return stack;
 				}
