@@ -335,7 +335,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			
 			ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(inventory.getStackInSlot(4));
 			FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(inventory.getStackInSlot(4));
-			
+
 			if(needsProcess && (itemOutputs != null || !Library.isArrayEmpty(fluidOutputs))) {
 
 				List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(inventory.getStackInSlot(4));

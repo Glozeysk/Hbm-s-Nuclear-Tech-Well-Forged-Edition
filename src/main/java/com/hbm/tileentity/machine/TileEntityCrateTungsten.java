@@ -27,6 +27,7 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase {
 	private ItemStack sourceStack = ItemStack.EMPTY;
 	private EntityPlayer sourcePlayer = null;
 	private int sourceSlotIndex = -1;
+	private boolean isLoading = false;
 
 	public int heatTimer = 0;
 	public long joules = 0;
@@ -40,7 +41,9 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase {
 			@Override
 			protected void onContentsChanged(int slot) {
 				markDirty();
-				saveToSourceStack();
+				if (!isLoading) {
+					saveToSourceStack();
+				}
 				super.onContentsChanged(slot);
 			}
 		};
@@ -57,13 +60,18 @@ public class TileEntityCrateTungsten extends TileEntityLockableBase {
 	}
 
 	private void loadFromItemStack() {
-		if (sourceStack.hasTagCompound()) {
-			NBTTagCompound nbt = sourceStack.getTagCompound();
-			for (int i = 0; i < inventory.getSlots(); i++) {
-				if (nbt.hasKey("slot" + i)) {
-					inventory.setStackInSlot(i, new ItemStack(nbt.getCompoundTag("slot" + i)));
+		isLoading = true;
+		try {
+			if (sourceStack.hasTagCompound()) {
+				NBTTagCompound nbt = sourceStack.getTagCompound();
+				for (int i = 0; i < inventory.getSlots(); i++) {
+					if (nbt.hasKey("slot" + i)) {
+						inventory.setStackInSlot(i, new ItemStack(nbt.getCompoundTag("slot" + i)));
+					}
 				}
 			}
+		} finally {
+			isLoading = false;
 		}
 	}
 
