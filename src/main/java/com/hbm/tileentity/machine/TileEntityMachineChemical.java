@@ -23,6 +23,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -53,8 +54,8 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	public boolean needsTankTypeUpdate = false;
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
+	public Fluid currentRecipeOutputFluid = null;
 	public ItemStack previousTemplate = ItemStack.EMPTY;
-	//Drillgon200: Yeah I don't even know what I was doing originally
 	public ItemStack previousTemplate2 = ItemStack.EMPTY;
 	int consumption = 100;
 	int speed = 100;
@@ -62,12 +63,11 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	private boolean detectIsProgressing;
 	private FluidTank[] detectTanks = new FluidTank[]{null, null, null, null};
 	public boolean frame = false;
-    public int anim;
-    public int prevAnim;
+	public int anim;
+	public int prevAnim;
 
 	public TileEntityMachineChemical() {
 		super(21);
-		// Consumer<Integer> OnContentsChanged = this::OnContentsChanged;
 		inventory = new ItemStackHandler(21) {
 			@Override
 			protected void onContentsChanged(int slot) {
@@ -149,12 +149,12 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 
 	private List<Integer> getValidSlotsForIngredient(List<AStack> recipe, int ingredientIndex) {
 		List<Integer> result = new ArrayList<>();
-		
+
 		int[] slotOwner = new int[21];
 		for(int k = 0; k < 21; k++) {
 			slotOwner[k] = -1;
 		}
-		
+
 		for(int k = 13; k < 17; k++) {
 			ItemStack slotStack = inventory.getStackInSlot(k);
 			if(!slotStack.isEmpty()) {
@@ -170,15 +170,15 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 				}
 			}
 		}
-		
+
 		AStack ingredient = recipe.get(ingredientIndex);
 		AStack singularized = ingredient.copy();
 		singularized.singulize();
-		
+
 		float maxStackSize = ingredient.getStack().getMaxStackSize();
 		int stackCount = (int) Math.ceil(ingredient.count() / maxStackSize);
 		int stacksFound = 0;
-		
+
 		for(int k = 13; k < 17; k++) {
 			if(slotOwner[k] == ingredientIndex) {
 				stacksFound++;
@@ -188,23 +188,23 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 				}
 			}
 		}
-		
+
 		int reservedFreeSlots = 0;
 		for(int i = 0; i < ingredientIndex; i++) {
 			AStack prevIngredient = recipe.get(i);
 			float prevMaxStack = prevIngredient.getStack().getMaxStackSize();
 			int prevStackCount = (int) Math.ceil(prevIngredient.count() / prevMaxStack);
-			
+
 			int prevStacksFound = 0;
 			for(int k = 13; k < 17; k++) {
 				if(slotOwner[k] == i) {
 					prevStacksFound++;
 				}
 			}
-			
+
 			reservedFreeSlots += Math.max(0, prevStackCount - prevStacksFound);
 		}
-		
+
 		int freeSlotsNeeded = stackCount - stacksFound;
 		if(freeSlotsNeeded > 0) {
 			int skipped = 0;
@@ -222,10 +222,10 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 				}
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
 		if(slot == 5 || slot == 6 || slot == 7 || slot == 8) {
@@ -336,7 +336,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		this.consumption = 100;
 		this.speed = 100;
 
-
 		double c = 100;
 		double s = 100;
 
@@ -373,14 +372,12 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		this.speed = (int) s;
 		this.consumption = (int) c;
 
-
 		if(speed < 2)
 			speed = 2;
 		if(consumption < 1)
 			consumption = 1;
 		if(this.needsTankTypeUpdate)
 			setContainers();
-
 
 		if(!world.isRemote) {
 			if(needsUpdate) {
@@ -415,9 +412,33 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			FFUtils.fillFluidContainer(inventory, tanks[2], 9, 11);
 			FFUtils.fillFluidContainer(inventory, tanks[3], 10, 12);
 
-			
+			if(tanks[2].getFluidAmount() > 0 || tanks[3].getFluidAmount() > 0) {
+				BlockPos[] ports = new BlockPos[] {
+						pos.add(2, 0, 2),
+						pos.add(-2, 0, 2),
+						pos.add(2, 0, -2),
+						pos.add(-2, 0, -2),
+						pos.add(2, 0, 0),
+						pos.add(-2, 0, 0),
+						pos.add(0, 0, 2),
+						pos.add(0, 0, -2)
+				};
+				for(BlockPos port : ports) {
+					if(tanks[2].getFluidAmount() > 0)
+						FFUtils.fillFluid(this, tanks[2], world, port, tanks[2].getCapacity() >> 1);
+					if(tanks[3].getFluidAmount() > 0)
+						FFUtils.fillFluid(this, tanks[3], world, port, tanks[3].getCapacity() >> 1);
+				}
+			}
+
 			ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(inventory.getStackInSlot(4));
 			FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(inventory.getStackInSlot(4));
+
+			if(fluidOutputs != null && fluidOutputs.length > 0 && fluidOutputs[0] != null) {
+				currentRecipeOutputFluid = fluidOutputs[0].getFluid();
+			} else {
+				currentRecipeOutputFluid = null;
+			}
 
 			if(needsProcess && (itemOutputs != null || !Library.isArrayEmpty(fluidOutputs))) {
 
@@ -459,13 +480,12 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			detectAndSendChanges();
 		} else {
 			this.prevAnim = this.anim;
-            if(this.isProgressing) this.anim++;
+			if(this.isProgressing) this.anim++;
 
-            if(world.getTotalWorldTime() % 20 == 0) {
-                frame = world.getBlockState(pos.up(3)).getBlock() != Blocks.AIR;
-            }
+			if(world.getTotalWorldTime() % 20 == 0) {
+				frame = world.getBlockState(pos.up(3)).getBlock() != Blocks.AIR;
+			}
 		}
-
 	}
 
 	private void updateConnections() {
@@ -484,7 +504,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 0), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
-		
 	}
 
 	private boolean validateTe(TileEntity te) {
@@ -496,11 +515,8 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		} else {
 			needsTankTypeUpdate = true;
 			if(previousTemplate != ItemStack.EMPTY && ItemStack.areItemStacksEqual(previousTemplate, inventory.getStackInSlot(4))) {
-
 				needsTankTypeUpdate = false;
-
 			} else {
-
 			}
 			previousTemplate = inventory.getStackInSlot(4).copy();
 			FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(inventory.getStackInSlot(4));
@@ -554,9 +570,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	protected boolean inputValidForTank(int tank, int slot) {
 		if(!inventory.getStackInSlot(slot).isEmpty() && tankTypes[tank] != null) {
 			return FFUtils.checkRestrictions(inventory.getStackInSlot(slot), f -> f.getFluid() == tankTypes[tank]);
-			//Drillgon200: I really hope fluid container registry comes back.
 		}
-
 		return false;
 	}
 
@@ -565,9 +579,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			ItemStack c = inventory.getStackInSlot(slot).copy();
 			c.setCount(1);
 			return FFUtils.isEmtpyFluidTank(c);
-			//Drillgon200: I really hope fluid container registry comes back.
 		}
-
 		return false;
 	}
 
@@ -581,7 +593,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			if(fluids[0] == null || fluids[0].amount <= tanks[0].getFluidAmount())
 				return true;
 		}
-
 		return false;
 	}
 
@@ -613,14 +624,12 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		if(stacks != null && Library.isArrayEmpty(stacks))
 			return true;
 
-		//checking first slot
 		for(int i = 0; i < stacks.length; i++){
-			if(inventory.getStackInSlot(5+i) == ItemStack.EMPTY) { // is the slot empty?
-				continue; // ok it is empty lets check the next one
+			if(inventory.getStackInSlot(5+i) == ItemStack.EMPTY) {
+				continue;
 			} else {
-				
-				if(Library.areItemStacksCompatible(stacks[i].copy(), inventory.getStackInSlot(5+i).copy(), false)){ // oof there is some item there - is it the same tho?
-					if(inventory.getStackInSlot(5+i).getCount() + stacks[i].getCount() <= inventory.getStackInSlot(5+i).getMaxStackSize()){ // ok it is the same item but is the stack full already?
+				if(Library.areItemStacksCompatible(stacks[i].copy(), inventory.getStackInSlot(5+i).copy(), false)){
+					if(inventory.getStackInSlot(5+i).getCount() + stacks[i].getCount() <= inventory.getStackInSlot(5+i).getMaxStackSize()){
 						continue;
 					}
 				}
@@ -637,17 +646,15 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			return;
 
 		for(int i = 0; i<stacks.length; i++){
-			if(inventory.getStackInSlot(5+i) == ItemStack.EMPTY){ // if the slot is empty then create a new stack otherwise make the existing one bigger
+			if(inventory.getStackInSlot(5+i) == ItemStack.EMPTY){
 				inventory.setStackInSlot(5+i, stacks[i].copy());
-			}
-			else{
+			} else {
 				inventory.getStackInSlot(5+i).setCount(inventory.getStackInSlot(5+i).getCount() + stacks[i].getCount());
 			}
 		}
 	}
 
 	public void addFluids(FluidStack[] stacks) {
-
 		if(stacks != null){
 			tanks[2].fill(stacks[0], true);
 			if(stacks.length == 2){
@@ -658,9 +665,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		}
 	}
 
-	//private int extractIngredient(IItemHandler container)
-
-	//I can't believe that worked.
 	public IItemHandlerModifiable cloneItemStackProper(IItemHandlerModifiable array) {
 		IItemHandlerModifiable stack = new ItemStackHandler(array.getSlots());
 
@@ -680,36 +684,32 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 
 		nextIngredient = nextIngredient.singulize();
 
-		for(int k = 13; k < 17; k++) { //scaning inventory if some of the ingredients allready exist
+		for(int k = 13; k < 17; k++) {
 			if(stacksFound < stackCount) {
 				ItemStack assStack = inventory.getStackInSlot(k).copy();
 				if(assStack.isEmpty()) {
 					if(firstFreeSlot < 13)
 						firstFreeSlot = k;
 					continue;
-				} else { // check if there are already enough filled stacks is full
-
+				} else {
 					assStack.setCount(1);
-					if(nextIngredient.isApplicable(assStack)) { // check if it is the right item
-
-						if(inventory.getStackInSlot(k).getCount() < assStack.getMaxStackSize()) // is that stack full?
-							return k; // found a not full slot where we already have that ingredient
+					if(nextIngredient.isApplicable(assStack)) {
+						if(inventory.getStackInSlot(k).getCount() < assStack.getMaxStackSize())
+							return k;
 						else
 							stacksFound++;
 					}
 				}
 			} else {
-				return -1; // All required stacks are full
+				return -1;
 			}
 		}
-		if(firstFreeSlot < 13) // nothing free in assembler inventory anymore
+		if(firstFreeSlot < 13)
 			return -2;
 		return firstFreeSlot;
 	}
 
-	//boolean true: remove items, boolean false: simulation mode
 	public boolean removeItems(List<AStack> stack, IItemHandlerModifiable array) {
-
 		if(stack == null)
 			return true;
 		for(int i = 0; i < stack.size(); i++) {
@@ -720,34 +720,27 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 					return false;
 			}
 		}
-
 		return true;
-
 	}
 
 	public boolean canRemoveItemFromArray(AStack stack, IItemHandlerModifiable array) {
-
 		AStack st = stack.copy();
 
 		for(int i = 6; i < 18; i++) {
-
 			if(array.getStackInSlot(i).getItem() != Items.AIR) {
 				ItemStack sta = array.getStackInSlot(i).copy();
 				sta.setCount(1);
 
 				if(st.isApplicable(sta) && array.getStackInSlot(i).getCount() > 0) {
 					array.getStackInSlot(i).shrink(1);
-					;
 
 					if(array.getStackInSlot(i).isEmpty())
 						array.setStackInSlot(i, ItemStack.EMPTY);
-					;
 
 					return true;
 				}
 			}
 		}
-
 		return false;
 	}
 
@@ -778,27 +771,14 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	}
 
 	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
-	}
-
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ? CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new ChemplantFluidHandler(tanks, tankTypes)) :
-				super.getCapability(capability, facing);
-	}
-
-	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
 		NBTTagCompound tag = new NBTTagCompound();
 		writeToNBT(tag);
-
 		return new SPacketUpdateTileEntity(pos, 0, tag);
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-
 		readFromNBT(pkt.getNbtCompound());
 	}
 
@@ -812,7 +792,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			tanks[2].readFromNBT(tags[2]);
 			tanks[3].readFromNBT(tags[3]);
 		}
-
 	}
 
 	public void haveNeedProess() {
@@ -829,9 +808,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	}
 
 	private void detectAndSendChanges() {
-
 		PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
-
 
 		boolean mark = false;
 
@@ -871,6 +848,22 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			markDirty();
 	}
 
+	@Override
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+			return true;
+		}
+		return super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new ChemplantFluidHandler(tanks, tankTypes));
+		}
+		return super.getCapability(capability, facing);
+	}
+
 	private class ChemplantFluidHandler implements IFluidHandler {
 
 		private FluidTank[] tanks;
@@ -904,10 +897,10 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		public FluidStack drain(FluidStack resource, boolean doDrain) {
 			if(resource == null)
 				return null;
-			if(resource.isFluidEqual(tanks[2].getFluid())) {
+			if(tanks[2].getFluid() != null && resource.isFluidEqual(tanks[2].getFluid())) {
 				return tanks[2].drain(resource.amount, doDrain);
 			}
-			if(resource.isFluidEqual(tanks[3].getFluid())) {
+			if(tanks[3].getFluid() != null && resource.isFluidEqual(tanks[3].getFluid())) {
 				return tanks[3].drain(resource.amount, doDrain);
 			}
 			return null;
@@ -917,11 +910,11 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		public FluidStack drain(int maxDrain, boolean doDrain) {
 			if(tanks[2].getFluid() != null) {
 				return tanks[2].drain(maxDrain, doDrain);
-			} else if(tanks[3].getFluid() != null) {
+			}
+			if(tanks[3].getFluid() != null) {
 				return tanks[3].drain(maxDrain, doDrain);
 			}
 			return null;
 		}
-
 	}
 }

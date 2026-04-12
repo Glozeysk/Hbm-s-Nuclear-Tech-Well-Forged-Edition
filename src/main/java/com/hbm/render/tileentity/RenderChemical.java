@@ -1,18 +1,14 @@
 package com.hbm.render.tileentity;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.main.ResourceManager;
 import com.hbm.tileentity.machine.TileEntityMachineChemical;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidTank;
 import org.lwjgl.opengl.GL11;
-
-import java.awt.*;
 
 public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineChemical> {
 
@@ -49,28 +45,31 @@ public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineC
         GlStateManager.popMatrix();
 
         if (chemplant.isProgressing) {
-            FluidTank renderTank = null;
+            ResourceLocation fluidTex = null;
+
             if (chemplant.tanks[2].getFluid() != null && chemplant.tanks[2].getFluidAmount() > 0
                     && chemplant.tanks[2].getFluid().getFluid() != null
                     && chemplant.tanks[2].getFluid().getFluid().getStill() != null) {
-                renderTank = chemplant.tanks[2];
-            }
-            if (renderTank == null && chemplant.tanks[0].getFluid() != null && chemplant.tanks[0].getFluidAmount() > 0
+                String s = chemplant.tanks[2].getFluid().getFluid().getStill().toString();
+                String[] test1 = s.split(":");
+                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
+            } else if (chemplant.tankTypes[2] != null && chemplant.tankTypes[2].getStill() != null) {
+                String s = chemplant.tankTypes[2].getStill().toString();
+                String[] test1 = s.split(":");
+                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
+            } else if (chemplant.tanks[0].getFluid() != null && chemplant.tanks[0].getFluidAmount() > 0
                     && chemplant.tanks[0].getFluid().getFluid() != null
                     && chemplant.tanks[0].getFluid().getFluid().getStill() != null) {
-                renderTank = chemplant.tanks[0];
+                String s = chemplant.tanks[0].getFluid().getFluid().getStill().toString();
+                String[] test1 = s.split(":");
+                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
             }
 
-            if (renderTank != null) {
+            if (fluidTex != null) {
                 GlStateManager.enableBlend();
                 GlStateManager.depthMask(false);
                 GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-                String s = renderTank.getFluid().getFluid().getStill().toString();
-                String textureBase = "textures/";
-                String[] test1 = s.split(":");
-                String location = test1[0] + ":" + textureBase + test1[1] + "_chem.png";
-                ResourceLocation test = new ResourceLocation(location);
-                bindTexture(test);
+                bindTexture(fluidTex);
                 ResourceManager.chemical.renderPart("Fluid");
                 GlStateManager.depthMask(true);
                 GlStateManager.disableBlend();
@@ -80,5 +79,4 @@ public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineC
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.popMatrix();
     }
-
 }
