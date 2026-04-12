@@ -414,14 +414,18 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 
 			if(tanks[2].getFluidAmount() > 0 || tanks[3].getFluidAmount() > 0) {
 				BlockPos[] ports = new BlockPos[] {
-						pos.add(2, 0, 2),
-						pos.add(-2, 0, 2),
-						pos.add(2, 0, -2),
-						pos.add(-2, 0, -2),
-						pos.add(2, 0, 0),
-						pos.add(-2, 0, 0),
+						pos.add(-1, 0, -2),
+						pos.add(0, 0, -2),
+						pos.add(1, 0, -2),
+						pos.add(-1, 0, 2),
 						pos.add(0, 0, 2),
-						pos.add(0, 0, -2)
+						pos.add(1, 0, 2),
+						pos.add(-2, 0, -1),
+						pos.add(-2, 0, 0),
+						pos.add(-2, 0, 1),
+						pos.add(2, 0, -1),
+						pos.add(2, 0, 0),
+						pos.add(2, 0, 1)
 				};
 				for(BlockPos port : ports) {
 					if(tanks[2].getFluidAmount() > 0)
@@ -471,7 +475,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 					}
 				} else {
 					progress = 0;
-					needsProcess = false;
+					needsProcess = true;
 				}
 			} else {
 				progress = 0;
