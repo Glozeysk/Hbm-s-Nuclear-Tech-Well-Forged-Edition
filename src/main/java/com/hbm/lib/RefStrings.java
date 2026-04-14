@@ -3,7 +3,8 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Waldemar Edition";
-	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.2";
+	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.2-hotfix1";
+	public static final String BUILD_DATE;
 	public static final String CHANGELOG = "Update 1.2.2\n" +
 			"- Added grow progress bar in ITER GUI;\n" +
 			"- Added speed change in ITER breeder which depends on required heat and actual heat;\n" +
@@ -37,4 +38,18 @@ public class RefStrings {
 	//Drillgon200: I completely ignored this to make my own even worse naming system. Sigh.
 	public static final String CLIENTSIDE = "com.hbm.main.ClientProxy";
 	public static final String SERVERSIDE = "com.hbm.main.ServerProxy";
+
+
+
+	static {
+		String date = "";
+		try {
+			java.util.Properties props = new java.util.Properties();
+			props.load(RefStrings.class.getClassLoader().getResourceAsStream("build_date.properties"));
+			date = props.getProperty("build.date", "");
+		} catch(Exception e) {
+			date = "";
+		}
+		BUILD_DATE = date;
+	}
 }

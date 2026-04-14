@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
 
 public class UpdateChecker {
 
@@ -70,14 +71,77 @@ public class UpdateChecker {
                 JsonObject json = new JsonParser().parse(response.toString()).getAsJsonObject();
                 JsonObject latestFile = json.getAsJsonArray("data").get(0).getAsJsonObject();
                 latestVersion = latestFile.get("displayName").getAsString();
+                String latestDateStr = latestFile.get("fileDate").getAsString();
 
-                String currentVersion = RefStrings.VERSION;
-                updateAvailable = !latestVersion.contains(currentVersion) && !currentVersion.contains(latestVersion);
+                String currentBuildDate = RefStrings.BUILD_DATE;
+
+                if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
+                    try {
+                        long latestTime = parseDate(latestDateStr);
+                        long buildTime = parseDate(currentBuildDate);
+                        updateAvailable = latestTime > buildTime;
+                    } catch(Exception e) {
+                        MainRegistry.logger.warn("Date comparison failed, falling back to version comparison: " + e.getMessage());
+                        updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
+                    }
+                } else {
+                    updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
+                }
             }
             connection.disconnect();
         } catch(Exception e) {
             MainRegistry.logger.warn("Failed to check for updates: " + e.getMessage());
         }
+    }
+
+    private long parseDate(String dateStr) throws ParseException {
+        dateStr = dateStr.replaceAll("\\.\\d+Z$", "Z");
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        return sdf.parse(dateStr).getTime();
+    }
+
+    private boolean isVersionNewer(String remoteDisplayName, String currentVersion) {
+        int[] remote = extractVersionNumbers(remoteDisplayName);
+        int[] current = extractVersionNumbers(currentVersion);
+
+        int length = Math.max(remote.length, current.length);
+        for(int i = 0; i < length; i++) {
+            int r = i < remote.length ? remote[i] : 0;
+            int c = i < current.length ? current[i] : 0;
+            if(r > c) return true;
+            if(r < c) return false;
+        }
+
+        boolean remoteHasHotfix = remoteDisplayName.toLowerCase().contains("hotfix");
+        boolean currentHasHotfix = currentVersion.toLowerCase().contains("hotfix");
+
+        if(!currentHasHotfix && remoteHasHotfix) return true;
+
+        return false;
+    }
+
+    private int[] extractVersionNumbers(String versionString) {
+        String cleaned = versionString.replace(".jar", "");
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+\\.\\d+\\.\\d+)").matcher(cleaned);
+
+        String mainVersion = "";
+        while(matcher.find()) {
+            mainVersion = matcher.group(1);
+        }
+
+        if(mainVersion.isEmpty()) return new int[]{0};
+
+        String[] parts = mainVersion.split("\\.");
+        int[] result = new int[parts.length];
+        for(int i = 0; i < parts.length; i++) {
+            try {
+                result[i] = Integer.parseInt(parts[i]);
+            } catch(NumberFormatException e) {
+                result[i] = 0;
+            }
+        }
+        return result;
     }
 
     @SideOnly(Side.CLIENT)

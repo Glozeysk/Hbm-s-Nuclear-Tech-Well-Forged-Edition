@@ -1994,10 +1994,6 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.t51_plate, 1), new Object[] { "MPM", "TBT", "PPP", 'M', ModItems.motor, 'P', ModItems.plate_armor_titanium, 'T', ModItems.gas_canister, 'B', ModItems.titanium_plate });
 		addRecipeAuto(new ItemStack(ModItems.t51_legs, 1), new Object[] { "MPM", "PBP", "P P", 'M', ModItems.motor, 'P', ModItems.plate_armor_titanium, 'B', ModItems.titanium_legs });
 		addRecipeAuto(new ItemStack(ModItems.t51_boots, 1), new Object[] { "P P", "PBP", 'P', ModItems.plate_armor_titanium, 'B', ModItems.titanium_boots });
-		addShapelessAuto(new ItemStack(ModItems.t45_helmet, 1), new Object[] {ModItems.t51_helmet});
-		addShapelessAuto(new ItemStack(ModItems.t45_plate, 1), new Object[] {ModItems.t51_plate});
-		addShapelessAuto(new ItemStack(ModItems.t45_legs, 1), new Object[] {ModItems.t51_legs});
-		addShapelessAuto(new ItemStack(ModItems.t45_boots, 1), new Object[] {ModItems.t51_boots});
 		addShapelessAuto(new ItemStack(ModItems.t51_helmet, 1), new Object[] {ModItems.t45_helmet});
 		addShapelessAuto(new ItemStack(ModItems.t51_plate, 1), new Object[] {ModItems.t45_plate});
 		addShapelessAuto(new ItemStack(ModItems.t51_legs, 1), new Object[] {ModItems.t45_legs});
