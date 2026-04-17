@@ -146,6 +146,7 @@ public class AnvilRecipes {
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_lead, 1), new AnvilOutput(new ItemStack(ModItems.ingot_lead))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_red_copper, 1), new AnvilOutput(new ItemStack(ModItems.ingot_red_copper))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_steel, 1), new AnvilOutput(new ItemStack(ModItems.ingot_steel))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
+		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_steel, 1), new AnvilOutput(new ItemStack(ModItems.ingot_steel))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_titanium, 1), new AnvilOutput(new ItemStack(ModItems.ingot_titanium))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_tungsten, 1), new AnvilOutput(new ItemStack(ModItems.ingot_tungsten))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 
@@ -191,7 +192,6 @@ public class AnvilRecipes {
 						new ComparableStack(ModItems.circuit_aluminium, 1 * ukModifier)
 				},
 				new AnvilOutput(new ItemStack(ModBlocks.machine_assembly))).setTier(2));
-		
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new ComparableStack(Blocks.FURNACE),
@@ -513,14 +513,11 @@ public class AnvilRecipes {
 				}
 		).setTier(1));
 		constructionRecipes.add(new AnvilConstructionRecipe(
-				new ComparableStack(ModItems.circuit_copper),
+				new ComparableStack(ModBlocks.tape_recorder),
 				new AnvilOutput[] {
-						new AnvilOutput(new ItemStack(ModItems.circuit_aluminium, 1)),
-						new AnvilOutput(new ItemStack(ModItems.wire_copper, 2)),
-						new AnvilOutput(new ItemStack(ModItems.wire_copper, 1), 0.5F),
-						new AnvilOutput(new ItemStack(ModItems.wire_copper, 1), 0.25F),
-						new AnvilOutput(new ItemStack(ModItems.powder_quartz, 1), 0.25F),
-						new AnvilOutput(new ItemStack(ModItems.plate_copper, 1), 0.5F)
+						new AnvilOutput(new ItemStack(ModItems.ingot_steel, 1)),
+						new AnvilOutput(new ItemStack(ModItems.ingot_tungsten, 1), 0.25F),
+						new AnvilOutput(new ItemStack(ModItems.circuit_aluminium, 1), 0.1F)
 				}
 		).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
