@@ -1,12 +1,16 @@
 package com.hbm.blocks.machine;
 
+import java.util.List;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.handler.RadiationSystemNT;
+import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityNukeFurnace;
 
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
@@ -14,6 +18,7 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -31,18 +36,20 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class MachineNukeFurnace extends BlockContainer {
+public class MachineNukeFurnace extends BlockContainer implements IRadResistantBlock {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
-	
+
+	boolean isRadResistant;
 	private final boolean isActive;
 	private static boolean keepInventory;
 	
-	public MachineNukeFurnace(boolean active, String s) {
+	public MachineNukeFurnace(boolean active, String s, boolean isRadResistant) {
 		super(Material.IRON);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		isActive = active;
+		this.isRadResistant = isRadResistant;
 		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
@@ -61,11 +68,24 @@ public class MachineNukeFurnace extends BlockContainer {
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 		return new ItemStack(ModBlocks.machine_nuke_furnace_off);
 	}
-	
+
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
 		super.onBlockAdded(worldIn, pos, state);
 		this.setDefaultFacing(worldIn, pos, state);
+		if(this.isRadResistant) {
+			RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+		}
+	}
+
+	@Override
+	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+		if(this.isRadResistant) {
+			RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+		}
+		if(!keepInventory)
+			InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
+		super.breakBlock(worldIn, pos, state);
 	}
 	
 	private void setDefaultFacing(World worldIn, BlockPos pos, IBlockState state){
@@ -130,7 +150,12 @@ public class MachineNukeFurnace extends BlockContainer {
 			return false;
 		}
 	}
-	
+
+	@Override
+	public boolean isRadResistant(World worldIn, BlockPos blockPos){
+		return this.isRadResistant;
+	}
+
 	public static void updateBlockState(boolean isProcessing, World world, BlockPos pos) {
 		EnumFacing e = world.getBlockState(pos).getValue(FACING);
 		TileEntity entity = world.getTileEntity(pos);
@@ -149,13 +174,6 @@ public class MachineNukeFurnace extends BlockContainer {
 			entity.validate();
 			world.setTileEntity(pos, entity);
 		}
-	}
-	
-	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		if(!keepInventory)
-			InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
-		super.breakBlock(worldIn, pos, state);
 	}
 	
 	@Override
@@ -232,5 +250,17 @@ public class MachineNukeFurnace extends BlockContainer {
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+		super.addInformation(stack, player, tooltip, advanced);
+		float hardness = this.getExplosionResistance(null);
+		if(this.isRadResistant){
+			tooltip.add("§2[" + I18nUtil.resolveKey("trait.radshield") + "]");
+		}
+		if(hardness > 50){
+			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
+		}
 	}
 }

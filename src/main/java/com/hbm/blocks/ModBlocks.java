@@ -137,7 +137,6 @@ import com.hbm.blocks.machine.pile.BlockGraphite;
 import com.hbm.blocks.machine.pile.BlockGraphiteFuel;
 import com.hbm.blocks.machine.pile.BlockGraphiteRod;
 import com.hbm.blocks.machine.pile.BlockGraphiteSource;
-import com.hbm.blocks.machine.rbmk.*;
 import com.hbm.blocks.machine.rbmk.RBMKAbsorber;
 import com.hbm.blocks.machine.rbmk.RBMKBlank;
 import com.hbm.blocks.machine.rbmk.RBMKBoiler;
@@ -1024,7 +1023,10 @@ public class ModBlocks {
 	public static final Block machine_electronium_battery = new MachineBattery(Material.IRON, 1000000000000000L, "machine_electronium_battery").setHardness(16.0F).setResistance(7000000.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_fensu = new MachineFENSU(Material.IRON, "machine_fensu").setHardness(5.0F).setResistance(10000000.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_battery = 21;
-	
+
+	public static Block machine_fluidtank_ladder = new MachineLadder("tank_ladder", () -> ModBlocks.machine_fluidtank);
+	public static Block crystallizer_ladder = new MachineLadder("crystallizer_ladder", () -> ModBlocks.machine_crystallizer);
+
 	public static final Block machine_transformer = new MachineCharger(Material.IRON, "machine_transformer", 1000000L, true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_transformer_20 = new MachineCharger(Material.IRON, "machine_transformer_20", 1000000L, false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_transformer_dnt = new MachineCharger(Material.IRON, "machine_transformer_dnt", Long.MAX_VALUE, true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
@@ -1173,8 +1175,8 @@ public class ModBlocks {
 	public static final Block crane_grabber = new CraneGrabber(Material.IRON, "crane_grabber").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	
 	//The usual machines
-	public static final Block machine_nuke_furnace_off = new MachineNukeFurnace(false, "machine_nuke_furnace_off").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block machine_nuke_furnace_on = new MachineNukeFurnace(true, "machine_nuke_furnace_on").setHardness(5.0F).setLightLevel(1.0F).setResistance(10.0F);
+	public static final Block machine_nuke_furnace_off = new MachineNukeFurnace(false, "machine_nuke_furnace_off", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block machine_nuke_furnace_on = new MachineNukeFurnace(true, "machine_nuke_furnace_on", true).setHardness(5.0F).setLightLevel(1.0F).setResistance(10.0F);
 	public static final int guiID_nuke_furnace = 13;
 	
 	public static final Block machine_rtg_furnace_off = new MachineRtgFurnace(false, "machine_rtg_furnace_off").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);

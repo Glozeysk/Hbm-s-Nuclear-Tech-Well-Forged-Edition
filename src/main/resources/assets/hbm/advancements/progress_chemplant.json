@@ -1,7 +1,7 @@
 {
 	"display": {
 		"icon": {
-			"item": "hbm:machine_chemplant"
+			"item": "hbm:machine_chemical"
 		},
 		"title": {
 			"translate": "hbm.achievement.progress_chemplant"
@@ -17,7 +17,7 @@
             "conditions": {
                 "items": [
                     {
-                        "item": "hbm:machine_chemplant"
+                        "item": "hbm:machine_chemical"
                     }
                 ]
             }
