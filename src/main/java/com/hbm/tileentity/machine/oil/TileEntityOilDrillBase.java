@@ -63,7 +63,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
 
     private String customName;
 
-
     public boolean hasCustomInventoryName() {
         return this.customName != null && this.customName.length() > 0;
     }
@@ -84,7 +83,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
             return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <=128;
         }
     }
-
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
@@ -116,34 +114,33 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
     HashSet<BlockPos> processed = new HashSet<BlockPos>();
 
     public byte succ(int x, int y, int z) {
-
         list.clear();
+        processed.clear();
 
         succ1(x, y, z);
         succ2(x, y, z);
 
-        if(!list.isEmpty()) {
+        byte result = 0;
 
+        if(!list.isEmpty()) {
             int i = world.rand.nextInt(list.size());
             int a = list.get(i)[0];
             int b = list.get(i)[1];
             int c = list.get(i)[2];
             BlockPos abc = new BlockPos(a, b, c);
 
-
             if(world.getBlockState(abc).getBlock() == ModBlocks.ore_oil) {
-
                 world.setBlockState(abc, ModBlocks.ore_oil_empty.getDefaultState());
-                return 1;
-            }
-            else if (world.getBlockState(abc).getBlock() == ModBlocks.ore_bedrock_oil) {
-                return 2;
+                result = 1;
+            } else if(world.getBlockState(abc).getBlock() == ModBlocks.ore_bedrock_oil) {
+                result = 2;
             }
         }
 
+        list.clear();
         processed.clear();
 
-        return 0;
+        return result;
     }
 
     public void succInit1(int x, int y, int z) {
@@ -166,7 +163,10 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
 
     public void succ1(int x, int y, int z) {
         BlockPos newPos = new BlockPos(x, y, z);
-        if(world.getBlockState(newPos).getBlock() == ModBlocks.ore_oil_empty && !processed.contains(newPos)) {
+        if(processed.contains(newPos)) {
+            return;
+        }
+        if(world.getBlockState(newPos).getBlock() == ModBlocks.ore_oil_empty) {
             processed.add(newPos);
             succInit1(x, y, z);
         }
@@ -182,11 +182,9 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
         }
     }
 
-
     @Override
     public void setPower(long i) {
         power = i;
-
     }
 
     @Override
@@ -206,8 +204,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
 
     @Override
     public int fill(FluidStack resource, boolean doFill) { return 0; }
-
-
 
     @Override
     public void recievePacket(NBTTagCompound[] tags) {

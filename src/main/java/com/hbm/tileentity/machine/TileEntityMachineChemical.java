@@ -12,6 +12,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.packet.*;
 import com.hbm.tileentity.TileEntityMachineBase;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -54,7 +55,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	public boolean needsTankTypeUpdate = false;
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
-	public Fluid currentRecipeOutputFluid = null;
 	public ItemStack previousTemplate = ItemStack.EMPTY;
 	public ItemStack previousTemplate2 = ItemStack.EMPTY;
 	int consumption = 100;
@@ -438,12 +438,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(inventory.getStackInSlot(4));
 			FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(inventory.getStackInSlot(4));
 
-			if(fluidOutputs != null && fluidOutputs.length > 0 && fluidOutputs[0] != null) {
-				currentRecipeOutputFluid = fluidOutputs[0].getFluid();
-			} else {
-				currentRecipeOutputFluid = null;
-			}
-
 			if(needsProcess && (itemOutputs != null || !Library.isArrayEmpty(fluidOutputs))) {
 
 				List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(inventory.getStackInSlot(4));
@@ -493,7 +487,6 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	}
 
 	private void updateConnections() {
-
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 
 		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
@@ -514,61 +507,87 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		return te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 	}
 
+	private void syncRenderData() {
+		if(world != null && !world.isRemote) {
+			IBlockState state = world.getBlockState(pos);
+			world.notifyBlockUpdate(pos, state, state, 3);
+			markDirty();
+		}
+	}
+
 	private void setContainers() {
 		if(inventory.getStackInSlot(4) == ItemStack.EMPTY || (inventory.getStackInSlot(4) != ItemStack.EMPTY && !(inventory.getStackInSlot(4).getItem() instanceof ItemChemistryTemplate))) {
+			tankTypes[0] = null;
+			tankTypes[1] = null;
+			tankTypes[2] = null;
+			tankTypes[3] = null;
+			tanks[0].setFluid(null);
+			tanks[1].setFluid(null);
+			tanks[2].setFluid(null);
+			tanks[3].setFluid(null);
 		} else {
 			needsTankTypeUpdate = true;
 			if(previousTemplate != ItemStack.EMPTY && ItemStack.areItemStacksEqual(previousTemplate, inventory.getStackInSlot(4))) {
 				needsTankTypeUpdate = false;
-			} else {
 			}
 			previousTemplate = inventory.getStackInSlot(4).copy();
+
 			FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(inventory.getStackInSlot(4));
 			FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(inventory.getStackInSlot(4));
 
-			if(fluidInputs != null){
+			if(fluidInputs == null) {
+				tankTypes[0] = null;
+				tankTypes[1] = null;
+				tanks[0].setFluid(null);
+				tanks[1].setFluid(null);
+			} else {
 				tankTypes[0] = fluidInputs[0] == null ? null : fluidInputs[0].getFluid();
-				if(fluidInputs.length == 2){
+				if(fluidInputs.length >= 2) {
 					tankTypes[1] = fluidInputs[1] == null ? null : fluidInputs[1].getFluid();
-				}
-			}
-			if(fluidOutputs != null){
-				tankTypes[2] = fluidOutputs[0] == null ? null : fluidOutputs[0].getFluid();
-				if(fluidOutputs.length == 2){
-					tankTypes[3] = fluidOutputs[1] == null ? null : fluidOutputs[1].getFluid();
+				} else {
+					tankTypes[1] = null;
+					tanks[1].setFluid(null);
 				}
 			}
 
-			if(fluidInputs != null){
-				if((fluidInputs[0] != null && tanks[0].getFluid() == null) || tanks[0].getFluid() != null && tanks[0].getFluid().getFluid() != tankTypes[0]) {
-					tanks[0].setFluid(null);
-					if(needsTankTypeUpdate) {
-						needsTankTypeUpdate = false;
-					}
-				}
-				if(fluidInputs.length == 2){
-					if((fluidInputs[1] != null && tanks[1].getFluid() == null) || tanks[1].getFluid() != null && tanks[1].getFluid().getFluid() != tankTypes[1]) {
-						tanks[1].setFluid(null);
-						if(needsTankTypeUpdate) {
-							needsTankTypeUpdate = false;
-						}
-					}
+			if(fluidOutputs == null) {
+				tankTypes[2] = null;
+				tankTypes[3] = null;
+				tanks[2].setFluid(null);
+				tanks[3].setFluid(null);
+			} else {
+				tankTypes[2] = fluidOutputs[0] == null ? null : fluidOutputs[0].getFluid();
+				if(fluidOutputs.length >= 2) {
+					tankTypes[3] = fluidOutputs[1] == null ? null : fluidOutputs[1].getFluid();
+				} else {
+					tankTypes[3] = null;
+					tanks[3].setFluid(null);
 				}
 			}
-			if(fluidOutputs != null){
-				if((fluidOutputs[0] != null && tanks[2].getFluid() == null) || tanks[2].getFluid() != null && tanks[2].getFluid().getFluid() != tankTypes[2]) {
-					tanks[2].setFluid(null);
+
+			if(tanks[0].getFluid() != null && tanks[0].getFluid().getFluid() != tankTypes[0]) {
+				tanks[0].setFluid(null);
+				if(needsTankTypeUpdate) {
+					needsTankTypeUpdate = false;
 				}
-				if(fluidOutputs.length == 2){
-					if((fluidOutputs[1] != null && tanks[3].getFluid() == null) || tanks[3].getFluid() != null && tanks[3].getFluid().getFluid() != tankTypes[3]) {
-						tanks[3].setFluid(null);
-						if(needsTankTypeUpdate) {
-							needsTankTypeUpdate = false;
-						}
-					}
+			}
+			if(tanks[1].getFluid() != null && tanks[1].getFluid().getFluid() != tankTypes[1]) {
+				tanks[1].setFluid(null);
+				if(needsTankTypeUpdate) {
+					needsTankTypeUpdate = false;
+				}
+			}
+			if(tanks[2].getFluid() != null && tanks[2].getFluid().getFluid() != tankTypes[2]) {
+				tanks[2].setFluid(null);
+			}
+			if(tanks[3].getFluid() != null && tanks[3].getFluid().getFluid() != tankTypes[3]) {
+				tanks[3].setFluid(null);
+				if(needsTankTypeUpdate) {
+					needsTankTypeUpdate = false;
 				}
 			}
 		}
+		syncRenderData();
 	}
 
 	protected boolean inputValidForTank(int tank, int slot) {

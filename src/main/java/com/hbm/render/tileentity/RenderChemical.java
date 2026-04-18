@@ -4,11 +4,15 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.main.ResourceManager;
 import com.hbm.tileentity.machine.TileEntityMachineChemical;
 import com.hbm.util.BobMathUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.lwjgl.opengl.GL11;
+
+import java.io.IOException;
 
 public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineChemical> {
 
@@ -26,6 +30,7 @@ public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineC
             case 3 -> GlStateManager.rotate(180F, 0F, 1F, 0F);
             case 5 -> GlStateManager.rotate(270F, 0F, 1F, 0F);
         }
+
         float anim = chemplant.prevAnim + (chemplant.anim - chemplant.prevAnim) * interp;
 
         bindTexture(ResourceManager.chemical_tex);
@@ -45,25 +50,8 @@ public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineC
         GlStateManager.popMatrix();
 
         if (chemplant.isProgressing) {
-            ResourceLocation fluidTex = null;
-
-            if (chemplant.tanks[2].getFluid() != null && chemplant.tanks[2].getFluidAmount() > 0
-                    && chemplant.tanks[2].getFluid().getFluid() != null
-                    && chemplant.tanks[2].getFluid().getFluid().getStill() != null) {
-                String s = chemplant.tanks[2].getFluid().getFluid().getStill().toString();
-                String[] test1 = s.split(":");
-                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
-            } else if (chemplant.tankTypes[2] != null && chemplant.tankTypes[2].getStill() != null) {
-                String s = chemplant.tankTypes[2].getStill().toString();
-                String[] test1 = s.split(":");
-                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
-            } else if (chemplant.tanks[0].getFluid() != null && chemplant.tanks[0].getFluidAmount() > 0
-                    && chemplant.tanks[0].getFluid().getFluid() != null
-                    && chemplant.tanks[0].getFluid().getFluid().getStill() != null) {
-                String s = chemplant.tanks[0].getFluid().getFluid().getStill().toString();
-                String[] test1 = s.split(":");
-                fluidTex = new ResourceLocation(test1[0] + ":textures/" + test1[1] + "_chem.png");
-            }
+            Fluid renderFluid = getRenderFluid(chemplant);
+            ResourceLocation fluidTex = getFluidTexture(renderFluid);
 
             if (fluidTex != null) {
                 GlStateManager.enableBlend();
@@ -78,5 +66,73 @@ public class RenderChemical extends TileEntitySpecialRenderer<TileEntityMachineC
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.popMatrix();
+    }
+
+    private Fluid getRenderFluid(TileEntityMachineChemical chemplant) {
+        if (chemplant.tankTypes[2] != null) {
+            return chemplant.tankTypes[2];
+        }
+        if (chemplant.tanks[2].getFluid() != null && chemplant.tanks[2].getFluid().getFluid() != null) {
+            return chemplant.tanks[2].getFluid().getFluid();
+        }
+        if (chemplant.tankTypes[3] != null) {
+            return chemplant.tankTypes[3];
+        }
+        if (chemplant.tanks[3].getFluid() != null && chemplant.tanks[3].getFluid().getFluid() != null) {
+            return chemplant.tanks[3].getFluid().getFluid();
+        }
+        if (chemplant.tanks[0].getFluid() != null && chemplant.tanks[0].getFluid().getFluid() != null) {
+            return chemplant.tanks[0].getFluid().getFluid();
+        }
+        if (chemplant.tanks[1].getFluid() != null && chemplant.tanks[1].getFluid().getFluid() != null) {
+            return chemplant.tanks[1].getFluid().getFluid();
+        }
+        if (chemplant.tankTypes[0] != null) {
+            return chemplant.tankTypes[0];
+        }
+        if (chemplant.tankTypes[1] != null) {
+            return chemplant.tankTypes[1];
+        }
+        return null;
+    }
+
+    private ResourceLocation getFluidTexture(Fluid fluid) {
+        if (fluid == null) {
+            return null;
+        }
+
+        if (fluid == FluidRegistry.WATER) {
+            ResourceLocation waterChem = new ResourceLocation("hbm", "textures/blocks/forgefluid/water_still_chem.png");
+            if (resourceExists(waterChem)) {
+                return waterChem;
+            }
+        }
+
+        if (fluid.getStill() == null) {
+            return null;
+        }
+
+        String still = fluid.getStill().toString();
+        String[] split = still.split(":", 2);
+
+        if (split.length != 2) {
+            return null;
+        }
+
+        ResourceLocation chemTexture = new ResourceLocation(split[0], "textures/" + split[1] + "_chem.png");
+        if (resourceExists(chemTexture)) {
+            return chemTexture;
+        }
+
+        return null;
+    }
+
+    private boolean resourceExists(ResourceLocation loc) {
+        try {
+            Minecraft.getMinecraft().getResourceManager().getResource(loc);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }
