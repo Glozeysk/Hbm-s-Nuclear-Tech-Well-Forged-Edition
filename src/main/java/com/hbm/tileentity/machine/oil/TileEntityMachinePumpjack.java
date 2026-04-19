@@ -7,6 +7,7 @@ import com.hbm.config.MachineConfig;
 import com.hbm.entity.particle.EntityGasFX;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.items.ModItems;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.packet.FluidTankPacket;
@@ -21,6 +22,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.FluidStack;
@@ -34,6 +36,8 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 	public boolean isProgressing;
 	public float rotation;
 	public float prevRotation;
+	private int soundTimer = 0;
+	public static int soundInterval = 40;
 
 	public TileEntityMachinePumpjack() {
 		super();
@@ -44,9 +48,9 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 	}
 
 	@Override
-    public long getMaxPower() {
-        return 200000L;
-    }
+	public long getMaxPower() {
+		return 200000L;
+	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
@@ -92,20 +96,12 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 
 			if(power >= MachineConfig.powerConsumptionPerOperationPumpjack && !(tank0Amount >= tanks[0].getCapacity() || tank1Amount >= tanks[1].getCapacity())) {
 
-				// operation start
-
 				if(age == timer - 1) {
 					warning = 0;
-
-					// warning 0, green: derrick is operational
-					// warning 1, red: derrick is full, has no power or the
-					// drill is jammed
-					// warning 2, yellow: drill has reached max depth
 
 					for(int i = pos.getY() - 1; i > pos.getY() - 1 - 250; i--) {
 
 						if(i <= 0) {
-							// Code 2: The drilling ended
 							warning = 2;
 							break;
 						}
@@ -117,7 +113,6 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 						if((b.isReplaceable(world, new BlockPos(pos.getX(), i, pos.getZ())) || b.getExplosionResistance(null) < 1000) && !(b == ModBlocks.ore_oil || b == ModBlocks.ore_oil_empty || b == ModBlocks.ore_bedrock_oil || b == ModBlocks.ore_bedrock_block)) {
 							world.setBlockState(new BlockPos(pos.getX(), i, pos.getZ()), ModBlocks.oil_pipe.getDefaultState());
 
-							// Code 2: The drilling ended
 							if(i == pos.getY() - 250)
 								warning = 2;
 							break;
@@ -139,14 +134,11 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 							}
 
 						} else {
-							// Code 1: Drill jammed
 							warning = 1;
 							break;
 						}
 					}
 				}
-
-				// operation end
 
 				power -= MachineConfig.powerConsumptionPerOperationPumpjack;
 			} else {
@@ -167,6 +159,16 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 			isProgressing = warning == 0;
 			rotation += (warning == 0 ? 5 : 0);
 
+			if(isProgressing) {
+				if(soundTimer <= 0) {
+					world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.pumpjack_loop, SoundCategory.BLOCKS, 1.5F, 1.0F);
+					soundTimer = soundInterval;
+				}
+				soundTimer--;
+			} else {
+				soundTimer = 0;
+			}
+
 			PacketDispatcher.wrapper.sendToAllAround(new TEPumpjackPacket(pos.getX(), pos.getY(), pos.getZ(), rotation, isProgressing), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos, power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
@@ -179,27 +181,26 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 	protected void updateConnections() {
 		ForgeDirection dir = ForgeDirection.getOrientation(world.getBlockState(pos).getValue(MachinePumpjack.FACING).ordinal());
 		ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-		
+
 		this.trySubscribe(world, pos.add(rot.offsetX * 2 + dir.offsetX * 2, 0, rot.offsetZ * 2 + dir.offsetZ * 2), dir);
 		this.trySubscribe(world, pos.add(rot.offsetX * 2 + dir.offsetX * 2, 0, rot.offsetZ * 4 - dir.offsetZ * 2), dir.getOpposite());
 		this.trySubscribe(world, pos.add(rot.offsetX * 4 - dir.offsetX * 2, 0, rot.offsetZ * 4 + dir.offsetZ * 2), dir);
 		this.trySubscribe(world, pos.add(rot.offsetX * 4 - dir.offsetX * 2, 0, rot.offsetZ * 2 - dir.offsetZ * 2), dir.getOpposite());
 	}
 
-
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public double getMaxRenderDistanceSquared()
-	{
+	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
 	}
+
 	public void fillFluidInit(FluidTank tank) {
-		
+
 		EnumFacing e = world.getBlockState(pos).getValue(MachinePumpjack.FACING);
 		e = e.rotateY();
 		if(e == EnumFacing.EAST) {

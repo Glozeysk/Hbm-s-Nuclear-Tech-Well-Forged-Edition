@@ -1,10 +1,15 @@
 package com.hbm.tileentity.machine;
 
+import java.util.Random;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.MachineRecipes;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.HBMSoundHandler;
+import com.hbm.main.MainRegistry;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
@@ -15,6 +20,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
@@ -37,10 +43,16 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	private int turnTimer;
 	public float rotor;
 	public float lastRotor;
-	
+	public float fanAcceleration = 0F;
+
 	public FluidTank[] tanks;
 	public Fluid[] types = new Fluid[]{ ModForgeFluids.steam, ModForgeFluids.spentsteam };
-	
+
+	@SideOnly(Side.CLIENT)
+	private AudioWrapper audio;
+
+	private final float audioDesync;
+
 	public TileEntityChungus() {
 		super();
 		tanks = new FluidTank[2];
@@ -49,58 +61,71 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 		tanks[1] = new FluidTank(2000000000);
 		types[0] = ModForgeFluids.steam;
 		types[1] = ModForgeFluids.spentsteam;
+
+		Random rand = new Random();
+		audioDesync = rand.nextFloat() * 0.05F;
 	}
 
 	@Override
 	public void update() {
-		
+
 		if(!world.isRemote) {
-			
+
 			Object[] outs = MachineRecipes.getTurbineOutput(types[0]);
-			
+
 			types[1] = (Fluid)outs[0];
-			
+
 			int processMax = (int) Math.ceil(tanks[0].getFluidAmount() / (Integer)outs[2]);
 			int processSteam = tanks[0].getFluidAmount() / (Integer)outs[2];
 			int processWater = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / (Integer)outs[1];
-			
+
 			int cycles = Math.min(processMax, Math.min(processSteam, processWater));
-			
+
 			tanks[0].drain((Integer)outs[2] * cycles, true);
 			tanks[1].fill(new FluidStack(types[1], (Integer)outs[1] * cycles), true);
-			
+
 			powerProduction = (Integer)outs[3] * cycles;
 			power += powerProduction;
-			
+
 			if(power > maxPower)
 				power = maxPower;
-			
+
 			turnTimer--;
-			
+
 			if(cycles > 0)
 				turnTimer = 25;
-			
+
 			networkPackNT(150);
 			this.fillFluidInit(tanks[1]);
 			ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 			this.sendPower(world, pos.add(-dir.offsetX * 11, 0, -dir.offsetZ * 11), dir.getOpposite());
-			
+
 		} else {
-			
+
 			this.lastRotor = this.rotor;
-			
-			if(turnTimer > 0) {
-				
-				this.rotor += 25F;
-				
-				if(this.rotor >= 360) {
-					this.rotor -= 360;
-					this.lastRotor -= 360;
+
+			boolean shouldSpin = turnTimer > 0;
+
+			if(shouldSpin) {
+				this.fanAcceleration = Math.max(0F, Math.min(25F, this.fanAcceleration + 0.15F + audioDesync));
+
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.chungusOperate, SoundCategory.BLOCKS, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, 1.0F, 1.0F);
+					if(audio != null) {
+						audio.updateRange(30F);
+						audio.startSound();
+					}
 				}
-				
+
+				if(audio != null) {
+					float turbineSpeed = this.fanAcceleration / 25F;
+					audio.updateVolume(1.0F * turbineSpeed);
+					audio.updatePitch(0.25F + 0.75F * turbineSpeed);
+				}
+
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 				ForgeDirection side = dir.getRotation(ForgeDirection.UP);
-				
+
 				for(int i = 0; i < 10; i++) {
 					world.spawnParticle(EnumParticleTypes.CLOUD,
 							pos.getX() + 0.5 + dir.offsetX * (world.rand.nextDouble() + 1.25) + world.rand.nextGaussian() * side.offsetX * 0.65,
@@ -108,7 +133,45 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 							pos.getZ() + 0.5 + dir.offsetZ * (world.rand.nextDouble() + 1.25) + world.rand.nextGaussian() * side.offsetZ * 0.65,
 							-dir.offsetX * 0.2, 0, -dir.offsetZ * 0.2);
 				}
+			} else {
+				this.fanAcceleration = Math.max(0F, Math.min(25F, this.fanAcceleration - 0.2F));
+
+				if(audio != null) {
+					if(this.fanAcceleration > 0) {
+						float turbineSpeed = this.fanAcceleration / 25F;
+						audio.updateVolume(1.0F * turbineSpeed);
+						audio.updatePitch(0.25F + 0.75F * turbineSpeed);
+					} else {
+						audio.stopSound();
+						audio = null;
+					}
+				}
 			}
+
+			this.rotor += this.fanAcceleration;
+
+			if(this.rotor >= 360) {
+				this.rotor -= 360;
+				this.lastRotor -= 360;
+			}
+		}
+	}
+
+	@Override
+	public void onChunkUnload() {
+		super.onChunkUnload();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
 		}
 	}
 
@@ -135,7 +198,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 		tanks[0].setFluid(new FluidStack(types[0], amount0));
 		tanks[1].setFluid(new FluidStack(types[1], amount1));
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
@@ -145,7 +208,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 		types[1] = FluidRegistry.getFluid(nbt.getString("types1"));
 		power = nbt.getLong("power");
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
@@ -158,7 +221,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	}
 
 	public void fillFluidInit(FluidTank tank) {
-		
+
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 		dir = dir.getRotation(ForgeDirection.UP);
 
@@ -169,12 +232,12 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	public void fillFluid(int x, int y, int z, FluidTank tank) {
 		FFUtils.fillFluid(this, tank, world, new BlockPos(x, y, z), tank.getCapacity());
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
@@ -206,12 +269,12 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	public FluidStack drain(int maxDrain, boolean doDrain){
 		return tanks[1].drain(maxDrain, doDrain);
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing){
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing){
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){

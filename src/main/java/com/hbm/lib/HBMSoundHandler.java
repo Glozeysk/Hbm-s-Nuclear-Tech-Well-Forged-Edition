@@ -13,9 +13,11 @@ public final class HBMSoundHandler {
 	
 	public static List<SoundEvent> ALL_SOUNDS = new ArrayList<SoundEvent>();
 
+	public static SoundEvent chungusOperate;
 	public static SoundEvent crystallizer_loop;
 	public static SoundEvent excavator_loop;
 	public static SoundEvent machine_refinery_loop;
+	public static SoundEvent pumpjack_loop;
 	public static SoundEvent assemblerOperate;
     public static SoundEvent difurnace_loop;
 	public static SoundEvent fel;
@@ -286,13 +288,14 @@ public final class HBMSoundHandler {
 	
 	
 	public static void init() {
-		
-		
+
+		chungusOperate = register("block.chungusTurbineRunning");
 		assemblerOperate = register("block.assembleroperate");
         difurnace_loop = register("block.difurnace_loop");
 		excavator_loop = register("block.excavator_loop");
 		crystallizer_loop = register("block.crystallizer_loop");
 		machine_refinery_loop = register("block.machine_refinery_loop");
+		pumpjack_loop = register("block.pumpjack_loop");
 		fel = register("block.fel");
 		pressOperate = register("block.pressoperate");
 		laserBang = register("weapon.laserBang");
