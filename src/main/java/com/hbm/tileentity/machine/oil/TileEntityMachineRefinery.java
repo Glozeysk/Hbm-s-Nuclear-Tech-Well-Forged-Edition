@@ -5,6 +5,7 @@ import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.RefineryRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.packet.AuxElectricityPacket;
@@ -19,6 +20,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -44,12 +46,11 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
 
-	//private static final int[] slots_top = new int[] { 1 };
-	//private static final int[] slots_bottom = new int[] { 0, 2, 4, 6, 8, 10, 11};
-	//private static final int[] slots_side = new int[] { 0, 3, 5, 7, 9 };
-	
+	private int soundTimer = 0;
+	private boolean isProcessing = false;
+
 	private String customName;
-	
+
 	public TileEntityMachineRefinery() {
 		super(12);
 		tanks = new FluidTank[5];
@@ -60,23 +61,23 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		tanks[3] = new FluidTank(24000);
 		tanks[4] = new FluidTank(24000);
 	}
-	
+
 	public String getName() {
 		return "container.machineRefinery";
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		if(nbt.hasKey("f")) {
-            this.tankTypes[0] = FluidRegistry.getFluid(nbt.getString("f"));
-        }
+			this.tankTypes[0] = FluidRegistry.getFluid(nbt.getString("f"));
+		}
 		power = nbt.getLong("power");
 		itemOutputTimer = nbt.getInteger("itemOutputTimer");
 		if(nbt.hasKey("tanks"))
 			FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
 		super.readFromNBT(nbt);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		if(tankTypes[0] != null){
@@ -91,7 +92,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
 		return super.writeToNBT(nbt);
 	}
-	
+
 	@Override
 	public void update() {
 		if (!world.isRemote) {
@@ -107,7 +108,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			{
 				age = 0;
 			}
-			
+
 			if(age == 1 || age == 11) {
 				fillFluidInit(tanks[1]);
 			}
@@ -120,18 +121,42 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			if(age == 4 || age == 14){
 				fillFluidInit(tanks[4]);
 			}
-			if(this.inputValidForTank(0, 1)) //checking if the containers fluid has a recipe
+			if(this.inputValidForTank(0, 1))
 				FFUtils.fillFromFluidContainer(inventory, tanks[0], 1, 2);
-			
+
+			isProcessing = canRefine();
 			refine();
-			
+
 			FFUtils.fillFluidContainer(inventory, tanks[1], 3, 4);
 			FFUtils.fillFluidContainer(inventory, tanks[2], 5, 6);
 			FFUtils.fillFluidContainer(inventory, tanks[3], 7, 8);
 			FFUtils.fillFluidContainer(inventory, tanks[4], 9, 10);
 
+			if(isProcessing) {
+				if(soundTimer <= 0) {
+					world.playSound(null, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, HBMSoundHandler.machine_refinery_loop, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					soundTimer = 20;
+				}
+				soundTimer--;
+			} else {
+				soundTimer = 0;
+			}
+
 			detectAndSendChanges();
 		}
+	}
+
+	private boolean canRefine() {
+		Pair<FluidStack[], ItemStack> recipe = RefineryRecipes.getRecipe(tankTypes[0]);
+		if(recipe == null) return false;
+		FluidStack[] outputFluids = recipe.getKey();
+		if(outputFluids == null) return false;
+
+		return power >= 5 && tanks[0].getFluidAmount() >= 100 &&
+				tanks[1].getFluidAmount() + outputFluids[0].amount <= tanks[1].getCapacity() &&
+				tanks[2].getFluidAmount() + outputFluids[1].amount <= tanks[2].getCapacity() &&
+				tanks[3].getFluidAmount() + outputFluids[2].amount <= tanks[3].getCapacity() &&
+				tanks[4].getFluidAmount() + outputFluids[3].amount <= tanks[4].getCapacity();
 	}
 
 	private void updateConnections() {
@@ -170,11 +195,11 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		FluidStack[] outputFluids = recipe.getKey();
 		ItemStack outputItem = recipe.getValue();
 		setupTanks(outputFluids);
-		
+
 		if(power >= 5 && tanks[0].getFluidAmount() >= 100 &&
-				tanks[1].getFluidAmount() + outputFluids[0].amount <= tanks[1].getCapacity() && 
-				tanks[2].getFluidAmount() + outputFluids[1].amount <= tanks[2].getCapacity() && 
-				tanks[3].getFluidAmount() + outputFluids[2].amount <= tanks[3].getCapacity() && 
+				tanks[1].getFluidAmount() + outputFluids[0].amount <= tanks[1].getCapacity() &&
+				tanks[2].getFluidAmount() + outputFluids[1].amount <= tanks[2].getCapacity() &&
+				tanks[3].getFluidAmount() + outputFluids[2].amount <= tanks[3].getCapacity() &&
 				tanks[4].getFluidAmount() + outputFluids[3].amount <= tanks[4].getCapacity()) {
 
 			tanks[0].drain(100, true);
@@ -197,10 +222,10 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			}
 		}
 	}
-	
+
 	private long detectPower;
 	private FluidTank[] detectTanks = new FluidTank[]{null, null, null, null, null};
-	
+
 	private void detectAndSendChanges() {
 		boolean mark = false;
 		if(detectPower != power){
@@ -238,7 +263,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	}
 
 	protected boolean inputValidForTank(int tank, int slot){
-		
+
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
 			if(containerFluid != null){
@@ -260,11 +285,11 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	public boolean canExtractItem(int i, ItemStack stack, int amount) {
 		return i==2 || i==4 || i==6 || i==8 || i==10 || i==11;
 	}
-	
+
 	public long getPowerScaled(long i) {
 		return (power * i) / maxPower;
 	}
-	
+
 	@Override
 	public void setPower(long i) {
 		power = i;
@@ -273,31 +298,30 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	@Override
 	public long getPower() {
 		return power;
-		
 	}
 
 	@Override
 	public long getMaxPower() {
 		return maxPower;
 	}
-	
+
 	public void fillFluidInit(FluidTank tank) {
 		FFUtils.fillFluid(this, tank, world, pos.add(1, 0, -2), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(1, 0, 2), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(-1, 0, -2), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(-1, 0, 2), 2000);
-		
+
 		FFUtils.fillFluid(this, tank, world, pos.add(-2, 0, 1), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(2, 0, 1), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(-2, 0, -1), 2000);
 		FFUtils.fillFluid(this, tank, world, pos.add(2, 0, -1), 2000);
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
@@ -375,7 +399,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){

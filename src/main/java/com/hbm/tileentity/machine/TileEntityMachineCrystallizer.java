@@ -21,6 +21,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -48,6 +49,9 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public float prevAngle;
 
 	public FluidTank tank;
+
+	private int soundTimer;
+	private static final int SOUND_DURATION = 20;
 
 	public TileEntityMachineCrystallizer() {
 		super(0);
@@ -84,7 +88,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 		this.trySubscribe(world, pos.add(-2, 0, 1), ForgeDirection.WEST);
 		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
-		
 	}
 
 	@Override
@@ -118,6 +121,16 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 				}
 			}
 
+			if(progress > 0) {
+				if(soundTimer <= 0) {
+					world.playSound(null, pos.getX() + 0.5, pos.getY() + 3.0, pos.getZ() + 0.5, HBMSoundHandler.crystallizer_loop, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					soundTimer = SOUND_DURATION;
+				}
+				soundTimer--;
+			} else {
+				soundTimer = 0;
+			}
+
 			networkPackNT(25);
 		} else {
 
@@ -148,7 +161,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	}
 
 	protected boolean inputValidForTank(int slot){
-		
+
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
 			if(containerFluid != null){
@@ -323,12 +336,12 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
 		return Math.min(cycles, 13);
 	}
-	
+
 	@Override
 	public boolean canInsertItem(int slot, ItemStack itemStack, int amount) {
 		return slot == 0 && CrystallizerRecipes.getOutputItem(itemStack) != null;
 	}
-	
+
 	@Override
 	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
 		return slot == 2 || slot == 4;

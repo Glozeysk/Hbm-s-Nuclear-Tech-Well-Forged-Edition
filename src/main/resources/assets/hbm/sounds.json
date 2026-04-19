@@ -277,5 +277,8 @@
     "block.chungusLever": {"category": "block", "sounds": [{"name": "hbm:block/chungusLever", "stream": false}]},
 	"item.upgradePlug": {"category": "player", "sounds": [{"name": "hbm:tool/upgradePlug", "stream": false}]},
 	"item.battery": {"category": "player", "sounds": [{"name": "hbm:tool/battery", "stream": false}]},
-    "block.difurnace_loop": {"category": "block", "sounds": [{"name": "hbm:block/difurnace_loop", "stream": false}]}
+    "block.difurnace_loop": {"category": "block", "sounds": [{"name": "hbm:block/difurnace_loop", "stream": false}]},
+    "block.crystallizer_loop": {"category": "block", "sounds": [{"name": "hbm:block/crystallizer_loop", "stream": false}]},
+    "block.excavator_loop": {"category": "block", "sounds": [{"name": "hbm:block/excavator_loop", "stream": false}]},
+    "block.machine_refinery_loop": {"category": "block", "sounds": [{"name": "hbm:block/machine_refinery_loop", "stream": false}]}
 }
