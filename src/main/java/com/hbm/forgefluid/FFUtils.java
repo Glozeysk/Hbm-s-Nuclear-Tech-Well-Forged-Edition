@@ -16,6 +16,7 @@ import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.JetpackBase;
+import com.hbm.items.gear.JetpackGlider;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.handler.ArmorModHandler;
@@ -67,7 +68,7 @@ public class FFUtils {
 	/**
 	 * Tessellates a liquid texture across a rectangle without looking weird and
 	 * stretched.
-	 * 
+	 *
 	 * @param tank
 	 *            - the tank with the fluid to render
 	 * @param guiLeft
@@ -134,7 +135,7 @@ public class FFUtils {
 
 	/**
 	 * Internal method to actually render the fluid
-	 * 
+	 *
 	 * @param tank
 	 * @param guiLeft
 	 * @param guiTop
@@ -162,7 +163,7 @@ public class FFUtils {
 	/**
 	 * Renders tank info, like fluid type and millibucket amount. Same as the
 	 * hbm one, just centralized to a utility file.
-	 * 
+	 *
 	 * @param gui
 	 *            - the gui to render the fluid info on
 	 * @param mouseX
@@ -246,7 +247,7 @@ public class FFUtils {
 		if (EngineRecipes.hasFuelRecipe(fluid)) {
 			if(isKeyPressed){
 				texts.add("§c["+I18n.format("trait.combustable")+"]");
-				
+
 				texts.add(" "+I18n.format("trait.combustable.desc", Library.getShortNumber(EngineRecipes.getEnergy(fluid))));
 				texts.add(" "+I18n.format("trait.combustable.desc2", I18n.format(EngineRecipes.getFuelGrade(fluid).getGrade())));
 			}
@@ -313,7 +314,7 @@ public class FFUtils {
 	/**
 	 * Replacement method for the old method of transferring fluids out of a
 	 * machine
-	 * 
+	 *
 	 * @param tileEntity
 	 *            - the tile entity it is filling from
 	 * @param tank
@@ -361,7 +362,7 @@ public class FFUtils {
 
 	/**
 	 * Fills a fluid handling item from a tank
-	 * 
+	 *
 	 * @param slots
 	 *            - the slot inventory
 	 * @param tank
@@ -532,7 +533,7 @@ public class FFUtils {
 
 	/**
 	 * Fills a tank from a fluid handler item.
-	 * 
+	 *
 	 * @param slots
 	 *            - the slot inventory
 	 * @param tank
@@ -542,7 +543,7 @@ public class FFUtils {
 	 * @param slot2
 	 *            - the output slot
 	 */
-	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){ //fills fluid from tank into item
+	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) { // fills fluid from tank into item
 		if(slots == null || tank == null || tank.getFluid() == null || slots.getSlots() < slot1 || slots.getSlots() < slot2 || slots.getStackInSlot(slot1) == null || slots.getStackInSlot(slot1).isEmpty()) {
 			return false;
 		}
@@ -551,6 +552,7 @@ public class FFUtils {
 			return true;
 
 		ItemStack stack = slots.getStackInSlot(slot1);
+
 		if(stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
 			IFluidHandlerItem ifhi = FluidUtil.getFluidHandler(stack);
 			FluidStack fStack = FluidUtil.getFluidContained(stack);
@@ -558,37 +560,115 @@ public class FFUtils {
 		}
 
 		if(stack.getItem() instanceof IItemFluidHandler) {
-			IItemFluidHandler handler = (IItemFluidHandler)stack.getItem();
+			IItemFluidHandler handler = (IItemFluidHandler) stack.getItem();
+
 			FluidStack contained = handler.drain(stack, Integer.MAX_VALUE, false);
-			return fillItemAndMove(slots, slot1, slot2, tank, handler, contained, stack, true);
+			if(contained != null && contained.amount > 0 && contained.getFluid() != tank.getFluid().getFluid()) {
+				moveItems(slots, slot1, slot2, false);
+				return false;
+			}
+
+			int toTransfer = Math.min(16000, tank.getFluidAmount());
+			if(toTransfer <= 0) {
+				moveItems(slots, slot1, slot2, false);
+				return false;
+			}
+
+			int filled = handler.fill(stack, new FluidStack(tank.getFluid().getFluid(), toTransfer), true);
+			if(filled > 0) {
+				tank.drain(filled, true);
+
+				FluidStack remaining = handler.drain(stack, Integer.MAX_VALUE, false);
+				int currentAmount = remaining != null ? remaining.amount : 0;
+				int maxAmount = 0;
+
+				if(stack.getItem() instanceof JetpackGlider) {
+					maxAmount = ((JetpackGlider) stack.getItem()).capacity;
+				}
+
+				if(maxAmount > 0 && currentAmount >= maxAmount) {
+					moveItems(slots, slot1, slot2, false);
+				}
+
+				return true;
+			}
+
+			moveItems(slots, slot1, slot2, false);
+			return false;
 		}
 
-		if(ArmorModHandler.hasMods(stack)){
+		if(ArmorModHandler.hasMods(stack)) {
 
 			ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.plate_only);
-			boolean didFill = false;
-			if(!mod.isEmpty()){
-				if(mod.getItem() instanceof JetpackBase && ((JetpackBase)mod.getItem()).fuel == tank.getFluid().getFluid()) {
 
-					if(tank.getFluidAmount() > 0 && JetpackBase.getFuel(mod) < ((JetpackBase)mod.getItem()).maxFuel) {
+			if(!mod.isEmpty()) {
+
+				if(mod.getItem() instanceof JetpackGlider) {
+					JetpackGlider glider = (JetpackGlider) mod.getItem();
+					FluidTank modTank = glider.getTank(mod);
+
+					if(modTank.getFluid() != null && modTank.getFluidAmount() > 0 && modTank.getFluid().getFluid() != tank.getFluid().getFluid()) {
+						moveItems(slots, slot1, slot2, false);
+						return false;
+					}
+
+					int space = modTank.getCapacity() - modTank.getFluidAmount();
+					if(space <= 0) {
+						moveItems(slots, slot1, slot2, false);
+						return false;
+					}
+
+					int toTransfer = Math.min(space, tank.getFluidAmount());
+					if(toTransfer <= 0) {
+						moveItems(slots, slot1, slot2, false);
+						return false;
+					}
+
+					int filled = glider.fill(mod, new FluidStack(tank.getFluid().getFluid(), toTransfer), true);
+					if(filled > 0) {
+						tank.drain(filled, true);
+						ArmorModHandler.applyMod(stack, mod);
+
+						modTank = glider.getTank(mod);
+
+						if(modTank.getFluidAmount() >= modTank.getCapacity()) {
+							moveItems(slots, slot1, slot2, false);
+						}
+
+						return true;
+					}
+
+					moveItems(slots, slot1, slot2, false);
+					return false;
+				}
+
+				if(mod.getItem() instanceof JetpackBase && ((JetpackBase) mod.getItem()).fuel == tank.getFluid().getFluid()) {
+
+					boolean didFill = false;
+
+					if(tank.getFluidAmount() > 0 && JetpackBase.getFuel(mod) < ((JetpackBase) mod.getItem()).maxFuel) {
 						FluidStack st = tank.drain(25, false);
 						int fill = st == null ? 0 : st.amount;
-						fill = Math.min(((JetpackBase)mod.getItem()).maxFuel-JetpackBase.getFuel(mod), fill);
-						if(fill > 0){
+						fill = Math.min(((JetpackBase) mod.getItem()).maxFuel - JetpackBase.getFuel(mod), fill);
+						if(fill > 0) {
 							JetpackBase.setFuel(mod, JetpackBase.getFuel(mod) + fill);
 							tank.drain(fill, true);
-							if(JetpackBase.getFuel(mod) < ((JetpackBase)mod.getItem()).maxFuel) {
+							if(JetpackBase.getFuel(mod) < ((JetpackBase) mod.getItem()).maxFuel) {
 								didFill = true;
 							}
 							ArmorModHandler.applyMod(stack, mod);
 						}
 					}
+
+					if(!didFill)
+						moveItems(slots, slot1, slot2, false);
+					else
+						return true;
 				}
 			}
-			if(!didFill)
-				moveItems(slots, slot1, slot2, false);
-			else
-				return true;
+
+			moveItems(slots, slot1, slot2, false);
+			return false;
 		}
 
 		return false;
@@ -716,7 +796,7 @@ public class FFUtils {
 			return true;
 		}
 
-		
+
 		// Cell override
 		if(tank.getFluid() != null && in.getItem() == ModItems.cell && SpecialContainerFillLists.EnumCell.contains(tank.getFluid().getFluid()) && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000 && ItemCell.isEmptyCell(in1) && ((ItemCell.isFullCell(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(1000, true);
