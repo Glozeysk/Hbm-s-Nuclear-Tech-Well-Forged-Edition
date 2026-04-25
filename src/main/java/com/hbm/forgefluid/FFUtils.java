@@ -373,7 +373,7 @@ public class FFUtils {
 	 *            - the output slot.
 	 * @return true if something was actually filled
 	 */
-	public static boolean fillFromFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){ // fills fluid from item into tank
+	public static boolean fillFromFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) { // fills fluid from item into tank
 		if(slots == null || tank == null || slots.getSlots() < slot1 || slots.getSlots() < slot2 || slots.getStackInSlot(slot1) == null || slots.getStackInSlot(slot1).isEmpty()) {
 			return false;
 		}
@@ -381,43 +381,110 @@ public class FFUtils {
 		if(trySpecialFillFromFluidContainer(slots, tank, slot1, slot2))
 			return true;
 
-		if(slots.getStackInSlot(slot1).getItem() == ModItems.fluid_barrel_infinite && tank.getFluid() != null) {
+		ItemStack stack = slots.getStackInSlot(slot1);
 
-			return tank.fill(new FluidStack(tank.getFluid(), Integer.MAX_VALUE), true) > 0 ? true : false;
+		if(stack.getItem() == ModItems.fluid_barrel_infinite && tank.getFluid() != null) {
+			return tank.fill(new FluidStack(tank.getFluid(), Integer.MAX_VALUE), true) > 0;
 		}
-		if(FluidUtil.getFluidContained(slots.getStackInSlot(slot1)) == null) {
 
-			moveItems(slots, slot1, slot2, false);
-			return false;
+		if(ArmorModHandler.hasMods(stack)) {
+			ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.plate_only);
+
+			if(!mod.isEmpty() && mod.getItem() instanceof JetpackGlider) {
+				JetpackGlider glider = (JetpackGlider) mod.getItem();
+				FluidTank modTank = glider.getTank(mod);
+
+				if(modTank.getFluid() == null || modTank.getFluidAmount() <= 0) {
+					moveItems(slots, slot1, slot2, true);
+					return false;
+				}
+
+				if(tank.getFluid() != null && modTank.getFluid().getFluid() != tank.getFluid().getFluid()) {
+					return false;
+				}
+
+				int space = tank.getCapacity() - tank.getFluidAmount();
+				if(space <= 0) {
+					return false;
+				}
+
+				int toTransfer = Math.min(space, modTank.getFluidAmount());
+				FluidStack drained = glider.drain(mod, toTransfer, true);
+
+				if(drained != null && drained.amount > 0) {
+					tank.fill(drained, true);
+					ArmorModHandler.applyMod(stack, mod);
+
+					modTank = glider.getTank(mod);
+					if(modTank.getFluid() == null || modTank.getFluidAmount() <= 0) {
+						moveItems(slots, slot1, slot2, true);
+					}
+
+					return true;
+				}
+
+				return false;
+			}
 		}
-		if(slots.getStackInSlot(slot1).hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+
+		if(stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
 			boolean returnValue = false;
 
-			IFluidHandlerItem ifhi = slots.getStackInSlot(slot1).getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-			if(ifhi != null && (tank.getFluid() == null || FluidUtil.getFluidContained(slots.getStackInSlot(slot1)).getFluid() == tank.getFluid().getFluid())) {
-				tank.fill(ifhi.drain(Math.min(6000, tank.getCapacity() - tank.getFluidAmount()), true), true);
-				returnValue = true;
+			IFluidHandlerItem ifhi = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+			if(ifhi != null) {
+				FluidStack contained = ifhi.drain(Integer.MAX_VALUE, false);
+
+				if(contained == null) {
+					moveItems(slots, slot1, slot2, true);
+					return false;
+				}
+
+				if(tank.getFluid() == null || contained.getFluid() == tank.getFluid().getFluid()) {
+					FluidStack drained = ifhi.drain(Math.min(6000, tank.getCapacity() - tank.getFluidAmount()), true);
+					if(drained != null && drained.amount > 0) {
+						tank.fill(drained, true);
+						returnValue = true;
+					}
+				}
+
+				if(ifhi.drain(Integer.MAX_VALUE, false) == null) {
+					moveItems(slots, slot1, slot2, true);
+				}
 			}
-			if(ifhi.drain(Integer.MAX_VALUE, false) == null) {
-				moveItems(slots, slot1, slot2, true);
-			}
+
 			return returnValue;
 		}
-		ItemStack stack = slots.getStackInSlot(slot1);
+
 		if(stack.getItem() instanceof IItemFluidHandler) {
 			boolean returnValue = false;
-			IItemFluidHandler handler = (IItemFluidHandler)stack.getItem();
+			IItemFluidHandler handler = (IItemFluidHandler) stack.getItem();
 			FluidStack contained = handler.drain(stack, Integer.MAX_VALUE, false);
-			if(contained != null)
-				if(tank.getFluid() == null || contained.getFluid() == tank.getFluid().getFluid()) {
-					tank.fill(handler.drain(stack, Math.min(6000, tank.getCapacity() - tank.getFluidAmount()), true), true);
+
+			if(contained == null) {
+				moveItems(slots, slot1, slot2, true);
+				return false;
+			}
+
+			if(tank.getFluid() == null || contained.getFluid() == tank.getFluid().getFluid()) {
+				FluidStack drained = handler.drain(stack, Math.min(6000, tank.getCapacity() - tank.getFluidAmount()), true);
+				if(drained != null && drained.amount > 0) {
+					tank.fill(drained, true);
 					returnValue = true;
 				}
+			}
+
 			if(handler.drain(stack, Integer.MAX_VALUE, false) == null) {
 				moveItems(slots, slot1, slot2, true);
 			}
+
 			return returnValue;
 		}
+
+		if(FluidUtil.getFluidContained(stack) == null) {
+			moveItems(slots, slot1, slot2, false);
+			return false;
+		}
+
 		return false;
 	}
 

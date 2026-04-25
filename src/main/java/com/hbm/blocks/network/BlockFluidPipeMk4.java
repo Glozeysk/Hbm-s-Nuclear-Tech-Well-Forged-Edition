@@ -234,27 +234,30 @@ public class BlockFluidPipeMk4 extends BlockContainer implements IToolable, ILoo
 
 	@Override
 	public void printHook(Pre event, World world, int x, int y, int z) {
-			
+
 		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-		
+
 		if(!(te instanceof TileEntityFFDuctBaseMk2))
 			return;
-		
+
 		Fluid ductFluid = ((TileEntityFFDuctBaseMk2) te).getType();
-		
+
 		List<String> text = new ArrayList();
 		if(ductFluid == null){
-			text.add("§7" + I18nUtil.resolveKey("desc.none"));
+			text.add("\u00a77" + I18nUtil.resolveKey("desc.none"));
 		} else{
 			int color = ModForgeFluids.getFluidColor(ductFluid);
 			text.add("&[" + color + "&]" + I18nUtil.resolveKey(ductFluid.getUnlocalizedName()));
 		}
-		
+
 		if(te instanceof TileEntityFFFluidDuctMk4) {
 			TileEntityFFFluidDuctMk4 duct = (TileEntityFFFluidDuctMk4) te;
-			text.add("§e" + Library.getShortNumber(duct.power) + "/" + Library.getShortNumber(TileEntityFFFluidDuctMk4.maxPower) + " HE");
+			String status = duct.isNetworkPowered() ? "\u00a7aActive" : "\u00a7cInactive";
+			text.add("Status: " + status);
+			text.add("Drain: " + Library.getShortNumber(duct.getNetworkDrain()) + " HE/s");
+			text.add("Pipes: " + duct.getNetworkSize());
 		}
-		
+
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}
 }
