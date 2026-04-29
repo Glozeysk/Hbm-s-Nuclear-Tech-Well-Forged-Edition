@@ -55,17 +55,16 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public boolean hasPermission(EntityPlayer player){
 		return this.isUseableByPlayer(player);
 	}
-	
+
 	@Override
 	public void receiveControl(NBTTagCompound data){
 		if(data.hasKey("del")) {
 			this.removeName(data.getInteger("del"));
-			
 		} else if(data.hasKey("name")) {
 			this.addName(data.getString("name"));
 		}
 	}
-	
+
 	public double rotationYaw;
 	public double rotationPitch;
 	public double lastRotationYaw;
@@ -82,6 +81,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public boolean targetMachines = true;
 
 	public boolean manualOverride = false;
+	public boolean wranglerFiring = false;
+	public boolean manualFocus = false;
+	public String manualControlKey = "";
+	public long manualControlLease = 0L;
 
 	public Entity target;
 	public Vec3d tPos;
@@ -91,7 +94,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public TileEntityTurretBaseNT(){
 		super(11);
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt){
 		this.power = nbt.getLong("power");
@@ -103,7 +106,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.stattrak = nbt.getInteger("stattrak");
 		super.readFromNBT(nbt);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt){
 		nbt.setLong("power", this.power);
@@ -115,9 +118,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		nbt.setInteger("stattrak", this.stattrak);
 		return super.writeToNBT(nbt);
 	}
-	
+
 	public void manualSetup() { }
-	
+
 	@Override
 	public void update(){
 		if(world.isRemote) {
@@ -125,8 +128,18 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			this.lastRotationYaw = this.rotationYaw;
 		}
 
+		if(!world.isRemote && manualOverride && manualControlLease > 0 && manualControlLease <= world.getTotalWorldTime()) {
+			manualOverride = false;
+			manualFocus = false;
+			wranglerFiring = false;
+			target = null;
+			tPos = null;
+			manualControlKey = "";
+			manualControlLease = 0L;
+		}
+
 		this.aligned = false;
-		
+
 		if(!world.isRemote) {
 			this.updateConnections();
 			if(this.target != null && !target.isEntityAlive()) {
@@ -134,71 +147,80 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 				this.stattrak++;
 			}
 		}
-		
-		if(target != null) {
+
+		if(target != null && !manualOverride) {
 			if(!this.entityInLOS(this.target)) {
 				this.target = null;
 			}
 		}
-		
+
 		if(!world.isRemote) {
-			
-			if(target != null) {
+			if(manualOverride) {
+			} else if(target != null) {
 				this.tPos = this.getEntityPos(target);
-			} else if(!manualOverride){
+			} else {
 				this.tPos = null;
 			}
 		}
-		
+
 		if(isOn() && hasPower()) {
-			
 			if(tPos != null)
 				this.alignTurret();
 		} else {
-
 			this.target = null;
 			this.tPos = null;
 		}
-		
+
 		if(!world.isRemote) {
-			
 			if(this.target != null && !target.isEntityAlive() && !manualOverride) {
 				this.target = null;
 				this.tPos = null;
 				this.stattrak++;
 			}
-			
+
 			if(isOn() && hasPower()) {
 				searchTimer--;
-				
+
 				this.setPower(this.getPower() - this.getConsumption());
-				
+
 				if(searchTimer <= 0) {
 					searchTimer = this.getDecetorInterval();
-					
+
 					if(this.target == null && !manualOverride)
 						this.seekNewTarget();
 				}
 			} else {
 				searchTimer = 0;
 			}
-			
+
 			if(this.aligned) {
-				this.updateFiringTick();
+				if(!this.manualOverride) {
+					this.updateFiringTick();
+				} else if(this.wranglerFiring && this.tPos != null) {
+					Vec3d turretPos = this.getTurretPos();
+					Vec3d dir = new Vec3d(tPos.x - turretPos.x, tPos.y - turretPos.y, tPos.z - turretPos.z).normalize();
+					Vec3d start = new Vec3d(turretPos.x + dir.x, turretPos.y + dir.y, turretPos.z + dir.z);
+					if(!Library.isObstructed(world, start.x, start.y, start.z, tPos.x, tPos.y, tPos.z)) {
+						this.updateFiringTick();
+					}
+				}
 			}
-			
+
 			this.power = Library.chargeTEFromItems(inventory, 10, this.power, this.getMaxPower());
-			manualOverride = false;
+
+			if(!manualOverride) {
+				wranglerFiring = false;
+			}
+
+			wranglerFiring = false;
 			networkPackNT(250);
-			
+
 		} else {
-			
 			Vec3d vec = new Vec3d(this.getBarrelLength(), 0, 0);
 			vec = vec.rotatePitch((float) -this.rotationPitch);
 			vec = vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
-			
+
 			if(Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
-				
 				if(this.lastRotationYaw < this.rotationYaw)
 					this.lastRotationYaw += Math.PI * 2;
 				else
@@ -222,6 +244,13 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		buf.writeBoolean(this.targetMobs);
 		buf.writeBoolean(this.targetMachines);
 		buf.writeInt(this.stattrak);
+		buf.writeBoolean(this.manualOverride);
+		buf.writeBoolean(this.manualFocus);
+		int keyLen = this.manualControlKey != null ? this.manualControlKey.length() : 0;
+		buf.writeInt(keyLen);
+		if(keyLen > 0) {
+			buf.writeBytes(this.manualControlKey.getBytes());
+		}
 	}
 
 	@Override
@@ -239,16 +268,26 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.targetMobs = buf.readBoolean();
 		this.targetMachines = buf.readBoolean();
 		this.stattrak = buf.readInt();
+		this.manualOverride = buf.readBoolean();
+		this.manualFocus = buf.readBoolean();
+		int keyLen = buf.readInt();
+		if(keyLen > 0) {
+			byte[] bytes = new byte[keyLen];
+			buf.readBytes(bytes);
+			this.manualControlKey = new String(bytes);
+		} else {
+			this.manualControlKey = "";
+		}
 	}
-	
+
 	@Override
 	public void handleButtonPacket(int value, int meta){
 		switch(meta) {
-		case 0:this.isOn = !this.isOn; break;
-		case 1:this.targetPlayers = !this.targetPlayers; break;
-		case 2:this.targetAnimals = !this.targetAnimals; break;
-		case 3:this.targetMobs = !this.targetMobs; break;
-		case 4:this.targetMachines = !this.targetMachines; break;
+			case 0:this.isOn = !this.isOn; break;
+			case 1:this.targetPlayers = !this.targetPlayers; break;
+			case 2:this.targetAnimals = !this.targetAnimals; break;
+			case 3:this.targetMobs = !this.targetMobs; break;
+			case 4:this.targetMachines = !this.targetMachines; break;
 		}
 	}
 
@@ -273,57 +312,49 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.trySubscribe(world, pos.add(dir.offsetX-rot.offsetX, -1, 0), ForgeDirection.DOWN);
 		this.trySubscribe(world, pos.add(dir.offsetX-rot.offsetX, -1, dir.offsetZ-rot.offsetZ), ForgeDirection.DOWN);
 	}
-	
+
 	public abstract void updateFiringTick();
-	
+
 	public BulletConfiguration getFirstConfigLoaded() {
-		
 		List<Integer> list = getAmmoList();
-		
+
 		if(list == null || list.isEmpty())
 			return null;
-		
+
 		for(int i = 1; i < 10; i++) {
-			
 			if(!inventory.getStackInSlot(i).isEmpty()) {
-				
 				for(Integer c : list) {
-					
 					BulletConfiguration conf = BulletConfigSyncingUtil.pullConfig(c);
-					
 					if(conf.ammo == inventory.getStackInSlot(i).getItem())
 						return conf;
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
 	public void spawnBullet(BulletConfiguration bullet) {
 		spawnBullet(bullet, 0);
 	}
-	
+
 	public void spawnBullet(BulletConfiguration bullet, float overrideDamage) {
-		
 		Vec3 pos = new Vec3(this.getTurretPos());
 		Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
 		vec.rotateAroundZ((float) -this.rotationPitch);
 		vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
-		
+
 		EntityBulletBase proj = new EntityBulletBase(world, BulletConfigSyncingUtil.getKey(bullet));
 		proj.setPositionAndRotation(pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord, 0.0F, 0.0F);
 		if(overrideDamage > 0)
 			proj.overrideDamage = overrideDamage;
-		
+
 		proj.shoot(vec.xCoord, vec.yCoord, vec.zCoord, bullet.velocity, bullet.spread);
 		world.spawnEntity(proj);
 	}
-	
+
 	public void conusmeAmmo(Item ammo) {
-		
 		for(int i = 1; i < 10; i++) {
-			
 			if(inventory.getStackInSlot(i).getItem() == ammo) {
 				inventory.getStackInSlot(i).shrink(1);
 				if(inventory.getStackInSlot(i).isEmpty()){
@@ -332,116 +363,96 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 				return;
 			}
 		}
-		
 		this.markDirty();
 	}
-	
+
 	public List<String> getWhitelist() {
-		
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
-			
 			String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
-			
 			if(array == null)
 				return null;
-			
 			return Arrays.asList(ItemTurretBiometry.getNames(inventory.getStackInSlot(0)));
 		}
-		
 		return null;
 	}
-	
+
 	public void addName(String name) {
-		
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
 			ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
 		}
 	}
-	
+
 	public void removeName(int index) {
-		
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
-			
 			String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
-			
 			if(array == null)
 				return;
-			
 			List<String> names = new ArrayList<>(Arrays.asList(array));
 			ItemTurretBiometry.clearNames(inventory.getStackInSlot(0));
-			
 			names.remove(index);
-			
 			for(String name : names)
 				ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
 		}
 	}
-	
+
 	protected void seekNewTarget() {
-		
 		Vec3d pos = this.getTurretPos();
 		double range = this.getDecetorRange();
 		List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.x, pos.y, pos.z, pos.x, pos.y, pos.z).grow(range, range, range));
-		
+
 		Entity target = null;
 		double closest = range;
-		
-		for(Entity entity : entities) {
 
+		for(Entity entity : entities) {
 			Vec3d ent = this.getEntityPos(entity);
 			Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
-			
 			double dist = delta.length();
-			
+
 			if(dist > range)
 				continue;
-			
 			if(!entityAcceptableTarget(entity))
 				continue;
-			
 			if(!entityInLOS(entity))
 				continue;
-			
+
 			if(dist < closest) {
 				closest = dist;
 				target = entity;
 			}
 		}
-		
+
 		this.target = target;
-		
+
 		if(target != null)
 			this.tPos = this.getEntityPos(this.target);
 	}
-	
+
 	protected void alignTurret() {
 		this.turnTowards(tPos);
 	}
-	
+
 	public void turnTowards(Vec3d ent) {
-		
 		double turnYaw = Math.toRadians(this.getTurretYawSpeed());
 		double turnPitch = Math.toRadians(this.getTurretPitchSpeed());
 		double pi2 = Math.PI * 2;
 
 		Vec3d pos = this.getTurretPos();
 		Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
-		
+
 		double targetPitch = Math.asin(delta.y / delta.length());
 		double targetYaw = -Math.atan2(delta.x, delta.z);
-		
+
 		if(Math.abs(this.rotationPitch - targetPitch) < turnPitch || Math.abs(this.rotationPitch - targetPitch) > pi2 - turnPitch) {
 			this.rotationPitch = targetPitch;
 		} else {
-			
 			if(targetPitch > this.rotationPitch)
 				this.rotationPitch += turnPitch;
 			else
 				this.rotationPitch -= turnPitch;
 		}
-		
+
 		double deltaYaw = (targetYaw - this.rotationYaw) % pi2;
-		
+
 		int dir = 0;
 
 		if(deltaYaw < -Math.PI)
@@ -452,67 +463,63 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			dir = -1;
 		else if(deltaYaw > 0)
 			dir = 1;
-		
+
 		if(Math.abs(this.rotationYaw - targetYaw) < turnYaw || Math.abs(this.rotationYaw - targetYaw) > pi2 - turnYaw) {
 			this.rotationYaw = targetYaw;
 		} else {
 			this.rotationYaw += turnYaw * dir;
 		}
-		
+
 		double deltaPitch = targetPitch - this.rotationPitch;
 		deltaYaw = targetYaw - this.rotationYaw;
-		
+
 		double deltaAngle = Math.sqrt(deltaYaw * deltaYaw + deltaPitch * deltaPitch);
 
 		this.rotationYaw = this.rotationYaw % pi2;
 		this.rotationPitch = this.rotationPitch % pi2;
-		
+
 		if(deltaAngle <= Math.toRadians(this.getAcceptableInaccuracy())) {
 			this.aligned = true;
 		}
 	}
-	
+
 	public boolean entityInLOS(Entity e) {
-		
 		if(e.isDead || !e.isEntityAlive())
 			return false;
-		
+
 		if(!hasThermalVision() && e instanceof EntityLivingBase && ((EntityLivingBase)e).isPotionActive(MobEffects.INVISIBILITY))
 			return false;
-		
+
 		Vec3d pos = this.getTurretPos();
 		Vec3d ent = this.getEntityPos(e);
 		Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
 		double length = delta.length();
-		
+
 		if(length < this.getDecetorGrace() || length > this.getDecetorRange() * 1.1)
 			return false;
-		
+
 		delta = delta.normalize();
 		double pitch = Math.asin(delta.y / delta.length());
 		double pitchDeg = Math.toDegrees(pitch);
-		
+
 		if(pitchDeg < -this.getTurretDepression() || pitchDeg > this.getTurretElevation())
 			return false;
-		
+
 		return !Library.isObstructed(world, ent.x, ent.y, ent.z, pos.x, pos.y, pos.z);
 	}
-	
+
 	public boolean entityAcceptableTarget(Entity e) {
-		
 		if(e.isDead || !e.isEntityAlive())
 			return false;
-		
+
 		if(targetAnimals) {
-			
 			if(e instanceof IAnimals)
 				return true;
 			if(e instanceof INpc)
 				return true;
 		}
-		
-		if(targetMobs) {
 
+		if(targetMobs) {
 			if(e instanceof EntityDragon)
 				return false;
 			if(e instanceof MultiPartEntityPart)
@@ -520,9 +527,8 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			if(e instanceof IMob)
 				return true;
 		}
-		
-		if(targetMachines) {
 
+		if(targetMachines) {
 			if(e instanceof EntityMissileBaseAdvanced)
 				return true;
 			if(e instanceof EntityMissileCustom)
@@ -532,31 +538,27 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			if(e instanceof EntityBomber)
 				return true;
 		}
-		
+
 		if(targetPlayers && e instanceof EntityPlayer) {
-			
 			if(e instanceof FakePlayer)
 				return false;
-			
 			List<String> wl = getWhitelist();
-			
 			if(wl == null || wl.isEmpty())
 				return true;
-			
 			return !wl.contains(((EntityPlayer)e).getDisplayName().getUnformattedText());
 		}
-		
+
 		return false;
 	}
-	
+
 	public double getAcceptableInaccuracy() {
 		return 5;
 	}
-	
+
 	public double getTurretYawSpeed() {
 		return 4.5D;
 	}
-	
+
 	public double getTurretPitchSpeed() {
 		return 3D;
 	}
@@ -568,23 +570,23 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getTurretElevation() {
 		return 30D;
 	}
-	
+
 	public int getDecetorInterval() {
 		return 10;
 	}
-	
+
 	public double getDecetorRange() {
 		return 32D;
 	}
-	
+
 	public double getDecetorGrace() {
 		return 3D;
 	}
-	
+
 	public double getHeightOffset() {
 		return 1.5D;
 	}
-	
+
 	public double getBarrelLength() {
 		return 1.0D;
 	}
@@ -592,12 +594,12 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public boolean hasThermalVision() {
 		return true;
 	}
-	
+
 	public Vec3d getTurretPos() {
 		Vec3d offset = getHorizontalOffset();
 		return new Vec3d(pos.getX() + offset.x, pos.getY() + getHeightOffset(), pos.getZ() + offset.z);
 	}
-	
+
 	public Vec3d getHorizontalOffset() {
 		int meta = this.getBlockMetadata() - BlockDummyable.offset;
 
@@ -607,35 +609,33 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			return new Vec3d(1, 0, 0);
 		if(meta == 5)
 			return new Vec3d(0, 0, 1);
-		
+
 		return new Vec3d(0, 0, 0);
 	}
-	
+
 	public Vec3d getEntityPos(Entity e) {
 		return new Vec3d(e.posX, e.posY + e.height * 0.5 - e.getYOffset(), e.posZ);
 	}
-	
+
 	protected abstract List<Integer> getAmmoList();
-	
+
 	@SideOnly(Side.CLIENT)
 	protected List<ItemStack> ammoStacks;
 
 	@SideOnly(Side.CLIENT)
 	public List<ItemStack> getAmmoTypesForDisplay() {
-		
 		if(ammoStacks != null)
 			return ammoStacks;
-		
+
 		ammoStacks = new ArrayList();
-		
+
 		for(Integer i : getAmmoList()) {
 			BulletConfiguration config = BulletConfigSyncingUtil.pullConfig(i);
-			
 			if(config != null && config.ammo != null) {
 				ammoStacks.add(new ItemStack(config.ammo));
 			}
 		}
-		
+
 		return ammoStacks;
 	}
 
@@ -643,60 +643,60 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public int[] getAccessibleSlotsFromSide(EnumFacing e){
 		return new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	}
-	
+
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack){
 		return true;
 	}
-	
+
 	public boolean hasPower() {
 		return this.getPower() >= this.getConsumption();
 	}
-	
+
 	public boolean isOn() {
 		return this.isOn;
 	}
-	
+
 	@Override
 	public void setPower(long i) {
 		this.power = i;
 	}
-	
+
 	@Override
 	public long getPower() {
 		return this.power;
 	}
-	
+
 	public int getPowerScaled(int scale) {
 		return (int)(power * scale / this.getMaxPower());
 	}
-	
+
 	public long getConsumption() {
 		return 100;
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
 	{
 		return 65536.0D;
 	}
-	
+
 	@Override
 	public BlockPos getControlPos(){
 		return getPos();
 	}
-	
+
 	@Override
 	public World getControlWorld(){
 		return getWorld();
 	}
-	
+
 	@Override
 	public void receiveEvent(BlockPos from, ControlEvent e){
 		if(e.name.equals("turret_set_target")){
@@ -708,18 +708,18 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			this.isOn = e.vars.get("isOn").getBoolean();
 		}
 	}
-	
+
 	@Override
 	public List<String> getInEvents(){
 		return Arrays.asList("turret_set_target", "turret_switch");
 	}
-	
+
 	@Override
 	public void validate(){
 		super.validate();
 		ControlEventSystem.get(world).addControllable(this);
 	}
-	
+
 	@Override
 	public void invalidate(){
 		super.invalidate();

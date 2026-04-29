@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.oil;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
 
@@ -117,8 +118,8 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
         list.clear();
         processed.clear();
 
-        succ1(x, y, z);
-        succ2(x, y, z);
+        succ1Start(x, y, z);
+        succ2Start(x, y, z);
 
         byte result = 0;
 
@@ -143,42 +144,52 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
         return result;
     }
 
-    public void succInit1(int x, int y, int z) {
-        succ1(x + 1, y, z);
-        succ1(x - 1, y, z);
-        succ1(x, y + 1, z);
-        succ1(x, y - 1, z);
-        succ1(x, y, z + 1);
-        succ1(x, y, z - 1);
-    }
+    public void succ1Start(int startX, int startY, int startZ) {
+        ArrayDeque<BlockPos> stack = new ArrayDeque<>();
+        stack.push(new BlockPos(startX, startY, startZ));
 
-    public void succInit2(int x, int y, int z) {
-        succ2(x + 1, y, z);
-        succ2(x - 1, y, z);
-        succ2(x, y + 1, z);
-        succ2(x, y - 1, z);
-        succ2(x, y, z + 1);
-        succ2(x, y, z - 1);
-    }
+        while(!stack.isEmpty()) {
+            BlockPos pos = stack.pop();
 
-    public void succ1(int x, int y, int z) {
-        BlockPos newPos = new BlockPos(x, y, z);
-        if(processed.contains(newPos)) {
-            return;
-        }
-        if(world.getBlockState(newPos).getBlock() == ModBlocks.ore_oil_empty) {
-            processed.add(newPos);
-            succInit1(x, y, z);
+            if(!processed.add(pos)) {
+                continue;
+            }
+
+            if(world.getBlockState(pos).getBlock() == ModBlocks.ore_oil_empty) {
+                stack.push(pos.east());
+                stack.push(pos.west());
+                stack.push(pos.up());
+                stack.push(pos.down());
+                stack.push(pos.south());
+                stack.push(pos.north());
+            }
         }
     }
 
-    public void succ2(int x, int y, int z) {
-        BlockPos newPos = new BlockPos(x, y, z);
-        if(world.getBlockState(newPos).getBlock() == ModBlocks.ore_oil_empty && processed.contains(newPos)) {
-            processed.remove(newPos);
-            succInit2(x, y, z);
-        } else if(world.getBlockState(newPos).getBlock() == ModBlocks.ore_oil || world.getBlockState(newPos).getBlock() == ModBlocks.ore_bedrock_oil) {
-            list.add(new int[] { x, y, z });
+    public void succ2Start(int startX, int startY, int startZ) {
+        ArrayDeque<BlockPos> stack = new ArrayDeque<>();
+        stack.push(new BlockPos(startX, startY, startZ));
+
+        HashSet<BlockPos> visited2 = new HashSet<>();
+
+        while(!stack.isEmpty()) {
+            BlockPos pos = stack.pop();
+
+            if(!visited2.add(pos)) {
+                continue;
+            }
+
+            if(world.getBlockState(pos).getBlock() == ModBlocks.ore_oil_empty && processed.contains(pos)) {
+                stack.push(pos.east());
+                stack.push(pos.west());
+                stack.push(pos.up());
+                stack.push(pos.down());
+                stack.push(pos.south());
+                stack.push(pos.north());
+            } else if(world.getBlockState(pos).getBlock() == ModBlocks.ore_oil
+                    || world.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil) {
+                list.add(new int[] { pos.getX(), pos.getY(), pos.getZ() });
+            }
         }
     }
 
