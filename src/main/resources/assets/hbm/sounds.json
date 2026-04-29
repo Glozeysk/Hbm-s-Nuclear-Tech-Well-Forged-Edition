@@ -282,5 +282,6 @@
     "block.excavator_loop": {"category": "block", "sounds": [{"name": "hbm:block/excavator_loop", "stream": false}]},
     "block.machine_refinery_loop": {"category": "block", "sounds": [{"name": "hbm:block/machine_refinery_loop", "stream": false}]},
     "block.pumpjack_loop": {"category": "block", "sounds": [{"name": "hbm:block/pumpjack_loop", "stream": false}]},
-    "block.chungusTurbineRunning": {"category": "block", "sounds": [{"name": "hbm:block/chungusturbine", "stream": false}]}
+    "block.chungusTurbineRunning": {"category": "block", "sounds": [{"name": "hbm:block/chungusturbine", "stream": false}]},
+    "block.turret_focus": {"category": "block", "sounds": [{"name": "hbm:block/turret_focus", "stream": false}]}
 }

@@ -30,7 +30,7 @@ import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 public class MachineITER extends BlockDummyable {
 
 	public static boolean drop = true;
-	
+
 	public MachineITER(String s) {
 		super(Material.IRON, s);
 	}
@@ -46,25 +46,21 @@ public class MachineITER extends BlockDummyable {
 
 	@Override
 	public int[] getDimensions() {
-		//because we'll implement our own gnarly behavior here
 		return new int[] { 0, 0, 0, 0, 0, 0 };
 	}
-	
+
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos1, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
-		{
+		if(world.isRemote) {
 			return true;
-		} else if(!player.isSneaking())
-		{
+		} else if(!player.isSneaking()) {
 			int[] pos = this.findCore(world, pos1.getX(), pos1.getY(), pos1.getZ());
 
 			if(pos == null)
 				return false;
 
 			TileEntityITER entity = (TileEntityITER) world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
-			if(entity != null)
-			{
+			if(entity != null) {
 				FMLNetworkHandler.openGui(player, MainRegistry.instance, ModBlocks.guiID_iter, world, pos[0], pos[1], pos[2]);
 			}
 			return true;
@@ -72,78 +68,83 @@ public class MachineITER extends BlockDummyable {
 			return false;
 		}
 	}
-	
+
 	public static final int height = 2;
-	
+
+	@Override
+	public boolean canPlaceBlockAt(World world, BlockPos pos) {
+		return checkRequirementForPlacement(world, pos);
+	}
+
+	private boolean checkRequirementForPlacement(World world, BlockPos pos) {
+		return true;
+	}
+
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack itemStack) {
+		if(world.isRemote)
+			return;
+
 		if(!(player instanceof EntityPlayer))
 			return;
+
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
 
 		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-		EntityPlayer pl = (EntityPlayer) player;
 
 		int o = getOffset();
 
 		ForgeDirection dir = ForgeDirection.NORTH;
 
-		if(i == 0)
-		{
+		if(i == 0) {
 			dir = ForgeDirection.getOrientation(2);
 		}
-		if(i == 1)
-		{
+		if(i == 1) {
 			dir = ForgeDirection.getOrientation(5);
 		}
-		if(i == 2)
-		{
+		if(i == 2) {
 			dir = ForgeDirection.getOrientation(3);
 		}
-		if(i == 3)
-		{
+		if(i == 3) {
 			dir = ForgeDirection.getOrientation(4);
 		}
 
 		dir = dir.getOpposite();
 
-		world.setBlockToAir(pos);
-
 		if(!checkRequirement(world, x, y, z, dir, o)) {
-
-			if(!pl.capabilities.isCreativeMode) {
-				pl.inventory.addItemStackToInventory(new ItemStack(this));
+			world.setBlockToAir(pos);
+			if(!world.isRemote && player instanceof EntityPlayer) {
+				EntityPlayer pl = (EntityPlayer) player;
+				if(!pl.capabilities.isCreativeMode) {
+					world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, new ItemStack(this)));
+				}
 			}
-
 			return;
 		}
 
-		if(!pl.capabilities.isCreativeMode) {
-			itemStack.shrink(1);
-		}
+		world.setBlockToAir(pos);
+		world.setBlockState(new BlockPos(x + dir.offsetX * o, y + dir.offsetY * o + height, z + dir.offsetZ * o), this.getDefaultState().withProperty(META, dir.ordinal() + offset), 3);
 
-		world.setBlockState(new BlockPos(x + dir.offsetX * o , y + dir.offsetY * o + height, z + dir.offsetZ * o), this.getDefaultState().withProperty(META, dir.ordinal() + offset), 3);
 		safeRem = true;
 		fillSpace(world, x, y, z, dir, o);
 		safeRem = false;
+
 		world.scheduleUpdate(pos, this, 1);
 		world.scheduleUpdate(pos, this, 2);
-		
-		super.onBlockPlacedBy(world, pos, state, player, itemStack);
 	}
-	
+
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
 		if(i >= 12 && drop) {
-        	world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.iter, 1)));
-    	}
+			world.spawnEntity(new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModBlocks.iter, 1)));
+		}
 
 		super.breakBlock(world, pos, state);
 	}
-	
+
 	@Override
 	protected boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
 		x = x + dir.offsetX * o;
@@ -152,22 +153,24 @@ public class MachineITER extends BlockDummyable {
 		int[][][] layout = TileEntityITERStruct.collisionMask;
 
 		for(int iy = 0; iy < 5; iy++) {
-
 			int l = iy > 2 ? 4 - iy : iy;
 			int[][] layer = layout[l];
 
 			for(int ix = 0; ix < layer.length; ix++) {
-
 				for(int iz = 0; iz < layer.length; iz++) {
-
 					int ex = ix - layer.length / 2;
 					int ez = iz - layer.length / 2;
 
 					if(ex == 0 && y == 2 && ez == 0)
 						continue;
 
-					if(!world.getBlockState(new BlockPos(x + ex, y + iy, z + ez)).getBlock().canPlaceBlockAt(world, new BlockPos(x + ex, y + iy, z + ez))) {
-						return false;
+					if(layout[l][ix][iz] > 0) {
+						BlockPos checkPos = new BlockPos(x + ex, y + iy, z + ez);
+						IBlockState checkState = world.getBlockState(checkPos);
+
+						if(!checkState.getBlock().isReplaceable(world, checkPos)) {
+							return false;
+						}
 					}
 				}
 			}
@@ -184,14 +187,11 @@ public class MachineITER extends BlockDummyable {
 		int[][][] layout = TileEntityITERStruct.collisionMask;
 
 		for(int iy = 0; iy < 5; iy++) {
-
 			int l = iy > 2 ? 4 - iy : iy;
 			int[][] layer = layout[l];
 
 			for(int ix = 0; ix < layer.length; ix++) {
-
 				for(int iz = 0; iz < layer[0].length; iz++) {
-
 					int ex = ix - layer.length / 2;
 					int ez = iz - layer.length / 2;
 
@@ -218,6 +218,7 @@ public class MachineITER extends BlockDummyable {
 				}
 			}
 		}
+
 		this.makeExtra(world, x, y, z);
 		this.makeExtra(world, x, y + 4, z);
 
@@ -229,15 +230,14 @@ public class MachineITER extends BlockDummyable {
 			this.makeExtra(world, x + (int)vec.xCoord, y + 4, z + (int)vec.zCoord);
 		}
 	}
-	
+
 	@Override
 	public int getOffset() {
 		return 7;
 	}
-	
+
 	@Override
 	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
 		return Items.AIR;
 	}
-
 }
