@@ -54,9 +54,9 @@ public class ItemTurretControl extends Item {
 	public static Map<Integer, LaserData> activeLasers = new HashMap<>();
 	private static int nextLaserId = 0;
 
-	private static final double MAX_RANGE = 200.0D;
-	private static final double MAX_CONTROL_RANGE = 80.0D;
-	private static final double MAX_FOCUS_RANGE = 100.0D;
+	private static final double MAX_RANGE = 150.0D;
+	private static final double MAX_CONTROL_RANGE = 150.0D;
+	private static final double MAX_FOCUS_RANGE = 150.0D;
 
 	public ItemTurretControl(String s) {
 		this.setTranslationKey(s);
@@ -126,6 +126,13 @@ public class ItemTurretControl extends Item {
 		return dx * dx + dy * dy + dz * dz <= MAX_FOCUS_RANGE * MAX_FOCUS_RANGE;
 	}
 
+	private boolean isTargetInTurretRange(Vec3d turretPos, Vec3d targetPos) {
+		double dx = targetPos.x - turretPos.x;
+		double dy = targetPos.y - turretPos.y;
+		double dz = targetPos.z - turretPos.z;
+		return dx * dx + dy * dy + dz * dz <= MAX_FOCUS_RANGE * MAX_FOCUS_RANGE;
+	}
+
 	private RayTraceResult performWranglerRaycast(EntityPlayer player, World world) {
 		Vec3d eyePos = player.getPositionEyes(1.0F);
 		Vec3d lookVec = player.getLookVec();
@@ -192,6 +199,36 @@ public class ItemTurretControl extends Item {
 	private Vec3d getTurretPosForBase(TileEntityTurretBase turret, BlockPos pos) {
 		if(turret instanceof TileEntityTurretCIWS || turret instanceof TileEntityTurretSpitfire || turret instanceof TileEntityTurretCheapo) {
 			return new Vec3d(pos.getX() + 0.5D, pos.getY() + 1.5D, pos.getZ() + 0.5D);
+		}
+		return new Vec3d(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
+	}
+
+	private void aimBaseTurret(TileEntityTurretBase turret, Vec3d turretPos, Vec3d aimPos) {
+		Vec3d delta = new Vec3d(aimPos.x - turretPos.x, aimPos.y - turretPos.y, aimPos.z - turretPos.z);
+		double sqrt = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+
+		turret.oldRotationYaw = turret.rotationYaw;
+		turret.oldRotationPitch = turret.rotationPitch;
+		turret.rotationPitch = -Math.atan2(delta.y, sqrt) * 180.0D / Math.PI;
+		turret.rotationYaw = -Math.atan2(delta.x, delta.z) * 180.0D / Math.PI;
+
+		float maxAngle = -60.0F;
+		if(turret instanceof TileEntityTurretCIWS) maxAngle = -80.0F;
+		if(turret.rotationPitch < maxAngle) turret.rotationPitch = maxAngle;
+		if(turret.rotationPitch > 30.0D) turret.rotationPitch = 30.0D;
+
+		if(turret instanceof TileEntityTurretCheapo) {
+			if(turret.rotationPitch < -30.0D) turret.rotationPitch = -30.0D;
+			if(turret.rotationPitch > 15.0D) turret.rotationPitch = 15.0D;
+		}
+	}
+
+	private Vec3d getTurretPosForTE(TileEntity te, BlockPos pos) {
+		if(te instanceof TileEntityTurretBaseNT) {
+			return ((TileEntityTurretBaseNT) te).getTurretPos();
+		}
+		if(te instanceof TileEntityTurretBase) {
+			return getTurretPosForBase((TileEntityTurretBase) te, pos);
 		}
 		return new Vec3d(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
 	}
@@ -480,38 +517,26 @@ public class ItemTurretControl extends Item {
 		}
 
 		Vec3d targetCenter = new Vec3d(focusEntity.posX, focusEntity.posY + focusEntity.height * 0.5D, focusEntity.posZ);
+		Vec3d turretPos = getTurretPosForTE(te, pos);
+		boolean inRange = isTargetInTurretRange(turretPos, targetCenter);
 
 		if(te instanceof TileEntityTurretBase && !(te instanceof TileEntityTurretBaseNT)) {
 			TileEntityTurretBase turret = (TileEntityTurretBase) te;
-			Vec3d turretPos = getTurretPosForBase(turret, pos);
+
+			Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
+			boolean visible = bestPoint != null;
+			Vec3d aimPos = visible ? bestPoint : targetCenter;
+
+			boolean effectivelyVisible = visible && inRange;
+
+			aimBaseTurret(turret, turretPos, aimPos);
 
 			if(!world.isRemote) {
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-				boolean visible = bestPoint != null;
-				Vec3d aimPos = visible ? bestPoint : targetCenter;
-
-				Vec3d delta = new Vec3d(aimPos.x - turretPos.x, aimPos.y - turretPos.y, aimPos.z - turretPos.z);
-				double sqrt = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-
-				turret.oldRotationYaw = turret.rotationYaw;
-				turret.oldRotationPitch = turret.rotationPitch;
-				turret.rotationPitch = -Math.atan2(delta.y, sqrt) * 180.0D / Math.PI;
-				turret.rotationYaw = -Math.atan2(delta.x, delta.z) * 180.0D / Math.PI;
-
-				float maxAngle = -60.0F;
-				if(turret instanceof TileEntityTurretCIWS) maxAngle = -80.0F;
-				if(turret.rotationPitch < maxAngle) turret.rotationPitch = maxAngle;
-				if(turret.rotationPitch > 30.0D) turret.rotationPitch = 30.0D;
-				if(turret instanceof TileEntityTurretCheapo) {
-					if(turret.rotationPitch < -30.0D) turret.rotationPitch = -30.0D;
-					if(turret.rotationPitch > 15.0D) turret.rotationPitch = 15.0D;
-				}
-
 				if(!turret.manualOverride) turret.use = 0;
 				turret.manualOverride = true;
-				setStackTarget(stack, aimPos, visible);
+				setStackTarget(stack, aimPos, effectivelyVisible);
 
-				if(visible && turret.ammo > 0) {
+				if(effectivelyVisible && turret.ammo > 0) {
 					turret.use++;
 					if(world.getBlockState(pos).getBlock() instanceof TurretBase) {
 						if(((TurretBase) world.getBlockState(pos).getBlock()).executeHoldAction(world, turret.use, turret.rotationYaw, turret.rotationPitch, pos)) {
@@ -522,30 +547,27 @@ public class ItemTurretControl extends Item {
 			}
 
 			if(world.isRemote) {
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-				boolean visible = bestPoint != null;
-				Vec3d aimPos = visible ? bestPoint : targetCenter;
-				updateLaser(world, turretPos, aimPos, visible, true, focusEntity.getEntityId(), id, true);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true);
 			}
 		}
 
 		if(te instanceof TileEntityTurretBaseNT) {
 			TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) te;
+
+			Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
+			boolean visible = bestPoint != null;
+			Vec3d aimPos = visible ? bestPoint : targetCenter;
+
+			boolean effectivelyVisible = visible && inRange;
+
 			if(world.isRemote) {
-				Vec3d turretPos = turret.getTurretPos();
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-				boolean visible = bestPoint != null;
-				Vec3d aimPos = visible ? bestPoint : targetCenter;
-				updateLaser(world, turretPos, aimPos, visible, true, focusEntity.getEntityId(), id, true);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true);
 			} else {
 				turret.manualOverride = true;
-				Vec3d turretPos = turret.getTurretPos();
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-				boolean visible = bestPoint != null;
-				turret.target = visible ? focusEntity : null;
+				turret.target = effectivelyVisible ? focusEntity : null;
 				turret.tPos = visible ? bestPoint : targetCenter;
 				turret.turnTowards(turret.tPos);
-				turret.wranglerFiring = visible;
+				turret.wranglerFiring = effectivelyVisible;
 			}
 		}
 	}
@@ -593,30 +615,18 @@ public class ItemTurretControl extends Item {
 				visible = turretCanSee(world, turretPos, targetPos);
 			}
 
+			boolean inRange = isTargetInTurretRange(turretPos, aimPos);
+			boolean effectivelyVisible = visible && inRange;
+
+			aimBaseTurret(turret, turretPos, aimPos);
+
 			if(!world.isRemote) {
-				Vec3d delta = new Vec3d(aimPos.x - turretPos.x, aimPos.y - turretPos.y, aimPos.z - turretPos.z);
-				double sqrt = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-
-				turret.oldRotationYaw = turret.rotationYaw;
-				turret.oldRotationPitch = turret.rotationPitch;
-				turret.rotationPitch = -Math.atan2(delta.y, sqrt) * 180.0D / Math.PI;
-				turret.rotationYaw = -Math.atan2(delta.x, delta.z) * 180.0D / Math.PI;
-
-				float maxAngle = -60.0F;
-				if(turret instanceof TileEntityTurretCIWS) maxAngle = -80.0F;
-				if(turret.rotationPitch < maxAngle) turret.rotationPitch = maxAngle;
-				if(turret.rotationPitch > 30.0D) turret.rotationPitch = 30.0D;
-				if(turret instanceof TileEntityTurretCheapo) {
-					if(turret.rotationPitch < -30.0D) turret.rotationPitch = -30.0D;
-					if(turret.rotationPitch > 15.0D) turret.rotationPitch = 15.0D;
-				}
-
 				if(!turret.manualOverride) turret.use = 0;
 				turret.manualOverride = true;
-				setStackTarget(stack, aimPos, visible);
+				setStackTarget(stack, aimPos, effectivelyVisible);
 				stack.getTagCompound().setBoolean("wasActive", true);
 
-				if(firing && visible && turret.ammo > 0) {
+				if(firing && effectivelyVisible && turret.ammo > 0) {
 					turret.use++;
 					if(world.getBlockState(pos).getBlock() instanceof TurretBase) {
 						if(((TurretBase) world.getBlockState(pos).getBlock()).executeHoldAction(world, turret.use, turret.rotationYaw, turret.rotationPitch, pos)) {
@@ -629,59 +639,47 @@ public class ItemTurretControl extends Item {
 			}
 
 			if(world.isRemote) {
-				updateLaser(world, turretPos, aimPos, visible, isEntity, entityId, id, false);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false);
 			}
 		}
 
 		if(te instanceof TileEntityTurretBaseNT) {
 			TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) te;
-			if(world.isRemote) {
-				Vec3d turretPos = turret.getTurretPos();
-				Vec3d aimPos = targetPos;
-				boolean visible = true;
-				boolean isEntity = false;
-				int entityId = -1;
+			Vec3d turretPos = turret.getTurretPos();
+			Vec3d aimPos = targetPos;
+			boolean visible = true;
+			boolean isEntity = false;
+			int entityId = -1;
+			Entity trackedEntity = null;
 
-				if(hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
-					isEntity = true;
-					entityId = hit.entityHit.getEntityId();
-					Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
-					if(bestPoint != null) {
-						aimPos = bestPoint;
-					} else {
-						visible = false;
-					}
+			if(hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
+				isEntity = true;
+				entityId = hit.entityHit.getEntityId();
+				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
+				if(bestPoint != null) {
+					aimPos = bestPoint;
 				} else {
-					visible = turretCanSee(world, turretPos, targetPos);
+					visible = false;
 				}
-				updateLaser(world, turretPos, aimPos, visible, isEntity, entityId, id, false);
+				if(firing && visible) {
+					trackedEntity = hit.entityHit;
+				}
+			} else {
+				visible = turretCanSee(world, turretPos, targetPos);
+			}
+
+			boolean inRange = isTargetInTurretRange(turretPos, aimPos);
+			boolean effectivelyVisible = visible && inRange;
+
+			if(world.isRemote) {
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false);
 			} else {
 				turret.manualOverride = true;
 				stack.getTagCompound().setBoolean("wasActive", true);
-
-				Vec3d turretPos = turret.getTurretPos();
-				Vec3d aimPos = targetPos;
-				boolean visible = true;
-				Entity trackedEntity = null;
-
-				if(hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
-					Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
-					if(bestPoint != null) {
-						aimPos = bestPoint;
-					} else {
-						visible = false;
-					}
-					if(firing && visible) {
-						trackedEntity = hit.entityHit;
-					}
-				} else {
-					visible = turretCanSee(world, turretPos, targetPos);
-				}
-
 				turret.target = trackedEntity;
 				turret.tPos = aimPos;
 				turret.turnTowards(turret.tPos);
-				turret.wranglerFiring = firing && visible;
+				turret.wranglerFiring = firing && effectivelyVisible;
 			}
 		}
 	}

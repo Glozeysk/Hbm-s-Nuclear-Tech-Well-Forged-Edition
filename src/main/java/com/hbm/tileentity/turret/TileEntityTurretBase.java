@@ -44,6 +44,9 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 
 	@Override
 	public void update() {
+		oldRotationPitch = rotationPitch;
+		oldRotationYaw = rotationYaw;
+
 		if(!world.isRemote && manualOverride && manualControlLease > 0 && manualControlLease <= world.getTotalWorldTime()) {
 			manualOverride = false;
 			manualFocus = false;
@@ -82,9 +85,6 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 						turret = new Vec3d(targetPos.x - (pos.getX() + 0.5), targetPos.y - (pos.getY() + 1.5), targetPos.z - (pos.getZ() + 0.5));
 					} catch(Throwable t) { }
 				}
-
-				oldRotationPitch = rotationPitch;
-				oldRotationYaw = rotationYaw;
 
 				double sqrt = MathHelper.sqrt(turret.x * turret.x + turret.z * turret.z);
 				rotationPitch = -Math.atan2(turret.y, sqrt) * 180 / Math.PI;
@@ -260,6 +260,11 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 
 		if(mark)
 			this.markDirty();
+	}
+
+	@Override
+	public void onDataPacket(net.minecraft.network.NetworkManager net, SPacketUpdateTileEntity pkt) {
+		this.readFromNBT(pkt.getNbtCompound());
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package com.hbm.render.event;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemTurretControl;
 import com.hbm.items.tool.ItemTurretControl.LaserData;
 
