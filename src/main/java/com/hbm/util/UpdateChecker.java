@@ -123,7 +123,8 @@ public class UpdateChecker {
 
     private int[] extractVersionNumbers(String versionString) {
         String cleaned = versionString.replace(".jar", "");
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+\\.\\d+\\.\\d+)").matcher(cleaned);
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)+)").matcher(cleaned);
 
         String mainVersion = "";
         while(matcher.find()) {
