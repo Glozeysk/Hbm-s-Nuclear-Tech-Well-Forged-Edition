@@ -49,6 +49,7 @@ public class ItemTurretControl extends Item {
 		public boolean targetIsEntity;
 		public int targetEntityId;
 		public boolean focusMode;
+		public boolean ignoreWalls;
 	}
 
 	public static Map<Integer, LaserData> activeLasers = new HashMap<>();
@@ -88,7 +89,7 @@ public class ItemTurretControl extends Item {
 		return data;
 	}
 
-	private void updateLaser(World world, Vec3d turretPos, Vec3d targetPos, boolean visible, boolean isEntity, int entityId, int id, boolean focusMode) {
+	private void updateLaser(World world, Vec3d turretPos, Vec3d targetPos, boolean visible, boolean isEntity, int entityId, int id, boolean focusMode, boolean ignoreWalls) {
 		LaserData data = getLaserData(id);
 		data.startX = turretPos.x;
 		data.startY = turretPos.y;
@@ -102,6 +103,7 @@ public class ItemTurretControl extends Item {
 		data.targetIsEntity = isEntity;
 		data.targetEntityId = entityId;
 		data.focusMode = focusMode;
+		data.ignoreWalls = ignoreWalls;
 	}
 
 	private void clearLaser(int id) {
@@ -109,7 +111,14 @@ public class ItemTurretControl extends Item {
 		if(data != null) {
 			data.active = false;
 			data.focusMode = false;
+			data.ignoreWalls = false;
 		}
+	}
+
+	private boolean isLinkedToTauTurret(World world, BlockPos pos) {
+		if(world == null || pos == null) return false;
+		net.minecraft.block.Block block = world.getBlockState(pos).getBlock();
+		return block instanceof TurretBase && ((TurretBase) block).ignoresWallsForLaserAndFocus();
 	}
 
 	private boolean isPlayerInRange(EntityPlayer player, BlockPos turretPos) {
@@ -153,6 +162,32 @@ public class ItemTurretControl extends Item {
 					bestHit = new RayTraceResult(e, entHit.hitVec);
 				}
 			}
+		}
+		return bestHit;
+	}
+
+	private RayTraceResult performWranglerRaycastIgnoreWalls(EntityPlayer player, World world) {
+		Vec3d eyePos = player.getPositionEyes(1.0F);
+		Vec3d lookVec = player.getLookVec();
+		Vec3d endPos = eyePos.add(lookVec.x * MAX_RANGE, lookVec.y * MAX_RANGE, lookVec.z * MAX_RANGE);
+		RayTraceResult bestHit = null;
+		double bestDist = MAX_RANGE;
+		List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(player, player.getEntityBoundingBox().grow(MAX_RANGE, MAX_RANGE, MAX_RANGE));
+		for(Entity e : entities) {
+			if(e == player) continue;
+			if(!e.canBeCollidedWith() && !(e instanceof EntityLivingBase)) continue;
+			RayTraceResult entHit = e.getEntityBoundingBox().grow(0.3D, 0.3D, 0.3D).calculateIntercept(eyePos, endPos);
+			if(entHit != null) {
+				double dist = eyePos.distanceTo(entHit.hitVec);
+				if(dist < bestDist) {
+					bestDist = dist;
+					bestHit = new RayTraceResult(e, entHit.hitVec);
+				}
+			}
+		}
+		if(bestHit == null) {
+			RayTraceResult blockHit = world.rayTraceBlocks(eyePos, endPos, false, true, false);
+			bestHit = blockHit;
 		}
 		return bestHit;
 	}
@@ -473,6 +508,7 @@ public class ItemTurretControl extends Item {
 		BlockPos pos = getLinkedPos(stack);
 		Entity focusEntity = getFocusEntity(world, stack);
 		String focusName = getFocusEntityName(stack);
+		boolean ignoreWalls = isLinkedToTauTurret(world, pos);
 
 		if(focusEntity == null || !focusEntity.isEntityAlive() || focusEntity.isDead) {
 			if(!world.isRemote) {
@@ -523,11 +559,19 @@ public class ItemTurretControl extends Item {
 		if(te instanceof TileEntityTurretBase && !(te instanceof TileEntityTurretBaseNT)) {
 			TileEntityTurretBase turret = (TileEntityTurretBase) te;
 
-			Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-			boolean visible = bestPoint != null;
-			Vec3d aimPos = visible ? bestPoint : targetCenter;
+			Vec3d bestPoint;
+			boolean visible;
 
-			boolean effectivelyVisible = visible && inRange;
+			if(ignoreWalls) {
+				bestPoint = targetCenter;
+				visible = true;
+			} else {
+				bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
+				visible = bestPoint != null;
+			}
+
+			Vec3d aimPos = (visible && bestPoint != null) ? bestPoint : targetCenter;
+			boolean effectivelyVisible = (ignoreWalls || visible) && inRange;
 
 			aimBaseTurret(turret, turretPos, aimPos);
 
@@ -547,25 +591,33 @@ public class ItemTurretControl extends Item {
 			}
 
 			if(world.isRemote) {
-				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true, ignoreWalls);
 			}
 		}
 
 		if(te instanceof TileEntityTurretBaseNT) {
 			TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) te;
 
-			Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
-			boolean visible = bestPoint != null;
-			Vec3d aimPos = visible ? bestPoint : targetCenter;
+			Vec3d bestPoint;
+			boolean visible;
 
-			boolean effectivelyVisible = visible && inRange;
+			if(ignoreWalls) {
+				bestPoint = targetCenter;
+				visible = true;
+			} else {
+				bestPoint = findBestEntityAimPoint(world, turretPos, focusEntity);
+				visible = bestPoint != null;
+			}
+
+			Vec3d aimPos = (visible && bestPoint != null) ? bestPoint : targetCenter;
+			boolean effectivelyVisible = (ignoreWalls || visible) && inRange;
 
 			if(world.isRemote) {
-				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, true, focusEntity.getEntityId(), id, true, ignoreWalls);
 			} else {
 				turret.manualOverride = true;
 				turret.target = effectivelyVisible ? focusEntity : null;
-				turret.tPos = visible ? bestPoint : targetCenter;
+				turret.tPos = aimPos;
 				turret.turnTowards(turret.tPos);
 				turret.wranglerFiring = effectivelyVisible;
 			}
@@ -573,7 +625,12 @@ public class ItemTurretControl extends Item {
 	}
 
 	private void handleNormalMode(ItemStack stack, World world, EntityPlayer player, BlockPos pos, TileEntity te, int id) {
-		RayTraceResult hit = performWranglerRaycast(player, world);
+		boolean ignoreWalls = isLinkedToTauTurret(world, pos);
+
+		RayTraceResult hit = ignoreWalls
+				? performWranglerRaycastIgnoreWalls(player, world)
+				: performWranglerRaycast(player, world);
+
 		Vec3d targetPos = getTargetPoint(hit);
 
 		if(hit == null || targetPos == null) {
@@ -597,22 +654,28 @@ public class ItemTurretControl extends Item {
 			TileEntityTurretBase turret = (TileEntityTurretBase) te;
 			Vec3d turretPos = getTurretPosForBase(turret, pos);
 			Vec3d aimPos = targetPos;
-			boolean visible = true;
+			boolean visible;
 			boolean isEntity = false;
 			int entityId = -1;
 
 			if(hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
 				isEntity = true;
 				entityId = hit.entityHit.getEntityId();
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
-				if(bestPoint != null) {
-					aimPos = bestPoint;
+				if(ignoreWalls) {
+					aimPos = new Vec3d(hit.entityHit.posX, hit.entityHit.posY + hit.entityHit.height * 0.5D, hit.entityHit.posZ);
+					visible = true;
 				} else {
-					aimPos = targetPos;
-					visible = false;
+					Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
+					if(bestPoint != null) {
+						aimPos = bestPoint;
+						visible = true;
+					} else {
+						aimPos = targetPos;
+						visible = false;
+					}
 				}
 			} else {
-				visible = turretCanSee(world, turretPos, targetPos);
+				visible = ignoreWalls || turretCanSee(world, turretPos, targetPos);
 			}
 
 			boolean inRange = isTargetInTurretRange(turretPos, aimPos);
@@ -639,7 +702,7 @@ public class ItemTurretControl extends Item {
 			}
 
 			if(world.isRemote) {
-				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false, ignoreWalls);
 			}
 		}
 
@@ -647,7 +710,7 @@ public class ItemTurretControl extends Item {
 			TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) te;
 			Vec3d turretPos = turret.getTurretPos();
 			Vec3d aimPos = targetPos;
-			boolean visible = true;
+			boolean visible;
 			boolean isEntity = false;
 			int entityId = -1;
 			Entity trackedEntity = null;
@@ -655,24 +718,30 @@ public class ItemTurretControl extends Item {
 			if(hit.typeOfHit == RayTraceResult.Type.ENTITY && hit.entityHit != null) {
 				isEntity = true;
 				entityId = hit.entityHit.getEntityId();
-				Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
-				if(bestPoint != null) {
-					aimPos = bestPoint;
+				if(ignoreWalls) {
+					aimPos = new Vec3d(hit.entityHit.posX, hit.entityHit.posY + hit.entityHit.height * 0.5D, hit.entityHit.posZ);
+					visible = true;
 				} else {
-					visible = false;
+					Vec3d bestPoint = findBestEntityAimPoint(world, turretPos, hit.entityHit);
+					if(bestPoint != null) {
+						aimPos = bestPoint;
+						visible = true;
+					} else {
+						visible = false;
+					}
 				}
 				if(firing && visible) {
 					trackedEntity = hit.entityHit;
 				}
 			} else {
-				visible = turretCanSee(world, turretPos, targetPos);
+				visible = ignoreWalls || turretCanSee(world, turretPos, targetPos);
 			}
 
 			boolean inRange = isTargetInTurretRange(turretPos, aimPos);
 			boolean effectivelyVisible = visible && inRange;
 
 			if(world.isRemote) {
-				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false);
+				updateLaser(world, turretPos, aimPos, effectivelyVisible, isEntity, entityId, id, false, ignoreWalls);
 			} else {
 				turret.manualOverride = true;
 				stack.getTagCompound().setBoolean("wasActive", true);

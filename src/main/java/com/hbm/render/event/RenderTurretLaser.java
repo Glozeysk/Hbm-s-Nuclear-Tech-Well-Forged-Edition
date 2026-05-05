@@ -52,10 +52,12 @@ public class RenderTurretLaser {
                 continue;
             }
 
+            boolean visible = data.targetVisible || data.ignoreWalls;
+
             float laserR, laserG, laserB, laserA;
             float glowR, glowG, glowB, glowA;
 
-            if(data.targetVisible) {
+            if(visible) {
                 laserR = 1.0F; laserG = 0.0F; laserB = 0.0F; laserA = 0.9F;
                 glowR = 1.0F; glowG = 0.2F; glowB = 0.2F; glowA = 0.25F;
             } else {
@@ -92,14 +94,14 @@ public class RenderTurretLaser {
             buf.pos(ex, ey, ez).color(glowR, glowG, glowB, glowA).endVertex();
             tess.draw();
 
-            if(data.targetVisible) {
+            if(visible) {
                 renderDot(ex, ey, ez, laserR, laserG, laserB);
             }
 
             if(data.targetIsEntity && data.targetEntityId >= 0) {
                 Entity targetEntity = mc.world.getEntityByID(data.targetEntityId);
                 if(targetEntity != null) {
-                    renderEntityHighlight(targetEntity, camX, camY, camZ, pt, data.targetVisible, data.focusMode);
+                    renderEntityHighlight(targetEntity, camX, camY, camZ, pt, visible, data.focusMode);
                 }
             }
 
