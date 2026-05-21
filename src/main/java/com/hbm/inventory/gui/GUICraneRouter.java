@@ -5,7 +5,6 @@ import com.hbm.inventory.container.ContainerCraneRouter;
 import com.hbm.lib.RefStrings;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.packet.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.network.TileEntityCraneRouter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -23,15 +22,38 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class GUICraneRouter extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_router.png");
-    private TileEntityCraneRouter router;
+
+    private static final ResourceLocation texture =
+            new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_router.png");
+
+    private final TileEntityCraneRouter router;
 
     public GUICraneRouter(InventoryPlayer invPlayer, TileEntityCraneRouter tedf) {
         super(new ContainerCraneRouter(invPlayer, tedf));
-        router = tedf;
+        this.router = tedf;
 
         this.xSize = 256;
         this.ySize = 201;
+    }
+
+    private int getModeSafe(int index) {
+        if (router == null || router.modes == null || index < 0 || index >= router.modes.length) {
+            return 0;
+        }
+
+        int mode = router.modes[index];
+        if (mode < 0 || mode > 3) {
+            return 0;
+        }
+
+        return mode;
+    }
+
+    private ModulePatternMatcher getMatcherSafe(int matcherIndex) {
+        if (router == null || router.patterns == null || matcherIndex < 0 || matcherIndex >= router.patterns.length) {
+            return null;
+        }
+        return router.patterns[matcherIndex];
     }
 
     @Override
@@ -44,7 +66,10 @@ public class GUICraneRouter extends GuiInfoContainer {
                 int buttonY = guiTop + 16 + k * 26;
 
                 if (buttonX <= mouseX && mouseX < buttonX + 18 && buttonY < mouseY && mouseY <= buttonY + 18) {
-                    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                    mc.getSoundHandler().playSound(
+                            PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F)
+                    );
+
                     NBTTagCompound data = new NBTTagCompound();
                     data.setInteger("toggle", j * 3 + k);
                     PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, router.getPos()));
@@ -66,9 +91,9 @@ public class GUICraneRouter extends GuiInfoContainer {
                     String[] text = new String[2];
                     int index = j * 3 + k;
 
-                    switch (router.modes[index]) {
+                    switch (getModeSafe(index)) {
                         case 0:
-                            text = new String[]{"OFF"};
+                            text = new String[] { "OFF" };
                             break;
                         case 1:
                             text[0] = "WHITELIST";
@@ -90,12 +115,19 @@ public class GUICraneRouter extends GuiInfoContainer {
         }
 
         if (mc.player.inventory.getItemStack().isEmpty()) {
-            for (int i = 0; i < 30; ++i) {
+            int slotCount = Math.min(30, this.inventorySlots.inventorySlots.size());
+
+            for (int i = 0; i < slotCount; ++i) {
                 Slot slot = this.inventorySlots.getSlot(i);
-                ModulePatternMatcher matcher = router.patterns[i / 5];
+                ModulePatternMatcher matcher = getMatcherSafe(i / 5);
                 int index = i % 5;
 
-                if (isMouseOverSlot(slot, mouseX, mouseY) && matcher.modes[index] != null) {
+                if (matcher != null
+                        && matcher.modes != null
+                        && index < matcher.modes.length
+                        && isMouseOverSlot(slot, mouseX, mouseY)
+                        && matcher.modes[index] != null) {
+
                     String label = TextFormatting.YELLOW + "";
 
                     switch (matcher.modes[index]) {
@@ -110,16 +142,24 @@ public class GUICraneRouter extends GuiInfoContainer {
                             break;
                     }
 
-                    drawHoveringText(Arrays.asList(TextFormatting.RED + "Right click to change", label), mouseX, mouseY - 30);
+                    drawHoveringText(
+                            Arrays.asList(TextFormatting.RED + "Right click to change", label),
+                            mouseX,
+                            mouseY - 30
+                    );
                 }
             }
         }
+
         super.renderHoveredToolTip(mouseX, mouseY);
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int i, int j) {
-        String name = this.router.hasCustomInventoryName() ? this.router.getInventoryName() : I18n.format(this.router.getInventoryName());
+        String name = this.router.hasCustomInventoryName()
+                ? this.router.getInventoryName()
+                : I18n.format(this.router.getInventoryName());
+
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 5, 4210752);
         this.fontRenderer.drawString(I18n.format("container.inventory"), 8 + 39, this.ySize - 96 + 2, 4210752);
     }
@@ -129,13 +169,14 @@ public class GUICraneRouter extends GuiInfoContainer {
         super.drawDefaultBackground();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, 93);
         drawTexturedModalRect(guiLeft + 39, guiTop + 101, 39, 101, 176, 100);
 
         for (int j = 0; j < 2; j++) {
             for (int k = 0; k < 3; k++) {
                 int index = j * 3 + k;
-                int mode = router.modes[index];
+                int mode = getModeSafe(index);
                 drawTexturedModalRect(guiLeft + 7 + j * 222, guiTop + 16 + k * 26, 238, 93 + mode * 18, 18, 18);
             }
         }

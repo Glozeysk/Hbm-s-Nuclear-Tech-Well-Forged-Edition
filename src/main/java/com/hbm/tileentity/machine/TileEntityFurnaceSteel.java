@@ -134,27 +134,40 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 
 	@Override
 	public void deserialize(ByteBuf buf) {
+		if(this.progress == null || this.progress.length < 3) this.progress = new int[3];
+		if(this.bonus == null || this.bonus.length < 3) this.bonus = new int[3];
+
 		for(int i = 0; i < 3; i++) this.progress[i] = buf.readInt();
 		for(int i = 0; i < 3; i++) this.bonus[i] = buf.readInt();
 		this.heat = buf.readInt();
 		this.wasOn = buf.readBoolean();
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
 
-		this.progress = nbt.getIntArray("progress");
-		this.bonus = nbt.getIntArray("bonus");
+		int[] savedProgress = nbt.getIntArray("progress");
+		int[] savedBonus = nbt.getIntArray("bonus");
+
+		this.progress = new int[3];
+		this.bonus = new int[3];
+
+		for(int i = 0; i < Math.min(savedProgress.length, 3); i++) {
+			this.progress[i] = savedProgress[i];
+		}
+		for(int i = 0; i < Math.min(savedBonus.length, 3); i++) {
+			this.bonus[i] = savedBonus[i];
+		}
+
 		this.heat = nbt.getInteger("heat");
-		
+
 		NBTTagList list = nbt.getTagList("lastItems", 10);
 		for(int i = 0; i < list.tagCount(); i++) {
 			NBTTagCompound nbt1 = list.getCompoundTagAt(i);
 			byte b0 = nbt1.getByte("lastItem");
 			if(b0 >= 0 && b0 < lastItems.length) {
 				lastItems[b0] = new ItemStack(nbt1);
-			
 			}
 		}
 	}

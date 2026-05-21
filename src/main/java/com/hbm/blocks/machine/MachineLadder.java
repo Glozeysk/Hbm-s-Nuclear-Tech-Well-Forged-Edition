@@ -22,20 +22,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-/**
- * Invisible helper ladder for one specific multiblock machine.
- *
- * Usage:
- * 1. Register one ladder block per machine type in ModBlocks:
- *    new MachineLadder("tank_ladder", () -> ModBlocks.machine_fluidtank)
- * 2. In the machine block:
- *    - place ladders in fillSpace()
- *    - remove ladders in breakBlock()
- *    - restore ladders in updateTick()
- *
- * The ladder restores itself by scheduling an update on the owner block
- * when it gets destroyed. This works for BlockDummyable-based machines.
- */
 public class MachineLadder extends BlockLadder {
 
     private final java.util.function.Supplier<Block> ownerSupplier;
@@ -75,7 +61,7 @@ public class MachineLadder extends BlockLadder {
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return NULL_AABB;
+        return super.getBoundingBox(state, world, pos);
     }
 
     @Nullable
@@ -136,6 +122,11 @@ public class MachineLadder extends BlockLadder {
 
     @Override
     public boolean isLadder(IBlockState state, IBlockAccess world, BlockPos pos, EntityLivingBase entity) {
+        return true;
+    }
+
+    @Override
+    public boolean isPassable(IBlockAccess world, BlockPos pos) {
         return true;
     }
 

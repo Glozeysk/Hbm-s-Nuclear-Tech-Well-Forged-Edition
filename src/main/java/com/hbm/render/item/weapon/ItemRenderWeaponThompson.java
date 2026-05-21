@@ -42,6 +42,7 @@ public class ItemRenderWeaponThompson extends TEISRBase {
 			break;
 		case THIRD_PERSON_LEFT_HAND:
 		case THIRD_PERSON_RIGHT_HAND:
+			GL11.glRotated(90, 0, 1, 0);
 		case HEAD:
 		case FIXED:
 		case GROUND:
