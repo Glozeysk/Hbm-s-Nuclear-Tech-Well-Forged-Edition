@@ -43,10 +43,7 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -224,6 +221,34 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 			if(this.crusherRotation >= 360F) {
 				this.crusherRotation -= 360F;
 				this.prevCrusherRotation -= 360F;
+			}
+
+			if(this.operational && this.targetDepth > 0) {
+				int drillY = pos.getY() - this.targetDepth - 4;
+
+				if(drillY >= 0) {
+					for(int dx = -1; dx <= 1; dx++) {
+						for(int dz = -1; dz <= 1; dz++) {
+							BlockPos drillPos = new BlockPos(pos.getX() + dx, drillY, pos.getZ() + dz);
+							IBlockState belowState = world.getBlockState(drillPos);
+
+							if(!belowState.getBlock().isAir(belowState, world, drillPos) && world.rand.nextBoolean()) {
+								double px = drillPos.getX() + 0.5 + (world.rand.nextDouble() - 0.5) * 1.5;
+								double py = drillY + 1.0 + world.rand.nextDouble() * 0.3;
+								double pz = drillPos.getZ() + 0.5 + (world.rand.nextDouble() - 0.5) * 1.5;
+
+								world.spawnParticle(
+										EnumParticleTypes.BLOCK_CRACK,
+										px, py, pz,
+										(world.rand.nextDouble() - 0.5) * 0.3,
+										world.rand.nextDouble() * 0.2,
+										(world.rand.nextDouble() - 0.5) * 0.3,
+										Block.getStateId(belowState)
+								);
+							}
+						}
+					}
+				}
 			}
 		}
 	}

@@ -1,6 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.machine.MachineCrystallizer;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.CrystallizerRecipes;
@@ -14,15 +20,18 @@ import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.BlockLadder;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -53,6 +62,11 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	private int soundTimer;
 	private static final int SOUND_DURATION = 20;
 
+	private List<BlockPos> ladderPositions = new ArrayList<>();
+	private EnumFacing ladderFacing = EnumFacing.NORTH;
+	private boolean pendingLadderRestore = false;
+	private int ladderRestoreCooldown = 0;
+
 	public TileEntityMachineCrystallizer() {
 		super(0);
 		inventory = new ItemStackHandler(7){
@@ -77,7 +91,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	}
 
 	private void updateConnections() {
-
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 
 		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
@@ -92,6 +105,20 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
 	@Override
 	public void update() {
+
+		if(pendingLadderRestore) {
+			if(ladderRestoreCooldown > 0) {
+				ladderRestoreCooldown--;
+			} else {
+				boolean complete = restoreLadders();
+				if(complete) {
+					pendingLadderRestore = false;
+				} else {
+					ladderRestoreCooldown = 20;
+				}
+			}
+		}
+
 		if(!world.isRemote) {
 
 			this.updateConnections();
@@ -147,6 +174,103 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 		}
 	}
 
+	private void bootstrapLadderData() {
+		if(world == null)
+			return;
+		if(!ladderPositions.isEmpty())
+			return;
+
+		IBlockState state = world.getBlockState(pos);
+
+		if(state.getBlock() != ModBlocks.machine_crystallizer)
+			return;
+
+		int meta = state.getValue(BlockDummyable.META);
+
+		if(meta < 12)
+			return;
+
+		ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+		MachineCrystallizer block = (MachineCrystallizer) state.getBlock();
+
+		this.ladderPositions = new ArrayList<>(Arrays.asList(
+				block.getSavedLadderPositions(pos.getX(), pos.getY(), pos.getZ(), dir)
+		));
+		this.ladderFacing = block.getSavedLadderFacing(dir);
+
+		if(!world.isRemote) {
+			this.markDirty();
+		}
+	}
+
+	public void setLadderData(List<BlockPos> positions, EnumFacing facing) {
+		this.ladderPositions = new ArrayList<>(positions);
+		this.ladderFacing = facing;
+		this.pendingLadderRestore = false;
+		this.ladderRestoreCooldown = 0;
+		this.markDirty();
+	}
+
+	public boolean restoreLadders() {
+		if(world == null)
+			return true;
+
+		if(ladderPositions.isEmpty()) {
+			bootstrapLadderData();
+		}
+
+		if(ladderPositions.isEmpty())
+			return true;
+
+		boolean complete = true;
+		IBlockState ladderState = ModBlocks.crystallizer_ladder.getDefaultState()
+				.withProperty(BlockLadder.FACING, ladderFacing);
+
+		for(BlockPos lpos : ladderPositions) {
+			if(!world.isBlockLoaded(lpos)) {
+				complete = false;
+				continue;
+			}
+			IBlockState state = world.getBlockState(lpos);
+			if(world.isAirBlock(lpos) || state.getBlock() == ModBlocks.crystallizer_ladder) {
+				world.setBlockState(lpos, ladderState, 3);
+			}
+		}
+
+		return complete;
+	}
+
+	public void removeLadders() {
+		if(world == null || world.isRemote)
+			return;
+
+		if(ladderPositions.isEmpty()) {
+			bootstrapLadderData();
+		}
+
+		if(ladderPositions.isEmpty())
+			return;
+
+		for(BlockPos lpos : ladderPositions) {
+			if(!world.isBlockLoaded(lpos))
+				continue;
+			if(world.getBlockState(lpos).getBlock() == ModBlocks.crystallizer_ladder) {
+				world.setBlockToAir(lpos);
+			}
+		}
+		ladderPositions.clear();
+		pendingLadderRestore = false;
+		ladderRestoreCooldown = 0;
+		markDirty();
+	}
+
+	@Override
+	public void validate() {
+		super.validate();
+		pendingLadderRestore = true;
+		ladderRestoreCooldown = 5;
+	}
+
 	@Override
 	public boolean hasPermission(EntityPlayer player) {
 		return player.getDistanceSq(pos) <= 256;
@@ -161,7 +285,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	}
 
 	protected boolean inputValidForTank(int slot){
-
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
 			if(containerFluid != null){
@@ -367,6 +490,19 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public void readFromNBT(NBTTagCompound compound) {
 		power = compound.getLong("power");
 		tank.readFromNBT(compound.getCompoundTag("tank"));
+
+		ladderPositions.clear();
+		if(compound.hasKey("ladderPositions")) {
+			NBTTagList list = compound.getTagList("ladderPositions", 10);
+			for(int i = 0; i < list.tagCount(); i++) {
+				NBTTagCompound tag = list.getCompoundTagAt(i);
+				ladderPositions.add(new BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z")));
+			}
+		}
+		if(compound.hasKey("ladderFacing")) {
+			ladderFacing = EnumFacing.byIndex(compound.getInteger("ladderFacing"));
+		}
+
 		super.readFromNBT(compound);
 	}
 
@@ -374,6 +510,18 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setLong("power", power);
 		compound.setTag("tank", tank.writeToNBT(new NBTTagCompound()));
+
+		NBTTagList list = new NBTTagList();
+		for(BlockPos lpos : ladderPositions) {
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setInteger("x", lpos.getX());
+			tag.setInteger("y", lpos.getY());
+			tag.setInteger("z", lpos.getZ());
+			list.appendTag(tag);
+		}
+		compound.setTag("ladderPositions", list);
+		compound.setInteger("ladderFacing", ladderFacing.getIndex());
+
 		return super.writeToNBT(compound);
 	}
 

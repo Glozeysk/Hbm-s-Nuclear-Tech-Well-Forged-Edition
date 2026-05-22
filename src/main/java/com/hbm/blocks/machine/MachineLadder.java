@@ -4,6 +4,8 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import com.hbm.blocks.BlockDummyable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLadder;
 import net.minecraft.block.SoundType;
@@ -19,6 +21,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -42,6 +45,58 @@ public class MachineLadder extends BlockLadder {
             ownerCache = ownerSupplier.get();
         }
         return ownerCache;
+    }
+
+    private boolean hasCoreNearby(World world, BlockPos pos) {
+        Block owner = getOwnerBlock();
+        int radius = 6;
+
+        for(int dx = -radius; dx <= radius; dx++) {
+            for(int dy = -radius; dy <= radius; dy++) {
+                for(int dz = -radius; dz <= radius; dz++) {
+                    BlockPos check = pos.add(dx, dy, dz);
+
+                    if(!world.isBlockLoaded(check))
+                        continue;
+
+                    IBlockState state = world.getBlockState(check);
+
+                    if(state.getBlock() == owner) {
+                        try {
+                            Integer meta = state.getValue(BlockDummyable.META);
+                            if(meta != null && meta >= 12) {
+                                return true;
+                            }
+                        } catch(Exception ignored) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public float getExplosionResistance(World world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
+        if(hasCoreNearby(world, pos)) {
+            return 3600000.0F;
+        }
+        return super.getExplosionResistance(world, pos, exploder, explosion);
+    }
+
+    @Override
+    public void onBlockExploded(World world, BlockPos pos, Explosion explosion) {
+        if(hasCoreNearby(world, pos)) {
+            return;
+        }
+        super.onBlockExploded(world, pos, explosion);
+    }
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosion) {
+        return false;
     }
 
     @Override
@@ -96,7 +151,7 @@ public class MachineLadder extends BlockLadder {
         }
     }
 
-    public void onBlockDestroyedByExplosion(World world, BlockPos pos, net.minecraft.world.Explosion explosion) {
+    public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
         if(!world.isRemote) {
             scheduleRestore(world, pos);
         }
@@ -104,12 +159,16 @@ public class MachineLadder extends BlockLadder {
 
     private void scheduleRestore(World world, BlockPos pos) {
         Block owner = getOwnerBlock();
-        int radius = 4;
+        int radius = 6;
 
         for(int dx = -radius; dx <= radius; dx++) {
             for(int dy = -radius; dy <= radius; dy++) {
                 for(int dz = -radius; dz <= radius; dz++) {
                     BlockPos neighbor = pos.add(dx, dy, dz);
+
+                    if(!world.isBlockLoaded(neighbor))
+                        continue;
+
                     IBlockState state = world.getBlockState(neighbor);
                     if(state.getBlock() == owner) {
                         world.scheduleUpdate(neighbor, owner, 10);

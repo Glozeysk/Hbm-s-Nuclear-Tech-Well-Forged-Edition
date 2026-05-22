@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import com.hbm.blocks.BlockDummyable;
@@ -76,27 +77,28 @@ public class MachineCrystallizer extends BlockDummyable {
 		this.makeExtra(world, x + dir.offsetX * o + 1, y, z + dir.offsetZ * o - 1);
 		this.makeExtra(world, x + dir.offsetX * o - 1, y, z + dir.offsetZ * o - 1);
 
-		placeLadderBlocks(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, dir);
-	}
+		int cx = x + dir.offsetX * o;
+		int cy = y + dir.offsetY * o;
+		int cz = z + dir.offsetZ * o;
 
-	public void placeLadderBlocks(World world, int cx, int cy, int cz, ForgeDirection dir) {
 		EnumFacing facing = getLadderFacing(dir);
-		IBlockState ladderState = ModBlocks.crystallizer_ladder.getDefaultState().withProperty(BlockLadder.FACING, facing);
+		BlockPos[] positions = getLadderPositions(cx, cy, cz, dir);
 
-		for(BlockPos pos : getLadderPositions(cx, cy, cz, dir)) {
-			IBlockState state = world.getBlockState(pos);
-			if(world.isAirBlock(pos) || state.getBlock() == ModBlocks.crystallizer_ladder) {
-				world.setBlockState(pos, ladderState, 2);
+		IBlockState ladderState = ModBlocks.crystallizer_ladder.getDefaultState()
+				.withProperty(BlockLadder.FACING, facing);
+
+		for(BlockPos pos : positions) {
+			if(world.isAirBlock(pos) || world.getBlockState(pos).getBlock() == ModBlocks.crystallizer_ladder) {
+				world.setBlockState(pos, ladderState, 3);
 			}
 		}
-	}
 
-	private void removeLadderBlocks(World world, int cx, int cy, int cz, ForgeDirection dir) {
-		for(BlockPos pos : getLadderPositions(cx, cy, cz, dir)) {
-			if(world.getBlockState(pos).getBlock() == ModBlocks.crystallizer_ladder) {
-				world.setBlockToAir(pos);
-			}
+		TileEntity te = world.getTileEntity(new BlockPos(cx, cy, cz));
+		if(te instanceof TileEntityMachineCrystallizer) {
+			((TileEntityMachineCrystallizer) te).setLadderData(Arrays.asList(positions), facing);
 		}
+
+		world.scheduleUpdate(new BlockPos(cx, cy, cz), this, 1);
 	}
 
 	private EnumFacing getLadderFacing(ForgeDirection dir) {
@@ -112,6 +114,10 @@ public class MachineCrystallizer extends BlockDummyable {
 			default:
 				return EnumFacing.NORTH;
 		}
+	}
+
+	public EnumFacing getSavedLadderFacing(ForgeDirection dir) {
+		return getLadderFacing(dir);
 	}
 
 	private BlockPos[] getLadderPositions(int cx, int cy, int cz, ForgeDirection dir) {
@@ -157,6 +163,10 @@ public class MachineCrystallizer extends BlockDummyable {
 		}
 	}
 
+	public BlockPos[] getSavedLadderPositions(int cx, int cy, int cz, ForgeDirection dir) {
+		return getLadderPositions(cx, cy, cz, dir);
+	}
+
 	@Override
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 		if(!world.isRemote) {
@@ -173,17 +183,11 @@ public class MachineCrystallizer extends BlockDummyable {
 				return;
 
 			BlockPos corePos = new BlockPos(core[0], core[1], core[2]);
-			IBlockState coreState = world.getBlockState(corePos);
+			TileEntity te = world.getTileEntity(corePos);
 
-			if(coreState.getBlock() != this)
-				return;
-
-			int coreMeta = coreState.getValue(META);
-			if(coreMeta < 12)
-				return;
-
-			ForgeDirection dir = ForgeDirection.getOrientation(coreMeta - offset);
-			placeLadderBlocks(world, corePos.getX(), corePos.getY(), corePos.getZ(), dir);
+			if(te instanceof TileEntityMachineCrystallizer) {
+				((TileEntityMachineCrystallizer) te).restoreLadders();
+			}
 		}
 	}
 
@@ -191,23 +195,23 @@ public class MachineCrystallizer extends BlockDummyable {
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		if(!world.isRemote) {
 			int[] core = this.findCore(world, pos.getX(), pos.getY(), pos.getZ());
+			BlockPos corePos;
 
 			if(core != null) {
-				BlockPos corePos = new BlockPos(core[0], core[1], core[2]);
-				IBlockState coreState = world.getBlockState(corePos);
-
-				if(coreState.getBlock() == this) {
-					int coreMeta = coreState.getValue(META);
-					if(coreMeta >= 12) {
-						ForgeDirection dir = ForgeDirection.getOrientation(coreMeta - offset);
-						removeLadderBlocks(world, corePos.getX(), corePos.getY(), corePos.getZ(), dir);
-					}
-				}
+				corePos = new BlockPos(core[0], core[1], core[2]);
 			} else {
 				int meta = state.getValue(META);
 				if(meta >= 12) {
-					ForgeDirection dir = ForgeDirection.getOrientation(meta - offset);
-					removeLadderBlocks(world, pos.getX(), pos.getY(), pos.getZ(), dir);
+					corePos = pos;
+				} else {
+					corePos = null;
+				}
+			}
+
+			if(corePos != null) {
+				TileEntity te = world.getTileEntity(corePos);
+				if(te instanceof TileEntityMachineCrystallizer) {
+					((TileEntityMachineCrystallizer) te).removeLadders();
 				}
 			}
 		}
