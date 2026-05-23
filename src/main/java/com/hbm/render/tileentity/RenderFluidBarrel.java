@@ -27,10 +27,12 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarrel> {
@@ -57,6 +59,8 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 	private static final double WALL_MIN = 2.0 / 16.0;
 	private static final double WALL_MAX = 14.0 / 16.0;
 
+	private static final float TEXTURE_SIZE = 48.0F;
+
 	@Override
 	public void render(TileEntityBarrel barrel, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		renderPipeStubs(barrel, x, y, z);
@@ -64,8 +68,8 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 	}
 
 	private void renderDiamondLabels(TileEntityBarrel barrel, double x, double y, double z) {
-		GL11.glPushMatrix();
-		GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5);
 		GlStateManager.disableLighting();
 
 		if(barrel.tank.getFluid() != null) {
@@ -73,17 +77,17 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 			FluidTypeHandler.FluidProperties p = FluidTypeHandler.getProperties(type);
 
 			for(int j = 0; j < 4; j++) {
-				GL11.glPushMatrix();
-				GL11.glTranslated(0.4, 0.25, -0.15);
-				GL11.glScalef(1.0F, 0.35F, 0.35F);
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(0.4, 0.25, -0.15);
+				GlStateManager.scale(1.0F, 0.35F, 0.35F);
 				DiamondPronter.pront(p.poison, p.flammability, p.reactivity, p.symbol);
-				GL11.glPopMatrix();
-				GL11.glRotatef(90, 0, 1, 0);
+				GlStateManager.popMatrix();
+				GlStateManager.rotate(90, 0, 1, 0);
 			}
 		}
 
 		GlStateManager.enableLighting();
-		GL11.glPopMatrix();
+		GlStateManager.popMatrix();
 	}
 
 	private void renderPipeStubs(TileEntityBarrel barrel, double x, double y, double z) {
@@ -97,7 +101,8 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 
 		boolean hasAny = false;
 		for(EnumFacing face : EnumFacing.HORIZONTALS) {
-			if(isPipe(world.getBlockState(pos.offset(face)).getBlock())) {
+			BlockPos neighborPos = pos.offset(face);
+			if(isPipe(world.getBlockState(neighborPos).getBlock()) || canConnectToBarrel(world, neighborPos, barrel)) {
 				hasAny = true;
 				break;
 			}
@@ -106,13 +111,14 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 
 		int combinedLight = world.getCombinedLight(pos, 0);
 		int blockLight = combinedLight & 0xFFFF;
-		int skyLight = (combinedLight >> 16) & 0xFFFF;
+		int skyLight = combinedLight >> 16 & 0xFFFF;
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 
 		Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
+		GlStateManager.disableLighting();
 		GlStateManager.disableCull();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -123,9 +129,12 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
 		for(EnumFacing face : EnumFacing.HORIZONTALS) {
-			if(!isPipe(world.getBlockState(pos.offset(face)).getBlock())) {
-				continue;
-			}
+			BlockPos neighborPos = pos.offset(face);
+
+			boolean isPipe = isPipe(world.getBlockState(neighborPos).getBlock());
+			boolean isBarrel = canConnectToBarrel(world, neighborPos, barrel);
+
+			if(!isPipe && !isBarrel) continue;
 
 			TextureAtlasSprite sprite = getDominantBarrelSideSprite(state, pos, face);
 
@@ -155,8 +164,21 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 
 		tess.draw();
 
+		GlStateManager.enableLighting();
 		GlStateManager.enableCull();
 		GlStateManager.popMatrix();
+	}
+
+	private boolean canConnectToBarrel(World world, BlockPos neighborPos, TileEntityBarrel self) {
+		TileEntity neighborTE = world.getTileEntity(neighborPos);
+		if(!(neighborTE instanceof TileEntityBarrel)) return false;
+
+		TileEntityBarrel neighbor = (TileEntityBarrel) neighborTE;
+
+		Fluid selfType = self.tank.getFluid() != null ? self.tank.getFluid().getFluid() : null;
+		Fluid neighborType = neighbor.tank.getFluid() != null ? neighbor.tank.getFluid().getFluid() : null;
+
+		return neighborType == null || selfType == neighborType || selfType == null;
 	}
 
 	private void drawNorthStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right) {
@@ -233,11 +255,13 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 	}
 
 	private float pxU(TextureAtlasSprite sprite, float pixel) {
-		return sprite.getInterpolatedU(pixel * 16.0F / sprite.getIconWidth());
+		float range = sprite.getMaxU() - sprite.getMinU();
+		return sprite.getMinU() + range * (pixel / TEXTURE_SIZE);
 	}
 
 	private float pxV(TextureAtlasSprite sprite, float pixel) {
-		return sprite.getInterpolatedV(pixel * 16.0F / sprite.getIconHeight());
+		float range = sprite.getMaxV() - sprite.getMinV();
+		return sprite.getMinV() + range * (pixel / TEXTURE_SIZE);
 	}
 
 	private TextureAtlasSprite getDominantBarrelSideSprite(IBlockState state, BlockPos pos, EnumFacing side) {
