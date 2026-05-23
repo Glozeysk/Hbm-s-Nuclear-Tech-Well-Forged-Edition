@@ -47,12 +47,12 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	public Fluid tankType = ModForgeFluids.nitan;
 	public boolean needsUpdate = false;
 	public boolean isRunning = false;
-	
+
 	public TileEntityMachineDiFurnaceBig() {
 		super(11);
 		tank = new FluidTank(16000);
 	}
-	
+
 	@Override
 	public String getName(){
 		return "container.machinedifurnacebig";
@@ -67,14 +67,13 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		}
 		return 20;
 	}
-	
+
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing face) {
 		return new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 10 };
 	}
 
 	private void updateConnections() {
-
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 
 		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
@@ -85,56 +84,27 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		this.trySubscribe(world, pos.add(-2, 0, 1), ForgeDirection.WEST);
 		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
 		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
-		
 	}
-	
+
 	@Override
-	public boolean canInsertItem(int slot, ItemStack stack, int amount){
-		if(!isItemValidForSlot(slot, stack))
-			return false;
-		if(slot == 0 || slot == 1) {
-			int partner = slot == 0 ? 1 : 0;
-			if(!inventory.getStackInSlot(partner).isEmpty() && inventory.getStackInSlot(partner).getItem() != stack.getItem())
-				return false;
-			if(!inventory.getStackInSlot(2).isEmpty() && inventory.getStackInSlot(2).getItem() == stack.getItem())
-				return false;
-			if(!inventory.getStackInSlot(3).isEmpty() && inventory.getStackInSlot(3).getItem() == stack.getItem())
-				return false;
-			return true;
-		}
-		if(slot == 2 || slot == 3) {
-			int partner = slot == 2 ? 3 : 2;
-			if(!inventory.getStackInSlot(partner).isEmpty() && inventory.getStackInSlot(partner).getItem() != stack.getItem())
-				return false;
-			if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() == stack.getItem())
-				return false;
-			if(!inventory.getStackInSlot(1).isEmpty() && inventory.getStackInSlot(1).getItem() == stack.getItem())
-				return false;
-			return true;
-		}
-		return true;
+	public boolean canInsertItem(int slot, ItemStack stack, int amount) {
+		return isItemValidForSlot(slot, stack);
 	}
-	
 	@Override
 	public boolean canExtractItem(int i, ItemStack itemStack, int amount){
 		return i == 4 || i == 5 || i == 6 || i == 7 || i == 10;
 	}
-	
+
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack){
-		if(i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10) return false;
-		return true;
+		return i != 4 && i != 5 && i != 6 && i != 7 && i != 8 && i != 9 && i != 10;
 	}
-	
+
 	public boolean isUseableByPlayer(EntityPlayer player) {
-		if(world.getTileEntity(pos) != this)
-		{
-			return false;
-		}else{
-			return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <=64;
-		}
+		if(world.getTileEntity(pos) != this) return false;
+		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		power = compound.getLong("power");
@@ -153,112 +123,102 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		return super.writeToNBT(compound);
 	}
 
-    @SideOnly(Side.CLIENT)
-    private void spawnSmoke(double x, double y, double z) {
-        Particle p = new Particle(world, x, y, z) {
-            private float baseScale;
-            {
-                this.motionX = 0.0D;
-                this.motionY = 0.05D;
-                this.motionZ = 0.0D;
-                this.particleRed = 0.9F;
-                this.particleGreen = 0.9F;
-                this.particleBlue = 0.9F;
-                this.particleMaxAge = (int)(8.0F / (this.rand.nextFloat() * 0.9F + 0.1F));
-                this.baseScale = this.particleScale * 1.1F;
-                this.particleScale = 0;
-                this.setParticleTextureIndex(0);
-            }
+	@SideOnly(Side.CLIENT)
+	private void spawnSmoke(double x, double y, double z) {
+		Particle p = new Particle(world, x, y, z) {
+			private float baseScale;
+			{
+				this.motionX = 0.0D;
+				this.motionY = 0.05D;
+				this.motionZ = 0.0D;
+				this.particleRed = 0.9F;
+				this.particleGreen = 0.9F;
+				this.particleBlue = 0.9F;
+				this.particleMaxAge = (int)(8.0F / (this.rand.nextFloat() * 0.9F + 0.1F));
+				this.baseScale = this.particleScale * 1.1F;
+				this.particleScale = 0;
+				this.setParticleTextureIndex(0);
+			}
 
-            @Override
-            public void onUpdate() {
-                this.prevPosX = this.posX;
-                this.prevPosY = this.posY;
-                this.prevPosZ = this.posZ;
-                if (this.particleAge++ >= this.particleMaxAge) {
-                    this.setExpired();
-                }
-                this.setParticleTextureIndex(7 - this.particleAge * 8 / this.particleMaxAge);
-                this.posX += this.motionX;
-                this.posY += this.motionY;
-                this.posZ += this.motionZ;
-                this.motionX *= 0.96D;
-                this.motionY *= 0.96D;
-                this.motionZ *= 0.96D;
-            }
+			@Override
+			public void onUpdate() {
+				this.prevPosX = this.posX;
+				this.prevPosY = this.posY;
+				this.prevPosZ = this.posZ;
+				if (this.particleAge++ >= this.particleMaxAge) this.setExpired();
+				this.setParticleTextureIndex(7 - this.particleAge * 8 / this.particleMaxAge);
+				this.posX += this.motionX;
+				this.posY += this.motionY;
+				this.posZ += this.motionZ;
+				this.motionX *= 0.96D;
+				this.motionY *= 0.96D;
+				this.motionZ *= 0.96D;
+			}
 
-            @Override
-            public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-                float f = ((float)this.particleAge + partialTicks) / (float)this.particleMaxAge * 32.0F;
-                f = MathHelper.clamp(f, 0.0F, 1.0F);
-                this.particleScale = this.baseScale * f;
-                super.renderParticle(buffer, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ);
-            }
+			@Override
+			public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
+				float f = ((float)this.particleAge + partialTicks) / (float)this.particleMaxAge * 32.0F;
+				f = MathHelper.clamp(f, 0.0F, 1.0F);
+				this.particleScale = this.baseScale * f;
+				super.renderParticle(buffer, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ);
+			}
 
-            @Override
-            public int getBrightnessForRender(float partialTick) {
-                int i = super.getBrightnessForRender(partialTick);
-                int k = i >> 16 & 0xFF;
-                return 240 | (k << 16);
-            }
-        };
-        Minecraft.getMinecraft().effectRenderer.addEffect(p);
-    }
+			@Override
+			public int getBrightnessForRender(float partialTick) {
+				int i = super.getBrightnessForRender(partialTick);
+				int k = i >> 16 & 0xFF;
+				return 240 | (k << 16);
+			}
+		};
+		Minecraft.getMinecraft().effectRenderer.addEffect(p);
+	}
+
 	public long getPowerScaled(long i) {
 		return (power * i) / maxPower;
 	}
-	
+
 	public int getProgressScaled(int i) {
 		return (process * i) / getProcessSpeed();
 	}
 
+	private boolean hasValidPair(int a, int b) {
+		if(inventory.getStackInSlot(a).isEmpty() || inventory.getStackInSlot(b).isEmpty()) return false;
+		ItemStack result = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(a), inventory.getStackInSlot(b));
+		return result != null && !result.isEmpty();
+	}
+
 	public boolean canProcess() {
-		if(tank.getFluidAmount() < 5)
-			return false;
-		if(power < 500000)
-			return false;
+		if(tank.getFluidAmount() < 5) return false;
+		if(power < 500000) return false;
+		return hasValidPair(0, 2) || hasValidPair(1, 3);
+	}
 
-		ItemStack result1 = null;
-		ItemStack result2 = null;
+	private void processPair(int a, int b) {
+		ItemStack result = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(a), inventory.getStackInSlot(b));
+		if(result == null || result.isEmpty()) return;
 
-		if(!inventory.getStackInSlot(0).isEmpty() && !inventory.getStackInSlot(2).isEmpty())
-			result1 = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(0), inventory.getStackInSlot(2));
-		if(!inventory.getStackInSlot(1).isEmpty() && !inventory.getStackInSlot(3).isEmpty())
-			result2 = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(1), inventory.getStackInSlot(3));
-
-		if((result1 == null || result1.isEmpty()) && (result2 == null || result2.isEmpty()))
-			return false;
-
-		int totalCount = 0;
-		ItemStack resultItem = null;
-		if(result1 != null && !result1.isEmpty()) {
-			totalCount += result1.getCount();
-			resultItem = result1;
-		}
-		if(result2 != null && !result2.isEmpty()) {
-			totalCount += result2.getCount();
-			if(resultItem == null) resultItem = result2;
-		}
-
-		int space = 0;
+		int remaining = result.getCount();
 		for(int s : new int[]{4, 5, 6, 7}) {
-			ItemStack slotStack = inventory.getStackInSlot(s);
-			if(slotStack.isEmpty()) {
-				space += resultItem.getMaxStackSize();
-			} else if(slotStack.isItemEqual(resultItem)) {
-				space += resultItem.getMaxStackSize() - slotStack.getCount();
+			if(remaining <= 0) break;
+			ItemStack slot = inventory.getStackInSlot(s);
+			if(slot.isEmpty()) {
+				ItemStack out = result.copy();
+				out.setCount(Math.min(remaining, result.getMaxStackSize()));
+				inventory.setStackInSlot(s, out);
+				remaining -= out.getCount();
+			} else if(slot.isItemEqual(result)) {
+				int add = Math.min(remaining, result.getMaxStackSize() - slot.getCount());
+				slot.grow(add);
+				remaining -= add;
 			}
-			if(space >= totalCount)
-				break;
 		}
 
-		return space >= totalCount;
+		inventory.getStackInSlot(a).shrink(1);
+		inventory.getStackInSlot(b).shrink(1);
+		if(inventory.getStackInSlot(a).getCount() <= 0) inventory.setStackInSlot(a, ItemStack.EMPTY);
+		if(inventory.getStackInSlot(b).getCount() <= 0) inventory.setStackInSlot(b, ItemStack.EMPTY);
 	}
 
-	public boolean isProcessing() {
-		return process > 0;
-	}
-	
 	public void process() {
 		tank.drain(5, true);
 		needsUpdate = true;
@@ -266,66 +226,19 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		process++;
 
 		if(process >= getProcessSpeed()) {
-			ItemStack result1 = null;
-			ItemStack result2 = null;
-
-			if(!inventory.getStackInSlot(0).isEmpty() && !inventory.getStackInSlot(2).isEmpty())
-				result1 = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(0), inventory.getStackInSlot(2));
-			if(!inventory.getStackInSlot(1).isEmpty() && !inventory.getStackInSlot(3).isEmpty())
-				result2 = DiFurnaceRecipes.getFurnaceProcessingResult(inventory.getStackInSlot(1), inventory.getStackInSlot(3));
-
-			int totalCount = 0;
-			ItemStack resultItem = null;
-			if(result1 != null && !result1.isEmpty()) {
-				totalCount += result1.getCount();
-				resultItem = result1;
+			if(hasValidPair(0, 2)) {
+				processPair(0, 2);
 			}
-			if(result2 != null && !result2.isEmpty()) {
-				totalCount += result2.getCount();
-				if(resultItem == null) resultItem = result2;
+			if(hasValidPair(1, 3)) {
+				processPair(1, 3);
 			}
-
-			for(int s : new int[]{4, 5, 6, 7}) {
-				if(totalCount <= 0)
-					break;
-				ItemStack slotStack = inventory.getStackInSlot(s);
-				if(slotStack.isEmpty()) {
-					ItemStack output = resultItem.copy();
-					int count = Math.min(totalCount, resultItem.getMaxStackSize());
-					output.setCount(count);
-					inventory.setStackInSlot(s, output);
-					totalCount -= count;
-				} else if(slotStack.isItemEqual(resultItem)) {
-					int count = Math.min(totalCount, resultItem.getMaxStackSize() - slotStack.getCount());
-					slotStack.grow(count);
-					totalCount -= count;
-				}
-			}
-
-			if(result1 != null && !result1.isEmpty()) {
-				for(int i : new int[]{0, 2}) {
-					inventory.getStackInSlot(i).shrink(1);
-					if(inventory.getStackInSlot(i).getCount() <= 0)
-						inventory.setStackInSlot(i, ItemStack.EMPTY);
-				}
-			}
-
-			if(result2 != null && !result2.isEmpty()) {
-				for(int i : new int[]{1, 3}) {
-					inventory.getStackInSlot(i).shrink(1);
-					if(inventory.getStackInSlot(i).getCount() <= 0)
-						inventory.setStackInSlot(i, ItemStack.EMPTY);
-				}
-			}
-
 			process = 0;
 		}
 	}
-	
+
 	@Override
 	public void update() {
 		if (!world.isRemote) {
-
 			this.updateConnections();
 
 			power = Library.chargeTEFromItems(inventory, 8, power, maxPower);
@@ -375,37 +288,36 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 					process = 0;
 				}
 
-		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
-		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
 				if(this.world.getTotalWorldTime() % 2 == 0) {
-					switch (dir)
-					{
+					switch (dir) {
 						case WEST:
 							world.spawnParticle(EnumParticleTypes.FLAME,
-                                    pos.getX() - 0.5 + rot.offsetX * world.rand.nextDouble(),
-                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
-                                    pos.getZ() + 0.9 * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+									pos.getX() - 0.5 + rot.offsetX * world.rand.nextDouble(),
+									pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+									pos.getZ() + 0.9 * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case EAST:
 							world.spawnParticle(EnumParticleTypes.FLAME,
-                                    pos.getX() + 1.45 + rot.offsetX * world.rand.nextDouble(),
-                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
-                                    pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+									pos.getX() + 1.45 + rot.offsetX * world.rand.nextDouble(),
+									pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+									pos.getZ() + rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
 							break;
 						case NORTH:
 							world.spawnParticle(EnumParticleTypes.FLAME,
-                                    pos.getX() + rot.offsetX * world.rand.nextDouble(),
-                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.3,
-                                    pos.getZ() - 0.58, 0.0, 0.0, 0.0);
+									pos.getX() + rot.offsetX * world.rand.nextDouble(),
+									pos.getY() + 1.65 + world.rand.nextDouble() * 0.3,
+									pos.getZ() - 0.58, 0.0, 0.0, 0.0);
 							break;
 						case SOUTH:
-                            world.spawnParticle(EnumParticleTypes.FLAME,
-                                    pos.getX() + 0.9 + rot.offsetX * world.rand.nextDouble(),
-                                    pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
-                                    pos.getZ() + 1.45 - rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
-					default:
-						break;
+							world.spawnParticle(EnumParticleTypes.FLAME,
+									pos.getX() + 0.9 + rot.offsetX * world.rand.nextDouble(),
+									pos.getY() + 1.65 + world.rand.nextDouble() * 0.25,
+									pos.getZ() + 1.45 - rot.offsetZ * world.rand.nextDouble(), 0.0, 0.0, 0.0);
+						default:
+							break;
 					}
 				}
 				if(this.world.getTotalWorldTime() % 10 == 0) {
@@ -444,7 +356,6 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	}
 
 	protected boolean inputValidForTank(int slot){
-		
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
 			if(containerFluid != null){
@@ -462,14 +373,13 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 			tank.setFluid(new FluidStack(f, 0));
 		}
 	}
-	
+
 	private boolean isValidFluid(FluidStack stack) {
-		if(stack == null)
-			return false;
+		if(stack == null) return false;
 		return stack.getFluid() == ModForgeFluids.sparkfuel
-			|| stack.getFluid() == ModForgeFluids.nitan
-			|| stack.getFluid() == ModForgeFluids.uu_matter
-			|| stack.getFluid() == ModForgeFluids.balefire;
+				|| stack.getFluid() == ModForgeFluids.nitan
+				|| stack.getFluid() == ModForgeFluids.uu_matter
+				|| stack.getFluid() == ModForgeFluids.balefire;
 	}
 
 	@Override
@@ -483,7 +393,6 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 		return 65536.0D;
 	}
 
-	
 	@Override
 	public void setPower(long i) {
 		power = i;
@@ -492,7 +401,6 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	@Override
 	public long getPower() {
 		return power;
-		
 	}
 
 	@Override
@@ -508,8 +416,7 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
 		if (isValidFluid(resource)) {
-			if(tank.fill(resource, false) > 0)
-				needsUpdate = true;
+			if(tank.fill(resource, false) > 0) needsUpdate = true;
 			return tank.fill(resource, doFill);
 		}
 		return 0;
@@ -524,7 +431,7 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){
@@ -533,7 +440,7 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 			return super.getCapability(capability, facing);
 		}
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){
@@ -542,5 +449,4 @@ public class TileEntityMachineDiFurnaceBig extends TileEntityMachineBase impleme
 			return super.hasCapability(capability, facing);
 		}
 	}
-
 }
