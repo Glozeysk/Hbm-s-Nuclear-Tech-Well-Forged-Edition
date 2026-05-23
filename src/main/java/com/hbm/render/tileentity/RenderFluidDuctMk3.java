@@ -7,7 +7,6 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.main.ResourceManager;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
-import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk3;
 
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -15,7 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fluids.Fluid;
 
 public class RenderFluidDuctMk3<T extends TileEntityFFDuctBaseMk2> extends TileEntitySpecialRenderer<T> {
-	
+
 	@Override
 	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		if(te.getBlockType() == ModBlocks.fluid_duct_solid || te.getBlockType() == ModBlocks.fluid_duct_solid_sealed || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid_sealed)
@@ -35,16 +34,10 @@ public class RenderFluidDuctMk3<T extends TileEntityFFDuctBaseMk2> extends TileE
 
 		GL11.glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
 
-		// First pass - base texture without color tint
 		GlStateManager.color(1, 1, 1, 1);
-		if(te instanceof TileEntityFFFluidSuccMk3){
-			bindTexture(ResourceManager.pipe_neo_mk3_succ_tex);
-		} else {
-			bindTexture(ResourceManager.pipe_neo_mk3_tex);
-		}
+		bindTexture(ResourceManager.pipe_neo_mk3_tex);
 		renderParts(mask, pX, nX, pY, nY, pZ, nZ);
 
-		// Second pass - overlay with fluid color
 		if(te.getType() != null){
 			GlStateManager.enableBlend();
 			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

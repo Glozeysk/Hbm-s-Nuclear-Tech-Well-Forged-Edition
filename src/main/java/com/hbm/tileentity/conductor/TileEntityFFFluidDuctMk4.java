@@ -245,21 +245,18 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (resource == null || resource.amount <= 0) {
-            return 0;
-        }
+        if (resource == null || resource.amount <= 0) return 0;
 
-        if (!world.isRemote && doFill) {
-            if (!isNetworkPowered()) {
-                if (FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT)) {
-                    world.destroyBlock(pos, false);
-                    world.newExplosion(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4.0F, true, true);
-                    return 0;
-                } else if (FluidTypeHandler.isExtremelyHot(resource.getFluid())) {
-                    world.destroyBlock(pos, false);
-                    world.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                    return 0;
-                }
+        if (!world.isRemote && doFill && !isNetworkPowered()) {
+            if (FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT)) {
+                world.destroyBlock(pos, false);
+                world.newExplosion(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4.0F, true, true);
+                return 0;
+            } else if (FluidTypeHandler.isExtremelyHot(resource.getFluid())) {
+                world.destroyBlock(pos, false);
+                world.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                        SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                return 0;
             }
         }
 

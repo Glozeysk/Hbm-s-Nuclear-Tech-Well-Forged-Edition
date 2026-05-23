@@ -7,7 +7,6 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.main.ResourceManager;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
-import com.hbm.tileentity.conductor.TileEntityFFFluidSuccMk4;
 
 import api.hbm.energy.IEnergyConductor;
 import api.hbm.energy.IEnergyUser;
@@ -19,7 +18,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileEntitySpecialRenderer<T> {
-	
+
 	@Override
 	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		if(te.getBlockType() == ModBlocks.fluid_duct_solid || te.getBlockType() == ModBlocks.fluid_duct_solid_sealed || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid_sealed)
@@ -40,11 +39,7 @@ public class RenderFluidDuctMk4<T extends TileEntityFFDuctBaseMk2> extends TileE
 		GL11.glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
 
 		GlStateManager.color(1, 1, 1, 1);
-		if(te instanceof TileEntityFFFluidSuccMk4){
-			bindTexture(ResourceManager.pipe_neo_mk4_succ_tex);
-		} else {
-			bindTexture(ResourceManager.pipe_neo_mk4_tex);
-		}
+		bindTexture(ResourceManager.pipe_neo_mk4_tex);
 		renderParts(mask, pX, nX, pY, nY, pZ, nZ);
 
 		if(te.getType() != null){
