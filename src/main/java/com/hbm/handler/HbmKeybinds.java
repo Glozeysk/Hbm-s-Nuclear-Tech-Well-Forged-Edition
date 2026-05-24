@@ -1,5 +1,9 @@
 package com.hbm.handler;
 
+import ca.weblite.objc.Client;
+import com.hbm.items.tool.IKeybindReceiver;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
 
 import com.hbm.capability.HbmCapability;
@@ -21,6 +25,7 @@ public class HbmKeybinds {
 	public static KeyBinding hudKey = new KeyBinding(category + ".toggleHUD", Keyboard.KEY_V, category);
 	public static KeyBinding reloadKey = new KeyBinding(category + ".reload", Keyboard.KEY_R, category);
 	public static KeyBinding gogglesKey = new KeyBinding(category + ".toggleGoggles", Keyboard.KEY_NUMPAD7, category);
+	public static KeyBinding abilityAlt = new KeyBinding(category + ".abilityAlt", Keyboard.KEY_LMENU, category);
 
 	public static KeyBinding craneUpKey = new KeyBinding(category + ".craneMoveUp", Keyboard.KEY_UP, category);
 	public static KeyBinding craneDownKey = new KeyBinding(category + ".craneMoveDown", Keyboard.KEY_DOWN, category);
@@ -39,17 +44,28 @@ public class HbmKeybinds {
 		ClientRegistry.registerKeyBinding(craneLeftKey);
 		ClientRegistry.registerKeyBinding(craneRightKey);
 		ClientRegistry.registerKeyBinding(craneLoadKey);
+		ClientRegistry.registerKeyBinding(abilityAlt);
 	}
-	
+
 	@SubscribeEvent
 	public void keyEvent(KeyInputEvent event) {
-		
-		IHBMData props = HbmCapability.getData(MainRegistry.proxy.me());
-		
+		EntityPlayer player = MainRegistry.proxy.me();
+		if (player == null || player.world == null || !player.world.isRemote) return;
+
+		ItemStack held = player.getHeldItemMainhand();
+		if (held.isEmpty() || !(held.getItem() instanceof IKeybindReceiver)) return;
+
+		IKeybindReceiver receiver = (IKeybindReceiver) held.getItem();
+
+		if (HbmKeybinds.abilityAlt.isPressed()) {
+			System.out.println("[DEBUG 1] isPressed = true, calling handleKeybindClient");
+			receiver.handleKeybindClient(player, held, EnumKeybind.ABILITY_ALT, true);
+		}
+
+		IHBMData props = HbmCapability.getData(player);
 		for(EnumKeybind key : EnumKeybind.values()) {
 			boolean last = props.getKeyPressed(key);
 			boolean current = MainRegistry.proxy.getIsKeyPressed(key);
-			
 			if(last != current) {
 				PacketDispatcher.wrapper.sendToServer(new KeybindPacket(key, current));
 				props.setKeyPressed(key, current);
@@ -67,6 +83,7 @@ public class HbmKeybinds {
 		CRANE_DOWN,
 		CRANE_LEFT,
 		CRANE_RIGHT,
-		CRANE_LOAD
+		CRANE_LOAD,
+		ABILITY_ALT
 	}
 }

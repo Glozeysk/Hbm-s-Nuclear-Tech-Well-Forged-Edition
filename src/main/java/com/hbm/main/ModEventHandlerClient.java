@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.hbm.items.tool.ItemToolAbility;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -302,6 +304,17 @@ public class ModEventHandlerClient {
 			ModelLoader.setCustomModelResourceLocation(ModItems.ore_bedrock_exquisite, i, new ModelResourceLocation(ModItems.ore_bedrock_exquisite.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(ModItems.ore_bedrock_perfect, i, new ModelResourceLocation(ModItems.ore_bedrock_perfect.getRegistryName(), "inventory"));
 		}	
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onRenderOverlay(RenderGameOverlayEvent.Pre event) {
+		EntityPlayer player = Minecraft.getMinecraft().player;
+		if(player == null) return;
+		ItemStack stack = player.getHeldItemMainhand();
+		if(!(stack.getItem() instanceof ItemToolAbility)) return;
+
+		((ItemToolAbility) stack.getItem()).renderHUD(event, event.getType(), player, stack, EnumHand.MAIN_HAND);
 	}
 
 	private void registerBlockModel(Block block, int meta) {

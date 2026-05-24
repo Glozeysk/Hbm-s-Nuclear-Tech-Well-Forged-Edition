@@ -8,6 +8,7 @@ import com.hbm.inventory.control_panel.ContainerControlEdit;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import com.hbm.inventory.gui.*;
 import com.hbm.items.ModItems;
+import com.hbm.items.tool.ItemToolAbility;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.bomb.*;
 import com.hbm.tileentity.machine.*;
@@ -1333,6 +1334,11 @@ public class GuiHandler implements IGuiHandler {
 			}
 			return null;
 		// ITEM GUIS
+
+		case ModItems.guiID_item_tool_ability:
+			return new GUIScreenToolAbility(
+					((ItemToolAbility) player.getHeldItemMainhand().getItem()).getAvailableAbilities()
+		);
 		case ModItems.guiID_item_folder:
 			return new GUIScreenTemplateFolder(player);
 		case ModItems.guiID_fluid_id:

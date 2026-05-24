@@ -37,6 +37,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+
+/**
+ * <p>I completely rewrote the ModItems tools registry to use the new ToolAbility system
+ * and wrote an adapter for backward compatibility.</p>
+ *
+ * <p>If you want to add a new ability, check the {@link com.hbm.handler.ability} package.</p>
+ */
 public abstract class ToolAbility {
 	
 	public abstract void onDig(World world, int x, int y, int z, EntityPlayer player, IBlockState block, IItemAbility tool, EnumHand hand);
@@ -141,7 +148,11 @@ public abstract class ToolAbility {
 		public String getName() {
 			return "tool.ability.recursion";
 		}
-
+		
+		public int getRadius() {
+			return radius;
+		}
+		
 		@Override
 		@SideOnly(Side.CLIENT)
 		public String getFullName() {
@@ -199,6 +210,10 @@ public abstract class ToolAbility {
 		public String getExtension() {
 			return " (" + range + ")";
 		}
+
+		public int getRange() {
+			return range;
+		}
 	}
 
 	public static class SmelterAbility extends ToolAbility {
@@ -240,6 +255,8 @@ public abstract class ToolAbility {
 		public String getExtension() {
 			return "";
 		}
+
+
 	}
 	
 	public static class ShredderAbility extends ToolAbility {
@@ -280,6 +297,8 @@ public abstract class ToolAbility {
 		public String getExtension() {
 			return "";
 		}
+
+
 	}
 	
 	public static class CentrifugeAbility extends ToolAbility {
@@ -415,6 +434,10 @@ public abstract class ToolAbility {
 		public String getExtension() {
 			return " (" + luck + ")";
 		}
+
+		public int getLuck() {
+			return luck;
+		}
 	}
 	
 	public static class CrystallizerAbility extends ToolAbility {
@@ -538,9 +561,15 @@ public abstract class ToolAbility {
 		public String getFullName() {
 			return I18n.format(getName()) + getExtension();
 		}
+
+		public float getStrength() {
+			return strength;
+		}
 	}
 
 	public boolean isNBTThing(Block b){
 		return b instanceof BlockStorageCrate || b instanceof MachineBattery || b instanceof MachineFENSU;
 	}
+
+
 }

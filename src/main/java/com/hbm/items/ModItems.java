@@ -16,6 +16,8 @@ import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.handler.ToolAbility;
 import com.hbm.handler.ToolAbility.LuckAbility;
 import com.hbm.handler.WeaponAbility;
+import com.hbm.handler.ability.IToolAreaAbility;
+import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.guncfg.Gun12GaugeFactory;
 import com.hbm.handler.guncfg.Gun20GaugeFactory;
 import com.hbm.handler.guncfg.Gun22LRFactory;
@@ -277,6 +279,7 @@ public class ModItems {
 	public static final int guiID_item_book = 10105;
 	public static final int guiID_item_guide = 10106;
 	public static final int guiID_fluid_id = 10107;
+	public static final int guiID_item_tool_ability = 9612;
 	
 	public static final Item redstone_sword = new RedstoneSword(ToolMaterial.STONE, "redstone_sword").setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item big_sword = new BigSword(ToolMaterial.DIAMOND, "big_sword").setCreativeTab(CreativeTabs.COMBAT);
@@ -2049,10 +2052,10 @@ public class ModItems {
 			.addHitAbility(new WeaponAbility.StunAbility(2));
 
 	public static final Item desh_pickaxe = new ItemToolAbility(5F, -2.8F, -0.05, MainRegistry.enumToolMaterialDesh, EnumToolType.PICKAXE, "desh_pickaxe")
-			.addBreakAbility(new ToolAbility.HammerAbility(1))
-			.addBreakAbility(new ToolAbility.RecursionAbility(3))
-			.addBreakAbility(new ToolAbility.SilkAbility())
-			.addBreakAbility(new LuckAbility(2));
+			.addAbility(IToolAreaAbility.HAMMER, 0)
+			.addAbility(IToolAreaAbility.RECURSION, 0)
+			.addAbility(IToolHarvestAbility.SILK, 0)
+			.addAbility(IToolHarvestAbility.LUCK, 1);
 
 	public static final Item desh_axe = new ItemToolAbility(6.5F, -2.8F, -0.05, MainRegistry.enumToolMaterialDesh, EnumToolType.AXE, "desh_axe")
 			.addBreakAbility(new ToolAbility.HammerAbility(1))

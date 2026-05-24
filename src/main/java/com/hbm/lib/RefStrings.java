@@ -3,7 +3,7 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Waldemar Edition";
-	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.2.4";
+	public static final String VERSION = "NTM-Waldemar-Edition-1.12.2-1.3.0";
 	public static final String BUILD_DATE;
 	public static final String CHANGELOG = "Update 1.2.3\n" +
 			"- Added grow progress bar in ITER GUI;\n" +

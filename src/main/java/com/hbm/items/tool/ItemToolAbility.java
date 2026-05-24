@@ -1,28 +1,33 @@
 package com.hbm.items.tool;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
+import api.hbm.item.IDepthRockTool;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.hbm.handler.ToolAbility;
-import com.hbm.handler.ToolAbility.SilkAbility;
-import com.hbm.handler.WeaponAbility;
-import com.hbm.util.I18nUtil;
-import com.hbm.items.ModItems;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
-
-import api.hbm.item.IDepthRockTool;
+import com.hbm.handler.HbmKeybinds;
+import com.hbm.handler.ToolAbility;
+import com.hbm.handler.ToolPreset;
+import com.hbm.handler.WeaponAbility;
+import com.hbm.handler.ability.*;
+import com.hbm.inventory.gui.GUIScreenToolAbility;
+import com.hbm.items.ModItems;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.NBTItemControlPacket;
+import com.hbm.packet.PacketDispatcher;
+import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -31,74 +36,58 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketBlockChange;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
-public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRockTool {
+import java.util.*;
+
+public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRockTool, IGUIProvider, IKeybindReceiver {
 
 	private EnumToolType toolType;
 	private EnumRarity rarity = EnumRarity.COMMON;
-	//was there a reason for this to be private?
-    protected float damage;
-    protected double movement;
-    private List<ToolAbility> breakAbility = new ArrayList<ToolAbility>() {
-		private static final long serialVersionUID = 153867601249309418L;
-	{ add(null); }};
-    private List<WeaponAbility> hitAbility = new ArrayList<WeaponAbility>();
+	protected float damage;
+	protected double movement;
+	private List<ToolAbility> breakAbility = new ArrayList<>();
+	private List<WeaponAbility> hitAbility = new ArrayList<>();
+	public static int dropX = 0, dropY = 0, dropZ = 0;
+	private boolean rockBreaker = false;
+	protected AvailableAbilities availableAbilities = new AvailableAbilities().addToolAbilities();
 
-    private boolean rockBreaker = false;
-    
-	
-	public static enum EnumToolType {
-		
-		PICKAXE(
-				Sets.newHashSet(new Material[] { Material.IRON, Material.ANVIL, Material.ROCK }),
-				Sets.newHashSet(Blocks.ACTIVATOR_RAIL, Blocks.COAL_ORE, Blocks.COBBLESTONE, Blocks.DETECTOR_RAIL, Blocks.DIAMOND_BLOCK, Blocks.DIAMOND_ORE, Blocks.DOUBLE_STONE_SLAB, Blocks.GOLDEN_RAIL, Blocks.GOLD_BLOCK, Blocks.GOLD_ORE, Blocks.ICE, Blocks.IRON_BLOCK, Blocks.IRON_ORE, Blocks.LAPIS_BLOCK, Blocks.LAPIS_ORE, Blocks.LIT_REDSTONE_ORE, Blocks.MOSSY_COBBLESTONE, Blocks.NETHERRACK, Blocks.PACKED_ICE, Blocks.RAIL, Blocks.REDSTONE_ORE, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.STONE, Blocks.STONE_SLAB, Blocks.STONE_BUTTON, Blocks.STONE_PRESSURE_PLATE)
-		),
-		AXE(
-				Sets.newHashSet(new Material[] { Material.WOOD, Material.PLANTS, Material.VINE }),
-				Sets.newHashSet(Blocks.PLANKS, Blocks.BOOKSHELF, Blocks.LOG, Blocks.LOG2, Blocks.CHEST, Blocks.PUMPKIN, Blocks.LIT_PUMPKIN, Blocks.MELON_BLOCK, Blocks.LADDER, Blocks.WOODEN_BUTTON, Blocks.WOODEN_PRESSURE_PLATE)
-		),
-		SHOVEL(
-				Sets.newHashSet(new Material[] { Material.CLAY, Material.SAND, Material.GROUND, Material.SNOW, Material.CRAFTED_SNOW }),
-				Sets.newHashSet(Blocks.CLAY, Blocks.DIRT, Blocks.FARMLAND, Blocks.GRASS, Blocks.GRAVEL, Blocks.MYCELIUM, Blocks.SAND, Blocks.SNOW, Blocks.SNOW_LAYER, Blocks.SOUL_SAND, Blocks.GRASS_PATH, Blocks.CONCRETE_POWDER)
-		),
-		MINER(
-				Sets.newHashSet(new Material[] { Material.GRASS, Material.IRON, Material.ANVIL, Material.ROCK, Material.CLAY, Material.SAND, Material.GROUND, Material.SNOW, Material.CRAFTED_SNOW })
-		);
-		
-		private EnumToolType(Set<Material> materials) {
-			this.materials = materials;
-		}
-		
-		private EnumToolType(Set<Material> materials, Set<Block> blocks) {
-			this.materials = materials;
-			this.blocks = blocks;
-		}
+	private static final Map<IBaseAbility, Map.Entry<Integer, Integer>> abilityGui = new LinkedHashMap<>();
 
-		public Set<Material> materials = new HashSet<Material>();
-		public Set<Block> blocks = new HashSet<Block>();
+	static {
+		abilityGui.put(IToolAreaAbility.RECURSION, new AbstractMap.SimpleImmutableEntry<>(0, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER, new AbstractMap.SimpleImmutableEntry<>(16, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER_FLAT, new AbstractMap.SimpleImmutableEntry<>(32, 138));
+		abilityGui.put(IToolAreaAbility.EXPLOSION, new AbstractMap.SimpleImmutableEntry<>(48, 138));
 	}
-	
+
+	public static enum EnumToolType {
+		PICKAXE(Sets.newHashSet(Material.IRON, Material.ANVIL, Material.ROCK), Sets.newHashSet(Blocks.ACTIVATOR_RAIL, Blocks.COAL_ORE, Blocks.COBBLESTONE, Blocks.DETECTOR_RAIL, Blocks.DIAMOND_BLOCK, Blocks.DIAMOND_ORE, Blocks.DOUBLE_STONE_SLAB, Blocks.GOLDEN_RAIL, Blocks.GOLD_BLOCK, Blocks.GOLD_ORE, Blocks.ICE, Blocks.IRON_BLOCK, Blocks.IRON_ORE, Blocks.LAPIS_BLOCK, Blocks.LAPIS_ORE, Blocks.LIT_REDSTONE_ORE, Blocks.MOSSY_COBBLESTONE, Blocks.NETHERRACK, Blocks.PACKED_ICE, Blocks.RAIL, Blocks.REDSTONE_ORE, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.STONE, Blocks.STONE_SLAB, Blocks.STONE_BUTTON, Blocks.STONE_PRESSURE_PLATE)),
+		AXE(Sets.newHashSet(Material.WOOD, Material.PLANTS, Material.VINE), Sets.newHashSet(Blocks.PLANKS, Blocks.BOOKSHELF, Blocks.LOG, Blocks.LOG2, Blocks.CHEST, Blocks.PUMPKIN, Blocks.LIT_PUMPKIN, Blocks.MELON_BLOCK, Blocks.LADDER, Blocks.WOODEN_BUTTON, Blocks.WOODEN_PRESSURE_PLATE)),
+		SHOVEL(Sets.newHashSet(Material.CLAY, Material.SAND, Material.GROUND, Material.SNOW, Material.CRAFTED_SNOW), Sets.newHashSet(Blocks.CLAY, Blocks.DIRT, Blocks.FARMLAND, Blocks.GRASS, Blocks.GRAVEL, Blocks.MYCELIUM, Blocks.SAND, Blocks.SNOW, Blocks.SNOW_LAYER, Blocks.SOUL_SAND, Blocks.GRASS_PATH, Blocks.CONCRETE_POWDER)),
+		MINER(Sets.newHashSet(Material.GRASS, Material.IRON, Material.ANVIL, Material.ROCK, Material.CLAY, Material.SAND, Material.GROUND, Material.SNOW, Material.CRAFTED_SNOW));
+
+		private EnumToolType(Set<Material> materials) { this.materials = materials; }
+		private EnumToolType(Set<Material> materials, Set<Block> blocks) { this.materials = materials; this.blocks = blocks; }
+		public Set<Material> materials = new HashSet<>();
+		public Set<Block> blocks = new HashSet<>();
+	}
+
 	public ItemToolAbility(float damage, float attackSpeedIn, double movement, ToolMaterial material, EnumToolType type, String s) {
 		super(0, attackSpeedIn, material, type.blocks);
 		this.setTranslationKey(s);
@@ -113,317 +102,496 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		} else {
 			this.setHarvestLevel(type.toString().toLowerCase(), material.getHarvestLevel());
 		}
-
 		ModItems.ALL_ITEMS.add(this);
 	}
-	
-	public ItemToolAbility addBreakAbility(ToolAbility breakAbility) {
-		this.breakAbility.add(breakAbility);
+
+	public ItemToolAbility addAbility(IBaseAbility ability, int level) {
+		this.availableAbilities.addAbility(ability, level);
 		return this;
 	}
-	
-	public ItemToolAbility addHitAbility(WeaponAbility weaponAbility) {
-		this.hitAbility.add(weaponAbility);
+
+	private List<IBaseAbility> mapLegacyToNew(ToolAbility a) {
+		List<IBaseAbility> result = new ArrayList<>();
+		if (a instanceof ToolAbility.RecursionAbility) result.add(IToolAreaAbility.RECURSION);
+		if (a instanceof ToolAbility.HammerAbility) result.add(IToolAreaAbility.HAMMER);
+		if (a instanceof ToolAbility.SilkAbility) result.add(IToolHarvestAbility.SILK);
+		if (a instanceof ToolAbility.LuckAbility) result.add(IToolHarvestAbility.LUCK);
+		if (a instanceof ToolAbility.SmelterAbility) result.add(IToolHarvestAbility.SMELTER);
+		if (a instanceof ToolAbility.ShredderAbility) result.add(IToolHarvestAbility.SHREDDER);
+		if (a instanceof ToolAbility.CentrifugeAbility) result.add(IToolHarvestAbility.CENTRIFUGE);
+		if (a instanceof ToolAbility.CrystallizerAbility) result.add(IToolHarvestAbility.CRYSTALLIZER);
+		if (a instanceof ToolAbility.MercuryAbility) result.add(IToolHarvestAbility.MERCURY);
+		if (a instanceof ToolAbility.ExplosionAbility) result.add(IToolAreaAbility.EXPLOSION);
+		return result;
+	}
+
+	private void switchMode(EntityPlayer player, ItemStack stack) {
+		Configuration config = getConfiguration(stack);
+
+		if (player.isSneaking()) {
+			ToolPreset p = config.getActivePreset();
+			p.areaAbility = IToolAreaAbility.NONE;
+			p.areaAbilityLevel = 0;
+			p.harvestAbility = IToolHarvestAbility.NONE;
+			p.harvestAbilityLevel = 0;
+		} else {
+			if (config.presets.size() < 2) return;
+			config.currentPreset = (config.currentPreset + 1) % config.presets.size();
+		}
+
+		setConfiguration(stack, config);
+		PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(stack.getTagCompound()));
+
+		ToolPreset preset = config.getActivePreset();
+		String msg = preset.isNone() ?
+				"[§6" + I18nUtil.resolveKey("chat.abildisabled") + "§r]" :
+				"[§e" + I18nUtil.resolveKey("chat.abilenabled") + "§r] " + preset.getMessage().getFormattedText();
+
+		MainRegistry.proxy.displayTooltipLegacy(msg, 11);
+		player.world.playSound(null, player.posX, player.posY, player.posZ,
+				SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,
+				0.25F, preset.isNone() ? 0.75F : 1.25F);
+	}
+
+	private void sendSyncAndNotify(EntityPlayer player, ItemStack stack, Configuration config) {
+		setConfiguration(stack, config);
+		PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(stack.getTagCompound()));
+		ToolPreset preset = config.getActivePreset();
+		String msg = preset.isNone() ?
+				"[§6" + I18nUtil.resolveKey("chat.abildisabled") + "§r]" :
+				"[§e" + I18nUtil.resolveKey("chat.abilenabled") + "§r] " + preset.getMessage().getFormattedText();
+		MainRegistry.proxy.displayTooltipLegacy(msg, 11);
+		player.world.playSound(null, player.posX, player.posY, player.posZ,
+				SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,
+				0.25F, preset.isNone() ? 0.75F : 1.25F);
+	}
+
+	public ItemToolAbility addBreakAbility(ToolAbility ability) {
+		this.breakAbility.add(ability);
+		if (ability instanceof ToolAbility.RecursionAbility) {
+			availableAbilities.addAbility(IToolAreaAbility.RECURSION, ((ToolAbility.RecursionAbility) ability).getRadius());
+		} else if (ability instanceof ToolAbility.HammerAbility) {
+			int range = ((ToolAbility.HammerAbility) ability).getRange();
+			availableAbilities.addAbility(IToolAreaAbility.HAMMER, range);
+			availableAbilities.addAbility(IToolAreaAbility.HAMMER_FLAT, range);
+		} else if (ability instanceof ToolAbility.LuckAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.LUCK, ((ToolAbility.LuckAbility) ability).getLuck());
+		} else if (ability instanceof ToolAbility.ExplosionAbility) {
+			float[] explosionLevels = {2.5F, 5F, 10F, 15F};
+			float target = ((ToolAbility.ExplosionAbility) ability).getStrength();
+			int lvl = findLevelIndexFloat(explosionLevels, target);
+			availableAbilities.addAbility(IToolAreaAbility.EXPLOSION, lvl);
+		} else if (ability instanceof ToolAbility.SilkAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.SILK, 0);
+		} else if (ability instanceof ToolAbility.SmelterAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.SMELTER, 0);
+		} else if (ability instanceof ToolAbility.ShredderAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.SHREDDER, 0);
+		} else if (ability instanceof ToolAbility.CentrifugeAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.CENTRIFUGE, 0);
+		} else if (ability instanceof ToolAbility.CrystallizerAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.CRYSTALLIZER, 0);
+		} else if (ability instanceof ToolAbility.MercuryAbility) {
+			availableAbilities.addAbility(IToolHarvestAbility.MERCURY, 0);
+		}
 		return this;
 	}
-	
-	//<insert obvious Rarity joke here>
-	//Drillgon200: What?
+
+	private int findLevelIndex(int[] values, int target) {
+		for (int i = 0; i < values.length; i++) {
+			if (values[i] == target) return i;
+		}
+		return values.length - 1;
+	}
+
+	private int findLevelIndexFloat(float[] values, float target) {
+		for (int i = 0; i < values.length; i++) {
+			if (Math.abs(values[i] - target) < 0.01F) return i;
+		}
+		return values.length - 1;
+	}
+
+	public ItemToolAbility addHitAbility(WeaponAbility ability) {
+		this.hitAbility.add(ability);
+		return this;
+	}
+
 	public ItemToolAbility setRarity(EnumRarity rarity) {
 		this.rarity = rarity;
 		return this;
 	}
-	
-	//Drillgon200: Dang it bob, override annotations matter!
-	@SuppressWarnings("deprecation")
-	@Override
-    public EnumRarity getRarity(ItemStack stack) {
-        return this.rarity != EnumRarity.COMMON ? this.rarity : super.getRarity(stack);
-    }
-	
+
+	public ItemToolAbility setDepthRockBreaker() {
+		this.rockBreaker = true;
+		return this;
+	}
+
+	public AvailableAbilities getAvailableAbilities() {
+		return availableAbilities;
+	}
+
+	public static class Configuration {
+		public List<ToolPreset> presets;
+		public int currentPreset;
+
+		public Configuration() { this.presets = null; this.currentPreset = 0; }
+		public Configuration(List<ToolPreset> presets, int currentPreset) { this.presets = presets; this.currentPreset = currentPreset; }
+
+		public void writeToNBT(NBTTagCompound nbt) {
+			nbt.setInteger("ability", currentPreset);
+			NBTTagList nbtPresets = new NBTTagList();
+			for(ToolPreset preset : presets) {
+				NBTTagCompound nbtPreset = new NBTTagCompound();
+				preset.writeToNBT(nbtPreset);
+				nbtPresets.appendTag(nbtPreset);
+			}
+			nbt.setTag("abilityPresets", nbtPresets);
+		}
+
+		public void readFromNBT(NBTTagCompound nbt) {
+			currentPreset = nbt.getInteger("ability");
+			NBTTagList nbtPresets = nbt.getTagList("abilityPresets", 10);
+			int numPresets = Math.min(nbtPresets.tagCount(), 99);
+			presets = new ArrayList<>(numPresets);
+			for(int i = 0; i < numPresets; i++) {
+				ToolPreset preset = new ToolPreset();
+				preset.readFromNBT(nbtPresets.getCompoundTagAt(i));
+				presets.add(preset);
+			}
+			currentPreset = Math.max(0, Math.min(currentPreset, presets.size() - 1));
+		}
+
+		public void reset(AvailableAbilities availableAbilities) {
+			currentPreset = 0;
+			presets = new ArrayList<>(availableAbilities.size());
+			presets.add(new ToolPreset());
+			availableAbilities.getToolAreaAbilities().forEach((ability, level) -> {
+				if (ability == IToolAreaAbility.NONE) return;
+				presets.add(new ToolPreset(ability, level, IToolHarvestAbility.NONE, 0));
+			});
+			availableAbilities.getToolHarvestAbilities().forEach((ability, level) -> {
+				if (ability == IToolHarvestAbility.NONE) return;
+				presets.add(new ToolPreset(IToolAreaAbility.NONE, 0, ability, level));
+			});
+			presets.sort(Comparator.comparing((ToolPreset p) -> p.harvestAbility).thenComparingInt(p -> p.harvestAbilityLevel).thenComparing(p -> p.areaAbility).thenComparingInt(p -> p.areaAbilityLevel));
+		}
+
+		public void restrictTo(AvailableAbilities availableAbilities) {
+			for (ToolPreset preset : presets) preset.restrictTo(availableAbilities);
+		}
+
+		public ToolPreset getActivePreset() { return presets.get(currentPreset); }
+	}
+
+	public Configuration getConfiguration(ItemStack stack) {
+		Configuration config = new Configuration();
+		if(stack == null || !stack.hasTagCompound() || !stack.getTagCompound().hasKey("ability") || !stack.getTagCompound().hasKey("abilityPresets")) {
+			config.reset(availableAbilities);
+			return config;
+		}
+		config.readFromNBT(stack.getTagCompound());
+		config.restrictTo(availableAbilities);
+		return config;
+	}
+
+	public void setConfiguration(ItemStack stack, Configuration config) {
+		if (stack == null) return;
+		if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+		config.writeToNBT(stack.getTagCompound());
+	}
+
 	@Override
 	public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
 		if(!attacker.world.isRemote && !this.hitAbility.isEmpty() && attacker instanceof EntityPlayer && canOperate(stack)) {
-    		
-    		for(WeaponAbility ability : this.hitAbility) {
+			for(WeaponAbility ability : this.hitAbility) {
 				ability.onHit(attacker.world, (EntityPlayer) attacker, target, this);
-    		}
-    	}
+			}
+		}
 		stack.damageItem(2, attacker);
-        return true;
+		return true;
 	}
-	
+
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
 		World world = player.world;
-    	IBlockState block = world.getBlockState(pos);
-    	
-    	if(!world.isRemote && canHarvestBlock(block, stack) && this.getCurrentAbility(stack) != null && canOperate(stack))
-    		this.getCurrentAbility(stack).onDig(world, pos.getX(), pos.getY(), pos.getZ(), player, block, this, player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND);
-    	
-    	return false;
+		if (world.isRemote || !canOperate(stack)) return false;
+		if (isForbiddenBlock(world.getBlockState(pos).getBlock())) return false;
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+
+		dropX = pos.getX();
+		dropY = pos.getY();
+		dropZ = pos.getZ();
+
+		preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player);
+		boolean skipRef = preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
+		if (!skipRef) breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ());
+		preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
+		return true;
 	}
-	
+
 	@Override
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
-		if(!canOperate(stack))
-    		return 1;
-    	
-    	if(toolType == null)
-            return super.getDestroySpeed(stack, state);
-    	
-    	if(toolType.blocks.contains(state.getBlock()) || toolType.materials.contains(state.getMaterial()))
-    		return this.efficiency;
-    	
-        return super.getDestroySpeed(stack, state);
+		if(!canOperate(stack)) return 1;
+		if(toolType == null) return super.getDestroySpeed(stack, state);
+		if(toolType.blocks.contains(state.getBlock()) || toolType.materials.contains(state.getMaterial())) return this.efficiency;
+		return super.getDestroySpeed(stack, state);
 	}
-	
+
 	@Override
 	public boolean canHarvestBlock(IBlockState state, ItemStack stack) {
 		if(!canOperate(stack)) return false;
-
 		if(isForbiddenBlock(state.getBlock())) return false;
-    	
-		if(this.getCurrentAbility(stack) instanceof SilkAbility)
-    		return true;
-		
-    	return getDestroySpeed(stack, state) > 1;
+		Configuration config = getConfiguration(stack);
+		if (config != null && config.getActivePreset().harvestAbility == IToolHarvestAbility.SILK) return true;
+		return getDestroySpeed(stack, state) > 1;
 	}
 
-	public static boolean isForbiddenBlock(Block b){
+	public boolean canShearBlock(Block block, ItemStack stack, World world, int x, int y, int z) { return false; }
+
+	public static boolean isForbiddenBlock(Block b) {
 		return (b == Blocks.BARRIER || b == Blocks.BEDROCK || b == Blocks.COMMAND_BLOCK || b == Blocks.CHAIN_COMMAND_BLOCK || b == Blocks.REPEATING_COMMAND_BLOCK || b == ModBlocks.ore_bedrock_oil || b instanceof BlockBedrockOre || b instanceof BlockBedrockOreTE );
 	}
-	
+
 	@Override
 	public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot slot) {
-		Multimap<String, AttributeModifier> map = HashMultimap.<String, AttributeModifier>create();
+		Multimap<String, AttributeModifier> map = HashMultimap.create();
 		if(slot == EntityEquipmentSlot.MAINHAND){
 			map.put(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier(UUID.fromString("91AEAA56-376B-4498-935B-2F7F68070635"), "Tool modifier", movement, 1));
 			map.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Tool modifier", (double)this.damage, 0));
 		}
-        return map;
+		return map;
 	}
-	
-	//that's slimelad's code
-    //creative commons 3 and all that jazz
-	@Override
-    public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
-    	BlockPos pos = new BlockPos(x, y, z);
-        if (world.isAirBlock(pos))
-            return;
 
-        if(!(playerEntity instanceof EntityPlayerMP))
-            return;
-        
-        EntityPlayerMP player = (EntityPlayerMP) playerEntity;
-        ItemStack stack = player.getHeldItem(hand);
-
-        IBlockState block = world.getBlockState(pos);
-
-        if(!canHarvestBlock(block, stack))
-            return;
-
-        IBlockState refBlock = world.getBlockState(new BlockPos(refX, refY, refZ));
-        float refStrength = ForgeHooks.blockStrength(refBlock, player, world, new BlockPos(refX, refY, refZ));
-        float strength = ForgeHooks.blockStrength(block, player, world, pos);
-
-        if (!ForgeHooks.canHarvestBlock(block.getBlock(), player, world, pos) || refStrength/strength > 10f)
-            return;
-
-        int event = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
-        if(event < 0)
-            return;
-
-        if (player.capabilities.isCreativeMode) {
-            block.getBlock().onBlockHarvested(world, pos, block, player);
-            if (block.getBlock().removedByPlayer(block, world, pos, player, false))
-                block.getBlock().onPlayerDestroy(world, pos, block);
-
-            if (!world.isRemote) {
-                player.connection.sendPacket(new SPacketBlockChange(world, pos));
-            }
-            return;
-        }
-
-        player.getHeldItem(hand).onBlockDestroyed(world, block, pos, player);
-
-        if (!world.isRemote) {
-        	
-            block.getBlock().onBlockHarvested(world, pos, block, player);
-
-            if(block.getBlock().removedByPlayer(block, world, pos, player, true))
-            {
-                block.getBlock().onPlayerDestroy(world, pos, block);
-                block.getBlock().harvestBlock(world, player, pos, block, world.getTileEntity(pos), stack);
-                block.getBlock().dropXpOnBlockBreak(world, pos, event);
-            }
-
-            player.connection.sendPacket(new SPacketBlockChange(world, pos));
-            
-        } else {
-            world.playEvent(2001, pos, Block.getStateId(block));
-            if(block.getBlock().removedByPlayer(block, world, pos, player, true))
-            {
-                block.getBlock().onPlayerDestroy(world, pos, block);
-            }
-            ItemStack itemstack = player.getHeldItem(hand);
-            if (itemstack != null)
-            {
-                itemstack.onBlockDestroyed(world, block, new BlockPos(x, y, z), player);
-
-                if (itemstack.isEmpty())
-                {
-                    player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
-                }
-            }
-
-            Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(x, y, z), Minecraft.getMinecraft().objectMouseOver.sideHit));
-        }
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public boolean hasEffect(ItemStack stack) {
-    	return getCurrentAbility(stack) != null ? true : super.hasEffect(stack);
-    }
-    
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-    	if(this.breakAbility.size() > 1) {
-    		list.add(I18nUtil.resolveKey("tool.ability.list"));
-    		
-    		for(ToolAbility ability : this.breakAbility) {
-    			
-    			if(ability != null) {
-    				
-    				if(getCurrentAbility(stack) == ability)
-    					list.add(" §e§l>" + ability.getFullName());
-    				else
-    					list.add("  §6" + ability.getFullName());
-    			}
-    		}
-
-    		list.add(I18nUtil.resolveKey("tool.ability.rightclick"));
-    		list.add(I18nUtil.resolveKey("tool.ability.shiftclick"));
-    	}
-    	
-    	if(!this.hitAbility.isEmpty()) {
-    		
-    		list.add(I18nUtil.resolveKey("tool.ability.weaponlist"));
-    		
-    		for(WeaponAbility ability : this.hitAbility) {
-				list.add("  " + TextFormatting.RED + ability.getFullName());
-    		}
-    	}
-
-    	if(this.rockBreaker){
-    		list.add("§5["+I18nUtil.resolveKey("trait.unmineable")+"]§d " + I18nUtil.resolveKey("tool.ability.canmine"));
-    	}
-    }
-    
-    @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-    	ItemStack stack = player.getHeldItem(hand);
-    	if(this.breakAbility.size() < 2 || !canOperate(stack))
-    		return EnumActionResult.PASS;
-    	if(!worldIn.isRemote){
-    		switchMode(player, stack);
-    	}
-    	return EnumActionResult.SUCCESS;
-    }
-    
-    @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-    	ItemStack stack = player.getHeldItem(hand);
-    	
-    	if(world.isRemote || this.breakAbility.size() < 2 || !canOperate(stack))
-    		return super.onItemRightClick(world, player, hand);
-    	
-    	switchMode(player, stack);
-    	
-    	return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
-    }
-    
-    private void switchMode(EntityPlayer player, ItemStack stack){
-    	int i = getAbility(stack);
-    	i++;
-    	
-    	if(player.isSneaking())
-    		i = 0;
-    	
-    	setAbility(stack, i % this.breakAbility.size());
-    	
-    	while(getCurrentAbility(stack) != null && !getCurrentAbility(stack).isAllowed()) {
-
-    		player.sendMessage(
-				new TextComponentString("[")
-				.appendSibling(new TextComponentTranslation("chat.ability"))
-				.appendSibling(new TextComponentString(" "))
-				.appendSibling(new TextComponentTranslation(getCurrentAbility(stack).getName(), new Object[0]))
-				.appendSibling(new TextComponentString(getCurrentAbility(stack).getExtension() + " ")
-				.appendSibling(new TextComponentTranslation("chat.blacklist"))
-				.appendSibling(new TextComponentString("]")))
-				.setStyle(new Style().setColor(TextFormatting.RED)));
-
-        	i++;
-        	setAbility(stack, i % this.breakAbility.size());
-    	}
-    	
-    	if(getCurrentAbility(stack) != null) {
-    		player.sendMessage(
-				new TextComponentString("[")
-				.appendSibling(new TextComponentTranslation("chat.abilenabled"))
-				.appendSibling(new TextComponentString(" "))
-				.appendSibling(new TextComponentTranslation(getCurrentAbility(stack).getName()))
-				.appendSibling(new TextComponentString(getCurrentAbility(stack).getExtension() + "]"))
-				.setStyle(new Style().setColor(TextFormatting.YELLOW)));
-    	} else {
-    		player.sendMessage(new TextComponentString("[")
-    			.appendSibling(new TextComponentTranslation("chat.abildisabled"))
-    			.appendSibling(new TextComponentString("]"))
-    			.setStyle(new Style().setColor(TextFormatting.GOLD)));
-    	}
-
-    	//Drillgon200: I hope "random.orb" referred to the experience orb sound
-        player.world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.25F, getCurrentAbility(stack) == null ? 0.75F : 1.25F);
-    }
-    
-    private ToolAbility getCurrentAbility(ItemStack stack) {
-    	
-    	int ability = getAbility(stack) % this.breakAbility.size();
-    	
-    	return this.breakAbility.get(ability);
-    }
-    
-    private int getAbility(ItemStack stack) {
-    	
-    	if(stack.hasTagCompound())
-    		return stack.getTagCompound().getInteger("ability");
-    	
-    	return 0;
-    }
-    
-    private void setAbility(ItemStack stack, int ability) {
-
-    	if(!stack.hasTagCompound())
-    		stack.setTagCompound(new NBTTagCompound());
-    	
-    	stack.getTagCompound().setInteger("ability", ability);
-    }
-    
-    protected boolean canOperate(ItemStack stack) {
-    	return true;
-    }
-
-    public ItemToolAbility setDepthRockBreaker() {
-		this.rockBreaker = true;
-		return this;
+	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer player, int refX, int refY, int refZ) {
+		breakExtraBlock(world, x, y, z, player, refX, refY, refZ, EnumHand.MAIN_HAND);
 	}
-	
-	
+
+	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
+		BlockPos pos = new BlockPos(x, y, z);
+		if (world.isAirBlock(pos)) return;
+		if(!(playerEntity instanceof EntityPlayerMP)) return;
+
+		EntityPlayerMP player = (EntityPlayerMP) playerEntity;
+		ItemStack stack = player.getHeldItem(hand);
+		if (stack.isEmpty()) return;
+
+		IBlockState state = world.getBlockState(pos);
+		Block block = state.getBlock();
+		int meta = block.getMetaFromState(state);
+
+		if (!(canHarvestBlock(state, stack) || canShearBlock(block, stack, world, x, y, z)) || (state.getBlockHardness(world, pos) == -1.0F && state.getPlayerRelativeBlockHardness(player, world, pos) == 0.0F))
+			return;
+
+		BlockPos refPos = new BlockPos(refX, refY, refZ);
+		IBlockState refState = world.getBlockState(refPos);
+
+		float refStrength = refState.getPlayerRelativeBlockHardness(player, world, refPos);
+		float strength = state.getPlayerRelativeBlockHardness(player, world, pos);
+
+		if (!ForgeHooks.canHarvestBlock(state.getBlock(), player, world, pos) || strength <= 0.0F || refStrength / strength > 10f || refState.getPlayerRelativeBlockHardness(player, world, refPos) < 0)
+			return;
+
+		int exp = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
+		if (exp == -1) return;
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+
+		preset.harvestAbility.onHarvestBlock(preset.harvestAbilityLevel, world, x, y, z, player, block, meta);
+	}
+
+	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player) {
+		BlockPos pos = new BlockPos(x, y, z);
+		IBlockState state = world.getBlockState(pos);
+		Block block = state.getBlock();
+		world.playEvent(player, 2001, pos, Block.getStateId(state));
+		boolean removedByPlayer = false;
+		if (player.capabilities.isCreativeMode) {
+			removedByPlayer = removeBlock(world, x, y, z, false, player);
+			player.connection.sendPacket(new SPacketBlockChange(world, pos));
+		} else {
+			ItemStack itemstack = player.getHeldItemMainhand();
+			boolean canHarvest = ForgeHooks.canHarvestBlock(block, player, world, pos);
+			removedByPlayer = removeBlock(world, x, y, z, canHarvest, player);
+			if (!itemstack.isEmpty()) {
+				itemstack.onBlockDestroyed(world, state, pos, player);
+				if (itemstack.getCount() == 0) player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+			}
+			if (removedByPlayer && canHarvest) {
+				block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), itemstack);
+			}
+		}
+	}
+
+	public static boolean removeBlock(World world, int x, int y, int z, boolean canHarvest, EntityPlayerMP player) {
+		BlockPos pos = new BlockPos(x, y, z);
+		IBlockState state = world.getBlockState(pos);
+		Block block = state.getBlock();
+		block.onBlockHarvested(world, pos, state, player);
+		boolean flag = block.removedByPlayer(state, world, pos, player, canHarvest);
+		if (flag) block.onPlayerDestroy(world, pos, state);
+		return flag;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public boolean hasEffect(ItemStack stack) {
+		Configuration config = getConfiguration(stack);
+		return config != null && !config.getActivePreset().isNone() ? true : super.hasEffect(stack);
+	}
+
+	@SideOnly(Side.CLIENT)
 	@Override
-	public boolean canBreakRock(World world, EntityPlayer player, ItemStack tool, IBlockState block, BlockPos pos){
+	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+		availableAbilities.addInformation(list);
+		if(this.rockBreaker) list.add("§5["+I18nUtil.resolveKey("trait.unmineable")+"]§d " + I18nUtil.resolveKey("tool.ability.canmine"));
+	}
+
+	@Override
+	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		ItemStack stack = player.getHeldItem(hand);
+		if(this.breakAbility.size() < 2 || !canOperate(stack)) return EnumActionResult.PASS;
+		if(!worldIn.isRemote) switchMode(player, stack);
+		return EnumActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		ItemStack stack = player.getHeldItem(hand);
+		if(world.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) return super.onItemRightClick(world, player, hand);
+		switchMode(player, stack);
+		return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
+	}
+
+	private void cycleAbilitiesSimple(Configuration config) {
+		ToolPreset p = config.getActivePreset();
+		List<IToolAreaAbility> areas = new ArrayList<>(availableAbilities.getToolAreaAbilities().keySet());
+		List<IToolHarvestAbility> harvests = new ArrayList<>(availableAbilities.getToolHarvestAbilities().keySet());
+		areas.remove(IToolAreaAbility.HAMMER_FLAT);
+
+		boolean areaActive = p.areaAbility != IToolAreaAbility.NONE;
+		boolean harvestActive = p.harvestAbility != IToolHarvestAbility.NONE;
+
+		if (!areaActive && !harvestActive) {
+			if (!areas.isEmpty()) {
+				p.areaAbility = areas.get(0);
+				p.areaAbilityLevel = availableAbilities.getToolAreaAbilities().getOrDefault(areas.get(0), 0);
+			} else if (!harvests.isEmpty()) {
+				p.harvestAbility = harvests.get(0);
+				p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(0), 0);
+			}
+		} else if (areaActive) {
+			int idx = areas.indexOf(p.areaAbility);
+			int next = idx + 1;
+			if (next >= areas.size()) {
+				p.areaAbility = IToolAreaAbility.NONE;
+				p.areaAbilityLevel = 0;
+				if (!harvests.isEmpty()) {
+					p.harvestAbility = harvests.get(0);
+					p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(0), 0);
+				}
+			} else {
+				p.areaAbility = areas.get(next);
+				p.areaAbilityLevel = availableAbilities.getToolAreaAbilities().getOrDefault(areas.get(next), 0);
+			}
+		} else {
+			int idx = harvests.indexOf(p.harvestAbility);
+			int next = idx + 1;
+			if (next >= harvests.size()) {
+				p.harvestAbility = IToolHarvestAbility.NONE;
+				p.harvestAbilityLevel = 0;
+			} else {
+				p.harvestAbility = harvests.get(next);
+				p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(next), 0);
+			}
+		}
+	}
+
+	private ToolAbility getCurrentAbility(ItemStack stack) {
+		int ability = getAbility(stack) % this.breakAbility.size();
+		return this.breakAbility.get(ability);
+	}
+
+	private int getAbility(ItemStack stack) {
+		if(stack.hasTagCompound()) return stack.getTagCompound().getInteger("ability");
+		return 0;
+	}
+
+	private void setAbility(ItemStack stack, int ability) {
+		if(!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+		stack.getTagCompound().setInteger("ability", ability);
+	}
+
+	protected boolean canOperate(ItemStack stack) { return true; }
+
+	@Override
+	public boolean canBreakRock(World world, EntityPlayer player, ItemStack tool, IBlockState block, BlockPos pos) {
 		return canOperate(tool) && this.rockBreaker;
+	}
+
+	@Override
+	public boolean canHandleKeybind(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind) {
+		return player.world.isRemote && keybind == HbmKeybinds.EnumKeybind.ABILITY_ALT;
+	}
+
+	@Override
+	public void handleKeybind(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind, boolean state) {
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void handleKeybindClient(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind, boolean state) {
+		if(state && keybind == HbmKeybinds.EnumKeybind.ABILITY_ALT) {
+			player.openGui(MainRegistry.instance, ModItems.guiID_item_tool_ability, player.world, 0, 0, 0);
+		}
+	}
+
+	@Override
+	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new Container() {
+			@Override
+			public boolean canInteractWith(EntityPlayer playerIn) {
+				return true;
+			}
+		};
+	}
+
+	@SideOnly(Side.CLIENT)
+	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		return new GUIScreenToolAbility(this.availableAbilities);
+	}
+
+	public void renderHUD(RenderGameOverlayEvent.Pre event, RenderGameOverlayEvent.ElementType type, EntityPlayer player, ItemStack stack, EnumHand hand) {
+		if(type != RenderGameOverlayEvent.ElementType.CROSSHAIRS) return;
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+		Map.Entry<Integer, Integer> uv = abilityGui.get(preset.areaAbility);
+
+		if(uv == null) return;
+
+		GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
+		int size = 16;
+		int ox = 0;
+		int oy = 0;
+
+		GlStateManager.pushMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(GUIScreenToolAbility.texture);
+		GlStateManager.enableBlend();
+		GlStateManager.disableLighting();
+		GlStateManager.disableDepth();
+		GlStateManager.depthMask(false);
+		GlStateManager.color(1F, 1F, 1F, 1F);
+
+		OpenGlHelper.glBlendFunc(GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ONE_MINUS_SRC_COLOR, 1, 0);
+		gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - size - 8 + ox, event.getResolution().getScaledHeight() / 2 + 8 + oy, uv.getKey(), uv.getValue(), size, size);
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.disableBlend();
+		GlStateManager.enableDepth();
+		GlStateManager.depthMask(true);
+		GlStateManager.color(1F, 1F, 1F, 1F);
+		GlStateManager.popMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
 	}
 }

@@ -1,0 +1,383 @@
+package com.hbm.inventory.gui;
+
+import com.hbm.Tags;
+import com.hbm.handler.ToolPreset;
+import com.hbm.handler.ability.AvailableAbilities;
+import com.hbm.handler.ability.IBaseAbility;
+import com.hbm.handler.ability.IToolAreaAbility;
+import com.hbm.handler.ability.IToolHarvestAbility;
+import com.hbm.handler.threading.PacketThreading;
+import com.hbm.items.tool.ItemToolAbility;
+import com.hbm.lib.HBMSoundHandler;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.NBTItemControlPacket;
+import com.hbm.packet.PacketDispatcher;
+import com.hbm.util.Tuple;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GUIScreenToolAbility extends GuiScreen {
+
+    public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/tool/gui_tool_ability.png");
+
+    protected int guiLeft;
+    protected int guiTop;
+    protected int xSize;
+    protected int ySize;
+    protected int insetWidth;
+
+    public static class AbilityInfo {
+        public IBaseAbility ability;
+        public int textureU, textureV;
+
+        public AbilityInfo(IBaseAbility ability, int textureU, int textureV) {
+            this.ability = ability;
+            this.textureU = textureU;
+            this.textureV = textureV;
+        }
+    }
+
+    public static final List<AbilityInfo> abilitiesArea = new ArrayList<>();
+    public static final List<AbilityInfo> abilitiesHarvest = new ArrayList<>();
+
+    static {
+        abilitiesArea.add(new AbilityInfo(IToolAreaAbility.NONE, 0, 91));
+        abilitiesArea.add(new AbilityInfo(IToolAreaAbility.RECURSION, 32, 91));
+        abilitiesArea.add(new AbilityInfo(IToolAreaAbility.HAMMER, 64, 91));
+        abilitiesArea.add(new AbilityInfo(IToolAreaAbility.HAMMER_FLAT, 96, 91));
+        abilitiesArea.add(new AbilityInfo(IToolAreaAbility.EXPLOSION, 128, 91));
+
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.NONE, 0, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.SILK, 32, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.LUCK, 64, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.SMELTER, 96, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.SHREDDER, 128, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.CENTRIFUGE, 160, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.CRYSTALLIZER, 192, 107));
+        abilitiesHarvest.add(new AbilityInfo(IToolHarvestAbility.MERCURY, 224, 107));
+    }
+
+    protected ItemStack toolStack;
+    protected AvailableAbilities availableAbilities;
+    protected ItemToolAbility.Configuration config;
+
+    protected int hoverIdxHarvest = -1;
+    protected int hoverIdxArea = -1;
+    protected int hoverIdxExtraBtn = -1;
+
+    public GUIScreenToolAbility(AvailableAbilities availableAbilities) {
+        super();
+
+        this.availableAbilities = availableAbilities;
+
+        this.xSize = 186;
+        this.ySize = 76;
+
+        this.insetWidth = 20 * Math.max(abilitiesArea.size() - 4, abilitiesHarvest.size() - 8);
+        this.xSize += insetWidth;
+    }
+
+    @Override
+    public void initGui() {
+        this.toolStack = this.mc.player.getHeldItemMainhand();
+
+        if(this.toolStack.isEmpty()) {
+            doClose();
+        }
+
+        this.config = ((ItemToolAbility) this.toolStack.getItem()).getConfiguration(this.toolStack);
+
+        guiLeft = (width - xSize) / 2;
+        guiTop = (height - ySize) / 2;
+    }
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float f) {
+        this.drawDefaultBackground();
+
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+
+        drawStretchedRect(guiLeft, guiTop, 0, 0, xSize, xSize - insetWidth, ySize, 74, 87);
+
+        ToolPreset activePreset = config.getActivePreset();
+        hoverIdxArea = drawSwitches(abilitiesArea, activePreset.areaAbility, activePreset.areaAbilityLevel, guiLeft + 15, guiTop + 25, mouseX, mouseY);
+        hoverIdxHarvest = drawSwitches(abilitiesHarvest, activePreset.harvestAbility, activePreset.harvestAbilityLevel, guiLeft + 15, guiTop + 45, mouseX, mouseY);
+
+        drawNumber(config.currentPreset + 1, guiLeft + insetWidth + 115, guiTop + 25);
+        drawNumber(config.presets.size(), guiLeft + insetWidth + 149, guiTop + 25);
+
+        int extraBtnsX = guiLeft + xSize - 86;
+
+        hoverIdxExtraBtn = -1;
+        for(int i = 0; i < 7; ++i) {
+            if(isInAABB(mouseX, mouseY, extraBtnsX + i * 11, guiTop + 11, 9, 9)) {
+                hoverIdxExtraBtn = i;
+                drawTexturedModalRect(extraBtnsX + i * 11, guiTop + 11, 193 + i * 9, 0, 9, 9);
+            }
+        }
+
+        String tooltipValue = "";
+
+        if(hoverIdxArea != -1) {
+            int level = 0;
+            if(abilitiesArea.get(hoverIdxArea).ability == activePreset.areaAbility) {
+                level = activePreset.areaAbilityLevel;
+            }
+            tooltipValue = abilitiesArea.get(hoverIdxArea).ability.getFullName(level);
+        } else if(hoverIdxHarvest != -1) {
+            int level = 0;
+            if(abilitiesHarvest.get(hoverIdxHarvest).ability == activePreset.harvestAbility) {
+                level = activePreset.harvestAbilityLevel;
+            }
+            tooltipValue = abilitiesHarvest.get(hoverIdxHarvest).ability.getFullName(level);
+        } else if(hoverIdxExtraBtn != -1) {
+            switch(hoverIdxExtraBtn) {
+                case 0: tooltipValue = I18n.format("gui.tool_ability.reset_presets"); break;
+                case 1: tooltipValue = I18n.format("gui.tool_ability.delete_preset"); break;
+                case 2: tooltipValue = I18n.format("gui.tool_ability.add_preset"); break;
+                case 3: tooltipValue = I18n.format("gui.tool_ability.first_preset"); break;
+                case 4: tooltipValue = I18n.format("gui.tool_ability.next_preset"); break;
+                case 5: tooltipValue = I18n.format("gui.tool_ability.prev_preset"); break;
+                case 6: tooltipValue = I18n.format("gui.tool_ability.close"); break;
+            }
+        }
+
+        if(!tooltipValue.isEmpty()) {
+            int tooltipWidth = Math.max(6, fontRenderer.getStringWidth(tooltipValue));
+            int tooltipX = guiLeft + xSize / 2 - tooltipWidth / 2;
+            int tooltipY = guiTop + ySize + 1 + 4;
+            drawStretchedRect(tooltipX - 5, tooltipY - 4, 0, 76, tooltipWidth + 10, 186, 15, 3, 3);
+            fontRenderer.drawString(tooltipValue, tooltipX, tooltipY, 0xffffffff);
+        }
+    }
+
+    protected void drawStretchedRect(int x, int y, int u, int v, int realWidth, int width, int height, int keepLeft, int keepRight) {
+        int midWidth = width - keepLeft - keepRight;
+        int realMidWidth = realWidth - keepLeft - keepRight;
+        drawTexturedModalRect(x, y, u, v, keepLeft, height);
+        for(int i = 0; i < realMidWidth; i += midWidth) {
+            drawTexturedModalRect(x + keepLeft + i, y, u + keepLeft, v, Math.min(midWidth, realMidWidth - i), height);
+        }
+        drawTexturedModalRect(x + keepLeft + realMidWidth, y, u + keepLeft + midWidth, v, keepRight, height);
+    }
+
+    protected int drawSwitches(List<AbilityInfo> abilities, IBaseAbility selectedAbility, int selectedLevel, int x, int y, int mouseX, int mouseY) {
+        int hoverIdx = -1;
+        for(int i = 0; i < abilities.size(); ++i) {
+            AbilityInfo abilityInfo = abilities.get(i);
+            boolean available = abilityAvailable(abilityInfo.ability);
+            boolean selected = abilityInfo.ability == selectedAbility;
+            drawTexturedModalRect(x + 20 * i, y, abilityInfo.textureU + (available ? 16 : 0), abilityInfo.textureV, 16, 16);
+            if(abilityInfo.ability.levels() > 1) {
+                int level = selected ? selectedLevel + 1 : 0;
+                int maxLevel = Math.min(abilityInfo.ability.levels(), 5);
+                if(level > 10 || level < 0) level = -1;
+                drawTexturedModalRect(x + 20 * i + 17, y + 1, 188 + level * 2, maxLevel * 14, 2, 14);
+            }
+            boolean isHovered = isInAABB(mouseX, mouseY, x + 20 * i, y, 16, 16);
+            if(isHovered) hoverIdx = i;
+            if(selected) {
+                drawTexturedModalRect(x + 20 * i - 1, y - 1, 220, 9, 18, 18);
+            } else if(available && isHovered) {
+                drawTexturedModalRect(x + 20 * i - 1, y - 1, 238, 9, 18, 18);
+            }
+        }
+        return hoverIdx;
+    }
+
+    protected void drawNumber(int number, int x, int y) {
+        number += 100;
+        drawDigit((number / 10) % 10, x, y);
+        drawDigit(number % 10, x + 12, y);
+    }
+
+    protected void drawDigit(int digit, int x, int y) {
+        drawTexturedModalRect(x, y, digit * 10, 123, 10, 15);
+    }
+
+    private boolean isInAABB(int mouseX, int mouseY, int x, int y, int width, int height) {
+        return x <= mouseX && x + width > mouseX && y <= mouseY && y + height > mouseY;
+    }
+
+    private boolean abilityAvailable(IBaseAbility ability) {
+        if(!availableAbilities.supportsAbility(ability)) return false;
+        if(!ability.isAllowed()) return false;
+        ToolPreset activePreset = config.getActivePreset();
+        if(ability instanceof IToolHarvestAbility && ability != IToolHarvestAbility.NONE && !activePreset.areaAbility.allowsHarvest(activePreset.areaAbilityLevel)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+
+        if(Mouse.getEventButton() == -1) {
+            int scroll = Mouse.getEventDWheel();
+
+            if(scroll < 0) doPrevPreset(true);
+            if(scroll > 0) doNextPreset(true);
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int button) {
+        ToolPreset activePreset = config.getActivePreset();
+
+        Tuple.Pair<IBaseAbility, Integer> clickResult;
+
+        clickResult = handleSwitchesClicked(abilitiesArea, activePreset.areaAbility, activePreset.areaAbilityLevel, hoverIdxArea, mouseX, mouseY);
+        activePreset.areaAbility = (IToolAreaAbility) clickResult.getKey();
+        activePreset.areaAbilityLevel = clickResult.getValue();
+
+        clickResult = handleSwitchesClicked(abilitiesHarvest, activePreset.harvestAbility, activePreset.harvestAbilityLevel, hoverIdxHarvest, mouseX, mouseY);
+        activePreset.harvestAbility = (IToolHarvestAbility) clickResult.getKey();
+        activePreset.harvestAbilityLevel = clickResult.getValue();
+
+        if(!activePreset.areaAbility.allowsHarvest(activePreset.areaAbilityLevel)) {
+            activePreset.harvestAbility = IToolHarvestAbility.NONE;
+            activePreset.harvestAbilityLevel = 0;
+        }
+
+        if(hoverIdxExtraBtn != -1) {
+            switch(hoverIdxExtraBtn) {
+                case 0: doResetPresets(); break;
+                case 1: doDelPreset(); break;
+                case 2: doAddPreset(); break;
+                case 3: doZeroPreset(); break;
+                case 4: doNextPreset(false); break;
+                case 5: doPrevPreset(false); break;
+                case 6: doClose(); break;
+            }
+
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 0.5F));
+        }
+
+        if(!isInAABB(mouseX, mouseY, guiLeft, guiTop, xSize, ySize)) {
+            doClose();
+        }
+    }
+
+    protected Tuple.Pair<IBaseAbility, Integer> handleSwitchesClicked(List<AbilityInfo> abilities, IBaseAbility selectedAbility, int selectedLevel, int hoverIdx, int mouseX, int mouseY) {
+        if(hoverIdx != -1) {
+            IBaseAbility hoveredAbility = abilities.get(hoverIdx).ability;
+            boolean available = abilityAvailable(hoveredAbility);
+
+            if(available) {
+                int availableLevels = availableAbilities.maxLevel(hoveredAbility) + 1;
+
+                if(hoveredAbility != selectedAbility || availableLevels > 1) {
+                    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(HBMSoundHandler.techBoop, 2F));
+                }
+
+                if(hoveredAbility == selectedAbility) {
+                    selectedLevel = (selectedLevel + 1) % availableLevels;
+                    if(selectedLevel == 0 && !canBeZero(hoveredAbility)) {
+                        selectedLevel = 1;
+                    }
+                } else {
+                    selectedLevel = canBeZero(hoveredAbility) ? 0 : 1;
+                }
+
+                selectedAbility = hoveredAbility;
+            }
+        }
+
+        return new Tuple.Pair<>(selectedAbility, selectedLevel);
+    }
+
+    private boolean canBeZero(IBaseAbility ability) {
+        if(ability == IToolAreaAbility.NONE || ability == IToolHarvestAbility.NONE) return true;
+        if(ability == IToolHarvestAbility.SILK) return true;
+        if(ability == IToolHarvestAbility.SMELTER) return true;
+        if(ability == IToolHarvestAbility.SHREDDER) return true;
+        if(ability == IToolHarvestAbility.CENTRIFUGE) return true;
+        if(ability == IToolHarvestAbility.CRYSTALLIZER) return true;
+        if(ability == IToolHarvestAbility.MERCURY) return true;
+        return false;
+    }
+
+    @Override
+    protected void keyTyped(char c, int key) throws IOException {
+        if(key == 1 || key == this.mc.gameSettings.keyBindInventory.getKeyCode()) {
+            doClose();
+            return;
+        }
+
+        super.keyTyped(c, key);
+    }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+
+    protected void doResetPresets() {
+        config.reset(availableAbilities);
+    }
+
+    protected void doDelPreset() {
+        if(config.presets.size() <= 1) {
+            return;
+        }
+        config.presets.remove(config.currentPreset);
+        config.currentPreset = Math.min(config.currentPreset, config.presets.size() - 1);
+    }
+
+    protected void doAddPreset() {
+        if(config.presets.size() >= 99) {
+            return;
+        }
+
+        config.presets.add(config.currentPreset + 1, new ToolPreset());
+        config.currentPreset += 1;
+    }
+
+    protected void doZeroPreset() {
+        config.currentPreset = 0;
+    }
+
+    protected void doNextPreset(boolean bound) {
+        if(bound) {
+            if(config.currentPreset < config.presets.size() - 1) {
+                config.currentPreset += 1;
+            }
+        } else {
+            config.currentPreset = (config.currentPreset + 1) % config.presets.size();
+        }
+    }
+
+    protected void doPrevPreset(boolean bound) {
+        if(bound) {
+            if(config.currentPreset > 0) {
+                config.currentPreset -= 1;
+            }
+        } else {
+            config.currentPreset = (config.currentPreset + config.presets.size() - 1) % config.presets.size();
+        }
+    }
+
+    protected void doClose() {
+        ((ItemToolAbility) this.toolStack.getItem()).setConfiguration(this.toolStack, config);
+
+        PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(this.toolStack.getTagCompound()));
+
+        this.mc.player.closeScreen();
+        MainRegistry.proxy.displayTooltipLegacy(config.getActivePreset().getMessage().getFormattedText(), 11);
+        this.mc.world.playSound(this.mc.player.getPosition(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.25F, config.getActivePreset().isNone() ? 0.75F : 1.25F, false);
+    }
+}

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import com.hbm.entity.item.EntityMovingPackage;
+import com.hbm.handler.*;
 import com.hbm.render.entity.item.RenderMovingPackage;
 import com.hbm.render.item.*;
 import com.hbm.tileentity.machine.*;
@@ -202,12 +203,7 @@ import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.entity.projectile.EntitySparkBeam;
 import com.hbm.entity.projectile.EntityTom;
 import com.hbm.entity.projectile.EntityWaterSplash;
-import com.hbm.handler.BobmazonOfferFactory;
-import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
-import com.hbm.handler.HbmShaderManager;
-import com.hbm.handler.JetpackHandler;
-import com.hbm.handler.JetpackLayerRegistration;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemModLens;
 import com.hbm.lib.HBMSoundHandler;
@@ -599,6 +595,7 @@ public class ClientProxy extends ServerProxy {
 		
 		MinecraftForge.EVENT_BUS.register(new ModEventHandlerClient());
 		AdvancedModelLoader.registerModelHandler(new HmfModelLoader());
+        MinecraftForge.EVENT_BUS.register(new ToolAbilityKeyHandler());
 		MinecraftForge.EVENT_BUS.register(theInfoSystem);
         FMLCommonHandler.instance().bus().register(theInfoSystem);
 		
@@ -2109,6 +2106,7 @@ public class ClientProxy extends ServerProxy {
 		case CRANE_LEFT:		return HbmKeybinds.craneLeftKey.isKeyDown();
 		case CRANE_RIGHT:		return HbmKeybinds.craneRightKey.isKeyDown();
 		case CRANE_LOAD:		return HbmKeybinds.craneLoadKey.isKeyDown();
+        case ABILITY_ALT:       return HbmKeybinds.abilityAlt.isKeyDown();
 		}
 
 		return false;
