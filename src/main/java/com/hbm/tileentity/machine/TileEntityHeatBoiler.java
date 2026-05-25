@@ -156,7 +156,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
 			if(types[i] != null) {
 				tanks[i].setFluid(new FluidStack(types[i], tanks[i].getFluidAmount()));
 				buf.writeBoolean(true);
-				ByteBufUtils.writeUTF8String(buf, FluidRegistry.getFluidName(types[i]));
+				String fluidName = FluidRegistry.getFluidName(types[i]);
+				ByteBufUtils.writeUTF8String(buf, fluidName != null ? fluidName : "");
 				buf.writeInt(tanks[i].getFluidAmount());
 			} else {
 				tanks[i].setFluid(null);
@@ -172,7 +173,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
 			if(buf.readBoolean()) {
 				String fluidName = ByteBufUtils.readUTF8String(buf);
 				int amount = buf.readInt();
-				Fluid fluid = FluidRegistry.getFluid(fluidName);
+				Fluid fluid = fluidName != null && !fluidName.isEmpty() ? FluidRegistry.getFluid(fluidName) : null;
 				if(fluid != null) {
 					tanks[i].setFluid(new FluidStack(fluid, amount));
 					types[i] = fluid;

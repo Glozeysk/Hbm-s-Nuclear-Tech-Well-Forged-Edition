@@ -5149,3 +5149,4 @@ gui.tool_ability.first_preset=Select first preset
 gui.tool_ability.next_preset=Next preset
 gui.tool_ability.prev_preset=Previous preset
 gui.tool_ability.close=Close window
+tooltip.crate.locked=§cLocked

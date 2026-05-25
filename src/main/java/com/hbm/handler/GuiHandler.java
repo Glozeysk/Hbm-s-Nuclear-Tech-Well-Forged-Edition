@@ -20,6 +20,7 @@ import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
 import com.hbm.tileentity.turret.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -31,27 +32,36 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 @Spaghetti("ew")
 public class GuiHandler implements IGuiHandler {
 
+	private boolean isCrate(ItemStack stack, Block expected) {
+		if (stack.isEmpty()) return false;
+		return stack.getItem() instanceof net.minecraft.item.ItemBlock && ((net.minecraft.item.ItemBlock) stack.getItem()).getBlock() == expected;
+	}
+
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 
 		if (y == -999) {
-			ItemStack heldItem = player.getHeldItemMainhand();
+			ItemStack main = player.getHeldItemMainhand();
+			ItemStack off = player.getHeldItemOffhand();
 
 			if (ID == ModBlocks.guiID_crate_iron) {
-				return new ContainerCrateIron(player.inventory, TileEntityCrateIron.fromItemStack(heldItem, player));
+				ItemStack t = isCrate(main, ModBlocks.crate_iron) ? main : (isCrate(off, ModBlocks.crate_iron) ? off : null);
+				if (t != null) return new ContainerCrateIron(player.inventory, TileEntityCrateIron.fromItemStack(t, player));
 			}
 			if (ID == ModBlocks.guiID_crate_steel) {
-				return new ContainerCrateSteel(player.inventory, TileEntityCrateSteel.fromItemStack(heldItem, player));
+				ItemStack t = isCrate(main, ModBlocks.crate_steel) ? main : (isCrate(off, ModBlocks.crate_steel) ? off : null);
+				if (t != null) return new ContainerCrateSteel(player.inventory, TileEntityCrateSteel.fromItemStack(t, player));
 			}
 			if (ID == ModBlocks.guiID_crate_desh) {
-				return new ContainerCrateDesh(player.inventory, TileEntityCrateDesh.fromItemStack(heldItem, player));
+				ItemStack t = isCrate(main, ModBlocks.crate_desh) ? main : (isCrate(off, ModBlocks.crate_desh) ? off : null);
+				if (t != null) return new ContainerCrateDesh(player.inventory, TileEntityCrateDesh.fromItemStack(t, player));
 			}
 			if (ID == ModBlocks.guiID_crate_tungsten) {
-				return new ContainerCrateTungsten(player.inventory, TileEntityCrateTungsten.fromItemStack(heldItem, player));
+				ItemStack t = isCrate(main, ModBlocks.crate_tungsten) ? main : (isCrate(off, ModBlocks.crate_tungsten) ? off : null);
+				if (t != null) return new ContainerCrateTungsten(player.inventory, TileEntityCrateTungsten.fromItemStack(t, player));
 			}
 			return null;
 		}
-
 		TileEntity entity = world.getTileEntity(new BlockPos(x, y, z));
 		if(entity instanceof IGUIProvider) {
 			return ((IGUIProvider) entity).provideContainer(ID, player, world, x, y, z);

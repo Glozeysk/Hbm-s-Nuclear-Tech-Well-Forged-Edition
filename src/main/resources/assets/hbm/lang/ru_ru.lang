@@ -5247,3 +5247,4 @@ gui.tool_ability.first_preset=Выбрать первый пресет
 gui.tool_ability.next_preset=Следующий пресет
 gui.tool_ability.prev_preset=Предыдущий пресет
 gui.tool_ability.close=Закрыть окно
+tooltip.crate.locked=§cЯщик под замком
