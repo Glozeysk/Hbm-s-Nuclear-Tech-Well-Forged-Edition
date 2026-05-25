@@ -18,19 +18,14 @@ import net.minecraft.world.World;
 import java.util.*;
 
 public interface IToolAreaAbility extends IBaseAbility {
-    // Should call tool.breakExtraBlock on a bunch of blocks.
-    // The initial block is implicitly broken, so don't call breakExtraBlock on it.
-    // Returning true skips the reference block from being broken
     boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool);
 
-    // Whether breakExtraBlock is called at all. Currently only false for explosion
     default boolean allowsHarvest(int level) {
         return true;
     }
 
     int SORT_ORDER_BASE = 0;
 
-    // region handlers
     IToolAreaAbility NONE = new IToolAreaAbility() {
         @Override
         public String getName() {
@@ -66,8 +61,9 @@ public interface IToolAreaAbility extends IBaseAbility {
 
         @Override
         public String getExtension(int level) {
-            return " (" + level + ")";
+            return level == 0 ? "" : " (" + level + ")";
         }
+
 
         @Override
         public int sortOrder() {
@@ -139,6 +135,7 @@ public interface IToolAreaAbility extends IBaseAbility {
             return b1 == b2;
         }
     };
+
     IToolAreaAbility HAMMER = new IToolAreaAbility() {
         @Override
         public String getName() {
@@ -157,7 +154,7 @@ public interface IToolAreaAbility extends IBaseAbility {
 
         @Override
         public String getExtension(int level) {
-            return " (" + level + ")";
+            return level == 0 ? "" : " (" + level + ")";
         }
 
         @Override
@@ -202,7 +199,7 @@ public interface IToolAreaAbility extends IBaseAbility {
 
         @Override
         public String getExtension(int level) {
-            return " (" + level + ")";
+            return level == 0 ? "" : " (" + level + ")";
         }
 
         @Override
@@ -268,68 +265,42 @@ public interface IToolAreaAbility extends IBaseAbility {
     };
 
     IToolAreaAbility EXPLOSION = new IToolAreaAbility() {
-        @Override
-        public String getName() {
-            return "tool.ability.explosion";
-        }
+        public final float[] strengthAtLevel = { 0F, 2.5F, 5F, 10F, 15F };
+
+        @Override public String getName() { return "tool.ability.explosion"; }
+        @Override public boolean isAllowed() { return ToolConfig.abilityExplosion; }
+        @Override public int levels() { return strengthAtLevel.length; }
+        @Override public int sortOrder() { return SORT_ORDER_BASE + 4; }
 
         @Override
-        public boolean isAllowed() {
-            return ToolConfig.abilityExplosion;
-        }
-
-        public final float[] strengthAtLevel = { 2.5F, 5F, 10F, 15F };
-
-        @Override
-        public int levels() {
-            return strengthAtLevel.length;
+        public boolean allowsHarvest(int level) {
+            return level == 0;
         }
 
         @Override
         public String getExtension(int level) {
-            return " (" + strengthAtLevel[level] + ")";
-        }
-
-        @Override
-        public boolean allowsHarvest(int level) {
-            return false;
-        }
-
-        @Override
-        public int sortOrder() {
-            return SORT_ORDER_BASE + 4;
+            return level == 0 ? "" : " (" + strengthAtLevel[level] + ")";
         }
 
         @Override
         public boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool) {
+            if(level == 0) return false;
             float strength = strengthAtLevel[level];
-
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
-
-            ExplosionNT ex = new ExplosionNT(player.world, player, x + 0.5D, y + 0.5D, z + 0.5D, strength);
+            ExplosionNT ex = new ExplosionNT(world, player, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, strength);
             ex.addAttrib(ExplosionNT.ExAttrib.ALLDROP);
             ex.addAttrib(ExplosionNT.ExAttrib.NOHURT);
             ex.addAttrib(ExplosionNT.ExAttrib.NOPARTICLE);
-            ex.doExplosionA();
-            ex.doExplosionB(false);
-
-            player.world.createExplosion(player, x + 0.5D, y + 0.5D, z + 0.5D, 0.1F, false);
-
+            ex.explode();
+            world.createExplosion(player, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, 0.1F, false);
             return true;
         }
-    };
-    // endregion handlers
-
-    IToolAreaAbility[] abilities = { NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION };
+    };    IToolAreaAbility[] abilities = { NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION };
 
     static IToolAreaAbility getByName(String name) {
         for(IToolAreaAbility ability : abilities) {
             if(ability.getName().equals(name))
                 return ability;
         }
-
         return NONE;
     }
 }

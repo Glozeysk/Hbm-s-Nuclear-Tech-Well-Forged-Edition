@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.ToolAbility;
 import com.hbm.handler.ToolPreset;
@@ -38,9 +39,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.EnumRarity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketBlockChange;
@@ -129,11 +128,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		Configuration config = getConfiguration(stack);
 
 		if (player.isSneaking()) {
-			ToolPreset p = config.getActivePreset();
-			p.areaAbility = IToolAreaAbility.NONE;
-			p.areaAbilityLevel = 0;
-			p.harvestAbility = IToolHarvestAbility.NONE;
-			p.harvestAbilityLevel = 0;
+			config.currentPreset = 0;
 		} else {
 			if (config.presets.size() < 2) return;
 			config.currentPreset = (config.currentPreset + 1) % config.presets.size();
@@ -177,11 +172,12 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		} else if (ability instanceof ToolAbility.LuckAbility) {
 			availableAbilities.addAbility(IToolHarvestAbility.LUCK, ((ToolAbility.LuckAbility) ability).getLuck());
 		} else if (ability instanceof ToolAbility.ExplosionAbility) {
-			float[] explosionLevels = {2.5F, 5F, 10F, 15F};
+			float[] explosionLevels = {0F, 2.5F, 5F, 10F, 15F};
 			float target = ((ToolAbility.ExplosionAbility) ability).getStrength();
 			int lvl = findLevelIndexFloat(explosionLevels, target);
 			availableAbilities.addAbility(IToolAreaAbility.EXPLOSION, lvl);
-		} else if (ability instanceof ToolAbility.SilkAbility) {
+		}
+		else if (ability instanceof ToolAbility.SilkAbility) {
 			availableAbilities.addAbility(IToolHarvestAbility.SILK, 0);
 		} else if (ability instanceof ToolAbility.SmelterAbility) {
 			availableAbilities.addAbility(IToolHarvestAbility.SMELTER, 0);
@@ -198,9 +194,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	}
 
 	private int findLevelIndex(int[] values, int target) {
-		for (int i = 0; i < values.length; i++) {
-			if (values[i] == target) return i;
-		}
+		for (int i = 0; i < values.length; i++) if (values[i] == target) return i;
 		return values.length - 1;
 	}
 
@@ -448,65 +442,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		if(this.rockBreaker) list.add("§5["+I18nUtil.resolveKey("trait.unmineable")+"]§d " + I18nUtil.resolveKey("tool.ability.canmine"));
 	}
 
-	@Override
-	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		ItemStack stack = player.getHeldItem(hand);
-		if(this.breakAbility.size() < 2 || !canOperate(stack)) return EnumActionResult.PASS;
-		if(!worldIn.isRemote) switchMode(player, stack);
-		return EnumActionResult.SUCCESS;
-	}
-
-	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
-		ItemStack stack = player.getHeldItem(hand);
-		if(world.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) return super.onItemRightClick(world, player, hand);
-		switchMode(player, stack);
-		return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
-	}
-
-	private void cycleAbilitiesSimple(Configuration config) {
-		ToolPreset p = config.getActivePreset();
-		List<IToolAreaAbility> areas = new ArrayList<>(availableAbilities.getToolAreaAbilities().keySet());
-		List<IToolHarvestAbility> harvests = new ArrayList<>(availableAbilities.getToolHarvestAbilities().keySet());
-		areas.remove(IToolAreaAbility.HAMMER_FLAT);
-
-		boolean areaActive = p.areaAbility != IToolAreaAbility.NONE;
-		boolean harvestActive = p.harvestAbility != IToolHarvestAbility.NONE;
-
-		if (!areaActive && !harvestActive) {
-			if (!areas.isEmpty()) {
-				p.areaAbility = areas.get(0);
-				p.areaAbilityLevel = availableAbilities.getToolAreaAbilities().getOrDefault(areas.get(0), 0);
-			} else if (!harvests.isEmpty()) {
-				p.harvestAbility = harvests.get(0);
-				p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(0), 0);
-			}
-		} else if (areaActive) {
-			int idx = areas.indexOf(p.areaAbility);
-			int next = idx + 1;
-			if (next >= areas.size()) {
-				p.areaAbility = IToolAreaAbility.NONE;
-				p.areaAbilityLevel = 0;
-				if (!harvests.isEmpty()) {
-					p.harvestAbility = harvests.get(0);
-					p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(0), 0);
-				}
-			} else {
-				p.areaAbility = areas.get(next);
-				p.areaAbilityLevel = availableAbilities.getToolAreaAbilities().getOrDefault(areas.get(next), 0);
-			}
-		} else {
-			int idx = harvests.indexOf(p.harvestAbility);
-			int next = idx + 1;
-			if (next >= harvests.size()) {
-				p.harvestAbility = IToolHarvestAbility.NONE;
-				p.harvestAbilityLevel = 0;
-			} else {
-				p.harvestAbility = harvests.get(next);
-				p.harvestAbilityLevel = availableAbilities.getToolHarvestAbilities().getOrDefault(harvests.get(next), 0);
-			}
-		}
-	}
 
 	private ToolAbility getCurrentAbility(ItemStack stack) {
 		int ability = getAbility(stack) % this.breakAbility.size();
@@ -593,5 +528,38 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		GlStateManager.color(1F, 1F, 1F, 1F);
 		GlStateManager.popMatrix();
 		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
+	}
+
+	private boolean isOffHandInteractive(ItemStack offhand) {
+		if(offhand.isEmpty()) return false;
+		if(ItemBlockStorageCrate.isContainer(offhand)) return true;
+		return offhand.getItemUseAction() != EnumAction.NONE || offhand.getItem() instanceof ItemBlock;
+	}
+
+	@Override
+	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		if (hand != EnumHand.MAIN_HAND) return EnumActionResult.PASS;
+
+		ItemStack stack = player.getHeldItemMainhand();
+		if(worldIn.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) return EnumActionResult.PASS;
+
+		if(isOffHandInteractive(player.getHeldItemOffhand())) return EnumActionResult.PASS;
+		switchMode(player, stack);
+		return EnumActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		if (ItemBlockStorageCrate.isContainer(player.getHeldItemMainhand()) || ItemBlockStorageCrate.isContainer(player.getHeldItemOffhand())) {
+			return super.onItemRightClick(world, player, hand);
+		}
+
+		if (hand != EnumHand.MAIN_HAND) return super.onItemRightClick(world, player, hand);
+
+		ItemStack stack = player.getHeldItemMainhand();
+		if(world.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) return super.onItemRightClick(world, player, hand);
+
+		switchMode(player, stack);
+		return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
 	}
 }

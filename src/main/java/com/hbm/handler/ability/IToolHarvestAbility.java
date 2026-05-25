@@ -100,7 +100,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
 
         @Override
         public String getExtension(int level) {
-            return " (" + level + ")";
+            return level == 0 ? "" : " (" + level + ")";
         }
 
         @Override

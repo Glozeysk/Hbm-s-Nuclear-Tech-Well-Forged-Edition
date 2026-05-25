@@ -278,19 +278,21 @@ public class GUIScreenToolAbility extends GuiScreen {
             boolean available = abilityAvailable(hoveredAbility);
 
             if(available) {
-                int availableLevels = availableAbilities.maxLevel(hoveredAbility) + 1;
+                Integer registeredLevel = availableAbilities.getAbilities().get(hoveredAbility);
+                int maxLevel = (registeredLevel != null) ? registeredLevel : 0;
 
-                if(hoveredAbility != selectedAbility || availableLevels > 1) {
+                int minLevel = isParameterizedAbility(hoveredAbility) ? 1 : 0;
+                if(maxLevel < minLevel) maxLevel = minLevel;
+
+                if(hoveredAbility != selectedAbility || maxLevel > minLevel) {
                     mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(HBMSoundHandler.techBoop, 2F));
                 }
 
                 if(hoveredAbility == selectedAbility) {
-                    selectedLevel = (selectedLevel + 1) % availableLevels;
-                    if(selectedLevel == 0 && !canBeZero(hoveredAbility)) {
-                        selectedLevel = 1;
-                    }
+                    selectedLevel = selectedLevel + 1;
+                    if(selectedLevel > maxLevel) selectedLevel = minLevel;
                 } else {
-                    selectedLevel = canBeZero(hoveredAbility) ? 0 : 1;
+                    selectedLevel = maxLevel;
                 }
 
                 selectedAbility = hoveredAbility;
@@ -300,15 +302,12 @@ public class GUIScreenToolAbility extends GuiScreen {
         return new Tuple.Pair<>(selectedAbility, selectedLevel);
     }
 
-    private boolean canBeZero(IBaseAbility ability) {
-        if(ability == IToolAreaAbility.NONE || ability == IToolHarvestAbility.NONE) return true;
-        if(ability == IToolHarvestAbility.SILK) return true;
-        if(ability == IToolHarvestAbility.SMELTER) return true;
-        if(ability == IToolHarvestAbility.SHREDDER) return true;
-        if(ability == IToolHarvestAbility.CENTRIFUGE) return true;
-        if(ability == IToolHarvestAbility.CRYSTALLIZER) return true;
-        if(ability == IToolHarvestAbility.MERCURY) return true;
-        return false;
+    private boolean isParameterizedAbility(IBaseAbility ability) {
+        return ability == IToolAreaAbility.RECURSION
+                || ability == IToolAreaAbility.HAMMER
+                || ability == IToolAreaAbility.HAMMER_FLAT
+                || ability == IToolAreaAbility.EXPLOSION
+                || ability == IToolHarvestAbility.LUCK;
     }
 
     @Override
