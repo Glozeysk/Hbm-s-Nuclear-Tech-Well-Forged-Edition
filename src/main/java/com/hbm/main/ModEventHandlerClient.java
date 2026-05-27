@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.hbm.handler.*;
 import com.hbm.items.tool.ItemToolAbility;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -34,12 +36,6 @@ import com.hbm.flashlight.Flashlight;
 import com.hbm.forgefluid.SpecialContainerFillLists.EnumCanister;
 import com.hbm.forgefluid.SpecialContainerFillLists.EnumCell;
 import com.hbm.forgefluid.SpecialContainerFillLists.EnumGasCanister;
-import com.hbm.handler.ArmorModHandler;
-import com.hbm.handler.HTTPHandler;
-import com.hbm.handler.HazmatRegistry;
-import com.hbm.handler.HbmShaderManager;
-import com.hbm.handler.HbmShaderManager2;
-import com.hbm.handler.JetpackHandler;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.interfaces.ICustomSelectionBox;
 import com.hbm.interfaces.IHasCustomModel;
@@ -249,6 +245,31 @@ public class ModEventHandlerClient {
 			deltaMouseX = 0;
 			deltaMouseY = 0;
 		}
+	}
+
+	private boolean wasAltDown = false;
+
+	@SubscribeEvent
+	public void onClientTick(TickEvent.ClientTickEvent event) {
+		if (event.phase != TickEvent.Phase.END) return;
+		Minecraft mc = Minecraft.getMinecraft();
+		EntityPlayer player = mc.player;
+		if (player == null || player.world == null) return;
+		ItemStack stack = player.getHeldItemMainhand();
+		if (!(stack.getItem() instanceof ItemToolAbility)) {
+			wasAltDown = false;
+			return;
+		}
+		boolean altDown = HbmKeybinds.abilityAltKey.isKeyDown();
+		if (altDown && !wasAltDown) {
+			if (mc.currentScreen == null) {
+				RayTraceResult mop = mc.objectMouseOver;
+				if (mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK) {
+					player.openGui(MainRegistry.instance, ModItems.guiID_item_tool_ability, player.world, 0, 0, 0);
+				}
+			}
+		}
+		wasAltDown = altDown;
 	}
 	
 	@SubscribeEvent

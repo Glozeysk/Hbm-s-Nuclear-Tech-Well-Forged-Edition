@@ -595,7 +595,6 @@ public class ClientProxy extends ServerProxy {
 		
 		MinecraftForge.EVENT_BUS.register(new ModEventHandlerClient());
 		AdvancedModelLoader.registerModelHandler(new HmfModelLoader());
-        MinecraftForge.EVENT_BUS.register(new ToolAbilityKeyHandler());
 		MinecraftForge.EVENT_BUS.register(theInfoSystem);
         FMLCommonHandler.instance().bus().register(theInfoSystem);
 		
@@ -2106,7 +2105,7 @@ public class ClientProxy extends ServerProxy {
 		case CRANE_LEFT:		return HbmKeybinds.craneLeftKey.isKeyDown();
 		case CRANE_RIGHT:		return HbmKeybinds.craneRightKey.isKeyDown();
 		case CRANE_LOAD:		return HbmKeybinds.craneLoadKey.isKeyDown();
-        case ABILITY_ALT:       return HbmKeybinds.abilityAlt.isKeyDown();
+        case ABILITY_ALT:       return HbmKeybinds.abilityAltKey.isKeyDown();
 		}
 
 		return false;
@@ -2171,7 +2170,6 @@ public class ClientProxy extends ServerProxy {
 		ItemRenderLibrary.init();
 
 		MinecraftForge.EVENT_BUS.register(new ItemModLens.ClientMarkerHandler());
-
         MinecraftForge.EVENT_BUS.register(new RenderTurretControlOverlay());
         MinecraftForge.EVENT_BUS.register(new com.hbm.render.event.RenderTurretLaser());
 		ModItems.redstone_sword.setTileEntityItemStackRenderer(ItemRedstoneSwordRender.INSTANCE);

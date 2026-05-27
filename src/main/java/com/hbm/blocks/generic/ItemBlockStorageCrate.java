@@ -34,12 +34,10 @@ public class ItemBlockStorageCrate extends ItemBlock {
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
 
-        // Приоритет основной руки
         if (hand == EnumHand.OFF_HAND && isContainer(player.getHeldItemMainhand())) {
             return new ActionResult<>(EnumActionResult.PASS, stack);
         }
 
-        // Запрет открытия стаков
         if (stack.getCount() > 1) {
             if (!world.isRemote) player.sendStatusMessage(new TextComponentTranslation("message.crate.split"), true);
             return new ActionResult<>(EnumActionResult.FAIL, stack);
@@ -53,8 +51,7 @@ public class ItemBlockStorageCrate extends ItemBlock {
             int guiId = getGuiId(this.getBlock());
             if (guiId != -1) {
                 if (stack.hasTagCompound() && stack.getTagCompound().hasKey("lock")) {
-                    world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockHang, SoundCategory.PLAYERS, 1.0F, 1.0F);
-                }
+                    world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);                }
                 world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 player.openGui(MainRegistry.instance, guiId, world, 0, -999, 0);
                 return new ActionResult<>(EnumActionResult.SUCCESS, stack);

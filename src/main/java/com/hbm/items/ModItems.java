@@ -279,7 +279,7 @@ public class ModItems {
 	public static final int guiID_item_book = 10105;
 	public static final int guiID_item_guide = 10106;
 	public static final int guiID_fluid_id = 10107;
-	public static final int guiID_item_tool_ability = 9612;
+	public static final int guiID_item_tool_ability = 10108;
 	
 	public static final Item redstone_sword = new RedstoneSword(ToolMaterial.STONE, "redstone_sword").setCreativeTab(CreativeTabs.COMBAT);
 	public static final Item big_sword = new BigSword(ToolMaterial.DIAMOND, "big_sword").setCreativeTab(CreativeTabs.COMBAT);
