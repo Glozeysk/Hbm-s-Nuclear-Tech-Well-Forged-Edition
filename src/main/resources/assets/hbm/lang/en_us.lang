@@ -5150,3 +5150,7 @@ gui.tool_ability.next_preset=Next preset
 gui.tool_ability.prev_preset=Previous preset
 gui.tool_ability.close=Close window
 tooltip.crate.locked=§cLocked
+tooltip.ability.cycle=Right click to cycle through presets!
+tooltip.ability.sneak=Sneak-click to go to first preset!
+tooltip.ability.alt=Alt-click to open customization GUI!
+key.categories.hbm.abilityAlt=Tool Abilities Menu

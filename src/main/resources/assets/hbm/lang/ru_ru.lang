@@ -5248,3 +5248,7 @@ gui.tool_ability.next_preset=Следующий пресет
 gui.tool_ability.prev_preset=Предыдущий пресет
 gui.tool_ability.close=Закрыть окно
 tooltip.crate.locked=§cЯщик под замком
+tooltip.ability.cycle=ПКМ чтобы переключить пресеты!
+tooltip.ability.sneak=Shift + ПКМ чтобы переключиться на первый пресет!
+tooltip.ability.alt=Нажмите Alt чтобы открыть меню способностей инструмента!
+key.categories.hbm.abilityAlt=Меню способностей инструмента

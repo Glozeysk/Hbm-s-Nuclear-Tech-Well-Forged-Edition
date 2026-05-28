@@ -12,21 +12,22 @@ import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.ToolAbility;
 import com.hbm.handler.ToolPreset;
 import com.hbm.handler.WeaponAbility;
-import com.hbm.handler.ability.*;
+import com.hbm.handler.ability.AvailableAbilities;
+import com.hbm.handler.ability.IBaseAbility;
+import com.hbm.handler.ability.IToolAreaAbility;
+import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.inventory.gui.GUIScreenToolAbility;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.NBTItemControlPacket;
 import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.I18nUtil;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.util.ITooltipFlag;
@@ -38,7 +39,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
@@ -47,7 +47,7 @@ import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.ForgeHooks;
@@ -57,7 +57,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
-public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRockTool, IGUIProvider {
+public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRockTool {
 
 	private EnumToolType toolType;
 	private EnumRarity rarity = EnumRarity.COMMON;
@@ -165,7 +165,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return availableAbilities;
 	}
 
-
 	public static class Configuration {
 		public List<ToolPreset> presets;
 		public int currentPreset;
@@ -259,7 +258,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 		boolean altDown = HbmKeybinds.abilityAltKey.isKeyDown();
 
-		if (altDown && !wasAltDown) {
+		if (altDown && !wasAltDown && this.availableAbilities.hasAnyRealAbility()) {
 			player.openGui(MainRegistry.instance, ModItems.guiID_item_tool_ability, player.world, 0, 0, 0);
 		}
 
@@ -268,23 +267,28 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if (hand != EnumHand.MAIN_HAND) return EnumActionResult.PASS;
-
-		ItemStack stack = player.getHeldItemMainhand();
-		if (worldIn.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) {
+		if (hand == EnumHand.OFF_HAND && player.getHeldItemMainhand().getItem() instanceof ItemToolAbility) {
 			return EnumActionResult.PASS;
 		}
+
+		EnumHand otherHand = hand == EnumHand.MAIN_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+		if (isOffHandInteractive(player.getHeldItem(otherHand))) {
+			return EnumActionResult.PASS;
+		}
+
+		ItemStack stack = player.getHeldItem(hand);
+		if (stack.isEmpty() || !canOperate(stack)) return EnumActionResult.PASS;
+
+		if (player.isSneaking()) {
+			switchMode(player, stack);
+			return EnumActionResult.SUCCESS;
+		}
+
+		if (worldIn.isRemote) return EnumActionResult.PASS;
 
 		TileEntity te = worldIn.getTileEntity(pos);
-		if (te instanceof IGUIProvider) {
-			return EnumActionResult.PASS;
-		}
 		Block block = worldIn.getBlockState(pos).getBlock();
-		if (block instanceof BlockContainer) {
-			return EnumActionResult.PASS;
-		}
-
-		if (isOffHandInteractive(player.getHeldItemOffhand())) {
+		if (te != null || block instanceof IInteractionObject) {
 			return EnumActionResult.PASS;
 		}
 
@@ -294,15 +298,28 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		if (hand == EnumHand.OFF_HAND && player.getHeldItemMainhand().getItem() instanceof ItemToolAbility) {
+			return super.onItemRightClick(world, player, hand);
+		}
+
+		EnumHand otherHand = hand == EnumHand.MAIN_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+		if (isOffHandInteractive(player.getHeldItem(otherHand))) {
+			return super.onItemRightClick(world, player, hand);
+		}
+
+		ItemStack stack = player.getHeldItem(hand);
+		if (stack.isEmpty() || !canOperate(stack)) return super.onItemRightClick(world, player, hand);
+
+		if (player.isSneaking()) {
+			switchMode(player, stack);
+			return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
+		}
+
 		if (ItemBlockStorageCrate.isContainer(player.getHeldItemMainhand()) || ItemBlockStorageCrate.isContainer(player.getHeldItemOffhand())) {
 			return super.onItemRightClick(world, player, hand);
 		}
-		if (hand != EnumHand.MAIN_HAND) return super.onItemRightClick(world, player, hand);
 
-		ItemStack stack = player.getHeldItemMainhand();
-		if (world.isRemote || this.breakAbility.size() < 2 || !canOperate(stack)) {
-			return super.onItemRightClick(world, player, hand);
-		}
+		if (world.isRemote) return super.onItemRightClick(world, player, hand);
 
 		switchMode(player, stack);
 		return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
@@ -332,14 +349,11 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 				0.25F, preset.isNone() ? 0.75F : 1.25F);
 	}
 
-
 	private boolean isOffHandInteractive(ItemStack offhand) {
 		if (offhand.isEmpty()) return false;
 		if (ItemBlockStorageCrate.isContainer(offhand)) return true;
 		return offhand.getItemUseAction() != EnumAction.NONE || offhand.getItem() instanceof ItemBlock;
 	}
-
-
 
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
@@ -406,7 +420,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		}
 		return map;
 	}
-
 
 	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer player, int refX, int refY, int refZ) {
 		breakExtraBlock(world, x, y, z, player, refX, refY, refZ, EnumHand.MAIN_HAND);
@@ -480,24 +493,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return flag;
 	}
 
-	@Override
-	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-		if (ID != ModItems.guiID_item_tool_ability) return null;
-		return new Container() {
-			@Override
-			public boolean canInteractWith(EntityPlayer playerIn) {
-				return true;
-			}
-		};
-	}
-
-	@SideOnly(Side.CLIENT)
-	@Override
-	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
-		if (ID != ModItems.guiID_item_tool_ability) return null;
-		return new GUIScreenToolAbility(this.availableAbilities);
-	}
-
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean hasEffect(ItemStack stack) {
@@ -505,10 +500,12 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return config != null && !config.getActivePreset().isNone() || super.hasEffect(stack);
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-		availableAbilities.addInformation(list);
+		Configuration config = getConfiguration(stack);
+		ToolPreset activePreset = config.getActivePreset();
+		availableAbilities.addInformation(list, activePreset);
 		if (this.rockBreaker)
 			list.add("§5[" + I18nUtil.resolveKey("trait.unmineable") + "]§d " + I18nUtil.resolveKey("tool.ability.canmine"));
 	}

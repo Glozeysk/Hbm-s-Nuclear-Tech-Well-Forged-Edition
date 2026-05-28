@@ -1,8 +1,28 @@
 {
+	"forge_marker": 1,
+	"defaults": {
+		"model": "cube_bottom_top",
+		"textures": {
+			"bottom": "hbm:blocks/crate_steel_side",
+			"side": "hbm:blocks/crate_steel_side",
+			"top": "hbm:blocks/crate_steel_top"
+		}
+	},
 	"variants": {
-		"facing=north": { "model": "hbm:crate_steel" },
-		"facing=south": { "model": "hbm:crate_steel", "y": 180 },
-		"facing=west": { "model": "hbm:crate_steel", "y": 270 },
-		"facing=east": { "model": "hbm:crate_steel", "y": 90 }
+		"normal": [{}],
+		"inventory": [{}],
+		"inventory_open": [{
+			"textures": { "top": "hbm:blocks/crate_steel_top_open" }
+		}],
+		"facing": {
+			"north": {},
+			"south": { "y": 180 },
+			"west": { "y": 270 },
+			"east": { "y": 90 }
+		},
+		"open": {
+			"false": {},
+			"true": { "textures": { "top": "hbm:blocks/crate_steel_top_open" } }
+		}
 	}
 }

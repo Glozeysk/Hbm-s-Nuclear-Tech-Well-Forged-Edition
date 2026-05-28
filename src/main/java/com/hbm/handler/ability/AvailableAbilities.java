@@ -1,6 +1,8 @@
 package com.hbm.handler.ability;
 
+import com.hbm.handler.ToolPreset;
 import com.hbm.main.MainRegistry;
+import com.hbm.util.I18nUtil;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -63,6 +65,11 @@ public class AvailableAbilities {
         return abilities;
     }
 
+    public boolean hasAnyRealAbility() {
+        return abilities.keySet().stream()
+                .anyMatch(a -> a != IToolAreaAbility.NONE && a != IToolHarvestAbility.NONE);
+    }
+
     public int size() {
         return abilities.size();
     }
@@ -72,39 +79,66 @@ public class AvailableAbilities {
     }
 
     @SideOnly(Side.CLIENT)
-    public void addInformation(List list) {
+    public void addInformation(List<String> list, ToolPreset activePreset) {
+        Comparator<Map.Entry<IBaseAbility, Integer>> abilityComparator =
+                Comparator.comparing(Map.Entry<IBaseAbility, Integer>::getKey)
+                        .thenComparing(Map.Entry::getValue);
+
         List<Map.Entry<IBaseAbility, Integer>> toolAbilities = abilities.entrySet().stream()
                 .filter(entry -> (entry.getKey() instanceof IToolAreaAbility && entry.getKey() != IToolAreaAbility.NONE)
                         || (entry.getKey() instanceof IToolHarvestAbility && entry.getKey() != IToolHarvestAbility.NONE))
-                .sorted(Comparator.comparing(Map.Entry<IBaseAbility, Integer>::getKey).thenComparing(Map.Entry<IBaseAbility, Integer>::getValue)).collect(Collectors.toList());
+                .sorted(abilityComparator)
+                .collect(Collectors.toList());
 
-        if(!toolAbilities.isEmpty()) {
+        if (!toolAbilities.isEmpty()) {
             list.add("Abilities: ");
 
-            toolAbilities.forEach(entry -> {
+            for (Map.Entry<IBaseAbility, Integer> entry : toolAbilities) {
                 IBaseAbility ability = entry.getKey();
-                int level = entry.getValue();
+                int maxLevel = entry.getValue();
+                boolean isActive = false;
+                int activeLevel = 0;
 
-                list.add("  " + TextFormatting.GOLD + ability.getFullName(level));
-            });
+                if (activePreset != null && !activePreset.isNone()) {
+                    if (ability instanceof IToolAreaAbility) {
+                        if (ability == activePreset.areaAbility) {
+                            isActive = true;
+                            activeLevel = activePreset.areaAbilityLevel;
+                        }
+                    } else if (ability instanceof IToolHarvestAbility) {
+                        if (ability == activePreset.harvestAbility) {
+                            isActive = true;
+                            activeLevel = activePreset.harvestAbilityLevel;
+                        }
+                    }
+                }
 
-            list.add("Right click to cycle through presets!");
-            list.add("Sneak-click to go to first preset!");
-            list.add("Alt-click to open customization GUI!");
+                String line;
+                if (isActive) {
+                    line = "  " + TextFormatting.GREEN + ability.getFullName(activeLevel);
+                } else {
+                    line = "  " + TextFormatting.GOLD + ability.getFullName(maxLevel);
+                }
+                list.add(line);
+            }
+
+            list.add(I18nUtil.resolveKey("tooltip.ability.cycle"));
+            list.add(I18nUtil.resolveKey("tooltip.ability.sneak"));
+            list.add(I18nUtil.resolveKey("tooltip.ability.alt"));
         }
 
-        List<Map.Entry<IBaseAbility, Integer>> weaponAbilities = abilities.entrySet().stream().filter(entry -> (entry.getKey() instanceof IWeaponAbility && entry.getKey() != IWeaponAbility.NONE))
-                .sorted(Comparator.comparing(Map.Entry<IBaseAbility, Integer>::getKey).thenComparing(Map.Entry<IBaseAbility, Integer>::getValue)).collect(Collectors.toList());
+        List<Map.Entry<IBaseAbility, Integer>> weaponAbilities = abilities.entrySet().stream()
+                .filter(entry -> entry.getKey() instanceof IWeaponAbility && entry.getKey() != IWeaponAbility.NONE)
+                .sorted(abilityComparator)
+                .collect(Collectors.toList());
 
-        if(!weaponAbilities.isEmpty()) {
+        if (!weaponAbilities.isEmpty()) {
             list.add("Weapon modifiers: ");
-
-            weaponAbilities.forEach(entry -> {
+            for (Map.Entry<IBaseAbility, Integer> entry : weaponAbilities) {
                 IBaseAbility ability = entry.getKey();
                 int level = entry.getValue();
-
                 list.add("  " + TextFormatting.RED + ability.getFullName(level));
-            });
+            }
         }
     }
 }
