@@ -1,21 +1,30 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.generic.BlockStorageCrate;
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import static com.hbm.blocks.generic.BlockStorageCrate.OPEN;
 
 public abstract class TileEntityCrateBase extends TileEntityLockableBase {
 
@@ -26,6 +35,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
     protected EntityPlayer sourcePlayer = null;
     protected int sourceSlotIndex = -1;
     protected boolean isLoading = false;
+    private int openCount = 0;
 
     public TileEntityCrateBase(int size) { this(size, true); }
     public TileEntityCrateBase(int size, boolean useFiltered) {
@@ -139,28 +149,89 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
 
     public boolean isUseableByPlayer(EntityPlayer player) {
         if (isFromItemStack()) {
-            if (sourcePlayer == null || sourceStack.isEmpty()) return false;
+            if (sourcePlayer == null || sourceStack.isEmpty()) {
+                System.out.println("Crate: sourcePlayer null or stack empty");
+                return false;
+            }
             if (sourceSlotIndex == -1) {
-                return (isSameItem(player.getHeldItemMainhand(), sourceStack) || isSameItem(player.getHeldItemOffhand(), sourceStack)) && sourcePlayer == player;
+                boolean match = (isSameItem(player.getHeldItemMainhand(), sourceStack)
+                        || isSameItem(player.getHeldItemOffhand(), sourceStack)) && sourcePlayer == player;
+                if (!match) System.out.println("Crate: hands mismatch or player mismatch");
+                return match;
+            } else {
+                boolean match = isSameItem(player.inventory.getStackInSlot(sourceSlotIndex), sourceStack) && sourcePlayer == player;
+                if (!match) System.out.println("Crate: slot" + sourceSlotIndex + " mismatch");
+                return match;
             }
-            if (sourceSlotIndex >= 0 && sourceSlotIndex < player.inventory.getSizeInventory()) {
-                return isSameItem(player.inventory.getStackInSlot(sourceSlotIndex), sourceStack) && sourcePlayer == player;
-            }
+        }
+        if (world == null || world.getTileEntity(pos) != this) {
+            System.out.println("Crate: world null or TE mismatch at " + pos);
             return false;
         }
-        if (world == null || world.getTileEntity(pos) != this) return false;
-        return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64;
+        double dist = player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+        if (dist > 64) {
+            System.out.println("Crate: too far, distance=" + dist);
+            return false;
+        }
+        return true;
+    }
+
+    public void openInventory(EntityPlayer player) {
+        openCount++;
+        sendUpdateToClient();
+    }
+
+    public void closeInventory(EntityPlayer player) {
+        openCount--;
+        if (openCount < 0) openCount = 0;
+        sendUpdateToClient();
+    }
+
+    private void sendUpdateToClient() {
+        if (world != null && !world.isRemote) {
+            IBlockState state = world.getBlockState(pos);
+            world.notifyBlockUpdate(pos, state, state, 3);
+            markDirty();
+        }
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        readFromNBT(tag);
+    }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.NetworkManager net, SPacketUpdateTileEntity pkt) {
+        handleUpdateTag(pkt.getNbtCompound());
+        world.markBlockRangeForRenderUpdate(pos, pos);
+    }
+
+    public int getOpenCount() {
+        return openCount;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         if (compound.hasKey("inventory")) inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+        if (compound.hasKey("openCount")) openCount = compound.getInteger("openCount");
         super.readFromNBT(compound);
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("inventory", inventory.serializeNBT());
+        compound.setInteger("openCount", openCount);
         return super.writeToNBT(compound);
     }
 
