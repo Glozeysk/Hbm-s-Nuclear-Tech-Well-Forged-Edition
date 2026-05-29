@@ -10,10 +10,6 @@
 	},
 	"variants": {
 		"normal": [{}],
-		"inventory": [{}],
-		"inventory_open": [{
-			"textures": { "top": "hbm:blocks/crate_iron_top_open" }
-		}],
 		"facing": {
 			"north": {},
 			"south": { "y": 180 },

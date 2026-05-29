@@ -2,13 +2,10 @@ package com.hbm.main;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.handler.*;
 import com.hbm.items.tool.ItemToolAbility;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -303,10 +300,16 @@ public class ModEventHandlerClient {
 			registerModel(item, 0);
 		}
 		for(Block block : ModBlocks.ALL_BLOCKS) {
-			registerBlockModel(block, 0);
-		}
-
-		registerBedrockOreModels();
+			if (block == ModBlocks.crate_iron || block == ModBlocks.crate_steel ||
+					block == ModBlocks.crate_desh || block == ModBlocks.crate_tungsten) {
+				Item item = Item.getItemFromBlock(block);
+				ModelResourceLocation modelLoc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+				ModelLoader.setCustomModelResourceLocation(item, 0, modelLoc);
+				ModelLoader.setCustomMeshDefinition(item, stack -> modelLoc);
+			} else {
+				registerBlockModel(block, 0);
+			}
+		}		registerBedrockOreModels();
 	}
 
 	public static void registerBedrockOreModels(){

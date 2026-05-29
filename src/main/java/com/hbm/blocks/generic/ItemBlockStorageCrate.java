@@ -9,25 +9,37 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockShulkerBox;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.*;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ItemBlockStorageCrate extends ItemBlock {
 
+    private static ItemStack openStackClient = null;
+
     public ItemBlockStorageCrate(Block block) {
         super(block);
+        this.addPropertyOverride(new ResourceLocation("open"), new IItemPropertyGetter() {
+            @Override
+            public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
+                boolean isOpen = (openStackClient != null && ItemStack.areItemStacksEqual(stack, openStackClient));
+
+                return isOpen ? 1.0F : 0.0F;
+            }
+        });
     }
 
     @Override
@@ -51,14 +63,23 @@ public class ItemBlockStorageCrate extends ItemBlock {
             int guiId = getGuiId(this.getBlock());
             if (guiId != -1) {
                 if (stack.hasTagCompound() && stack.getTagCompound().hasKey("lock")) {
-                    world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);                }
-                world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    world.playSound(null, player.posX, player.posY, player.posZ,
+                            HBMSoundHandler.lockOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                }
+                world.playSound(null, player.posX, player.posY, player.posZ,
+                        HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 player.openGui(MainRegistry.instance, guiId, world, 0, -999, 0);
                 return new ActionResult<>(EnumActionResult.SUCCESS, stack);
             }
+        } else {
+            openStackClient = stack;
         }
 
         return new ActionResult<>(EnumActionResult.PASS, stack);
+    }
+
+    public static void clearOpenStack() {
+        openStackClient = null;
     }
 
     private boolean hasMatchingKey(ItemStack crate, EntityPlayer player) {
@@ -99,5 +120,9 @@ public class ItemBlockStorageCrate extends ItemBlock {
             return block instanceof BlockStorageCrate || block instanceof BlockShulkerBox;
         }
         return false;
+    }
+
+    public static boolean isOpen() {
+        return openStackClient != null;
     }
 }

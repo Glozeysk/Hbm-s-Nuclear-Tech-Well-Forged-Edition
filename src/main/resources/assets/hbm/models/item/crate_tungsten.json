@@ -1,3 +1,14 @@
 {
-	"parent": "hbm:block/crate_tungsten"
+	"parent": "block/cube_bottom_top",
+	"textures": {
+		"bottom": "hbm:blocks/crate_tungsten_side",
+		"side": "hbm:blocks/crate_tungsten_side",
+		"top": "hbm:blocks/crate_tungsten_top"
+	},
+	"overrides": [
+		{
+			"predicate": { "open": 1 },
+			"model": "hbm:item/crate_tungsten_open"
+		}
+	]
 }

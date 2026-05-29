@@ -1,16 +1,16 @@
 package com.hbm.inventory.gui;
 
-import org.lwjgl.opengl.GL11;
-
+import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.inventory.container.ContainerCrateIron;
 import com.hbm.lib.RefStrings;
+import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityCrateIron;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 public class GUICrateIron extends GuiContainer {
 	
@@ -45,5 +45,14 @@ public class GUICrateIron extends GuiContainer {
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+	}
+
+	@Override
+	public void onGuiClosed() {
+		super.onGuiClosed();
+
+		if (this.mc.world.isRemote) {
+			ItemBlockStorageCrate.clearOpenStack();
+		}
 	}
 }

@@ -3796,7 +3796,6 @@ public class ModItems {
 			} else if(block == ModBlocks.block_scrap){
 				ForgeRegistries.ITEMS.register(new ItemBlockScrap(block).setRegistryName(block.getRegistryName()));
 			} else if(block instanceof BlockModDoor){
-				// ничего
 			} else if(block instanceof BlockStorageCrate && block != ModBlocks.safe){
 				ForgeRegistries.ITEMS.register(new ItemBlockStorageCrate(block).setRegistryName(block.getRegistryName()));
 			} else {

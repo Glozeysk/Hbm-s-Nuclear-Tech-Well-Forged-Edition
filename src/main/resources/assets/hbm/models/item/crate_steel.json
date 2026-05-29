@@ -1,3 +1,14 @@
 {
-	"parent": "hbm:block/crate_steel"
+	"parent": "block/cube_bottom_top",
+	"textures": {
+		"bottom": "hbm:blocks/crate_steel_side",
+		"side": "hbm:blocks/crate_steel_side",
+		"top": "hbm:blocks/crate_steel_top"
+	},
+	"overrides": [
+		{
+			"predicate": { "open": 1 },
+			"model": "hbm:item/crate_steel_open"
+		}
+	]
 }
