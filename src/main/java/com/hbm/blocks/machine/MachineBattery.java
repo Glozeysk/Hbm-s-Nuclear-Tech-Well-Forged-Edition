@@ -20,6 +20,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
@@ -131,12 +132,12 @@ public class MachineBattery extends BlockContainer implements ILookOverlay {
 	@Override
 	public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest){
 		if(!player.capabilities.isCreativeMode && !world.isRemote && willHarvest) {
-			
+
 			ItemStack drop = new ItemStack(this);
 			TileEntity te = world.getTileEntity(pos);
 			if (te instanceof TileEntityMachineBattery) {
 				TileEntityMachineBattery battery = (TileEntityMachineBattery) te;
-			
+
 				NBTTagCompound nbt = new NBTTagCompound();
 				battery.writeNBT(nbt);
 
@@ -145,7 +146,16 @@ public class MachineBattery extends BlockContainer implements ILookOverlay {
 				}
 			}
 
-			InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, drop);
+			EntityItem entityitem = new EntityItem(world,
+					pos.getX() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					pos.getY() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					pos.getZ() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					drop);
+			entityitem.motionX = world.rand.nextFloat() * 0.05F;
+			entityitem.motionY = world.rand.nextFloat() * 0.05F + 0.2F;
+			entityitem.motionZ = (world.rand.nextFloat() * 0.05F);
+			entityitem.setDefaultPickupDelay();
+			world.spawnEntity(entityitem);
 		}
 		return world.setBlockToAir(pos);
 	}

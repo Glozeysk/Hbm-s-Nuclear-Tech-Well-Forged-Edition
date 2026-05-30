@@ -33,7 +33,10 @@ public class ItemRendererMeteorSword extends TEISRBase {
 		GL11.glTranslated(0.5, 0.5, 0.5);
 
 		Minecraft mc = Minecraft.getMinecraft();
-		Minecraft.getMinecraft().getRenderItem().renderItem(stack, itemModel);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(-0.5F, -0.5F, -0.5F);
+        Minecraft.getMinecraft().getRenderItem().renderModel(itemModel, stack);
+        GlStateManager.popMatrix();
 
         mc.renderEngine.bindTexture(RenderMiscEffects.glint);
 

@@ -43,7 +43,6 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
             @Override
             protected void onContentsChanged(int slot) {
                 markDirty();
-                if (!isLoading) saveToSourceStack();
                 super.onContentsChanged(slot);
             }
         };
@@ -51,10 +50,68 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
     }
 
     protected void initFromStack(ItemStack stack, EntityPlayer player) {
-        this.sourceStack = stack;
+        this.sourceStack = stack.copy();
         this.sourcePlayer = player;
         this.sourceSlotIndex = -1;
+
+        if (stack == player.getHeldItemMainhand()) {
+            this.sourceSlotIndex = player.inventory.currentItem;
+        } else if (stack == player.getHeldItemOffhand()) {
+            this.sourceSlotIndex = 40;
+        } else {
+            for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                if (player.inventory.getStackInSlot(i) == stack) {
+                    this.sourceSlotIndex = i;
+                    break;
+                }
+            }
+        }
+
         this.loadFromItemStack();
+    }
+
+    public void saveInventoryToStack() {
+        if (sourcePlayer == null || sourceSlotIndex == -1) return;
+
+        ItemStack target = sourcePlayer.inventory.getStackInSlot(sourceSlotIndex);
+
+        if (target.isEmpty() || !ItemStack.areItemsEqual(sourceStack, target)) {
+            target = findCurrentStack(sourcePlayer);
+            if (target == null || target.isEmpty()) return;
+            for (int i = 0; i < sourcePlayer.inventory.getSizeInventory(); i++) {
+                if (sourcePlayer.inventory.getStackInSlot(i) == target) {
+                    sourceSlotIndex = i;
+                    break;
+                }
+            }
+        }
+
+        NBTTagCompound nbt = target.hasTagCompound() ? target.getTagCompound() : new NBTTagCompound();
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            nbt.removeTag("slot" + i);
+        }
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack s = inventory.getStackInSlot(i);
+            if (!s.isEmpty()) {
+                NBTTagCompound tag = new NBTTagCompound();
+                s.writeToNBT(tag);
+                nbt.setTag("slot" + i, tag);
+            }
+        }
+        target.setTagCompound(nbt.isEmpty() ? null : nbt);
+        sourceStack = target.copy();
+
+        if (sourcePlayer instanceof net.minecraft.entity.player.EntityPlayerMP) {
+            ((net.minecraft.entity.player.EntityPlayerMP) sourcePlayer).inventoryContainer.detectAndSendChanges();
+        }
+    }
+
+    private ItemStack findCurrentStack(EntityPlayer player) {
+        for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+            ItemStack s = player.inventory.getStackInSlot(i);
+            if (!s.isEmpty() && ItemStack.areItemsEqual(sourceStack, s)) return s;
+        }
+        return null;
     }
 
     protected void loadFromItemStack() {
@@ -75,45 +132,30 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
 
     protected void saveToSourceStack() {
         if (sourceStack.isEmpty() || sourcePlayer == null || sourcePlayer.inventory == null) return;
+
         ItemStack target = findCurrentStack(sourcePlayer);
         if (target == null || target.isEmpty()) return;
 
-        sourceStack = target;
-        if (sourceSlotIndex == -1) {
-            if (target == sourcePlayer.getHeldItemMainhand()) sourceSlotIndex = sourcePlayer.inventory.currentItem;
-            else if (target == sourcePlayer.getHeldItemOffhand()) sourceSlotIndex = 40;
-            else {
-                for (int i = 0; i < sourcePlayer.inventory.getSizeInventory(); i++) {
-                    if (sourcePlayer.inventory.getStackInSlot(i) == target) { sourceSlotIndex = i; break; }
-                }
-            }
+        NBTTagCompound nbt = target.hasTagCompound() ? target.getTagCompound() : new NBTTagCompound();
+
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            nbt.removeTag("slot" + i);
         }
 
-        NBTTagCompound nbt = target.hasTagCompound() ? target.getTagCompound() : new NBTTagCompound();
-        for (int i = 0; i < inventory.getSlots(); i++) nbt.removeTag("slot" + i);
         for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (!stack.isEmpty()) {
-                NBTTagCompound slot = new NBTTagCompound();
-                stack.writeToNBT(slot);
-                nbt.setTag("slot" + i, slot);
+                NBTTagCompound slotNbt = new NBTTagCompound();
+                stack.writeToNBT(slotNbt);
+                nbt.setTag("slot" + i, slotNbt);
             }
         }
-        target.setTagCompound(nbt.isEmpty() ? null : nbt);
-    }
 
-    private ItemStack findCurrentStack(EntityPlayer player) {
-        if (sourceSlotIndex != -1 && sourceSlotIndex < player.inventory.getSizeInventory()) {
-            ItemStack s = player.inventory.getStackInSlot(sourceSlotIndex);
-            if (isSameItem(s, sourceStack)) return s;
+        target.setTagCompound(nbt.isEmpty() ? null : nbt);
+
+        if (!ItemStack.areItemStacksEqual(sourceStack, target)) {
+            sourceStack = target.copy();
         }
-        if (isSameItem(player.getHeldItemMainhand(), sourceStack)) return player.getHeldItemMainhand();
-        if (isSameItem(player.getHeldItemOffhand(), sourceStack)) return player.getHeldItemOffhand();
-        for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-            ItemStack s = player.inventory.getStackInSlot(i);
-            if (isSameItem(s, sourceStack)) return s;
-        }
-        return null;
     }
 
     protected boolean isSameItem(ItemStack a, ItemStack b) {

@@ -18,6 +18,7 @@ import com.hbm.tileentity.machine.TileEntityCrateTungsten;
 import com.hbm.tileentity.machine.TileEntityCrateDesh;
 import com.hbm.tileentity.machine.TileEntitySafe;
 
+import net.minecraft.entity.item.EntityItem;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -124,12 +125,30 @@ public class BlockStorageCrate extends BlockContainer {
 				if (nbt.toString().length() > MachineConfig.crateByteSize * 1000) {
 					player.sendMessage(new TextComponentString("§cWarning: Container NBT exceeds " + MachineConfig.crateByteSize + "kB, contents will be ejected!"));
 					InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
-					InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(Item.getItemFromBlock(this)));
+					EntityItem entityitem = new EntityItem(world,
+							pos.getX() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+							pos.getY() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+							pos.getZ() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+							new ItemStack(Item.getItemFromBlock(this)));
+					entityitem.motionX = world.rand.nextFloat() * 0.05F;
+					entityitem.motionY = world.rand.nextFloat() * 0.05F + 0.2F;
+					entityitem.motionZ = (world.rand.nextFloat() * 0.05F);
+					entityitem.setDefaultPickupDelay();
+					world.spawnEntity(entityitem);
 					return world.setBlockToAir(pos);
 				}
 			}
 
-			InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, drop);
+			EntityItem entityitem = new EntityItem(world,
+					pos.getX() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					pos.getY() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					pos.getZ() + 0.5D + (world.rand.nextFloat() - 0.5F) * 0.1F,
+					drop);
+			entityitem.motionX = world.rand.nextFloat() * 0.05F;
+			entityitem.motionY = world.rand.nextFloat() * 0.05F + 0.2F;
+			entityitem.motionZ = (world.rand.nextFloat() * 0.05F);
+			entityitem.setDefaultPickupDelay();
+			world.spawnEntity(entityitem);
 		}
 
 		this.dropInv = false;

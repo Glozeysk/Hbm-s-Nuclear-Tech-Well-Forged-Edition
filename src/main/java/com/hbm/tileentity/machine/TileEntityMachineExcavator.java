@@ -223,7 +223,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 				this.prevCrusherRotation -= 360F;
 			}
 
-			if(this.operational && this.targetDepth > 0) {
+			if(this.operational && this.targetDepth >= 0) {
 				int drillY = pos.getY() - this.targetDepth - 4;
 
 				if(drillY >= 0) {

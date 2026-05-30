@@ -1,8 +1,12 @@
 {
-	"variants": {
-		"facing=north": { "model": "hbm:safe" },
-		"facing=south": { "model": "hbm:safe", "y": 180 },
-		"facing=west": { "model": "hbm:safe", "y": 270 },
-		"facing=east": { "model": "hbm:safe", "y": 90 }
-	}
+  "variants": {
+    "facing=north,open=false": { "model": "hbm:safe" },
+    "facing=south,open=false": { "model": "hbm:safe", "y": 180 },
+    "facing=west,open=false":  { "model": "hbm:safe", "y": 270 },
+    "facing=east,open=false":  { "model": "hbm:safe", "y": 90 },
+    "facing=north,open=true":  { "model": "hbm:safe" },
+    "facing=south,open=true":  { "model": "hbm:safe", "y": 180 },
+    "facing=west,open=true":   { "model": "hbm:safe", "y": 270 },
+    "facing=east,open=true":   { "model": "hbm:safe", "y": 90 }
+  }
 }

@@ -195,15 +195,23 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
 		int meta = getMetaFromState(state);
 		int newMeta = meta;
-
 		int dir = getPathDirection(meta);
 
 		if(!player.isSneaking()) {
-			if(meta > 9) meta -= 8;
-			if(meta > 5) meta -= 4;
+			int baseMeta = meta;
+			if(baseMeta > 9) baseMeta -= 8;
+			if(baseMeta > 5) baseMeta -= 4;
 
-			EnumFacing facing = EnumFacing.byIndex(meta & 7);
-			newMeta = facing.rotateY().getIndex() + dir * 4;
+			EnumFacing facing = EnumFacing.byIndex(baseMeta & 7);
+
+			if(facing.getAxis().isHorizontal()) {
+				EnumFacing rotated = facing.rotateY();
+				newMeta = rotated.getIndex() + dir * 4;
+			}
+			else if(facing == EnumFacing.UP || facing == EnumFacing.DOWN) {
+				EnumFacing opposite = facing.getOpposite();
+				newMeta = opposite.getIndex() + dir * 4;
+			}
 		} else {
 			if(dir < 2)
 				newMeta += 4;
@@ -212,7 +220,9 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		}
 
 		IBlockState newState = getStateFromMeta(newMeta);
-		world.setBlockState(pos, newState, 3);
+		if(newState != null) {
+			world.setBlockState(pos, newState, 3);
+		}
 
 		return true;
 	}
