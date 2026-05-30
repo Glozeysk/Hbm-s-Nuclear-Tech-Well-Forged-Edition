@@ -37,7 +37,6 @@ public class ContainerAutocrafter extends Container {
         }
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 19, 116, 104));
 
-        //Battery
         this.addSlotToContainer(new SlotBattery(tedf.inventory, 20, 17, 99));
 
         for(int i = 0; i < 3; i++) {
@@ -53,72 +52,80 @@ public class ContainerAutocrafter extends Container {
 
     @Override
     public @NotNull ItemStack slotClick(int index, int button, @NotNull ClickType clickTypeIn, @NotNull EntityPlayer player) {
-        if(index < 0 || index > 9) {
-            return super.slotClick(index, button, clickTypeIn, player);
-        }
-
-        Slot slot = this.getSlot(index);
-
-        ItemStack ret = ItemStack.EMPTY;
-        ItemStack held = player.inventory.getItemStack();
-
-        if(slot.getHasStack())
-            ret = slot.getStack().copy();
-
-        //Don't allow any interaction for the template's output
-        if(index == 9) {
-
-            if(button == 1 && clickTypeIn == ClickType.PICKUP && slot.getHasStack()) {
+        if (index == 9) {
+            if (button == 1 && clickTypeIn == ClickType.PICKUP) {
                 autoCrafter.nextTemplate();
                 this.detectAndSendChanges();
             }
+            return ItemStack.EMPTY;
+        }
 
+        if (index >= 0 && index <= 8) {
+            Slot slot = this.getSlot(index);
+            ItemStack ret = ItemStack.EMPTY;
+            ItemStack held = player.inventory.getItemStack();
+
+            if (slot.getHasStack()) {
+                ret = slot.getStack().copy();
+            }
+
+            if (button == 1 && clickTypeIn == ClickType.PICKUP && slot.getHasStack()) {
+                autoCrafter.nextMode(index);
+            } else {
+                slot.putStack(!held.isEmpty() ? held.copy() : ItemStack.EMPTY);
+                if (slot.getHasStack()) {
+                    slot.getStack().setCount(1);
+                }
+                slot.onSlotChanged();
+                autoCrafter.initPattern(slot.getStack(), index);
+                autoCrafter.updateTemplateGrid();
+            }
             return ret;
         }
 
-        if(button == 1 && clickTypeIn == ClickType.PICKUP && slot.getHasStack()) {
-            autoCrafter.nextMode(index);
-
-        } else {
-            slot.putStack(!held.isEmpty() ? held.copy() : ItemStack.EMPTY);
-
-            if(slot.getHasStack()) {
-                slot.getStack().setCount(1);
-            }
-
-            slot.onSlotChanged();
-            autoCrafter.initPattern(slot.getStack(), index);
-            autoCrafter.updateTemplateGrid();
-        }
-        return ret;
+        return super.slotClick(index, button, clickTypeIn, player);
     }
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+        if (index == 9) {
+            return ItemStack.EMPTY;
+        }
+
         ItemStack rStack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
 
-        if(slot != null && slot.getHasStack()) {
+        if (slot != null && slot.getHasStack()) {
             ItemStack stack = slot.getStack();
             rStack = stack.copy();
 
-            if(index <= 20 && index >= 10) {
-                if(!this.mergeItemStack(stack, 21, this.inventorySlots.size(), true)) {
+            if (index >= 10 && index <= 20) {
+                if (!this.mergeItemStack(stack, 21, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if(index > 20){
-                if(rStack.getItem() instanceof IBatteryItem) {
-                    if(!this.mergeItemStack(stack, 20, 21, false)) return ItemStack.EMPTY;
-                } else return ItemStack.EMPTY;
+            } else if (index > 20) {
+                if (rStack.getItem() instanceof IBatteryItem) {
+                    if (!this.mergeItemStack(stack, 20, 21, false)) return ItemStack.EMPTY;
+                } else if (index >= 21 && index < 30) {
+                    for (int i = 0; i < 9; i++) {
+                        Slot filterSlot = this.inventorySlots.get(i);
+                        if (filterSlot.getHasStack() && ItemStack.areItemsEqual(filterSlot.getStack(), stack)) {
+                            if (!this.mergeItemStack(stack, i, i + 1, false)) return ItemStack.EMPTY;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    return ItemStack.EMPTY;
+                }
             }
 
-            if (stack.isEmpty()){
+            if (stack.isEmpty()) {
                 slot.putStack(ItemStack.EMPTY);
             } else {
                 slot.onSlotChanged();
             }
         }
-
         return rStack;
     }
 

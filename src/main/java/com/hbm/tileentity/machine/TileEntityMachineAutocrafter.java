@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import api.hbm.energy.IEnergyUser;
 import com.hbm.inventory.container.ContainerAutocrafter;
 import com.hbm.inventory.gui.GUIAutocrafter;
+import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -177,27 +178,30 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
 
                         if(didCraft) {
                             for(int i = 10; i < 19; i++) {
-
                                 ItemStack ingredient = this.inventory.getStackInSlot(i);
-
                                 if(!ingredient.isEmpty()) {
+
+                                    ItemStack container = null;
+                                    if(ingredient.getItem().hasContainerItem(ingredient)) {
+                                        container = ingredient.getItem().getContainerItem(ingredient);
+                                        if(container != null && container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
+                                            container = null;
+                                        }
+                                    }
+
                                     this.inventory.getStackInSlot(i).shrink(1);
 
-                                    if(this.inventory.getStackInSlot(i).isEmpty() && ingredient.getItem().hasContainerItem(ingredient)) {
-                                        ItemStack container = ingredient.getItem().getContainerItem(ingredient);
-
-                                        if(container != null && container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
-                                            continue;
+                                    if(container != null && !container.isEmpty()) {
+                                        if(this.inventory.getStackInSlot(i).isEmpty()) {
+                                            this.inventory.setStackInSlot(i, container);
+                                        } else {
+                                            InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, container);
                                         }
-
-                                        this.inventory.setStackInSlot(i, container);
                                     }
                                 }
                             }
-
                             this.power -= this.consumption;
-                        }
-                    }
+                        }                    }
                 }
             }
             networkPackNT(15);
@@ -339,6 +343,21 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
     }
 
     private boolean isValidForFilter(ItemStack filter, String mode, ItemStack input) {
+
+        if (input == null || input.isEmpty()) {
+            return false;
+        } else {
+            input.getItem();
+        }
+        if (filter == null || filter.isEmpty()) {
+            return false;
+        } else {
+            filter.getItem();
+        }
+        if (mode == null || mode.isEmpty()) {
+            return true;
+        }
+
 
         switch(mode) {
             case MODE_EXACT:

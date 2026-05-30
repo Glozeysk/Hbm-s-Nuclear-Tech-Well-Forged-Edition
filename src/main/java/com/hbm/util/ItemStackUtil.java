@@ -3,6 +3,7 @@ package com.hbm.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.main.MainRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -171,13 +172,24 @@ public class ItemStackUtil {
 	 * @return
 	 */
 	public static List<String> getOreDictNames(ItemStack stack) {
-		List<String> list = new ArrayList();
-		
-		int ids[] = OreDictionary.getOreIDs(stack);
-		for(int i : ids) {
-			list.add(OreDictionary.getOreName(i));
+		List<String> list = new ArrayList<>();
+
+		if (stack == null || stack.isEmpty() || stack.getItem() == null) {
+			return list;
 		}
-		
+
+		try {
+			int[] ids = OreDictionary.getOreIDs(stack);
+			for (int id : ids) {
+				String oreName = OreDictionary.getOreName(id);
+				if (oreName != null && !oreName.isEmpty()) {
+					list.add(oreName);
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			MainRegistry.logger.warn("Invalid stack passed to getOreDictNames: " + stack, e);
+		}
+
 		return list;
 	}
 }
