@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -89,27 +90,26 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 
 	private void renderPipeStubs(TileEntityBarrel barrel, double x, double y, double z) {
 		World world = barrel.getWorld();
-		if(world == null || !world.isRemote) return;
+		if (world == null || !world.isRemote) return;
 
 		BlockPos pos = barrel.getPos();
-		if(pos == null) return;
+		if (pos == null) return;
 
 		IBlockState state = world.getBlockState(pos);
 
 		boolean hasAny = false;
-		for(EnumFacing face : EnumFacing.HORIZONTALS) {
+		for (EnumFacing face : EnumFacing.HORIZONTALS) {
 			BlockPos neighborPos = pos.offset(face);
-			if(isFluidConnected(world, neighborPos, face)) {
+			if (isFluidConnected(world, neighborPos, face)) {
 				hasAny = true;
 				break;
 			}
 		}
-		if(!hasAny) return;
+		if (!hasAny) return;
 
-		int blockLight = world.getLightFor(EnumSkyBlock.BLOCK, pos) * 16;
-		int skyLight = world.getLightFor(EnumSkyBlock.SKY, pos) * 16;
-		blockLight = Math.min(Math.max(blockLight, 0), 240);
-		skyLight = Math.min(Math.max(skyLight, 0), 240);
+		int combinedLight = world.getCombinedLight(pos, 0);
+		int blockLight = combinedLight & 0xFFFF;
+		int skyLight   = combinedLight >> 16 & 0xFFFF;
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
@@ -120,14 +120,15 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 		GlStateManager.disableCull();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, blockLight, skyLight);
+
 		Tessellator tess = Tessellator.getInstance();
 		BufferBuilder buf = tess.getBuffer();
-		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
+		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
-		for(EnumFacing face : EnumFacing.HORIZONTALS) {
+		for (EnumFacing face : EnumFacing.HORIZONTALS) {
 			BlockPos neighborPos = pos.offset(face);
-
-			if(!isFluidConnected(world, neighborPos, face)) continue;
+			if (!isFluidConnected(world, neighborPos, face)) continue;
 
 			TextureAtlasSprite sprite = getDominantBarrelSideSprite(state, pos, face);
 
@@ -137,16 +138,18 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 			UV left   = uvFromPixelsInset(sprite, LEFT_X0, LEFT_Y0, LEFT_X1, LEFT_Y1, UV_INSET);
 			UV right  = uvFromPixelsInset(sprite, RIGHT_X0, RIGHT_Y0, RIGHT_X1, RIGHT_Y1, UV_INSET);
 
-			switch(face) {
-				case NORTH: drawNorthStub(buf, front, top, bottom, left, right, blockLight, skyLight); break;
-				case SOUTH: drawSouthStub(buf, front, top, bottom, left, right, blockLight, skyLight); break;
-				case WEST:  drawWestStub(buf, front, top, bottom, left, right, blockLight, skyLight);  break;
-				case EAST:  drawEastStub(buf, front, top, bottom, left, right, blockLight, skyLight);  break;
+			switch (face) {
+				case NORTH: drawNorthStub(buf, front, top, bottom, left, right); break;
+				case SOUTH: drawSouthStub(buf, front, top, bottom, left, right); break;
+				case WEST:  drawWestStub(buf, front, top, bottom, left, right);  break;
+				case EAST:  drawEastStub(buf, front, top, bottom, left, right);  break;
 				default: break;
 			}
 		}
 
 		tess.draw();
+
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
 
 		GlStateManager.enableLighting();
 		GlStateManager.enableCull();
@@ -162,63 +165,63 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 		return handler != null;
 	}
 
-	private void drawNorthStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right, int blockLight, int skyLight) {
+	private void drawNorthStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right) {
 		double x0 = PIPE_MIN, x1 = PIPE_MAX;
 		double y0 = PIPE_MIN, y1 = PIPE_MAX;
 		double z0 = 0.0,      z1 = WALL_MIN;
 
-		q(buf, front, blockLight, skyLight, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
-		q(buf, top,   blockLight, skyLight, x0, y1, z1, x0, y1, z0, x1, y1, z0, x1, y1, z1);
-		q(buf, bottom,blockLight, skyLight, x0, y0, z0, x0, y0, z1, x1, y0, z1, x1, y0, z0);
-		q(buf, left,  blockLight, skyLight, x0, y1, z1, x0, y0, z1, x0, y0, z0, x0, y1, z0);
-		q(buf, right, blockLight, skyLight, x1, y1, z0, x1, y0, z0, x1, y0, z1, x1, y1, z1);
+		q(buf, front, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
+		q(buf, top,   x0, y1, z1, x0, y1, z0, x1, y1, z0, x1, y1, z1);
+		q(buf, bottom,x0, y0, z0, x0, y0, z1, x1, y0, z1, x1, y0, z0);
+		q(buf, left,  x0, y1, z1, x0, y0, z1, x0, y0, z0, x0, y1, z0);
+		q(buf, right, x1, y1, z0, x1, y0, z0, x1, y0, z1, x1, y1, z1);
 	}
 
-	private void drawSouthStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right, int blockLight, int skyLight) {
+	private void drawSouthStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right) {
 		double x0 = PIPE_MIN, x1 = PIPE_MAX;
 		double y0 = PIPE_MIN, y1 = PIPE_MAX;
 		double z0 = WALL_MAX, z1 = 1.0;
 
-		q(buf, front, blockLight, skyLight, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
-		q(buf, top,   blockLight, skyLight, x1, y1, z0, x1, y1, z1, x0, y1, z1, x0, y1, z0);
-		q(buf, bottom,blockLight, skyLight, x1, y0, z1, x1, y0, z0, x0, y0, z0, x0, y0, z1);
-		q(buf, left,  blockLight, skyLight, x1, y1, z0, x1, y0, z0, x1, y0, z1, x1, y1, z1);
-		q(buf, right, blockLight, skyLight, x0, y1, z1, x0, y0, z1, x0, y0, z0, x0, y1, z0);
+		q(buf, front, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
+		q(buf, top,   x1, y1, z0, x1, y1, z1, x0, y1, z1, x0, y1, z0);
+		q(buf, bottom,x1, y0, z1, x1, y0, z0, x0, y0, z0, x0, y0, z1);
+		q(buf, left,  x1, y1, z0, x1, y0, z0, x1, y0, z1, x1, y1, z1);
+		q(buf, right, x0, y1, z1, x0, y0, z1, x0, y0, z0, x0, y1, z0);
 	}
 
-	private void drawWestStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right, int blockLight, int skyLight) {
+	private void drawWestStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right) {
 		double x0 = 0.0,      x1 = WALL_MIN;
 		double y0 = PIPE_MIN, y1 = PIPE_MAX;
 		double z0 = PIPE_MIN, z1 = PIPE_MAX;
 
-		q(buf, front, blockLight, skyLight, x0, y1, z0, x0, y0, z0, x0, y0, z1, x0, y1, z1);
-		q(buf, top,   blockLight, skyLight, x1, y1, z0, x0, y1, z0, x0, y1, z1, x1, y1, z1);
-		q(buf, bottom,blockLight, skyLight, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
-		q(buf, left,  blockLight, skyLight, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
-		q(buf, right, blockLight, skyLight, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
+		q(buf, front, x0, y1, z0, x0, y0, z0, x0, y0, z1, x0, y1, z1);
+		q(buf, top,   x1, y1, z0, x0, y1, z0, x0, y1, z1, x1, y1, z1);
+		q(buf, bottom,x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
+		q(buf, left,  x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
+		q(buf, right, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
 	}
 
-	private void drawEastStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right, int blockLight, int skyLight) {
+	private void drawEastStub(BufferBuilder buf, UV front, UV top, UV bottom, UV left, UV right) {
 		double x0 = WALL_MAX, x1 = 1.0;
 		double y0 = PIPE_MIN, y1 = PIPE_MAX;
 		double z0 = PIPE_MIN, z1 = PIPE_MAX;
 
-		q(buf, front, blockLight, skyLight, x1, y1, z1, x1, y0, z1, x1, y0, z0, x1, y1, z0);
-		q(buf, top,   blockLight, skyLight, x0, y1, z1, x1, y1, z1, x1, y1, z0, x0, y1, z0);
-		q(buf, bottom,blockLight, skyLight, x1, y0, z1, x0, y0, z1, x0, y0, z0, x1, y0, z0);
-		q(buf, right, blockLight, skyLight, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
-		q(buf, left,  blockLight, skyLight, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
+		q(buf, front, x1, y1, z1, x1, y0, z1, x1, y0, z0, x1, y1, z0);
+		q(buf, top,   x0, y1, z1, x1, y1, z1, x1, y1, z0, x0, y1, z0);
+		q(buf, bottom,x1, y0, z1, x0, y0, z1, x0, y0, z0, x1, y0, z0);
+		q(buf, right, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1);
+		q(buf, left,  x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0);
 	}
 
-	private void q(BufferBuilder buf, UV uv, int blockLight, int skyLight,
+	private void q(BufferBuilder buf, UV uv,
 				   double x1, double y1, double z1,
 				   double x2, double y2, double z2,
 				   double x3, double y3, double z3,
 				   double x4, double y4, double z4) {
-		buf.pos(x1, y1, z1).tex(uv.u0, uv.v0).lightmap(blockLight, skyLight).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-		buf.pos(x2, y2, z2).tex(uv.u0, uv.v1).lightmap(blockLight, skyLight).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-		buf.pos(x3, y3, z3).tex(uv.u1, uv.v1).lightmap(blockLight, skyLight).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-		buf.pos(x4, y4, z4).tex(uv.u1, uv.v0).lightmap(blockLight, skyLight).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+		buf.pos(x1, y1, z1).tex(uv.u0, uv.v0).endVertex();
+		buf.pos(x2, y2, z2).tex(uv.u0, uv.v1).endVertex();
+		buf.pos(x3, y3, z3).tex(uv.u1, uv.v1).endVertex();
+		buf.pos(x4, y4, z4).tex(uv.u1, uv.v0).endVertex();
 	}
 
 	private UV uvFromPixelsInset(TextureAtlasSprite sprite, float x0, float y0, float x1, float y1, float inset) {
