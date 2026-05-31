@@ -126,6 +126,15 @@ public class ResourceManager {
 	public static final IModelCustom sat_foeq_burning = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/sat_foeq_burning.obj")).asVBO();
 	public static final IModelCustom sat_foeq_fire = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/sat_foeq_fire.obj")).asVBO();
 
+	// Текстуры
+	public static final ResourceLocation sign_base_tex = new ResourceLocation("hbm", "textures/models/deco/sign_base.png");
+	public static final ResourceLocation sign_pole_tex = new ResourceLocation("hbm", "textures/models/deco/sign_pole.png");
+	public static final ResourceLocation sign_warning_tex = new ResourceLocation("hbm", "textures/models/deco/sign_warning.png");
+	public static final ResourceLocation sign_parasite_tex = new ResourceLocation("hbm", "textures/models/deco/sign_parasite_warning.png");
+	public static final ResourceLocation sign_radiation_tex = new ResourceLocation("hbm", "textures/models/deco/sign_radiation_warning.png");
+
+	//public static final IModelCustom sign_deco_model = AdvancedModelLoader.loadModel(new ResourceLocation("hbm", "models/block/sign_deco.obj"));
+
 	//Bomber
 	public static final IModelCustom dornier = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/dornier.obj")).asVBO();
 	public static final IModelCustom b29 = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/b29.obj")).asVBO();

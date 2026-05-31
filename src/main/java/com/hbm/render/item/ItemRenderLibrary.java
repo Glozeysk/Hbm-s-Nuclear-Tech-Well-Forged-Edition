@@ -179,6 +179,31 @@ public class ItemRenderLibrary {
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 
+		// В ItemRenderLibrary.java
+//		renderers.put(Item.getItemFromBlock(ModBlocks.sign_deco_warning), new ItemRenderBase() {
+//			@Override
+//			public void renderInventory() {
+//				GL11.glTranslated(0.5, -0.2, 0);
+//				GL11.glScaled(2.5, 2.5, 2.5);
+//				GL11.glRotated(90, 1, 0, 0);
+//			}
+//
+//			@Override
+//			public void renderCommon() {
+//				// 1. Рендерим основу с её текстурой
+//				bindTexture(ResourceManager.sign_base_tex);
+//				ResourceManager.sign_deco_model.renderPart("sign_base"); // ← рендерим только меш sign_base
+//
+//				// 2. Рендерим столб с его текстурой
+//				bindTexture(ResourceManager.sign_pole_tex);
+//				ResourceManager.sign_deco_model.renderPart("sign_pole"); // ← рендерим только меш sign_pole
+//
+//				// 3. Рендерим табличку с нужной текстурой знака
+//				bindTexture(ResourceManager.sign_warning_tex); // Меняй на parasite/radiation для других блоков
+//				ResourceManager.sign_deco_model.renderPart("sign_image"); // ← рендерим только меш sign_image (не sign_plate!)
+//			}
+//		});
+
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_difurnace_big), new ItemRenderBase() {
 			public void renderNonInv() {
 				GL11.glScaled(1, 1, 1);

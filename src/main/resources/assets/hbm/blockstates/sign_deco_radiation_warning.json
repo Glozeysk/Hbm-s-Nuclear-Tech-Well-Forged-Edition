@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "normal": { "model": "hbm:sign_deco_radiation_warning" }
+  }
+}

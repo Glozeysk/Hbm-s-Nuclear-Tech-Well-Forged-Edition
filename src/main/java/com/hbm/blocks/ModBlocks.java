@@ -41,6 +41,7 @@ import com.hbm.blocks.bomb.NukePrototype;
 import com.hbm.blocks.bomb.NukeSolinium;
 import com.hbm.blocks.bomb.NukeTsar;
 import com.hbm.blocks.bomb.RailgunPlasma;
+import com.hbm.blocks.deco.BlockDecoSign;
 import com.hbm.blocks.gas.BlockGasAsbestos;
 import com.hbm.blocks.gas.BlockGasCoal;
 import com.hbm.blocks.gas.BlockGasExplosive;
@@ -563,8 +564,13 @@ public class ModBlocks {
 	public static final Block deco_asbestos = new BlockOutgas(true, 40, true, "deco_asbestos").addAsbestos(2).toBlock().setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
 	public static final Block deco_rbmk = new BlockClean(Material.IRON, "deco_rbmk").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
 	public static final Block deco_rbmk_smooth = new BlockClean(Material.IRON, "deco_rbmk_smooth").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
-		
-	
+
+	// Decorations
+//	public static final Block sign_deco_warning   = new BlockDecoSign("sign_deco_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
+//	public static final Block sign_deco_parasite_warning  = new BlockDecoSign("sign_deco_parasite_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
+//	public static final Block sign_deco_radiation_warning = new BlockDecoSign("sign_deco_radiation_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
+
+
 	public static final Block spinny_light = new BlockSpinnyLight(Material.IRON, "spinny_light").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(5.0F);
 	
 	public static final Block hazmat = new BlockRadResistant(Material.CLOTH, "hazmat").setSoundType(SoundType.CLOTH).setCreativeTab(MainRegistry.blockTab).setHardness(15.0F).setResistance(100.0F);

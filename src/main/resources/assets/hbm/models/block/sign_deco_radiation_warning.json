@@ -1,0 +1,13 @@
+{
+  "loader": "forge:obj",
+  "model": "hbm:block/sign_deco.obj",
+  "flip-v": true,
+  "detectCullableFaces": false,
+  "diffuseLighting": true,
+  "ambientToFullbright": false,
+  "textures": {
+    "sign_base": "hbm:models/deco/sign_base",
+    "sign_pole": "hbm:models/deco/sign_pole",
+    "sign_plate": "hbm:models/deco/sign_radiation_warning"
+  }
+}

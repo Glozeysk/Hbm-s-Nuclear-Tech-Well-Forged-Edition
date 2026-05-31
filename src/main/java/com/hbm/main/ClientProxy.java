@@ -15,7 +15,10 @@ import com.hbm.render.entity.item.RenderMovingPackage;
 import com.hbm.render.item.*;
 import com.hbm.tileentity.machine.*;
 import com.hbm.tileentity.network.TileEntityCraneSplitter;
+import net.minecraft.util.*;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -532,11 +535,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
@@ -586,7 +584,7 @@ public class ClientProxy extends ServerProxy {
 	public File getDataDir() {
 		return Minecraft.getMinecraft().gameDir;
 	}
-	
+
 	@Override
 	public void registerRenderInfo()
 	{
