@@ -121,8 +121,13 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			return false;
 		}
 
-		ItemStack[] outputs = ChemplantRecipes.getChemOutputFromTempate(templateStack);
-		if(outputs == null || Library.isArrayEmpty(outputs)) {
+		ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(templateStack);
+		FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(templateStack);
+
+		boolean hasAnyOutput = (itemOutputs != null && !Library.isArrayEmpty(itemOutputs)) ||
+				(fluidOutputs != null && !Library.isArrayEmpty(fluidOutputs));
+
+		if(!hasAnyOutput) {
 			return false;
 		}
 
