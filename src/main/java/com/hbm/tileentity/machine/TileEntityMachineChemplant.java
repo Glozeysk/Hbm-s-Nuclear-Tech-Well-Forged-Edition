@@ -113,19 +113,12 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 
 	@Override
 	public boolean canInsertItem(int slot, ItemStack itemStack, int amount){
-		if(slot < 13 || slot > 16) return false;
-		if(itemStack.isEmpty()) return false;
-		ItemStack templateStack = inventory.getStackInSlot(4);
-		if(templateStack.isEmpty() || !(templateStack.getItem() instanceof ItemChemistryTemplate)) return false;
-
-		ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(templateStack);
-		FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(templateStack);
-		boolean hasAnyOutput = (itemOutputs != null && !Library.isArrayEmpty(itemOutputs)) ||
-				(fluidOutputs != null && !Library.isArrayEmpty(fluidOutputs));
-
-		return hasAnyOutput;
+		if(slot == 4) {
+			return false;
+		}
+		return true;
 	}
-	
+
 	@Override
 	public boolean canExtractItem(int slot, ItemStack itemStack, int amount){
 		if(slot == 4) {
@@ -315,10 +308,10 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 			FFUtils.fillFluidContainer(inventory, tanks[2], 9, 11);
 			FFUtils.fillFluidContainer(inventory, tanks[3], 10, 12);
 
-			
+
 			ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(inventory.getStackInSlot(4));
 			FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(inventory.getStackInSlot(4));
-			
+
 			if(needsProcess && (itemOutputs != null || !Library.isArrayEmpty(fluidOutputs))) {
 
 				List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(inventory.getStackInSlot(4));
@@ -476,25 +469,25 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 
 	private void updateConnections() {
 		int meta = this.getBlockMetadata();
-		
+
 		if(meta == 5) {
 			this.trySubscribe(world, pos.add(-2, 0, 0), Library.NEG_X);
 			this.trySubscribe(world, pos.add(-2, 0, 1), Library.NEG_X);
 			this.trySubscribe(world, pos.add(3, 0, 0), Library.POS_X);
 			this.trySubscribe(world, pos.add(3, 0, 1), Library.POS_X);
-			
+
 		} else if(meta == 3) {
 			this.trySubscribe(world, pos.add(0, 0, -2), Library.NEG_Z);
 			this.trySubscribe(world, pos.add(-1, 0, -2), Library.NEG_Z);
 			this.trySubscribe(world, pos.add(0, 0, 3), Library.POS_Z);
 			this.trySubscribe(world, pos.add(-1, 0, 3), Library.POS_Z);
-			
+
 		} else if(meta == 4) {
 			this.trySubscribe(world, pos.add(2, 0, 0), Library.POS_X);
 			this.trySubscribe(world, pos.add(2, 0, -1), Library.POS_X);
 			this.trySubscribe(world, pos.add(-3, 0, 0), Library.NEG_X);
 			this.trySubscribe(world, pos.add(-3, 0, -1), Library.NEG_X);
-			
+
 		} else if(meta == 2) {
 			this.trySubscribe(world, pos.add(0, 0, 2), Library.POS_Z);
 			this.trySubscribe(world, pos.add(1, 0, 2), Library.POS_Z);
@@ -634,7 +627,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 			if(inventory.getStackInSlot(5+i) == ItemStack.EMPTY) { // is the slot empty?
 				continue; // ok it is empty lets check the next one
 			} else {
-				
+
 				if(Library.areItemStacksCompatible(stacks[i].copy(), inventory.getStackInSlot(5+i).copy(), false)){ // oof there is some item there - is it the same tho?
 					if(inventory.getStackInSlot(5+i).getCount() + stacks[i].getCount() <= inventory.getStackInSlot(5+i).getMaxStackSize()){ // ok it is the same item but is the stack full already?
 						continue;
@@ -752,69 +745,79 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 	}
 
 	public boolean tryFillAssemblerCap(IItemHandler container, int[] allowedSlots, TileEntityMachineBase te) {
-		ItemStack template = inventory.getStackInSlot(4);
-		if(template.isEmpty() || !(template.getItem() instanceof ItemChemistryTemplate)) {
+		if(allowedSlots.length < 1)
 			return false;
-		}
+		List<AStack> recipeIngredients = ChemplantRecipes.getChemInputFromTempate(inventory.getStackInSlot(4));//Loading Ingredients
+		if(recipeIngredients == null) //No recipe template found
+			return false;
+		else {
+			Map<Integer, ItemStack> itemStackMap = new HashMap<Integer, ItemStack>();
 
-		if(allowedSlots.length < 1) return false;
-
-		List<AStack> recipeIngredients = ChemplantRecipes.getChemInputFromTempate(template);
-
-		// 🔥 ФИКС: если item-ингредиенты пусты, но есть fluid-ингредиенты — рецепт всё ещё валиден
-		if(recipeIngredients == null || recipeIngredients.isEmpty()) {
-			FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(template);
-			if(fluidInputs == null || Library.isArrayEmpty(fluidInputs)) {
-				return false;
-			}
-			// Рецепт имеет только жидкостные входы — пропускаем item-логику
-			return true;
-		}
-
-		Map<Integer, ItemStack> itemStackMap = new HashMap<>();
-		for(int slot : allowedSlots) {
-			if(!container.getStackInSlot(slot).isEmpty()) {
-				itemStackMap.put(slot, container.getStackInSlot(slot).copy());
-			}
-		}
-		if(itemStackMap.isEmpty()) return false;
-
-		for(int ig = 0; ig < recipeIngredients.size(); ig++) {
-			AStack nextIngredient = recipeIngredients.get(ig).copy();
-			int ingredientSlot = getValidSlot(nextIngredient);
-			if(ingredientSlot < 13) continue;
-
-			int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount();
-			if(possibleAmount == 0) continue;
-
-			for(Map.Entry<Integer, ItemStack> set : itemStackMap.entrySet()) {
-				ItemStack stack = set.getValue();
-				int slot = set.getKey();
-				ItemStack compareStack = stack.copy();
-				compareStack.setCount(1);
-
-				if(isItemAcceptable(nextIngredient.getStack(), compareStack)) {
-					int foundCount = Math.min(stack.getCount(), possibleAmount);
-					if(te != null && !te.canExtractItem(slot, stack, foundCount)) continue;
-
-					if(foundCount > 0) {
-						possibleAmount -= foundCount;
-						container.extractItem(slot, foundCount, false);
-						if(inventory.getStackInSlot(ingredientSlot).isEmpty()) {
-							stack.setCount(foundCount);
-							inventory.setStackInSlot(ingredientSlot, stack);
-						} else {
-							inventory.getStackInSlot(ingredientSlot).grow(foundCount);
-						}
-						needsProcess = true;
-					}
-					if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()) {
-						break;
-					}
+			for(int slot : allowedSlots) {
+				container.getStackInSlot(slot);
+				if(container.getStackInSlot(slot).isEmpty()) { // check next slot in chest if it is empty
+					continue;
+				} else { // found an item in chest
+					itemStackMap.put(slot, container.getStackInSlot(slot).copy());
 				}
 			}
+			if(itemStackMap.size() == 0) {
+				return false;
+			}
+
+			for(int ig = 0; ig < recipeIngredients.size(); ig++) {
+
+				AStack nextIngredient = recipeIngredients.get(ig).copy(); // getting new ingredient
+
+				int ingredientSlot = getValidSlot(nextIngredient);
+
+
+				if(ingredientSlot < 13)
+					continue; // Ingredient filled or Assembler is full
+
+				int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount(); // how many items do we need to fill the stack?
+
+				if(possibleAmount == 0) { // full
+					System.out.println("This should never happen method getValidSlot broke");
+					continue;
+				}
+				// Ok now we know what we are looking for (nexIngredient) and where to put it (ingredientSlot) - So lets see if we find some of it in containers
+				for(Map.Entry<Integer, ItemStack> set :
+						itemStackMap.entrySet()) {
+					ItemStack stack = set.getValue();
+					int slot = set.getKey();
+					ItemStack compareStack = stack.copy();
+					compareStack.setCount(1);
+
+					if(isItemAcceptable(nextIngredient.getStack(), compareStack)) { // bingo found something
+
+						int foundCount = Math.min(stack.getCount(), possibleAmount);
+						if(te != null && !te.canExtractItem(slot, stack, foundCount))
+							continue;
+						if(foundCount > 0) {
+							possibleAmount -= foundCount;
+							container.extractItem(slot, foundCount, false);
+							inventory.getStackInSlot(ingredientSlot);
+							if(inventory.getStackInSlot(ingredientSlot).isEmpty()) {
+
+								stack.setCount(foundCount);
+								inventory.setStackInSlot(ingredientSlot, stack);
+
+							} else {
+								inventory.getStackInSlot(ingredientSlot).grow(foundCount); // transfer complete
+							}
+							needsProcess = true;
+						}if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()){
+							break;
+						} else {
+							break; // ingredientSlot filled
+						}
+					}
+				}
+
+			}
+			return true;
 		}
-		return true;
 	}
 
 	//boolean true: remove items, boolean false: simulation mode
