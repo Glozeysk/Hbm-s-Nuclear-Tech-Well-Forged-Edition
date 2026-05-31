@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 public class GUIScreenAssemblerTemplate extends GuiScreen {
 	
@@ -322,4 +324,29 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
 		
 	}
 
+	private float scrollAccumulator = 0F;
+
+	@Override
+	public void handleMouseInput() throws IOException {
+		super.handleMouseInput();
+
+		int wheel = Mouse.getEventDWheel();
+		if(wheel != 0) {
+			scrollAccumulator += wheel * 0.01F; // Настрой чувствительность
+
+			if(scrollAccumulator >= 1F) {
+				if(currentPage > 0) {
+					currentPage--;
+					updateButtons();
+				}
+				scrollAccumulator = 0F;
+			} else if(scrollAccumulator <= -1F) {
+				if(currentPage < getPageCount()) {
+					currentPage++;
+					updateButtons();
+				}
+				scrollAccumulator = 0F;
+			}
+		}
+	}
 }

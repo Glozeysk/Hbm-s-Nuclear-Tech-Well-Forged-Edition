@@ -6,6 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockHorizontal;
@@ -140,7 +141,11 @@ public class NTMAnvil extends BlockFalling {
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
-		tooltip.add("§6Tier: "+this.tier);
+		tooltip.add("§6Tier: " + this.tier);
+		if(this.tier < 8) {
+			tooltip.add(I18nUtil.resolveKey("desc.anvil_upgrade_hint"));
+		}
+
 		super.addInformation(stack, player, tooltip, advanced);
 	}
 }

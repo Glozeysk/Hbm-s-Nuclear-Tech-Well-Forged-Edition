@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.hbm.entity.item.EntityMovingPackage;
+import com.hbm.handler.*;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.tileentity.network.*;
 import com.hbm.util.UpdateChecker;
@@ -214,14 +215,6 @@ import com.hbm.forgefluid.FFPipeNetwork;
 import com.hbm.forgefluid.FluidContainerRegistry;
 import com.hbm.forgefluid.FluidTypeHandler;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.handler.ArmorUtil;
-import com.hbm.handler.BobmazonOfferFactory;
-import com.hbm.handler.BulletConfigSyncingUtil;
-import com.hbm.handler.GuiHandler;
-import com.hbm.handler.HTTPHandler;
-import com.hbm.handler.HazmatRegistry;
-import com.hbm.handler.HbmKeybinds;
-import com.hbm.handler.MultiblockBBHandler;
 import com.hbm.handler.crt.NTMCraftTweaker;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.inventory.AnvilRecipes;
@@ -539,7 +532,6 @@ public class MainRegistry {
 		OreDictManager oreMan = new OreDictManager();
 
 		MinecraftForge.EVENT_BUS.register(oreMan); //OreRegisterEvent
-
 		MinecraftForge.EVENT_BUS.register(new UpdateChecker());
 		MinecraftForge.EVENT_BUS.register(new ModEventHandler());
 		MinecraftForge.TERRAIN_GEN_BUS.register(new ModEventHandler());
@@ -1078,6 +1070,7 @@ public class MainRegistry {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
+		MinecraftForge.EVENT_BUS.register(new AnvilUpgradeHandler());
 		proxy.init(event);
 		ModItems.init();
 		ModBlocks.init();

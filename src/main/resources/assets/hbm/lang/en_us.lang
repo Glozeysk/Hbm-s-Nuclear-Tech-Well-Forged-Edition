@@ -5154,3 +5154,4 @@ tooltip.ability.cycle=Right click to cycle through presets!
 tooltip.ability.sneak=Sneak-click to go to first preset!
 tooltip.ability.alt=Alt-click to open customization GUI!
 key.categories.hbm.abilityAlt=Tool Abilities Menu
+desc.anvil_upgrade_hint=Shift + RMB with ingots to upgrade!
