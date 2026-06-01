@@ -100,6 +100,7 @@ public class ItemBlockStorageCrate extends ItemBlock {
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
+        tooltip.add(I18n.format("crate.item.info"));
         if (stack.hasTagCompound() && stack.getTagCompound().hasKey("lock")) {
             tooltip.add("§c" + I18n.format("tooltip.crate.locked"));
         }

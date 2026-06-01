@@ -5253,3 +5253,4 @@ tooltip.ability.sneak=Shift + ПКМ чтобы переключиться на 
 tooltip.ability.alt=Нажмите Alt чтобы открыть меню способностей инструмента!
 key.categories.hbm.abilityAlt=Меню способностей инструмента
 desc.anvil_upgrade_hint=Shift + ПКМ слитками для улучшения!
+crate.item.info=ПКМ чтобы открыть в руке!

@@ -192,27 +192,21 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
     public boolean isUseableByPlayer(EntityPlayer player) {
         if (isFromItemStack()) {
             if (sourcePlayer == null || sourceStack.isEmpty()) {
-                System.out.println("Crate: sourcePlayer null or stack empty");
                 return false;
             }
             if (sourceSlotIndex == -1) {
-                boolean match = (isSameItem(player.getHeldItemMainhand(), sourceStack)
+                return (isSameItem(player.getHeldItemMainhand(), sourceStack)
                         || isSameItem(player.getHeldItemOffhand(), sourceStack)) && sourcePlayer == player;
-                if (!match) System.out.println("Crate: hands mismatch or player mismatch");
-                return match;
             } else {
-                boolean match = isSameItem(player.inventory.getStackInSlot(sourceSlotIndex), sourceStack) && sourcePlayer == player;
-                if (!match) System.out.println("Crate: slot" + sourceSlotIndex + " mismatch");
-                return match;
+
+                return isSameItem(player.inventory.getStackInSlot(sourceSlotIndex), sourceStack) && sourcePlayer == player;
             }
         }
         if (world == null || world.getTileEntity(pos) != this) {
-            System.out.println("Crate: world null or TE mismatch at " + pos);
             return false;
         }
         double dist = player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
         if (dist > 64) {
-            System.out.println("Crate: too far, distance=" + dist);
             return false;
         }
         return true;
@@ -226,6 +220,8 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
     public void closeInventory(EntityPlayer player) {
         openCount--;
         if (openCount < 0) openCount = 0;
+        player.world.playSound(null, player.posX, player.posY, player.posZ,
+                HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
         sendUpdateToClient();
     }
 

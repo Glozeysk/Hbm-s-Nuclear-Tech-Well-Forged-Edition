@@ -96,8 +96,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
 				updateInputTankTypes();
 			}
 
-			this.consumption = getConsumption();
-
+			int baseConsumption = uuMixer ? uuConsumption : 50;
+			this.consumption = baseConsumption;
 			this.consumption *= (speedLevel+1);
 			this.consumption /= (powerLevel+1);
 			this.consumption *= (overLevel * 3 + 1);
@@ -276,7 +276,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
 			}
 		}
 	}
-	
+
 	public boolean canProcess() {
 		//Enought Power?
 		if(this.power < getConsumption()) return false;
@@ -301,14 +301,14 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
 			if(fluidInputs.length >= 1 && !FFUtils.hasEnoughFluid(tanks[0], fluidInputs[0])) return false;
 			if(fluidInputs.length == 2 && !FFUtils.hasEnoughFluid(tanks[1], fluidInputs[1])) return false;
 		}
-		
+
 		//has enough space left in output tank
 		if(tanks[2].getCapacity() - tanks[2].getFluidAmount() < MixerRecipes.getFluidOutputAmount(outputFluid)) return false;
 		//has correct item in inputSlot
 		if(!MixerRecipes.matchesInputItem(outputFluid, inventory.getStackInSlot(1))) return false;
 		//has enough of that item
 		if(inventory.getStackInSlot(1).getCount() < MixerRecipes.getInputItemCount(outputFluid)) return false;
-		
+
 		this.processTime = MixerRecipes.getRecipeDuration(outputFluid);
 		return true;
 	}

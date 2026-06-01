@@ -193,40 +193,42 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		BlockPos pos = new BlockPos(x, y, z);
 		IBlockState state = world.getBlockState(pos);
 
-		int meta = getMetaFromState(state);
-		int newMeta = meta;
-		int dir = getPathDirection(meta);
+		try {
+			int meta = getMetaFromState(state);
+			int newMeta = meta;
+			int dir = getPathDirection(meta);
 
-		if(!player.isSneaking()) {
-			int baseMeta = meta;
-			if(baseMeta > 9) baseMeta -= 8;
-			if(baseMeta > 5) baseMeta -= 4;
+			if(!player.isSneaking()) {
+				int baseMeta = meta;
+				if(baseMeta > 9) baseMeta -= 8;
+				if(baseMeta > 5) baseMeta -= 4;
 
-			EnumFacing facing = EnumFacing.byIndex(baseMeta & 7);
+				EnumFacing facing = EnumFacing.byIndex(baseMeta & 7);
 
-			if(facing.getAxis().isHorizontal()) {
-				EnumFacing rotated = facing.rotateY();
-				newMeta = rotated.getIndex() + dir * 4;
+				if(facing.getAxis().isHorizontal()) {
+					EnumFacing rotated = facing.rotateY();
+					newMeta = rotated.getIndex() + dir * 4;
+				}
+				else if(facing == EnumFacing.UP || facing == EnumFacing.DOWN) {
+					EnumFacing opposite = facing.getOpposite();
+					newMeta = opposite.getIndex() + dir * 4;
+				}
+			} else {
+				if(dir < 2)
+					newMeta += 4;
+				else
+					newMeta -= 8;
 			}
-			else if(facing == EnumFacing.UP || facing == EnumFacing.DOWN) {
-				EnumFacing opposite = facing.getOpposite();
-				newMeta = opposite.getIndex() + dir * 4;
-			}
-		} else {
-			if(dir < 2)
-				newMeta += 4;
-			else
-				newMeta -= 8;
-		}
 
-		IBlockState newState = getStateFromMeta(newMeta);
-		if(newState != null) {
-			world.setBlockState(pos, newState, 3);
+			IBlockState newState = getStateFromMeta(newMeta);
+			if(newState != null) {
+				world.setBlockState(pos, newState, 3);
+			}
+		} catch (IllegalArgumentException e) {
 		}
 
 		return true;
 	}
-	
 	
 	
 	@Override

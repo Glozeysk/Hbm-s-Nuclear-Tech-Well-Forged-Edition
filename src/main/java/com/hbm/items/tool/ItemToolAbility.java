@@ -47,6 +47,8 @@ import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -272,7 +274,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		}
 
 		EnumHand otherHand = hand == EnumHand.MAIN_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
-		if (isOffHandInteractive(player.getHeldItem(otherHand))) {
+		if (isOffHandInteractive(player.getHeldItem(otherHand), player)) {
 			return EnumActionResult.PASS;
 		}
 
@@ -303,7 +305,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		}
 
 		EnumHand otherHand = hand == EnumHand.MAIN_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
-		if (isOffHandInteractive(player.getHeldItem(otherHand))) {
+		if (isOffHandInteractive(player.getHeldItem(otherHand), player)) {
 			return super.onItemRightClick(world, player, hand);
 		}
 
@@ -349,10 +351,45 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 				0.25F, preset.isNone() ? 0.75F : 1.25F);
 	}
 
-	private boolean isOffHandInteractive(ItemStack offhand) {
+	private boolean isOffHandInteractive(ItemStack offhand, EntityPlayer player) {
 		if (offhand.isEmpty()) return false;
+
+		Item item = offhand.getItem();
+
 		if (ItemBlockStorageCrate.isContainer(offhand)) return true;
-		return offhand.getItemUseAction() != EnumAction.NONE || offhand.getItem() instanceof ItemBlock;
+
+		if (item instanceof ItemBow || item instanceof ItemFishingRod) {
+			return true;
+		}
+
+		if (item instanceof ItemFood) {
+			return player.getFoodStats().needFood();
+		}
+
+		if (item instanceof ItemBlock) {
+			Vec3d start = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+			Vec3d look = player.getLookVec();
+			Vec3d end = start.add(look.x * 5.0, look.y * 5.0, look.z * 5.0);
+			RayTraceResult rayTrace = player.world.rayTraceBlocks(start, end);
+
+			if (rayTrace == null || rayTrace.typeOfHit != RayTraceResult.Type.BLOCK) {
+				return false;
+			}
+
+			BlockPos pos = rayTrace.getBlockPos();
+			EnumFacing facing = rayTrace.sideHit;
+			IBlockState state = player.world.getBlockState(pos);
+
+			if (state.getBlock().isReplaceable(player.world, pos)) {
+				return true;
+			}
+
+			BlockPos placePos = pos.offset(facing);
+			return player.world.isAirBlock(placePos) ||
+					player.world.getBlockState(placePos).getMaterial().isReplaceable();
+		}
+
+		return offhand.getItemUseAction() != EnumAction.NONE;
 	}
 
 	@Override
