@@ -66,9 +66,21 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 	}
 
 	private void renderDiamondLabels(TileEntityBarrel barrel, double x, double y, double z) {
+		World world = barrel.getWorld();
+		if (world == null) return;
+
+		BlockPos pos = barrel.getPos();
+		if (pos == null) return;
+
+		int combinedLight = world.getCombinedLight(pos, 0);
+		int blockLight = combinedLight & 0xFFFF;
+		int skyLight = combinedLight >> 16 & 0xFFFF;
+
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5);
+
 		GlStateManager.disableLighting();
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, blockLight, skyLight);
 
 		if(barrel.tank.getFluid() != null) {
 			FluidStack type = barrel.tank.getFluid();
