@@ -1,18 +1,14 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityCrateIron;
+import invtweaks.api.container.ChestContainer;
 import net.minecraft.entity.player.InventoryPlayer;
 
+@ChestContainer(rowSize = 9)
 public class ContainerCrateIron extends ContainerCrateBase<TileEntityCrateIron> {
-
 	protected final TileEntityCrateIron diFurnace;
 
 	public ContainerCrateIron(InventoryPlayer invPlayer, TileEntityCrateIron te) {
-		super(invPlayer, te,
-				36, 9, 4,
-				8, 18,
-				104, 162
-		);
-		this.diFurnace = te;
+		super(invPlayer, te, 36, 9, 4, 8, 18, 8, 104, 162);this.diFurnace = te;
 	}
 }

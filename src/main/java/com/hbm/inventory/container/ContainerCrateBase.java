@@ -23,12 +23,14 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
     private final int hotbarY;
     private final int slotStartX;
     private final int slotStartY;
+    private final int playerInvStartX;
     private final int slotsPerRow;
     private final int rows;
 
     protected ContainerCrateBase(InventoryPlayer invPlayer, T te,
                                  int crateSlots, int slotsPerRow, int rows,
                                  int slotStartX, int slotStartY,
+                                 int playerInvStartX,
                                  int playerInvY, int hotbarY) {
         this.tileEntity = te;
         this.crateSlots = crateSlots;
@@ -36,6 +38,7 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
         this.rows = rows;
         this.slotStartX = slotStartX;
         this.slotStartY = slotStartY;
+        this.playerInvStartX = playerInvStartX;
         this.playerInvY = playerInvY;
         this.hotbarY = hotbarY;
 
@@ -61,17 +64,17 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9,
-                        slotStartX + j * 18, playerInvY + i * 18));
+                        playerInvStartX + j * 18, playerInvY + i * 18));
             }
         }
 
         for (int i = 0; i < 9; i++) {
             if (i == lockedSlotIndex) {
                 this.addSlotToContainer(new SlotLocked(invPlayer, i,
-                        slotStartX + i * 18, hotbarY));
+                        playerInvStartX + i * 18, hotbarY));
             } else {
                 this.addSlotToContainer(new Slot(invPlayer, i,
-                        slotStartX + i * 18, hotbarY));
+                        playerInvStartX + i * 18, hotbarY));
             }
         }
     }

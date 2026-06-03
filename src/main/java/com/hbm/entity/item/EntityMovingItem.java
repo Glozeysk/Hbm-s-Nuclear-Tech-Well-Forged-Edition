@@ -42,14 +42,14 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
         return true;
     }
 
-    public boolean attackEntityFrom(DamageSource source, float amount) {
 
-    	if(!world.isRemote) {
-			world.spawnEntity(new EntityItem(world, posX, posY, posZ, this.getItemStack()));
-	    	this.setDead();
-    	}
-    	return true;
-    }
+	@Override
+	public boolean attackEntityFrom(DamageSource source, float amount) {
+		if (source.isProjectile()) {
+			return false;
+		}
+		return super.attackEntityFrom(source, amount);
+	}
 
     private int schedule = 0;
 
