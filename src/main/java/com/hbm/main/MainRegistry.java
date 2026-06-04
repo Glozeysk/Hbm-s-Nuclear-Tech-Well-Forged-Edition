@@ -11,6 +11,7 @@ import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.handler.*;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.tileentity.conductor.*;
+import com.hbm.tileentity.conductor.legacy.*;
 import com.hbm.tileentity.network.*;
 import com.hbm.util.UpdateChecker;
 import org.apache.logging.log4j.Logger;
@@ -357,9 +358,6 @@ import net.minecraft.item.ItemArmor.ArmorMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.loot.LootEntry;
-import net.minecraft.world.storage.loot.LootPool;
-import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.LoadingCallback;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
@@ -367,10 +365,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.util.EnumHelper;
-import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -500,6 +496,8 @@ public class MainRegistry {
 
 	Random rand = new Random();
 
+
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		if(logger == null)
@@ -530,7 +528,6 @@ public class MainRegistry {
 		OreDictManager oreMan = new OreDictManager();
 
 
-		MinecraftForge.EVENT_BUS.register(new LegacyPipeMigrationHandler());
 		MinecraftForge.EVENT_BUS.register(new AnvilUpgradeHandler());
 		MinecraftForge.EVENT_BUS.register(oreMan); //OreRegisterEvent
 		MinecraftForge.EVENT_BUS.register(new UpdateChecker());
@@ -743,6 +740,19 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityDeuteriumTower.class, new ResourceLocation(RefStrings.MODID, "tileentity_deuterium_tower"));
 		GameRegistry.registerTileEntity(TileEntityGeysir.class, new ResourceLocation(RefStrings.MODID, "tileentity_geyser"));
 		GameRegistry.registerTileEntity(TileEntityObjTester.class, new ResourceLocation(RefStrings.MODID, "tileentity_obj_tester"));
+
+		//Dummy classes to ensure backward compatibility
+		GameRegistry.registerTileEntity(TileEntityLegacySuccMk2.class,
+				new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk2"));
+		GameRegistry.registerTileEntity(TileEntityLegacySuccMk2Solid.class,
+				new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk2_solid"));
+		GameRegistry.registerTileEntity(TileEntityLegacySuccMk3.class,
+				new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk3"));
+		GameRegistry.registerTileEntity(TileEntityLegacySuccMk3Solid.class,
+				new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk3_solid"));
+		GameRegistry.registerTileEntity(TileEntityLegacySuccMk4.class,
+				new ResourceLocation(RefStrings.MODID, "tileentity_ff_succ_mk4"));
+
 		GameRegistry.registerTileEntity(TileEntityDecoBlockAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_deco_block_alt"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk2.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk2"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk3.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk3"));

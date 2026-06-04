@@ -11,7 +11,6 @@ import com.hbm.packet.PipeUpdatePacket;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -19,7 +18,6 @@ import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -42,19 +40,16 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	public boolean isBeingDestroyed = false;
 	private long lastFillWorldTime = -1;
 
-	// Пропускная способность: по умолчанию мгновенная (как у старых Succ)
 	protected int throughput = 50000;
-	// Все трубы по умолчанию в режиме экстракции
 	protected boolean extractionMode = true;
+	private boolean needsInitialization = true;
 
 	public TileEntityFFDuctBaseMk2() {
 	}
 
 	public int getPipeTier() { return 2; }
-
 	public int getThroughput() { return throughput; }
 	public void setThroughput(int value) { this.throughput = Math.max(100, value); markDirty(); }
-
 	public boolean isExtractionMode() { return extractionMode; }
 	public void setExtractionMode(boolean mode) { this.extractionMode = mode; markDirty(); }
 
@@ -102,7 +97,11 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		if(compound.hasKey("fluidType")) this.type = FluidRegistry.getFluid(compound.getString("fluidType"));
+
+		if(compound.hasKey("fluidType")) {
+			this.type = FluidRegistry.getFluid(compound.getString("fluidType"));
+		}
+
 		this.throughput = compound.hasKey("throughput") ? compound.getInteger("throughput") : 50000;
 		this.extractionMode = compound.hasKey("extractionMode") ? compound.getBoolean("extractionMode") : true;
 	}
@@ -136,15 +135,7 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	@Override
 	public void onLoad() {
-		if(!world.isRemote){
-			world.getMinecraftServer().addScheduledTask(() -> {
-				joinOrMakeNetwork();
-				onNeighborChange();
-			});
-		} else {
-			joinOrMakeNetwork();
-			onNeighborChange();
-		}
+		needsInitialization = true;
 	}
 
 	public void onNeighborChange() {
@@ -272,6 +263,12 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	@Override
 	public void update() {
+		if (needsInitialization) {
+			needsInitialization = false;
+            joinOrMakeNetwork();
+            onNeighborChange();
+        }
+
 		if(world.isRemote || network == null || network.getType() == null || !extractionMode) return;
 
 		for(EnumFacing e : EnumFacing.VALUES) {
