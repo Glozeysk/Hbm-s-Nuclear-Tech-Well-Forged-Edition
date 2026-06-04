@@ -47,13 +47,9 @@ public class BlockFluidPipeMk3Solid extends BlockContainer implements ILookOverl
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
-		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		tooltip.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotextremelyhot"));
-		tooltip.add("");
-		tooltip.add(TextFormatting.GRAY + "Solid variant: extracts fluids automatically");
-		tooltip.add(TextFormatting.GRAY + "Throughput: ~50k mB/t (instant)");
 	}
 
 	@Override

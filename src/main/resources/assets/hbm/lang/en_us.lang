@@ -761,7 +761,6 @@ desc.excavator2=Silktouch
 desc.excavator3=Shred ores
 desc.excavator4=Vein mining
 desc.excavator5=Construct walls
-desc.extraction=Right click with screwdriver to toggle extraction
 desc.fieldmodifier=Force Field Modifier:
 desc.fireworks.1=Activate via redstone
 desc.fireworks.2=§6Rightclick block with§r

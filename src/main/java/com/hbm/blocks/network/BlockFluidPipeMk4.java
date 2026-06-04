@@ -58,14 +58,9 @@ public class BlockFluidPipeMk4 extends BlockContainer implements ILookOverlay {
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
-		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canam"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
-		tooltip.add("");
-		tooltip.add(TextFormatting.AQUA + "Screwdriver:");
-		tooltip.add(TextFormatting.GRAY + "• Click: cycle throughput (1k → 5k → 10k → 20k mB/t)");
-		tooltip.add(TextFormatting.GRAY + "• Sneak + Click: toggle extraction mode");
 	}
 
 	@Override

@@ -48,7 +48,6 @@ public class BlockFluidPipeMk3 extends BlockContainer implements ILookOverlay {
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
-		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhighcor"));
 		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
 		tooltip.add(TextFormatting.RED + I18nUtil.resolveKey("desc.cannotextremelyhot"));

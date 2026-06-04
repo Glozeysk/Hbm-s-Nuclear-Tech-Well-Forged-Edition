@@ -32,6 +32,7 @@ public class TileEntityFFFluidDuctMk3Solid extends TileEntityFFDuctBaseMk2 imple
 
     @Override
 	public void update() {
+        super.update();
     }
 
 }

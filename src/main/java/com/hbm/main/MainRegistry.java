@@ -10,6 +10,7 @@ import java.util.Random;
 import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.handler.*;
 import com.hbm.handler.threading.PacketThreading;
+import com.hbm.tileentity.conductor.*;
 import com.hbm.tileentity.network.*;
 import com.hbm.util.UpdateChecker;
 import org.apache.logging.log4j.Logger;
@@ -287,9 +288,6 @@ import com.hbm.tileentity.bomb.TileEntityRailgun;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.tileentity.network.energy.TileEntityCableSwitch;
 import com.hbm.tileentity.network.energy.TileEntityMachineDetector;
-import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2;
-import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk3;
-import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
 import com.hbm.tileentity.deco.TileEntityDecoBlock;
 import com.hbm.tileentity.deco.TileEntityDecoBlockAlt;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
@@ -531,6 +529,9 @@ public class MainRegistry {
 		OreDictManager.registerGroups();
 		OreDictManager oreMan = new OreDictManager();
 
+
+		MinecraftForge.EVENT_BUS.register(new LegacyPipeMigrationHandler());
+		MinecraftForge.EVENT_BUS.register(new AnvilUpgradeHandler());
 		MinecraftForge.EVENT_BUS.register(oreMan); //OreRegisterEvent
 		MinecraftForge.EVENT_BUS.register(new UpdateChecker());
 		MinecraftForge.EVENT_BUS.register(new ModEventHandler());
@@ -746,6 +747,8 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk2.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk2"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk3.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk3"));
 		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk4.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk4"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk2Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk2_solid"));
+		GameRegistry.registerTileEntity(TileEntityFFFluidDuctMk3Solid.class, new ResourceLocation(RefStrings.MODID, "tileentity_ff_fludi_duct_mk3_solid"));
 		GameRegistry.registerTileEntity(TileEntityBarrel.class, new ResourceLocation(RefStrings.MODID, "tileentity_barrel"));
 		GameRegistry.registerTileEntity(TileEntityTesla.class, new ResourceLocation(RefStrings.MODID, "tileentity_tesla"));
 		GameRegistry.registerTileEntity(TileEntityCyberCrab.class, new ResourceLocation(RefStrings.MODID, "tileentity_cybercrab"));
@@ -1070,7 +1073,6 @@ public class MainRegistry {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		MinecraftForge.EVENT_BUS.register(new AnvilUpgradeHandler());
 		proxy.init(event);
 		ModItems.init();
 		ModBlocks.init();

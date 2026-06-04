@@ -26,6 +26,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
@@ -48,7 +49,6 @@ public class BlockFluidPipeMk2 extends BlockContainer implements ILookOverlay {
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
-		tooltip.add(I18nUtil.resolveKey("desc.extraction"));
 		tooltip.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.cancor"));
 		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannothighcor"));
 		tooltip.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
