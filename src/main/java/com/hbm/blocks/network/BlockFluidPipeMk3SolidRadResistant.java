@@ -2,15 +2,16 @@ package com.hbm.blocks.network;
 
 import java.util.List;
 
+import api.hbm.block.IToolable;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.interfaces.IRadResistantBlock;
-
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 public class BlockFluidPipeMk3SolidRadResistant extends BlockFluidPipeMk3Solid implements IRadResistantBlock {
@@ -24,13 +25,13 @@ public class BlockFluidPipeMk3SolidRadResistant extends BlockFluidPipeMk3Solid i
 		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
 		super.onBlockAdded(worldIn, pos, state);
 	}
-	
+
 	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
 		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
 		super.breakBlock(worldIn, pos, state);
 	}
-	
+
 	@Override
 	public boolean isRadResistant(World worldIn, BlockPos blockPos){
 		return true;

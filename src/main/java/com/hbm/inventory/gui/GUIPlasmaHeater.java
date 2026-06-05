@@ -59,8 +59,8 @@ public class GUIPlasmaHeater extends GuiInfoContainer {
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 17, 16, 52, microwave.tanks[1]);
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 98, guiTop + 17, 16, 52, microwave.plasma);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 17, 16, 34, microwave.power, TileEntityMachinePlasmaHeater.maxPower);
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 49, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 153, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 49, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { I18n.format("hbm.button.void_contents") });
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 153, guiTop + 38, 10, 10, mouseX, mouseY, new String[] { I18n.format("hbm.button.void_contents") });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 

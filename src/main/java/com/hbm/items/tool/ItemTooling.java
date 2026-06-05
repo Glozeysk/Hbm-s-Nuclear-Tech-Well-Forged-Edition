@@ -54,7 +54,6 @@ public class ItemTooling extends Item {
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		if(type == ToolType.SCREWDRIVER){
-			tooltip.add(I18nUtil.resolveKey("desc.screwdriver1"));
 			tooltip.add(I18nUtil.resolveKey("desc.screwdriver2"));
 		}
 	}

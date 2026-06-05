@@ -49,7 +49,7 @@ public class GUISILEX extends GuiInfoContainer {
 			this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 27, guiTop + 72, 16, 52, mouseX, mouseY, new String[] { silex.currentFill + "/" + TileEntitySILEX.maxFill + "mB", silex.current.toStack().getDisplayName() });
 		}
 		
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 10, guiTop + 92, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 10, guiTop + 92, 10, 10, mouseX, mouseY, new String[] { I18n.format("hbm.button.void_contents") });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 

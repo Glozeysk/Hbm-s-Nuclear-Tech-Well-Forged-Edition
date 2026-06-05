@@ -63,7 +63,7 @@ public class GUICrystallizer extends GuiInfoContainer {
 				" -Effectiveness (stacks to level 3)",
 				" -Overdrive (stacks to level 3)"};
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 117, guiTop + 22, 8, 8, guiLeft + 200, guiTop + 45, text);
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 5, guiTop + 48, 10, 10, mouseX, mouseY, new String[] { "Void contents" });
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 5, guiTop + 48, 10, 10, mouseX, mouseY, new String[] { I18n.format("hbm.button.void_contents") });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 
