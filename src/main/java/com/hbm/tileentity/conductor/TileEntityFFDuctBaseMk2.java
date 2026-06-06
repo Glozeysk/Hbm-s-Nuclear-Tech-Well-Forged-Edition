@@ -44,14 +44,15 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	protected boolean extractionMode = true;
 	private boolean needsInitialization = true;
 
+	private long lastTickTransferTime = -1;
+	private int transferredThisTick = 0;
+
 	public TileEntityFFDuctBaseMk2() {
 	}
 
 	public int getPipeTier() { return 2; }
 	public int getThroughput() { return throughput; }
-	public void setThroughput(int value) { this.throughput = Math.max(100, value); markDirty(); }
-	public boolean isExtractionMode() { return extractionMode; }
-	public void setExtractionMode(boolean mode) { this.extractionMode = mode; markDirty(); }
+	public void setThroughput(int value) { this.throughput = Math.max(1, value); markDirty(); }
 
 	protected boolean canConnectTo(BlockPos neighborPos, EnumFacing facing) {
 		if (!FFUtils.checkFluidConnectablesMk2(this.world, neighborPos, getType(), facing)) return false;
@@ -246,30 +247,41 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
 		if (resource == null || resource.amount <= 0) return 0;
-		if (this.type != null && this.type != resource.getFluid()) return 0;
-		int filled = network != null ? network.fill(resource, doFill) : 0;
-		if (filled > 0 && doFill && !world.isRemote && this.type == null) {
-			this.type = resource.getFluid();
-			markDirty();
-			world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
-			lastFillWorldTime = world.getTotalWorldTime();
+		if (this.type == null) return 0;
+		if (this.type != resource.getFluid()) return 0;
+
+		int remaining = getRemainingThroughput();
+		if (remaining <= 0) return 0;
+
+		FluidStack toFill = resource.copy();
+		if (toFill.amount > remaining) {
+			toFill.amount = remaining;
+		}
+
+		int filled = network != null ? network.fill(toFill, doFill, null) : 0;
+
+		if (filled > 0 && doFill) {
+			transferredThisTick += filled;
 		}
 		return filled;
 	}
-
-	@Override public FluidStack drain(FluidStack resource, boolean doDrain) { return network != null ? network.drain(resource, doDrain) : null; }
-	@Override public FluidStack drain(int maxDrain, boolean doDrain) { return network != null ? network.drain(maxDrain, doDrain) : null; }
-	public boolean isTransportingFluid() { return lastFillWorldTime >= 0 && (world.getTotalWorldTime() - lastFillWorldTime) < 20; }
-
 	@Override
 	public void update() {
 		if (needsInitialization) {
 			needsInitialization = false;
-            joinOrMakeNetwork();
-            onNeighborChange();
-        }
+			joinOrMakeNetwork();
+			onNeighborChange();
+		}
 
-		if(world.isRemote || network == null || network.getType() == null || !extractionMode) return;
+		if(world.isRemote || network == null || !extractionMode) return;
+
+		if (network.getType() == null) return;
+
+		int remaining = getRemainingThroughput();
+		if (remaining <= 0) return;
+
+		int maxNetFill = network.fill(new FluidStack(network.getType(), Integer.MAX_VALUE), false);
+		if (maxNetFill <= 0) return;
 
 		for(EnumFacing e : EnumFacing.VALUES) {
 			TileEntity te = world.getTileEntity(pos.offset(e));
@@ -277,13 +289,28 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 			if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) continue;
 
 			IFluidHandler neighbor = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite());
-			int maxNetFill = network.fill(new FluidStack(network.getType(), Integer.MAX_VALUE), false);
-			if(maxNetFill <= 0) continue;
 
-			FluidStack drained = neighbor.drain(new FluidStack(network.getType(), Math.min(maxNetFill, throughput)), true);
-			if(drained != null && drained.amount > 0) network.fill(drained, true);
+			int canExtract = Math.min(remaining, maxNetFill);
+			if (canExtract <= 0) break;
+
+			FluidStack drained = neighbor.drain(new FluidStack(network.getType(), canExtract), true);
+			if(drained != null && drained.amount > 0) {
+				if (drained.amount > canExtract) drained.amount = canExtract;
+
+				int accepted = network.fill(drained, true, te.getPos());
+
+				if (accepted > 0) {
+					transferredThisTick += accepted;
+					remaining -= accepted;
+					maxNetFill -= accepted;
+				}
+			}
 		}
 	}
+
+	@Override public FluidStack drain(FluidStack resource, boolean doDrain) { return network != null ? network.drain(resource, doDrain) : null; }
+	@Override public FluidStack drain(int maxDrain, boolean doDrain) { return network != null ? network.drain(maxDrain, doDrain) : null; }
+	public boolean isTransportingFluid() { return lastFillWorldTime >= 0 && (world.getTotalWorldTime() - lastFillWorldTime) < 20; }
 
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
@@ -293,5 +320,28 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ? CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this) : super.getCapability(capability, facing);
+	}
+
+	private int getRemainingThroughput() {
+		if (world == null) return throughput;
+		long currentTime = world.getTotalWorldTime();
+		if (currentTime != lastTickTransferTime) {
+			lastTickTransferTime = currentTime;
+			transferredThisTick = 0;
+		}
+		return Math.max(0, throughput - transferredThisTick);
+	}
+
+	public boolean hasExternalConnections() {
+		if (this.world == null) return false;
+		for (EnumFacing e : EnumFacing.VALUES) {
+			TileEntity te = world.getTileEntity(pos.offset(e));
+			if (te != null && !(te instanceof IFluidPipeMk2)) {
+				if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

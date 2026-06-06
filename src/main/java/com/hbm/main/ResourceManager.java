@@ -682,13 +682,9 @@ public class ResourceManager {
 
 	//Pipe
 	public static final ResourceLocation pipe_neo_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo.png");
-	public static final ResourceLocation pipe_neo_succ_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_succ.png");
-	public static final ResourceLocation pipe_neo_overlay_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_overlay.png");
 	public static final ResourceLocation pipe_neo_mk3_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3.png");
-	public static final ResourceLocation pipe_neo_mk3_succ_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3_succ.png");
 	public static final ResourceLocation pipe_neo_mk3_overlay_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3_overlay.png");
 	public static final ResourceLocation pipe_neo_mk4_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk4.png");
-	public static final ResourceLocation pipe_neo_mk4_succ_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk4_succ.png");
 	public static final ResourceLocation pipe_neo_mk4_overlay_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk4_overlay.png");
 	
 	//Turbofan

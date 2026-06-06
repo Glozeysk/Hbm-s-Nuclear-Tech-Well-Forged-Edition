@@ -3,39 +3,75 @@ package com.hbm.inventory.gui;
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.inventory.container.ContainerCrateIron;
 import com.hbm.lib.RefStrings;
-import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityCrateIron;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Locale;
+
 public class GUICrateIron extends GuiContainer {
-	
+
 	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crate_iron.png");
 	private TileEntityCrateIron diFurnace;
 
 	public GUICrateIron(InventoryPlayer invPlayer, TileEntityCrateIron tedf) {
 		super(new ContainerCrateIron(invPlayer, tedf));
 		diFurnace = tedf;
-		
+
 		this.xSize = 176;
 		this.ySize = 186;
 	}
-	
+
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
-	
+
+	private String getFillPercentage() {
+		if (diFurnace == null) return "";
+
+		int totalSlots = diFurnace.getSizeInventory();
+		if (totalSlots == 0) return "";
+
+		int totalCapacity = totalSlots * 64;
+		int currentItems = 0;
+
+		for (int i = 0; i < totalSlots; i++) {
+			ItemStack stack = diFurnace.getStackInSlot(i);
+			if (!stack.isEmpty()) {
+				currentItems += stack.getCount();
+			}
+		}
+
+		double percentage = (currentItems * 100.0) / totalCapacity;
+		return String.format(Locale.US, "%.1f", percentage);
+	}
+
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
-		String name = this.diFurnace.hasCustomInventoryName() ? this.diFurnace.getInventoryName() : I18n.format(this.diFurnace.getInventoryName());
-		
-		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
+		String baseName = this.diFurnace.hasCustomInventoryName() ? this.diFurnace.getInventoryName() : I18n.format(this.diFurnace.getInventoryName());
+		String percentage = getFillPercentage();
+
+		String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
+
+		int nameWidth = this.fontRenderer.getStringWidth(baseName);
+		int percentWidth = this.fontRenderer.getStringWidth(percentText);
+
+		int totalWidth = nameWidth + percentWidth;
+		int startX = (this.xSize / 2) - (totalWidth / 2);
+
+		this.fontRenderer.drawString(baseName, startX, 6, 4210752);
+
+		if (!percentText.isEmpty()) {
+			this.fontRenderer.drawString(percentText, startX + nameWidth, 6, 0x55FF55);
+		}
+
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 

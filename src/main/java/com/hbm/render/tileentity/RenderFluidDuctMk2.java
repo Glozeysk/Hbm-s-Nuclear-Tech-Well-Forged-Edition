@@ -42,7 +42,6 @@ public class RenderFluidDuctMk2<T extends TileEntityFFDuctBaseMk2> extends TileE
 			GlStateManager.enableBlend();
 			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			FFUtils.setRGBFromHex(ModForgeFluids.getFluidColor(te.getType()));
-			bindTexture(ResourceManager.pipe_neo_overlay_tex);
 			renderParts(mask, pX, nX, pY, nY, pZ, nZ);
 			GlStateManager.disableBlend();
 		}

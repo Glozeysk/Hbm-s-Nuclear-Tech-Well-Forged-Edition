@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.main.MainRegistry;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerCrateSteel;
@@ -14,6 +15,8 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.Locale;
 
 public class GUICrateSteel extends GuiContainer {
 
@@ -34,12 +37,46 @@ public class GUICrateSteel extends GuiContainer {
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 
+	private String getFillPercentage() {
+		if (diFurnace == null) return "";
+
+		int totalSlots = diFurnace.getSizeInventory();
+		if (totalSlots == 0) return "";
+
+		int totalCapacity = totalSlots * 64;
+		int currentItems = 0;
+
+		for (int i = 0; i < totalSlots; i++) {
+			ItemStack stack = diFurnace.getStackInSlot(i);
+			if (!stack.isEmpty()) {
+				currentItems += stack.getCount();
+			}
+		}
+
+		double percentage = (currentItems * 100.0) / totalCapacity;
+		return String.format(Locale.US, "%.1f", percentage);
+	}
+
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
-		String name = this.diFurnace.hasCustomInventoryName() ? this.diFurnace.getInventoryName() : I18n.format(this.diFurnace.getInventoryName());
+		String baseName = this.diFurnace.hasCustomInventoryName() ? this.diFurnace.getInventoryName() : I18n.format(this.diFurnace.getInventoryName());
+		String percentage = getFillPercentage();
 
-		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 0x1C1C1C);
-		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 0x1C1C1C);
+		String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
+
+		int nameWidth = this.fontRenderer.getStringWidth(baseName);
+		int percentWidth = this.fontRenderer.getStringWidth(percentText);
+
+		int totalWidth = nameWidth + percentWidth;
+		int startX = (this.xSize / 2) - (totalWidth / 2);
+
+		this.fontRenderer.drawString(baseName, startX, 6, 4210752);
+
+		if (!percentText.isEmpty()) {
+			this.fontRenderer.drawString(percentText, startX + nameWidth, 6, 0x55FF55);
+		}
+
+		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 
 	@Override

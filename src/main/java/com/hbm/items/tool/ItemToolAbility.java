@@ -49,6 +49,7 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -543,6 +544,14 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		Configuration config = getConfiguration(stack);
 		ToolPreset activePreset = config.getActivePreset();
 		availableAbilities.addInformation(list, activePreset);
+
+		if (!this.hitAbility.isEmpty()) {
+			list.add(I18nUtil.resolveKey("tool.ability.weaponlist"));
+			for (WeaponAbility ability : this.hitAbility) {
+				list.add("  " + TextFormatting.RED + ability.getFullName());
+			}
+		}
+
 		if (this.rockBreaker)
 			list.add("§5[" + I18nUtil.resolveKey("trait.unmineable") + "]§d " + I18nUtil.resolveKey("tool.ability.canmine"));
 	}

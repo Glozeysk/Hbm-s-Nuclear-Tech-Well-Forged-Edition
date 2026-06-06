@@ -1,7 +1,6 @@
 package com.hbm.interfaces;
 
 import com.hbm.forgefluid.FFPipeNetworkMk2;
-
 import net.minecraftforge.fluids.Fluid;
 
 public interface IFluidPipeMk2 {
@@ -12,4 +11,6 @@ public interface IFluidPipeMk2 {
 	public void setNetwork(FFPipeNetworkMk2 net);
 	public void joinOrMakeNetwork();
 	public boolean isValidForBuilding();
+
+	public int getPipeTier();
 }

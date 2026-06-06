@@ -91,7 +91,7 @@ public class AvailableAbilities {
                 .collect(Collectors.toList());
 
         if (!toolAbilities.isEmpty()) {
-            list.add("Abilities: ");
+            list.add(I18nUtil.resolveKey("tool.ability.title"));
 
             for (Map.Entry<IBaseAbility, Integer> entry : toolAbilities) {
                 IBaseAbility ability = entry.getKey();
@@ -115,7 +115,7 @@ public class AvailableAbilities {
 
                 String line;
                 if (isActive) {
-                    line = "  " + TextFormatting.GREEN + ability.getFullName(activeLevel);
+                    line = " " + TextFormatting.YELLOW + TextFormatting.BOLD + ">" + ability.getFullName(activeLevel);
                 } else {
                     line = "  " + TextFormatting.GOLD + ability.getFullName(maxLevel);
                 }

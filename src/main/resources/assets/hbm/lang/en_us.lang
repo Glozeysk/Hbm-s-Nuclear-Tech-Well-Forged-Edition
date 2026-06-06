@@ -5158,3 +5158,4 @@ crate.item.info=Right-click to open in your hand!
 desc.throughput=Extraction Speed
 desc.screwdriver_throughput=§bRight-click with a screwdriver to adjust the extraction speed!
 hbm.button.void_contents=Void contents
+tool.ability.title=Abilities:

@@ -1,20 +1,19 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
-import com.hbm.main.MainRegistry;
-import net.minecraft.entity.player.EntityPlayer;
-import org.lwjgl.opengl.GL11;
-
 import com.hbm.inventory.container.ContainerCrateTungsten;
-import com.hbm.lib.RefStrings;
 import com.hbm.lib.Library;
+import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrateTungsten;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
+
+import java.util.Locale;
 
 public class GUICrateTungsten extends GuiContainer {
 
@@ -30,13 +29,48 @@ public class GUICrateTungsten extends GuiContainer {
 		this.ySize = 168;
 	}
 
+	private String getFillPercentage() {
+		if (diFurnace == null) return "";
+
+		int totalSlots = diFurnace.getSizeInventory();
+		if (totalSlots == 0) return "";
+		int totalCapacity = totalSlots * 64;
+		int currentItems = 0;
+
+		for (int i = 0; i < totalSlots; i++) {
+			ItemStack stack = diFurnace.getStackInSlot(i);
+			if (!stack.isEmpty()) {
+				currentItems += stack.getCount();
+			}
+		}
+
+		double percentage = (currentItems * 100.0) / totalCapacity;
+		return String.format(Locale.US, "%.1f", percentage);
+	}
+
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
 		String title = I18n.format("container.crateTungsten");
-		this.fontRenderer.drawString(title, this.xSize / 2 - this.fontRenderer.getStringWidth(title) / 2, 6, diFurnace.heatTimer == 0 ? 0xA0A0A0 : 0xFFCA53);
-		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, diFurnace.heatTimer == 0 ? 0xA0A0A0 : 0xFFCA53);
+		String percentage = getFillPercentage();
+		String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
+
+		int titleWidth = this.fontRenderer.getStringWidth(title);
+		int percentWidth = this.fontRenderer.getStringWidth(percentText);
+		int totalWidth = titleWidth + percentWidth;
+		int startX = (this.xSize / 2) - (totalWidth / 2);
+
+		int dynamicColor = diFurnace.heatTimer == 0 ? 0xA0A0A0 : 0xFFCA53;
+
+		this.fontRenderer.drawString(title, startX, 6, dynamicColor);
+
+		if (!percentText.isEmpty()) {
+			this.fontRenderer.drawString(percentText, startX + titleWidth, 6, 0x55FF55);
+		}
+
+		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, dynamicColor);
+
 		String sparks = Library.getShortNumber(diFurnace.joules) + "SPK";
-		this.fontRenderer.drawString(sparks, this.xSize - 8 -this.fontRenderer.getStringWidth(sparks), this.ySize - 96 + 2, diFurnace.heatTimer == 0 ? 0xA0A0A0 : 0xFFCA53);
+		this.fontRenderer.drawString(sparks, this.xSize - 8 - this.fontRenderer.getStringWidth(sparks), this.ySize - 96 + 2, dynamicColor);
 	}
 
 	@Override

@@ -294,4 +294,13 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase {
         @Nonnull @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return wrapped.extractItem(slot, amount, simulate); }
         @Override public int getSlotLimit(int slot) { return wrapped.getSlotLimit(slot); }
     }
+
+    public int getSizeInventory() {
+        return inventory.getSlots();
+    }
+
+    public net.minecraft.item.ItemStack getStackInSlot(int index) {
+        return inventory.getStackInSlot(index);
+    }
+
 }

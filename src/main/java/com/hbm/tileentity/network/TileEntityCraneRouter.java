@@ -55,10 +55,10 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         for(int i = 0; i < patterns.length; i++) {
             NBTTagCompound compound = new NBTTagCompound();
             patterns[i].writeToNBT(compound);
-            ByteBufUtils.writeTag(buf, compound);
+            ByteBufUtils.writeTag(buf, compound != null ? compound : new NBTTagCompound());
         }
-        for(int i = 0; i < modes.length; i++) {
-            buf.writeInt(modes[i]);
+        for(int i = 0; i < 6; i++) {
+            buf.writeInt(i < modes.length ? modes[i] : 0);
         }
     }
 
@@ -66,13 +66,42 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
     public void deserialize(ByteBuf buf) {
         for(int i = 0; i < patterns.length; i++) {
             NBTTagCompound compound = ByteBufUtils.readTag(buf);
-            patterns[i].readFromNBT(compound);
+            if(compound != null) {
+                patterns[i].readFromNBT(compound);
+            } else {
+                patterns[i] = new ModulePatternMatcher(5);
+            }
         }
-        for(int i = 0; i < modes.length; i++) {
-            modes[i] = buf.readInt();
+        this.modes = new int[6];
+        for(int i = 0; i < 6; i++) {
+            this.modes[i] = buf.readInt();
         }
     }
 
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+
+        for(int i = 0; i < patterns.length; i++) {
+            if(nbt.hasKey("pattern" + i)) {
+                NBTTagCompound compound = nbt.getCompoundTag("pattern" + i);
+                patterns[i].readFromNBT(compound);
+            } else {
+                patterns[i] = new ModulePatternMatcher(5);
+            }
+        }
+
+        if(nbt.hasKey("modes")) {
+            int[] loaded = nbt.getIntArray("modes");
+            if(loaded != null && loaded.length == 6) {
+                this.modes = loaded;
+            } else {
+                this.modes = new int[6];
+            }
+        } else {
+            this.modes = new int[6];
+        }
+    }
     @Override
     public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new ContainerCraneRouter(player.inventory, this);
@@ -98,17 +127,6 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         int mIndex = index % 5;
 
         this.patterns[matcher].initPatternSmart(world, stack, mIndex);
-    }
-
-    @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        super.readFromNBT(nbt);
-
-        for(int i = 0; i < patterns.length; i++) {
-            NBTTagCompound compound = nbt.getCompoundTag("pattern" + i);
-            patterns[i].readFromNBT(compound);
-        }
-        this.modes = nbt.getIntArray("modes");
     }
 
     @Override
