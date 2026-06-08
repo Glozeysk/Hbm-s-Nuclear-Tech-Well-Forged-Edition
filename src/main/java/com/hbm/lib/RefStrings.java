@@ -5,31 +5,46 @@ public class RefStrings {
 	public static final String NAME = "Hbm's Nuclear Tech - Well-forged Edition";
 	public static final String VERSION = "NTM-Well-forged-Edition-1.12.2-1.3.0";
 	public static final String BUILD_DATE;
-	public static final String CHANGELOG = "Update 1.2.3\n" +
-			"- Added grow progress bar in ITER GUI;\n" +
-			"- Added speed change in ITER breeder which depends on required heat and actual heat;\n" +
-			"- Added flux summary in RBMK outgasser;\n" +
-			"- Added bedrock ore to neutrino lens;\n" +
-			"- Added tooltip to Big Furnace;\n" +
-			"- Added void buttons for crystallizer and plasma heater fluid tanks;\n" +
-			"- Added compatibility armor with Quark emotes.\n" +
+	public static final String CHANGELOG = "Update 1.3.0 \"Fluid Update\"\n" +
+			"- Ported ToolAbility system from CE\n" +
+			"- Added ToolTypes for some blocks \n" +
+			"- Added many localizations for items and gui titles\n" +
+			"- Added opening animation for  Crates (Blocks and ItemBlocks)\n" +
+			"- Added fill percentage in Crates GUI\n" +
+			"- Added new FluidDuct system (with backward compatibility)\n" +
+			"- Added PipeStub rendering in RenderFluidBarrel      \n" +
+			"- Added BlockDecoSign (WIP)\n" +
+			"- Added new Anvil update system\n" +
+			"- Added particles for TileEntityExcavator\n" +
 			"\n" +
-			"- Injected and tested new BufPacket serialization/deserialization system;\n" +
-			"- Fully reworked magnetic ducts;\n" +
-			"- Changed magnetic ducts craft;\n" +
-			"- Changed arsenic nugget craft;\n" +
-			"- Ported Machine Assembly model, sounds, animations;\n" +
-			"- Ported Machine Chemplant model and animations;\n" +
-			"- Added wire recoloring and changed wiring_red_copper texture and craft.\n" +
 			"\n" +
-			"- Fixed Oil Spill particles in MachineOilWell;\n" +
-			"- Fixed armor helmet rotation issues on armor stands;\n" +
-			"- Fixed neutrino lens visual bugs;\n" +
-			"- Fixed lid jumping on heatproof columns;\n" +
-			"- Fixed shift+click interactions on conveyor extractors/inserters;\n" +
-			"- Fixed jetpacks model sync;\n" +
-			"- Fixed cyclotron recipes bug;\n" +
-			"- Fixed night goggles effect bug.";
+			"- Changed ItemToolAbility hands priority\n" +
+			"- Changed onScrew logic for pipes\n" +
+			"- Changed MeteoriteSwords weapon abilities\n" +
+			"- Changed ModName\n" +
+			"\n" +
+			"- Fixed Crates with locks compatibility\n" +
+			"- Fixed BogoSorter compatibility with crates\n" +
+			"- Fixed Item filling in crates\n" +
+			"- Fixed ConcurrentModificationException in fluid pipes\n" +
+			"- Fixed MachineChemical insertItem logic\n" +
+			"- Fixed MachineAutoCrafterOutput\n" +
+			"- Fixed drop area for crates and batteries     \n" +
+			"- Fixed DiFurnaceBig logic \n" +
+			"- Fixed Array outOfBound crash in DiFurnaceBig, SteelFurnace and BlockRouter GUI\n" +
+			"- Fixed BlockConveyor onScrew client crash       \n" +
+			"- Fixed conveyor items dupe, when they're touching projectiles\n" +
+			"- Fixed FluidIcons rendering    \n" +
+			"- Fixed NPE in GUIScreenBobmazon\n" +
+			"- Fixed WeaponThompson render\n" +
+			"- Fixed BlockSafe structure  \n" +
+			"- Fixed MachineMixer endless energy bug   \n" +
+			"- Fixed MeteoriteSword rendering (client crash)\n" +
+			"- Fixed MachineLadder NPE (Mobs AI issue)\n" +
+			"\n" +
+			"- Removed legacy FluidSucc system\n" +
+			"- Removed coal hazard for lignite    \n" +
+			"- Grenade Nuke spawn in HbmStructures";
 	//HBM's Beta Naming Convention:
 	//V T (X)
 	//V -> next release version
