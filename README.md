@@ -1,4 +1,4 @@
-# <u>**HBM Nuclear Tech Mod - 1.12.2 Waldemar Edition**</u>
+# <u>**HBM Nuclear Tech Mod - 1.12.2 Well-forged Edition**</u>
 
 This is my 1.12.2 custom version of the mod
 

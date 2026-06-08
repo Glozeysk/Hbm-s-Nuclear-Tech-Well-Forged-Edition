@@ -38,11 +38,13 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Enchantments;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.play.client.CPacketPlayerDigging;
 import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -397,19 +399,31 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
 		World world = player.world;
 		if (world.isRemote || !canOperate(stack)) return false;
-		if (isForbiddenBlock(world.getBlockState(pos).getBlock())) return false;
+
+		IBlockState state = world.getBlockState(pos);
+		if (isForbiddenBlock(state.getBlock())) return false;
 
 		Configuration config = getConfiguration(stack);
 		ToolPreset preset = config.getActivePreset();
+
+		preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player);
+
+		if (!canHarvestBlock(state, stack)) {
+			preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
+			return false;
+		}
 
 		dropX = pos.getX();
 		dropY = pos.getY();
 		dropZ = pos.getZ();
 
-		preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player);
-		boolean skipRef = preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
-		if (!skipRef) breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ());
+		preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
+
+		EnumHand hand = player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+		breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ(), hand);
+
 		preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
+
 		return true;
 	}
 
@@ -417,7 +431,24 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	public float getDestroySpeed(ItemStack stack, IBlockState state) {
 		if (!canOperate(stack)) return 1;
 		if (toolType == null) return super.getDestroySpeed(stack, state);
-		if (toolType.blocks.contains(state.getBlock()) || toolType.materials.contains(state.getMaterial())) return this.efficiency;
+
+		if (toolType.blocks.contains(state.getBlock()) || toolType.materials.contains(state.getMaterial())) {
+			return this.efficiency;
+		}
+
+		// Проверка через Forge harvest system
+		String harvestTool = state.getBlock().getHarvestTool(state);
+		if (harvestTool != null) {
+			if (toolType == EnumToolType.PICKAXE && harvestTool.equals("pickaxe")) return this.efficiency;
+			if (toolType == EnumToolType.AXE && harvestTool.equals("axe")) return this.efficiency;
+			if (toolType == EnumToolType.SHOVEL && harvestTool.equals("shovel")) return this.efficiency;
+			if (toolType == EnumToolType.MINER) {
+				if (harvestTool.equals("pickaxe") || harvestTool.equals("axe") || harvestTool.equals("shovel")) {
+					return this.efficiency;
+				}
+			}
+		}
+
 		return super.getDestroySpeed(stack, state);
 	}
 
@@ -425,12 +456,13 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 	public boolean canHarvestBlock(IBlockState state, ItemStack stack) {
 		if (!canOperate(stack)) return false;
 		if (isForbiddenBlock(state.getBlock())) return false;
-		Configuration config = getConfiguration(stack);
-		if (config != null && config.getActivePreset().harvestAbility == IToolHarvestAbility.SILK) return true;
-		return getDestroySpeed(stack, state) > 1;
-	}
 
-	public boolean canShearBlock(Block block, ItemStack stack, World world, int x, int y, int z) { return false; }
+		if (net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(Objects.requireNonNull(Enchantments.SILK_TOUCH), stack) > 0) {
+			return true;
+		}
+
+		return getDestroySpeed(stack, state) > 1.0F;
+	}
 
 	public static boolean isForbiddenBlock(Block b) {
 		return b == Blocks.BARRIER || b == Blocks.BEDROCK || b == Blocks.COMMAND_BLOCK
@@ -463,62 +495,112 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		breakExtraBlock(world, x, y, z, player, refX, refY, refZ, EnumHand.MAIN_HAND);
 	}
 
+	@Override
 	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
 		BlockPos pos = new BlockPos(x, y, z);
-		if (world.isAirBlock(pos)) return;
-		if (!(playerEntity instanceof EntityPlayerMP)) return;
+		if (world.isAirBlock(pos))
+			return;
+
+		if(!(playerEntity instanceof EntityPlayerMP))
+			return;
 
 		EntityPlayerMP player = (EntityPlayerMP) playerEntity;
 		ItemStack stack = player.getHeldItem(hand);
-		if (stack.isEmpty()) return;
 
-		IBlockState state = world.getBlockState(pos);
-		Block block = state.getBlock();
-		int meta = block.getMetaFromState(state);
+		IBlockState block = world.getBlockState(pos);
 
-		if (!(canHarvestBlock(state, stack) || canShearBlock(block, stack, world, x, y, z))
-				|| (state.getBlockHardness(world, pos) == -1.0F && state.getPlayerRelativeBlockHardness(player, world, pos) == 0.0F))
+		if(!canHarvestBlock(block, stack))
 			return;
 
-		BlockPos refPos = new BlockPos(refX, refY, refZ);
-		IBlockState refState = world.getBlockState(refPos);
+		IBlockState refBlock = world.getBlockState(new BlockPos(refX, refY, refZ));
+		float refStrength = ForgeHooks.blockStrength(refBlock, player, world, new BlockPos(refX, refY, refZ));
+		float strength = ForgeHooks.blockStrength(block, player, world, pos);
 
-		float refStrength = refState.getPlayerRelativeBlockHardness(player, world, refPos);
-		float strength = state.getPlayerRelativeBlockHardness(player, world, pos);
-
-		if (!ForgeHooks.canHarvestBlock(state.getBlock(), player, world, pos) || strength <= 0.0F
-				|| refStrength / strength > 10f || refState.getPlayerRelativeBlockHardness(player, world, refPos) < 0)
+		if (!ForgeHooks.canHarvestBlock(block.getBlock(), player, world, pos) || refStrength/strength > 10f)
 			return;
 
-		int exp = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
-		if (exp == -1) return;
+		int event = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
+		if(event < 0)
+			return;
 
-		Configuration config = getConfiguration(stack);
-		ToolPreset preset = config.getActivePreset();
+		if (player.capabilities.isCreativeMode) {
+			block.getBlock().onBlockHarvested(world, pos, block, player);
+			if (block.getBlock().removedByPlayer(block, world, pos, player, false))
+				block.getBlock().onPlayerDestroy(world, pos, block);
 
-		preset.harvestAbility.onHarvestBlock(preset.harvestAbilityLevel, world, x, y, z, player, block, meta);
+			if (!world.isRemote) {
+				player.connection.sendPacket(new SPacketBlockChange(world, pos));
+			}
+			return;
+		}
+
+		player.getHeldItem(hand).onBlockDestroyed(world, block, pos, player);
+
+		if (!world.isRemote) {
+			net.minecraft.tileentity.TileEntity te = world.getTileEntity(pos);
+
+			block.getBlock().onBlockHarvested(world, pos, block, player);
+
+			if(block.getBlock().removedByPlayer(block, world, pos, player, true))
+			{
+				block.getBlock().onPlayerDestroy(world, pos, block);
+				block.getBlock().harvestBlock(world, player, pos, block, te, stack);
+				block.getBlock().dropXpOnBlockBreak(world, pos, event);
+			}
+
+			player.connection.sendPacket(new SPacketBlockChange(world, pos));
+
+		} else {
+			world.playEvent(2001, pos, Block.getStateId(block));
+			if(block.getBlock().removedByPlayer(block, world, pos, player, true))
+			{
+				block.getBlock().onPlayerDestroy(world, pos, block);
+			}
+			ItemStack itemstack = player.getHeldItem(hand);
+			if (itemstack != null)
+			{
+				itemstack.onBlockDestroyed(world, block, new BlockPos(x, y, z), player);
+
+				if (itemstack.isEmpty())
+				{
+					player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+				}
+			}
+
+			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(x, y, z), Minecraft.getMinecraft().objectMouseOver.sideHit));
+		}
 	}
 
-	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player) {
+	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player, EnumHand hand) {
 		BlockPos pos = new BlockPos(x, y, z);
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
+
+		TileEntity te = world.getTileEntity(pos);
+
 		world.playEvent(player, 2001, pos, Block.getStateId(state));
 		if (player.capabilities.isCreativeMode) {
 			removeBlock(world, x, y, z, false, player);
 			player.connection.sendPacket(new SPacketBlockChange(world, pos));
 		} else {
-			ItemStack itemstack = player.getHeldItemMainhand();
+			ItemStack itemstack = player.getHeldItem(hand);
+
 			boolean canHarvest = ForgeHooks.canHarvestBlock(block, player, world, pos);
 			boolean removedByPlayer = removeBlock(world, x, y, z, canHarvest, player);
+
 			if (!itemstack.isEmpty()) {
 				itemstack.onBlockDestroyed(world, state, pos, player);
-				if (itemstack.getCount() == 0) player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+				if (itemstack.getCount() == 0) player.setHeldItem(hand, ItemStack.EMPTY);
 			}
+
 			if (removedByPlayer && canHarvest) {
-				block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), itemstack);
+				block.harvestBlock(world, player, pos, state, te, itemstack);
 			}
 		}
+	}
+
+	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player) {
+		standardDigPost(world, x, y, z, player, EnumHand.MAIN_HAND);
 	}
 
 	public static boolean removeBlock(World world, int x, int y, int z, boolean canHarvest, EntityPlayerMP player) {

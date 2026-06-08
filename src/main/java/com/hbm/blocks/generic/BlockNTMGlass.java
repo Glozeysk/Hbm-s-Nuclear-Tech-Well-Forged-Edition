@@ -15,9 +15,9 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock, IItemHazard {
@@ -26,7 +26,7 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock,
 	ItemHazardModule module;
 	boolean doesDrop = false;
 	boolean isRadResistant = false;
-	
+
 	public BlockNTMGlass(Material materialIn, BlockRenderLayer layer, String s) {
 		this(materialIn, layer, false, s);
 	}
@@ -43,7 +43,9 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock,
 		this.doesDrop = doesDrop;
 		this.isRadResistant = isRadResistant;
 		this.module = new ItemHazardModule();
-		
+
+		this.setHarvestLevel("pickaxe", 0);
+
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
@@ -51,17 +53,17 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock,
 	public ItemHazardModule getModule() {
 		return module;
 	}
-	
+
 	@Override
 	public BlockNTMGlass setSoundType(SoundType sound) {
 		return (BlockNTMGlass)super.setSoundType(sound);
 	}
-	
+
 	@Override
 	public int quantityDropped(Random random){
 		return doesDrop ? 1 : 0;
 	}
-	
+
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
 		if(this.isRadResistant){
@@ -69,7 +71,7 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock,
 		}
 		super.onBlockAdded(worldIn, pos, state);
 	}
-	
+
 	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
 		if(this.isRadResistant){
@@ -77,20 +79,25 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock,
 		}
 		super.breakBlock(worldIn, pos, state);
 	}
-	
+
 	@Override
 	public int quantityDropped(IBlockState state, int fortune, Random random) {
 		return doesDrop ? 1 : 0;
 	}
-	
+
 	@Override
 	public BlockRenderLayer getRenderLayer() {
 		return layer;
 	}
-	
+
 	@Override
 	protected boolean canSilkHarvest() {
-		return false;
+		return true;
+	}
+
+	@Override
+	protected ItemStack getSilkTouchDrop(IBlockState state) {
+		return new ItemStack(this, 1, 0);
 	}
 
 	@Override

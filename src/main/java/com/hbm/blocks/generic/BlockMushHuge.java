@@ -29,6 +29,7 @@ public class BlockMushHuge extends Block implements IItemHazard {
 		this.setCreativeTab(MainRegistry.controlTab);
 		this.setSoundType(SoundType.PLANT);
 		this.module = new ItemHazardModule();
+		this.setHarvestLevel("axe", 0);
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 

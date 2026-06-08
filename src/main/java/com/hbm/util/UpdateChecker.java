@@ -27,7 +27,7 @@ import java.text.ParseException;
 public class UpdateChecker {
 
     private static final String CURSEFORGE_API_URL = "https://api.curseforge.com/v1/mods/1467521/files?pageSize=1";
-    private static final String CURSEFORGE_PAGE_URL = "https://www.curseforge.com/minecraft/mc-mods/ntm-waldemar-edition";
+    private static final String CURSEFORGE_PAGE_URL = "https://www.curseforge.com/minecraft/mc-mods/ntm-well-forged-edition";
     private static final String API_KEY = "$2a$10$bL4bIL5pUWqfcO7KQtnMReakwtfHbNKh6v1uTpKlzhwoueEJQnPnm";
 
     private static boolean checkedThisSession = false;
@@ -124,11 +124,18 @@ public class UpdateChecker {
     private int[] extractVersionNumbers(String versionString) {
         String cleaned = versionString.replace(".jar", "");
 
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)+)").matcher(cleaned);
+        java.util.regex.Matcher mcMatcher = java.util.regex.Pattern
+                .compile("1\\.12\\.2-(\\d+\\.\\d+(?:\\.\\d+)?)").matcher(cleaned);
 
         String mainVersion = "";
-        while(matcher.find()) {
-            mainVersion = matcher.group(1);
+        if(mcMatcher.find()) {
+            mainVersion = mcMatcher.group(1);
+        } else {
+            java.util.regex.Matcher matcher = java.util.regex.Pattern
+                    .compile("(\\d+(?:\\.\\d+)+)").matcher(cleaned);
+            while(matcher.find()) {
+                mainVersion = matcher.group(1);
+            }
         }
 
         if(mainVersion.isEmpty()) return new int[]{0};

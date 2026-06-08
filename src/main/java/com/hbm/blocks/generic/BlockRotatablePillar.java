@@ -20,7 +20,7 @@ public class BlockRotatablePillar extends BlockRotatedPillar {
 		super(materialIn);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
-		
+		this.setHarvestLevel("pickaxe", 0);
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 

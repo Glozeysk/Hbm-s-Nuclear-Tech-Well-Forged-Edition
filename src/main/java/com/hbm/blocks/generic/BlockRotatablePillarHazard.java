@@ -13,11 +13,13 @@ public class BlockRotatablePillarHazard extends BlockRotatablePillar implements 
 	public BlockRotatablePillarHazard(Material materialIn, String s) {
 		super(materialIn, s);
 		this.module = new ItemHazardModule();
+		this.setHarvestLevel("pickaxe", 0);
 	}
 
 	public BlockRotatablePillarHazard(Material mat, SoundType type, String s) {
 		this(mat, s);
 		this.setSoundType(type);
+		this.setHarvestLevel("pickaxe", 0);
 	}
 	
 	@Override
