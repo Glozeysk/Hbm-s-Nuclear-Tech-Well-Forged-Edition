@@ -80,27 +80,38 @@ public class UpdateChecker {
                 MainRegistry.logger.info("[UpdateChecker] Latest version on CurseForge: " + latestVersion);
                 MainRegistry.logger.info("[UpdateChecker] Latest file date: " + latestDateStr);
 
-                String currentBuildDate = RefStrings.BUILD_DATE;
+                MainRegistry.logger.info("[UpdateChecker] Step 1: Comparing by version numbers...");
+                int versionComparison = compareVersions(latestVersion, RefStrings.VERSION);
+                MainRegistry.logger.info("[UpdateChecker] Version comparison result: " + versionComparison + " (1=CF newer, 0=equal, -1=current newer)");
 
-                if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
-                    try {
-                        long latestTime = parseDate(latestDateStr);
-                        long buildTime = parseDate(currentBuildDate);
-
-                        MainRegistry.logger.info("[UpdateChecker] Comparing by date - Latest: " + latestTime + ", Build: " + buildTime);
-
-                        updateAvailable = latestTime > buildTime;
-
-                        MainRegistry.logger.info("[UpdateChecker] Update available: " + updateAvailable);
-                    } catch(Exception e) {
-                        MainRegistry.logger.warn("[UpdateChecker] Date comparison failed, falling back to version comparison: " + e.getMessage());
-                        updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
-                        MainRegistry.logger.info("[UpdateChecker] Version comparison result - Update available: " + updateAvailable);
-                    }
+                if(versionComparison > 0) {
+                    updateAvailable = true;
+                    MainRegistry.logger.info("[UpdateChecker] Update available (version is newer on CF)");
+                } else if(versionComparison == 0) {
+                    updateAvailable = false;
+                    MainRegistry.logger.info("[UpdateChecker] Versions are equal, no update needed");
                 } else {
-                    MainRegistry.logger.info("[UpdateChecker] Build date is empty, using version comparison");
-                    updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
-                    MainRegistry.logger.info("[UpdateChecker] Version comparison result - Update available: " + updateAvailable);
+                    MainRegistry.logger.info("[UpdateChecker] Current version is newer than CF, checking build dates as fallback...");
+
+                    String currentBuildDate = RefStrings.BUILD_DATE;
+                    if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
+                        try {
+                            long latestTime = parseDate(latestDateStr);
+                            long buildTime = parseDate(currentBuildDate);
+
+                            MainRegistry.logger.info("[UpdateChecker] Step 2: Comparing by date - Latest: " + latestTime + ", Build: " + buildTime);
+
+                            updateAvailable = latestTime > buildTime;
+
+                            MainRegistry.logger.info("[UpdateChecker] Update available (date comparison): " + updateAvailable);
+                        } catch(Exception e) {
+                            MainRegistry.logger.warn("[UpdateChecker] Date comparison failed: " + e.getMessage());
+                            updateAvailable = false;
+                        }
+                    } else {
+                        MainRegistry.logger.info("[UpdateChecker] Build date is empty, no update");
+                        updateAvailable = false;
+                    }
                 }
             } else {
                 MainRegistry.logger.warn("[UpdateChecker] Failed to connect to CurseForge API. Response code: " + connection.getResponseCode());
@@ -119,7 +130,7 @@ public class UpdateChecker {
         return sdf.parse(dateStr).getTime();
     }
 
-    private boolean isVersionNewer(String remoteDisplayName, String currentVersion) {
+    private int compareVersions(String remoteDisplayName, String currentVersion) {
         MainRegistry.logger.info("[UpdateChecker] Comparing versions - Remote: '" + remoteDisplayName + "', Current: '" + currentVersion + "'");
 
         int[] remote = extractVersionNumbers(remoteDisplayName);
@@ -132,12 +143,12 @@ public class UpdateChecker {
             int r = i < remote.length ? remote[i] : 0;
             int c = i < current.length ? current[i] : 0;
             if(r > c) {
-                MainRegistry.logger.info("[UpdateChecker] Remote version is newer (numeric comparison)");
-                return true;
+                MainRegistry.logger.info("[UpdateChecker] Remote version is newer (numeric comparison at index " + i + ")");
+                return 1;
             }
             if(r < c) {
-                MainRegistry.logger.info("[UpdateChecker] Current version is newer (numeric comparison)");
-                return false;
+                MainRegistry.logger.info("[UpdateChecker] Current version is newer (numeric comparison at index " + i + ")");
+                return -1;
             }
         }
 
@@ -146,10 +157,17 @@ public class UpdateChecker {
 
         MainRegistry.logger.info("[UpdateChecker] Extracted hotfix numbers - Remote: " + remoteHotfix + ", Current: " + currentHotfix);
 
-        boolean result = remoteHotfix > currentHotfix;
-        MainRegistry.logger.info("[UpdateChecker] Hotfix comparison result: " + result);
+        if(remoteHotfix > currentHotfix) {
+            MainRegistry.logger.info("[UpdateChecker] Remote hotfix is newer");
+            return 1;
+        }
+        if(remoteHotfix < currentHotfix) {
+            MainRegistry.logger.info("[UpdateChecker] Current hotfix is newer");
+            return -1;
+        }
 
-        return result;
+        MainRegistry.logger.info("[UpdateChecker] Versions are completely equal");
+        return 0;
     }
 
     private int extractHotfixNumber(String versionString) {
