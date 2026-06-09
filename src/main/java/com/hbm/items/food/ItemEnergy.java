@@ -264,7 +264,7 @@ public class ItemEnergy extends Item {
 			
 			if(this == ModItems.chocolate_milk)
         	{
-        		ExplosionLarge.explode(worldIn, player.posX, player.posY, player.posZ, 50, true, false, false);
+        		ExplosionLarge.explode(worldIn, player.posX, player.posY, player.posZ, 15, true, false, false);
         	}
 
 			if(!player.capabilities.isCreativeMode)

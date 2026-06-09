@@ -55,9 +55,9 @@ public class ItemTurretControl extends Item {
 	public static Map<Integer, LaserData> activeLasers = new HashMap<>();
 	private static int nextLaserId = 0;
 
-	private static final double MAX_RANGE = 150.0D;
-	private static final double MAX_CONTROL_RANGE = 150.0D;
-	private static final double MAX_FOCUS_RANGE = 150.0D;
+	private static final double MAX_RANGE = 100.0D;
+	private static final double MAX_CONTROL_RANGE = 100.0D;
+	private static final double MAX_FOCUS_RANGE = 100.0D;
 
 	public ItemTurretControl(String s) {
 		this.setTranslationKey(s);

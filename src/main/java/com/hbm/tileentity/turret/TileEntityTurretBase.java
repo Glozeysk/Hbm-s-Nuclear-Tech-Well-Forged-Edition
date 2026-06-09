@@ -170,6 +170,8 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 		manualControlKey = nbt.getString("manualControlKey");
 		manualControlLease = nbt.getLong("manualControlLease");
 
+		playerListChanged = true;
+
 		players.clear();
 		int playercount = nbt.getInteger("playercount");
 
@@ -205,6 +207,8 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 	private double detectPitch;
 	private boolean detectManualOverride;
 	private boolean detectManualFocus;
+	private String detectManualControlKey;
+	private long detectManualControlLease;
 	public boolean playerListChanged = true;
 
 	private void detectAndSendChanges() {
@@ -228,6 +232,16 @@ public class TileEntityTurretBase extends TileEntity implements ITickable {
 		}
 		if(manualFocus != detectManualFocus) {
 			detectManualFocus = manualFocus;
+			mark = true;
+			syncNBT = true;
+		}
+		if(manualControlKey != null ? !manualControlKey.equals(detectManualControlKey) : detectManualControlKey != null) {
+			detectManualControlKey = manualControlKey;
+			mark = true;
+			syncNBT = true;
+		}
+		if(manualControlLease != detectManualControlLease) {
+			detectManualControlLease = manualControlLease;
 			mark = true;
 			syncNBT = true;
 		}

@@ -39,7 +39,7 @@ public abstract class BlockFluidPipeBase extends BlockContainer implements ILook
 
     public static final PropertyBool EXTRACTS = PropertyBool.create("extracts");
     private static final AxisAlignedBB DUCT_BB = new AxisAlignedBB(1, 1, 1, -1, -1, -1);
-    protected static final int[] THROUGHPUT_TIERS = {50, 100, 500, 1000, 10000, 50000};
+    protected static final int[] THROUGHPUT_TIERS = {-1, 50, 100, 500, 1000, 10000, 50000, 100000};
 
     public BlockFluidPipeBase(Material materialIn, String s) {
         super(materialIn);
@@ -54,16 +54,22 @@ public abstract class BlockFluidPipeBase extends BlockContainer implements ILook
         TileEntity te = world.getTileEntity(pos);
         if(te instanceof TileEntityFFDuctBaseMk2) ((TileEntityFFDuctBaseMk2)te).onNeighborChange();
     }
-    @Override public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+
+    @Override
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         TileEntity te = worldIn.getTileEntity(pos);
         if(te instanceof TileEntityFFDuctBaseMk2) ((TileEntityFFDuctBaseMk2)te).onNeighborChange();
     }
-    @Override public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
+
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
         TileEntity te = worldIn.getTileEntity(pos);
         if(te instanceof TileEntityFFDuctBaseMk2) ((TileEntityFFDuctBaseMk2)te).onNeighborChange();
         return state;
     }
-    @Override public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity te = worldIn.getTileEntity(pos);
         if(te instanceof TileEntityFFDuctBaseMk2) TileEntityFFDuctBaseMk2.breakBlock(worldIn, pos);
         super.breakBlock(worldIn, pos, state);
@@ -165,6 +171,9 @@ public abstract class BlockFluidPipeBase extends BlockContainer implements ILook
     }
 
     protected String getThroughputText(int throughput) {
+        if (throughput == -1) {
+            return "∞ B/s";
+        }
         return (throughput / 50) + " B/s";
     }
 

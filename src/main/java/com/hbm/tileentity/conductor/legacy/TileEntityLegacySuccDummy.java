@@ -10,7 +10,7 @@ public class TileEntityLegacySuccDummy extends TileEntityFFDuctBaseMk2 {
         super.readFromNBT(compound);
 
         this.extractionMode = true;
-        this.throughput = 50000;
+        this.throughput = -1;
 
         this.markDirty();
     }
