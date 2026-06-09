@@ -3,8 +3,8 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Well-forged Edition";
-	public static final String VERSION = "NTM-Well-forged-Edition-1.12.2-1.3.0";
-	public static final String BUILD_DATE;
+	public static final String VERSION = "NTM-Well-forged-Edition-1.12.2-1.3.0-hotfix1";
+	public static final String BUILD_DATE = BuildInfo.BUILD_DATE;
 	public static final String CHANGELOG = "Update 1.3.0 \"Fluid Update\"\n" +
 			"- Ported ToolAbility system from CE\n" +
 			"- Added ToolTypes for some blocks \n" +
@@ -53,18 +53,4 @@ public class RefStrings {
 	//Drillgon200: I completely ignored this to make my own even worse naming system. Sigh.
 	public static final String CLIENTSIDE = "com.hbm.main.ClientProxy";
 	public static final String SERVERSIDE = "com.hbm.main.ServerProxy";
-
-
-
-	static {
-		String date = "";
-		try {
-			java.util.Properties props = new java.util.Properties();
-			props.load(RefStrings.class.getClassLoader().getResourceAsStream("build_date.properties"));
-			date = props.getProperty("build.date", "");
-		} catch(Exception e) {
-			date = "";
-		}
-		BUILD_DATE = date;
-	}
 }

@@ -51,6 +51,10 @@ public class UpdateChecker {
 
     private void checkForUpdates() {
         try {
+            MainRegistry.logger.info("[UpdateChecker] Starting update check...");
+            MainRegistry.logger.info("[UpdateChecker] Current version: " + RefStrings.VERSION);
+            MainRegistry.logger.info("[UpdateChecker] Current build date: " + RefStrings.BUILD_DATE);
+
             URL url = new URL(CURSEFORGE_API_URL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -73,24 +77,49 @@ public class UpdateChecker {
                 latestVersion = latestFile.get("displayName").getAsString();
                 String latestDateStr = latestFile.get("fileDate").getAsString();
 
-                String currentBuildDate = RefStrings.BUILD_DATE;
+                MainRegistry.logger.info("[UpdateChecker] Latest version on CurseForge: " + latestVersion);
+                MainRegistry.logger.info("[UpdateChecker] Latest file date: " + latestDateStr);
 
-                if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
-                    try {
-                        long latestTime = parseDate(latestDateStr);
-                        long buildTime = parseDate(currentBuildDate);
-                        updateAvailable = latestTime > buildTime;
-                    } catch(Exception e) {
-                        MainRegistry.logger.warn("Date comparison failed, falling back to version comparison: " + e.getMessage());
-                        updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
-                    }
+                MainRegistry.logger.info("[UpdateChecker] Step 1: Comparing by version numbers...");
+                int versionComparison = compareVersions(latestVersion, RefStrings.VERSION);
+                MainRegistry.logger.info("[UpdateChecker] Version comparison result: " + versionComparison + " (1=CF newer, 0=equal, -1=current newer)");
+
+                if(versionComparison > 0) {
+                    updateAvailable = true;
+                    MainRegistry.logger.info("[UpdateChecker] Update available (version is newer on CF)");
+                } else if(versionComparison == 0) {
+                    updateAvailable = false;
+                    MainRegistry.logger.info("[UpdateChecker] Versions are equal, no update needed");
                 } else {
-                    updateAvailable = isVersionNewer(latestVersion, RefStrings.VERSION);
+                    MainRegistry.logger.info("[UpdateChecker] Current version is newer than CF, checking build dates as fallback...");
+
+                    String currentBuildDate = RefStrings.BUILD_DATE;
+                    if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
+                        try {
+                            long latestTime = parseDate(latestDateStr);
+                            long buildTime = parseDate(currentBuildDate);
+
+                            MainRegistry.logger.info("[UpdateChecker] Step 2: Comparing by date - Latest: " + latestTime + ", Build: " + buildTime);
+
+                            updateAvailable = latestTime > buildTime;
+
+                            MainRegistry.logger.info("[UpdateChecker] Update available (date comparison): " + updateAvailable);
+                        } catch(Exception e) {
+                            MainRegistry.logger.warn("[UpdateChecker] Date comparison failed: " + e.getMessage());
+                            updateAvailable = false;
+                        }
+                    } else {
+                        MainRegistry.logger.info("[UpdateChecker] Build date is empty, no update");
+                        updateAvailable = false;
+                    }
                 }
+            } else {
+                MainRegistry.logger.warn("[UpdateChecker] Failed to connect to CurseForge API. Response code: " + connection.getResponseCode());
             }
             connection.disconnect();
         } catch(Exception e) {
-            MainRegistry.logger.warn("Failed to check for updates: " + e.getMessage());
+            MainRegistry.logger.warn("[UpdateChecker] Failed to check for updates: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -101,24 +130,78 @@ public class UpdateChecker {
         return sdf.parse(dateStr).getTime();
     }
 
-    private boolean isVersionNewer(String remoteDisplayName, String currentVersion) {
+    private int compareVersions(String remoteDisplayName, String currentVersion) {
+        MainRegistry.logger.info("[UpdateChecker] Comparing versions - Remote: '" + remoteDisplayName + "', Current: '" + currentVersion + "'");
+
         int[] remote = extractVersionNumbers(remoteDisplayName);
         int[] current = extractVersionNumbers(currentVersion);
+
+        MainRegistry.logger.info("[UpdateChecker] Extracted version numbers - Remote: " + arrayToString(remote) + ", Current: " + arrayToString(current));
 
         int length = Math.max(remote.length, current.length);
         for(int i = 0; i < length; i++) {
             int r = i < remote.length ? remote[i] : 0;
             int c = i < current.length ? current[i] : 0;
-            if(r > c) return true;
-            if(r < c) return false;
+            if(r > c) {
+                MainRegistry.logger.info("[UpdateChecker] Remote version is newer (numeric comparison at index " + i + ")");
+                return 1;
+            }
+            if(r < c) {
+                MainRegistry.logger.info("[UpdateChecker] Current version is newer (numeric comparison at index " + i + ")");
+                return -1;
+            }
         }
 
-        boolean remoteHasHotfix = remoteDisplayName.toLowerCase().contains("hotfix");
-        boolean currentHasHotfix = currentVersion.toLowerCase().contains("hotfix");
+        int remoteHotfix = extractHotfixNumber(remoteDisplayName);
+        int currentHotfix = extractHotfixNumber(currentVersion);
 
-        if(!currentHasHotfix && remoteHasHotfix) return true;
+        MainRegistry.logger.info("[UpdateChecker] Extracted hotfix numbers - Remote: " + remoteHotfix + ", Current: " + currentHotfix);
 
-        return false;
+        if(remoteHotfix > currentHotfix) {
+            MainRegistry.logger.info("[UpdateChecker] Remote hotfix is newer");
+            return 1;
+        }
+        if(remoteHotfix < currentHotfix) {
+            MainRegistry.logger.info("[UpdateChecker] Current hotfix is newer");
+            return -1;
+        }
+
+        MainRegistry.logger.info("[UpdateChecker] Versions are completely equal");
+        return 0;
+    }
+
+    private int extractHotfixNumber(String versionString) {
+        if(versionString == null || versionString.isEmpty()) return 0;
+
+        String lower = versionString.toLowerCase();
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("hotfix[\\s_-]*(\\d+)").matcher(lower);
+
+        if(matcher.find()) {
+            try {
+                int hotfixNum = Integer.parseInt(matcher.group(1));
+                MainRegistry.logger.info("[UpdateChecker] Found hotfix number: " + hotfixNum + " in '" + versionString + "'");
+                return hotfixNum;
+            } catch(NumberFormatException e) {
+                MainRegistry.logger.warn("[UpdateChecker] Failed to parse hotfix number from '" + versionString + "'");
+                return 0;
+            }
+        }
+
+        MainRegistry.logger.info("[UpdateChecker] No hotfix found in '" + versionString + "'");
+        return 0;
+    }
+
+    private String arrayToString(int[] array) {
+        if(array == null || array.length == 0) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for(int i = 0; i < array.length; i++) {
+            if(i > 0) sb.append(", ");
+            sb.append(array[i]);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     private int[] extractVersionNumbers(String versionString) {
