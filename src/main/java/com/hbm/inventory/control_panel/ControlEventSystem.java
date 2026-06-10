@@ -1,10 +1,6 @@
 package com.hbm.inventory.control_panel;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.hbm.lib.RefStrings;
 
@@ -41,16 +37,30 @@ public class ControlEventSystem {
 		}
 		allControllables.add(c);
 	}
-	
+
 	public void removeControllable(IControllable c){
 		for(String s : c.getInEvents()){
 			if(s.equals("tick")){
-				tickables.remove(c);
+				if(tickables != null) {
+					tickables.remove(c);
+				}
 				continue;
 			}
-			controllablesByEventName.get(s).remove(c);
+
+			Object innerObject = controllablesByEventName.get(s);
+
+			if (innerObject != null) {
+				if (innerObject instanceof java.util.Map) {
+					((java.util.Map<?, ?>) innerObject).values().remove(c);
+				} else if (innerObject instanceof java.util.Collection) {
+					((java.util.Collection<?>) innerObject).remove(c);
+				}
+			}
 		}
-		allControllables.remove(c);
+
+		if(allControllables != null) {
+			allControllables.remove(c);
+		}
 	}
 	
 	public boolean isValid(IControllable c){

@@ -19,6 +19,7 @@ public class BombConfig {
 	public static int fatmanRadius = 35;
 	public static int nukaRadius = 25;
 	public static int aSchrabRadius = 20;
+	public static int amat = 10;
 	public static int riggedStarRange = 50;
 	public static int riggedStarTicks = 60 * 20;
 

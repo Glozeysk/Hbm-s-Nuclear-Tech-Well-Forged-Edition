@@ -104,7 +104,7 @@ public class ItemCell extends Item {
 			if(hasFluid(entityItem.getItem(), ModForgeFluids.amat) && WeaponConfig.dropCell) {
 				if(!entityItem.world.isRemote) {
 					entityItem.setDead();
-					entityItem.world.createExplosion(entityItem, entityItem.posX, entityItem.posY, entityItem.posZ, 10.0F * (FluidUtil.getFluidContained(entityItem.getItem()).amount / 1000.0F), true);
+					entityItem.world.createExplosion(entityItem, entityItem.posX, entityItem.posY, entityItem.posZ, (float) BombConfig.amat * (FluidUtil.getFluidContained(entityItem.getItem()).amount / 1000.0F), true);
 				}
 				return true;
 			}

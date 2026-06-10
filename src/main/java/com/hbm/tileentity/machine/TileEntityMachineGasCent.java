@@ -39,42 +39,60 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TileEntityMachineGasCent extends TileEntityMachineBase implements ITickable, IEnergyUser, ITankPacketAcceptor, IFluidHandler {
 
-	
+
 	public long power;
 	public int progress;
 	public boolean isProgressing;
 	public static final int maxPower = 100000;
 	public static final int processingSpeed = 1200;
 	public boolean needsUpdate = false;
-	
+
 	public FluidTank tank;
-	
+
 	//private static final int[] slots_top = new int[] {3};
 	//private static final int[] slots_bottom = new int[] {5, 6, 7, 8};
 	//private static final int[] slots_side = new int[] {0, 3};
-	
+
 	private String customName;
-	
+
 	public TileEntityMachineGasCent() {
 		super(12);
 		tank = new FluidTank(8000);
 	}
-	
+
 	public String getName() {
 		return "container.gasCentrifuge";
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+
 		power = nbt.getLong("powerTime");
 		progress = nbt.getShort("CookTime");
 		tank.readFromNBT(nbt);
-		if(nbt.hasKey("inventory"))
-			inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
-		
-		super.readFromNBT(nbt);
+
+		if(nbt.hasKey("inventory")) {
+			NBTTagCompound invTag = nbt.getCompoundTag("inventory");
+			int savedSize = invTag.getInteger("Size");
+
+			inventory.deserializeNBT(invTag);
+
+			if (savedSize < 12) {
+				java.util.List<ItemStack> oldItems = new java.util.ArrayList<>();
+				for (int i = 0; i < savedSize; i++) {
+					oldItems.add(inventory.getStackInSlot(i).copy());
+				}
+
+				inventory.setSize(12);
+
+				for (int i = 0; i < savedSize; i++) {
+					inventory.setStackInSlot(i, oldItems.get(i));
+				}
+			}
+		}
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		nbt.setLong("powerTime", power);
@@ -83,48 +101,48 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 		nbt.setTag("inventory", inventory.serializeNBT());
 		return super.writeToNBT(nbt);
 	}
-	
+
 	public int getCentrifugeProgressScaled(int i) {
 		return (progress * i) / processingSpeed;
 	}
-	
+
 	public long getPowerRemainingScaled(int i) {
 		return (power * i) / maxPower;
 	}
-	
+
 	private boolean canProcess() {
-		
+
 		if(power > 0 && this.tank.getFluidAmount() >= MachineRecipes.getFluidConsumedGasCent(tank.getFluid() == null ? null : tank.getFluid().getFluid())) {
-			
+
 			List<GasCentOutput> list = MachineRecipes.getGasCentOutput(tank.getFluid() == null ? null : tank.getFluid().getFluid());
-			
+
 			if(list == null)
 				return false;
-			
+
 			if(list.size() < 1 || list.size() > 4)
 				return false;
-			
+
 			for(int i = 0; i < list.size(); i++) {
-				
+
 				int slot = i + 5;
-				
+
 				if(inventory.getStackInSlot(slot).isEmpty())
 					continue;
-				
+
 				if(inventory.getStackInSlot(slot).getItem() == list.get(i).output.getItem() &&
 						inventory.getStackInSlot(slot).getItemDamage() == list.get(i).output.getItemDamage() &&
 						inventory.getStackInSlot(slot).getCount() + list.get(i).output.getCount() <= inventory.getStackInSlot(slot).getMaxStackSize())
 					continue;
-				
+
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	private void process() {
 		List<GasCentOutput> out = MachineRecipes.getGasCentOutput(tank.getFluid() == null ? null : tank.getFluid().getFluid());
 		this.progress = 0;
@@ -144,19 +162,19 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 			}
 		}
 	}
-	
+
 	public int getSpeedLvl() {
 		int level = 0;
 		for(int i = 9; i <= 11; i++) {
+			if (i >= inventory.getSlots()) break;
 
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_1)
-				level += 1;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_2)
-				level += 2;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_speed_3)
-				level +=3;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_screm)
-				level +=6;
+			ItemStack stack = inventory.getStackInSlot(i);
+			if(stack.isEmpty()) continue;
+
+			if(stack.getItem() == ModItems.upgrade_speed_1) level += 1;
+			else if(stack.getItem() == ModItems.upgrade_speed_2) level += 2;
+			else if(stack.getItem() == ModItems.upgrade_speed_3) level += 3;
+			else if(stack.getItem() == ModItems.upgrade_screm) level += 6;
 		}
 		return Math.min(level, 18);
 	}
@@ -164,13 +182,14 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public int getPowerLvl() {
 		int level = 0;
 		for(int i = 9; i <= 11; i++) {
+			if (i >= inventory.getSlots()) break;
 
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_1)
-				level += 1;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_2)
-				level += 2;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_power_3)
-				level +=3;
+			ItemStack stack = inventory.getStackInSlot(i);
+			if(stack.isEmpty()) continue;
+
+			if(stack.getItem() == ModItems.upgrade_power_1) level += 1;
+			else if(stack.getItem() == ModItems.upgrade_power_2) level += 2;
+			else if(stack.getItem() == ModItems.upgrade_power_3) level += 3;
 		}
 		return Math.min(level, 3);
 	}
@@ -178,66 +197,67 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public int getOverdriveLvl() {
 		int level = 0;
 		for(int i = 9; i <= 11; i++) {
+			if (i >= inventory.getSlots()) break;
 
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_1)
-				level += 1;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_2)
-				level += 2;
-			if(inventory.getStackInSlot(i).getItem() == ModItems.upgrade_overdrive_3)
-				level +=3;
+			ItemStack stack = inventory.getStackInSlot(i);
+			if(stack.isEmpty()) continue;
+
+			if(stack.getItem() == ModItems.upgrade_overdrive_1) level += 1;
+			else if(stack.getItem() == ModItems.upgrade_overdrive_2) level += 2;
+			else if(stack.getItem() == ModItems.upgrade_overdrive_3) level += 3;
 		}
 		return Math.min(level, 3);
 	}
 
 	@Override
 	public void update() {
-		
+
 		if(!world.isRemote) {
-			
+
 			if (needsUpdate) {
 				needsUpdate = false;
 			}
 			this.updateConnectionsExcept(world, pos, Library.POS_Y);
 			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] {tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-			
+
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
-			
+
 			//First number doesn't matter, there's only one tank.
 			if(this.inputValidForTank(-1, 3))
 				FFUtils.fillFromFluidContainer(inventory, tank, 3, 4);
-			
+
 			int speed = 1;
 			int consumption = 200;
-			
+
 			int speedLvl = getSpeedLvl();
 			int powerLvl = getPowerLvl();
 			int overdriveLvl = getOverdriveLvl();
 
 			speed += speedLvl;
 			consumption += speedLvl * 200;
-			
+
 			speed *= (1 + overdriveLvl * 2);
 			consumption += overdriveLvl * 10000;
-			
+
 			consumption /= (1 + powerLvl);
-			
+
 			if(canProcess()) {
-				
+
 				isProgressing = true;
-				
+
 				this.progress++;
 
 				progress += speed;
-				
+
 				this.power -= consumption;
-				
+
 				if(this.power < 0)
 					power = 0;
-				
+
 				if(progress >= processingSpeed) {
 					process();
 				}
-				
+
 			} else {
 				isProgressing = false;
 				this.progress = 0;
@@ -247,14 +267,14 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 			detectAndSendChanges();
 		}
 
-		
+
 	}
-	
+
 	private long detectPower;
 	private int detectProgress;
 	private boolean detectIsProgressing;
 	private FluidTank detectTank;
-	
+
 	private void detectAndSendChanges(){
 		boolean mark = false;
 		if(detectPower != power){
@@ -289,7 +309,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 		}
 		return false;
 	}
-	
+
 	private boolean isValidFluid(FluidStack stack) {
 		if(stack == null)
 			return false;
@@ -305,12 +325,12 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public int[] getAccessibleSlotsFromSide(EnumFacing e){
 		return new int[]{0, 3, 4, 5, 6, 7, 8};
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return new AxisAlignedBB(pos, pos.add(1, 4, 1));
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
@@ -326,7 +346,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	@Override
 	public long getPower() {
 		return power;
-		
+
 	}
 
 	@Override
@@ -365,12 +385,12 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){

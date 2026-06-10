@@ -31,6 +31,8 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
     int syncSize = 1;
     long syncDrain = 100L;
 
+    private int loadGraceTicks = 0;
+
     @Override
     public boolean isLoaded() {
         return isLoaded;
@@ -54,6 +56,7 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
         super.onLoad();
         isLoaded = true;
         needsNetworkJoin = true;
+        loadGraceTicks = 0;
     }
 
     @Override
@@ -71,6 +74,7 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
         }
         pipeNet = null;
         needsNetworkJoin = true;
+        loadGraceTicks = 0;
 
         for (EnumFacing facing : EnumFacing.VALUES) {
             BlockPos neighborPos = pos.offset(facing);
@@ -84,6 +88,7 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
                     neighbor.pipeNet.split(neighbor);
                     neighbor.pipeNet = null;
                     neighbor.needsNetworkJoin = true;
+                    neighbor.loadGraceTicks = 0;
                 }
             }
         }
@@ -91,16 +96,20 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
 
     @Override
     public void update() {
-        super.update();
-
         if (world == null || world.isRemote) {
             return;
+        }
+
+        if (loadGraceTicks < 10) {
+            loadGraceTicks++;
         }
 
         if (needsNetworkJoin) {
             needsNetworkJoin = false;
             joinOrCreateEnergyNetwork();
         }
+
+        super.update();
 
         if (pipeNet == null || !pipeNet.isValid()) {
             return;
@@ -244,23 +253,36 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
     }
 
     @Override
-    public int fill(FluidStack resource, boolean doFill) {
-        if (resource == null || resource.amount <= 0) return 0;
+    protected boolean checkFluidCorrosion(FluidStack resource) {
+        if (resource == null || resource.getFluid() == null) return false;
 
-        if (!world.isRemote && doFill && !isNetworkPowered()) {
-            if (FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT)) {
-                world.destroyBlock(pos, false);
-                world.newExplosion(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4.0F, true, true);
-                return 0;
-            } else if (FluidTypeHandler.isExtremelyHot(resource.getFluid())) {
-                world.destroyBlock(pos, false);
-                world.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
-                        SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                return 0;
-            }
+        if (loadGraceTicks < 10) {
+            return false;
         }
 
-        return super.fill(resource, doFill);
+        if (pipeNet == null || !pipeNet.isValid()) {
+            return false;
+        }
+
+        if (isNetworkPowered()) {
+            return false;
+        }
+
+        return FluidTypeHandler.containsTrait(resource.getFluid(), FluidTrait.AMAT) ||
+                FluidTypeHandler.isExtremelyHot(resource.getFluid());
+    }
+
+    @Override
+    protected void destroyPipe() {
+        Fluid currentFluid = getType();
+        if (currentFluid != null && FluidTypeHandler.containsTrait(currentFluid, FluidTrait.AMAT)) {
+            world.destroyBlock(pos, false);
+            world.newExplosion(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 4.0F, true, true);
+        } else {
+            world.destroyBlock(pos, false);
+            world.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                    SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        }
     }
 
     @Override

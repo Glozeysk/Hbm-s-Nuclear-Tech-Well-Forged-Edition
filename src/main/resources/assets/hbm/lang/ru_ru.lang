@@ -5256,3 +5256,4 @@ desc.screwdriver_throughput=§bПКМ отвёрткой чтобы настро
 desc.throughput=Скорость выкачки
 hbm.button.void_contents=Очистить жидкостный буфер
 tool.ability.title=Умения:
+item.rod_quad_euphemium.desc=С небольшим шансом можно получить при обеднении счетверённого шрабидиевого топливного стержня

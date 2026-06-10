@@ -102,16 +102,20 @@ public class TileEntitySpinnyLight extends TileEntity implements IControllable {
 	public World getControlWorld(){
 		return getWorld();
 	}
-	
+
 	@Override
 	public void validate(){
 		super.validate();
-		ControlEventSystem.get(world).addControllable(this);
+		if(world != null){
+			ControlEventSystem.get(world).addControllable(this);
+		}
 	}
-	
+
 	@Override
 	public void invalidate(){
 		super.invalidate();
-		ControlEventSystem.get(world).removeControllable(this);
+		if(world != null){
+			ControlEventSystem.get(world).removeControllable(this);
+		}
 	}
 }

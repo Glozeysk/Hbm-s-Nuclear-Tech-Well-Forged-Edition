@@ -3,7 +3,7 @@ package com.hbm.lib;
 public class RefStrings {
 	public static final String MODID = "hbm";
 	public static final String NAME = "Hbm's Nuclear Tech - Well-forged Edition";
-	public static final String VERSION = "NTM-Well-forged-Edition-1.12.2-1.3.0-hotfix1";
+	public static final String VERSION = "NTM-Well-forged-Edition-1.12.2-1.3.1";
 	public static final String BUILD_DATE = BuildInfo.BUILD_DATE;
 	public static final String CHANGELOG = "Update 1.3.0 \"Fluid Update\"\n" +
 			"- Ported ToolAbility system from CE\n" +

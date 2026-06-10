@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.BombConfig;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.FluidTypeHandler;
 import com.hbm.forgefluid.FluidTypeHandler.FluidTrait;
@@ -72,20 +73,20 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 				markDirty();
 		}
 	}
-	
+
 	public void checkFluidInteraction(){
 		Block b = this.getBlockType();
 		Fluid f = tank.getFluid().getFluid();
-		
+
 		//for when you fill antimatter into a matter tank
 		if(b != ModBlocks.barrel_antimatter && FluidTypeHandler.containsTrait(f, FluidTrait.AMAT)) {
 			world.destroyBlock(pos, false);
-			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
+			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.amat - 1, false, true);
 		}
 
 		if(b == ModBlocks.barrel_antimatter && FluidTypeHandler.is20KHot(f)) {
 			world.destroyBlock(pos, false);
-			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
+			world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.amat - 1, false, true);
 		}
 
 		if(b == ModBlocks.barrel_corroded && FluidTypeHandler.is1300Hot(f)) {

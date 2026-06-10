@@ -80,38 +80,30 @@ public class UpdateChecker {
                 MainRegistry.logger.info("[UpdateChecker] Latest version on CurseForge: " + latestVersion);
                 MainRegistry.logger.info("[UpdateChecker] Latest file date: " + latestDateStr);
 
-                MainRegistry.logger.info("[UpdateChecker] Step 1: Comparing by version numbers...");
                 int versionComparison = compareVersions(latestVersion, RefStrings.VERSION);
-                MainRegistry.logger.info("[UpdateChecker] Version comparison result: " + versionComparison + " (1=CF newer, 0=equal, -1=current newer)");
+                MainRegistry.logger.info("[UpdateChecker] Version comparison result: " + versionComparison);
 
                 if(versionComparison > 0) {
                     updateAvailable = true;
                     MainRegistry.logger.info("[UpdateChecker] Update available (version is newer on CF)");
                 } else if(versionComparison == 0) {
-                    updateAvailable = false;
-                    MainRegistry.logger.info("[UpdateChecker] Versions are equal, no update needed");
-                } else {
-                    MainRegistry.logger.info("[UpdateChecker] Current version is newer than CF, checking build dates as fallback...");
-
                     String currentBuildDate = RefStrings.BUILD_DATE;
                     if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
                         try {
                             long latestTime = parseDate(latestDateStr);
                             long buildTime = parseDate(currentBuildDate);
-
-                            MainRegistry.logger.info("[UpdateChecker] Step 2: Comparing by date - Latest: " + latestTime + ", Build: " + buildTime);
-
                             updateAvailable = latestTime > buildTime;
-
-                            MainRegistry.logger.info("[UpdateChecker] Update available (date comparison): " + updateAvailable);
+                            MainRegistry.logger.info("[UpdateChecker] Versions equal, date comparison result: " + updateAvailable);
                         } catch(Exception e) {
                             MainRegistry.logger.warn("[UpdateChecker] Date comparison failed: " + e.getMessage());
                             updateAvailable = false;
                         }
                     } else {
-                        MainRegistry.logger.info("[UpdateChecker] Build date is empty, no update");
                         updateAvailable = false;
                     }
+                } else {
+                    updateAvailable = false;
+                    MainRegistry.logger.info("[UpdateChecker] Current version is newer, no update");
                 }
             } else {
                 MainRegistry.logger.warn("[UpdateChecker] Failed to connect to CurseForge API. Response code: " + connection.getResponseCode());
@@ -131,42 +123,23 @@ public class UpdateChecker {
     }
 
     private int compareVersions(String remoteDisplayName, String currentVersion) {
-        MainRegistry.logger.info("[UpdateChecker] Comparing versions - Remote: '" + remoteDisplayName + "', Current: '" + currentVersion + "'");
-
         int[] remote = extractVersionNumbers(remoteDisplayName);
         int[] current = extractVersionNumbers(currentVersion);
-
-        MainRegistry.logger.info("[UpdateChecker] Extracted version numbers - Remote: " + arrayToString(remote) + ", Current: " + arrayToString(current));
 
         int length = Math.max(remote.length, current.length);
         for(int i = 0; i < length; i++) {
             int r = i < remote.length ? remote[i] : 0;
             int c = i < current.length ? current[i] : 0;
-            if(r > c) {
-                MainRegistry.logger.info("[UpdateChecker] Remote version is newer (numeric comparison at index " + i + ")");
-                return 1;
-            }
-            if(r < c) {
-                MainRegistry.logger.info("[UpdateChecker] Current version is newer (numeric comparison at index " + i + ")");
-                return -1;
-            }
+            if(r > c) return 1;
+            if(r < c) return -1;
         }
 
         int remoteHotfix = extractHotfixNumber(remoteDisplayName);
         int currentHotfix = extractHotfixNumber(currentVersion);
 
-        MainRegistry.logger.info("[UpdateChecker] Extracted hotfix numbers - Remote: " + remoteHotfix + ", Current: " + currentHotfix);
+        if(remoteHotfix > currentHotfix) return 1;
+        if(remoteHotfix < currentHotfix) return -1;
 
-        if(remoteHotfix > currentHotfix) {
-            MainRegistry.logger.info("[UpdateChecker] Remote hotfix is newer");
-            return 1;
-        }
-        if(remoteHotfix < currentHotfix) {
-            MainRegistry.logger.info("[UpdateChecker] Current hotfix is newer");
-            return -1;
-        }
-
-        MainRegistry.logger.info("[UpdateChecker] Versions are completely equal");
         return 0;
     }
 
@@ -174,34 +147,17 @@ public class UpdateChecker {
         if(versionString == null || versionString.isEmpty()) return 0;
 
         String lower = versionString.toLowerCase();
-
         java.util.regex.Matcher matcher = java.util.regex.Pattern
                 .compile("hotfix[\\s_-]*(\\d+)").matcher(lower);
 
         if(matcher.find()) {
             try {
-                int hotfixNum = Integer.parseInt(matcher.group(1));
-                MainRegistry.logger.info("[UpdateChecker] Found hotfix number: " + hotfixNum + " in '" + versionString + "'");
-                return hotfixNum;
+                return Integer.parseInt(matcher.group(1));
             } catch(NumberFormatException e) {
-                MainRegistry.logger.warn("[UpdateChecker] Failed to parse hotfix number from '" + versionString + "'");
                 return 0;
             }
         }
-
-        MainRegistry.logger.info("[UpdateChecker] No hotfix found in '" + versionString + "'");
         return 0;
-    }
-
-    private String arrayToString(int[] array) {
-        if(array == null || array.length == 0) return "[]";
-        StringBuilder sb = new StringBuilder("[");
-        for(int i = 0; i < array.length; i++) {
-            if(i > 0) sb.append(", ");
-            sb.append(array[i]);
-        }
-        sb.append("]");
-        return sb.toString();
     }
 
     private int[] extractVersionNumbers(String versionString) {
@@ -216,7 +172,7 @@ public class UpdateChecker {
         } else {
             java.util.regex.Matcher matcher = java.util.regex.Pattern
                     .compile("(\\d+(?:\\.\\d+)+)").matcher(cleaned);
-            while(matcher.find()) {
+            if(matcher.find()) {
                 mainVersion = matcher.group(1);
             }
         }
@@ -237,9 +193,7 @@ public class UpdateChecker {
 
     @SideOnly(Side.CLIENT)
     private void showUpdateMessage(EntityPlayer player) {
-        if(latestVersion == null) {
-            return;
-        }
+        if(latestVersion == null) return;
 
         ITextComponent prefix = new TextComponentString("[NTM] ")
                 .setStyle(new Style().setColor(TextFormatting.GOLD));
@@ -259,7 +213,6 @@ public class UpdateChecker {
             player.sendMessage(message);
 
             ITextComponent downloadHover = new TextComponentTranslation("ntm.update.download.hover");
-
             ITextComponent downloadButton = new TextComponentTranslation("ntm.update.download")
                     .setStyle(new Style()
                             .setColor(TextFormatting.AQUA)
@@ -269,7 +222,6 @@ public class UpdateChecker {
 
             ITextComponent downloadMessage = prefix.createCopy();
             downloadMessage.appendSibling(downloadButton);
-
             player.sendMessage(downloadMessage);
         } else {
             ITextComponent upToDateText = new TextComponentTranslation("ntm.update.uptodate")
@@ -277,7 +229,6 @@ public class UpdateChecker {
 
             ITextComponent message = prefix.createCopy();
             message.appendSibling(upToDateText);
-
             player.sendMessage(message);
         }
     }

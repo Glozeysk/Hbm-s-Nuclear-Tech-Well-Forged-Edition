@@ -2,6 +2,7 @@ package com.hbm.items.special;
 
 import java.util.List;
 
+import com.hbm.config.BombConfig;
 import org.apache.logging.log4j.Level;
 
 import com.hbm.config.GeneralConfig;
@@ -89,7 +90,7 @@ public class ItemDrop extends Item {
 
 				if(stack.getItem() != null && stack.getItem() == ModItems.pellet_antimatter && WeaponConfig.dropCell) {
 					if(!entityItem.world.isRemote) {
-						ExplosionLarge.explodeFire(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, 100, true, true, true);
+						ExplosionLarge.explodeFire(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, BombConfig.amat * 9, true, true, true);
 					}
 				}
 				if(stack.getItem() != null && stack.getItem() == ModItems.tiny_singularity && WeaponConfig.dropSing) {

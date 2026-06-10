@@ -111,7 +111,7 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 			this.type = FluidRegistry.getFluid(compound.getString("fluidType"));
 		}
 
-		this.throughput = compound.hasKey("throughput") ? compound.getInteger("throughput") : 50000;
+		this.throughput = compound.hasKey("throughput") ? compound.getInteger("throughput") : -1;
 		this.extractionMode = compound.hasKey("extractionMode") ? compound.getBoolean("extractionMode") : true;
 	}
 
@@ -252,11 +252,22 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 	@Override public boolean isValidForBuilding() { return !isBeingDestroyed; }
 	@Override public IFluidTankProperties[] getTankProperties() { return network != null ? network.getTankProperties() : new IFluidTankProperties[] {}; }
 
+	protected boolean checkFluidCorrosion(FluidStack resource) {
+		return false;
+	}
+
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
 		if (resource == null || resource.amount <= 0) return 0;
 		if (this.type == null) return 0;
 		if (this.type != resource.getFluid()) return 0;
+
+		if (!world.isRemote && checkFluidCorrosion(resource)) {
+			if (doFill) {
+				destroyPipe();
+			}
+			return 0;
+		}
 
 		int remaining = getRemainingThroughput();
 		if (remaining <= 0) return 0;
@@ -274,6 +285,9 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 			}
 		}
 		return filled;
+	}
+
+	protected void destroyPipe() {
 	}
 
 	@Override
@@ -306,6 +320,11 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 			FluidStack simulatedDrain = neighbor.drain(new FluidStack(network.getType(), canExtract), false);
 			if (simulatedDrain == null || simulatedDrain.amount <= 0) continue;
+
+			if (!world.isRemote && checkFluidCorrosion(simulatedDrain)) {
+				destroyPipe();
+				return;
+			}
 
 			int accepted = network.fill(simulatedDrain, false, te.getPos());
 			if (accepted <= 0) continue;

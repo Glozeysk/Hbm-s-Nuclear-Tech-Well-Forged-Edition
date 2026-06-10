@@ -530,7 +530,11 @@ public class TileEntityMachineReactorSmall extends TileEntity implements ITickab
 			inventory.setStackInSlot(id, new ItemStack(ModItems.rod_quad_mox_fuel_depleted));
 
 		} else if(item == ModItems.rod_quad_schrabidium_fuel) {
-			inventory.setStackInSlot(id, new ItemStack(ModItems.rod_quad_schrabidium_fuel_depleted));
+			if(Math.random() < 0.2) {
+				inventory.setStackInSlot(id, new ItemStack(ModItems.rod_quad_euphemium));
+			} else {
+				inventory.setStackInSlot(id, new ItemStack(ModItems.rod_quad_schrabidium_fuel_depleted));
+			}
 		}
 	}
 

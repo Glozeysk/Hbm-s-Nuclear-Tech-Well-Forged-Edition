@@ -5159,3 +5159,4 @@ desc.throughput=Extraction Speed
 desc.screwdriver_throughput=§bRight-click with a screwdriver to adjust the extraction speed!
 hbm.button.void_contents=Void contents
 tool.ability.title=Abilities:
+item.rod_quad_euphemium.desc=Can be obtained with a small chance by depleting a Schrabidium Quad Fuel Rod
