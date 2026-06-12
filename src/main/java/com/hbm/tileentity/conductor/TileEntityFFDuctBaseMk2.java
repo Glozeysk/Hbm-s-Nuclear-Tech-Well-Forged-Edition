@@ -144,7 +144,11 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	@Override
 	public void onLoad() {
-		needsInitialization = true;
+		if (!world.isRemote) {
+			joinOrMakeNetwork();
+			onNeighborChange();
+		}
+		needsInitialization = false;
 	}
 
 	public void onNeighborChange() {
@@ -292,12 +296,6 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	@Override
 	public void update() {
-		if (needsInitialization) {
-			needsInitialization = false;
-			joinOrMakeNetwork();
-			onNeighborChange();
-		}
-
 		if(world.isRemote || network == null || !extractionMode) return;
 
 		if (network.getType() == null) return;

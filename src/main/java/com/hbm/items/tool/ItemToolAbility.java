@@ -76,7 +76,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 	private static final Map<IBaseAbility, Map.Entry<Integer, Integer>> abilityGui = new LinkedHashMap<>();
 
-	@SideOnly(Side.CLIENT)
 	private static boolean wasAltDown = false;
 
 	static {
@@ -436,7 +435,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 			return this.efficiency;
 		}
 
-		// Проверка через Forge harvest system
 		String harvestTool = state.getBlock().getHarvestTool(state);
 		if (harvestTool != null) {
 			if (toolType == EnumToolType.PICKAXE && harvestTool.equals("pickaxe")) return this.efficiency;
