@@ -66,6 +66,7 @@ public class GeneralConfig {
 	public static int hintPos = 0;
 	public static int crucibleMaxCharges = 16;
 	public static boolean enableReEval = true;
+	public static boolean showGuiCrateFillPercentage = true;
 	
 	public static boolean enable528 = false;
 	public static boolean enable528ReasimBoilers = true;
@@ -83,7 +84,8 @@ public class GeneralConfig {
 
 	public static void loadFromConfig(Configuration config){
 		final String CATEGORY_GENERAL = "01_general";
-		enablePacketThreading = config.get(CATEGORY_GENERAL, "0.01_enablePacketThreading", true).getBoolean(true);
+		showGuiCrateFillPercentage = config.get(CATEGORY_GENERAL, "0.01_showGuiCrateFillPercentage", true).getBoolean(true);
+		enablePacketThreading = config.get(CATEGORY_GENERAL, "0.02_enablePacketThreading", true).getBoolean(true);
 		packetThreadingErrorBypass = config.get(CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false).getBoolean(false);
 		enableDebugMode = config.get(CATEGORY_GENERAL, "1.00_enableDebugMode", false).getBoolean(false);
 		enableSkybox = config.get(CATEGORY_GENERAL, "1.00_enableSkybox", true).getBoolean(true);

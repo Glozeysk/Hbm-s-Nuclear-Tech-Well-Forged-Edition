@@ -106,20 +106,20 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	@Override
 	public void update() {
 
-		if(pendingLadderRestore) {
-			if(ladderRestoreCooldown > 0) {
-				ladderRestoreCooldown--;
-			} else {
-				boolean complete = restoreLadders();
-				if(complete) {
-					pendingLadderRestore = false;
+		if(!world.isRemote) {
+
+			if(pendingLadderRestore) {
+				if(ladderRestoreCooldown > 0) {
+					ladderRestoreCooldown--;
 				} else {
-					ladderRestoreCooldown = 20;
+					boolean complete = restoreLadders();
+					if(complete) {
+						pendingLadderRestore = false;
+					} else {
+						ladderRestoreCooldown = 20;
+					}
 				}
 			}
-		}
-
-		if(!world.isRemote) {
 
 			this.updateConnections();
 
@@ -150,7 +150,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
 			if(progress > 0) {
 				if(soundTimer <= 0) {
-					world.playSound(null, pos.getX() + 0.5, pos.getY() + 3.0, pos.getZ() + 0.5, HBMSoundHandler.crystallizer_loop, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					world.playSound(null, pos.getX() + 0.5, pos.getY() + 3.0, pos.getZ() + 0.5,
+							HBMSoundHandler.crystallizer_loop, SoundCategory.BLOCKS, 1.0F, 1.0F);
 					soundTimer = SOUND_DURATION;
 				}
 				soundTimer--;
@@ -159,6 +160,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 			}
 
 			networkPackNT(25);
+
 		} else {
 
 			prevAngle = angle;
@@ -206,13 +208,13 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public void setLadderData(List<BlockPos> positions, EnumFacing facing) {
 		this.ladderPositions = new ArrayList<>(positions);
 		this.ladderFacing = facing;
-		this.pendingLadderRestore = false;
-		this.ladderRestoreCooldown = 0;
+		this.pendingLadderRestore = true;
+		this.ladderRestoreCooldown = 1;
 		this.markDirty();
 	}
 
 	public boolean restoreLadders() {
-		if(world == null)
+		if(world == null || world.isRemote)
 			return true;
 
 		if(ladderPositions.isEmpty()) {
@@ -222,18 +224,28 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 		if(ladderPositions.isEmpty())
 			return true;
 
-		boolean complete = true;
+		for(BlockPos lpos : ladderPositions) {
+			if(!world.isBlockLoaded(lpos)) {
+				return false;
+			}
+		}
+
 		IBlockState ladderState = ModBlocks.crystallizer_ladder.getDefaultState()
 				.withProperty(BlockLadder.FACING, ladderFacing);
 
+		boolean complete = true;
+
 		for(BlockPos lpos : ladderPositions) {
-			if(!world.isBlockLoaded(lpos)) {
-				complete = false;
+			IBlockState state = world.getBlockState(lpos);
+
+			if(state.getBlock() == ModBlocks.crystallizer_ladder) {
 				continue;
 			}
-			IBlockState state = world.getBlockState(lpos);
-			if(world.isAirBlock(lpos) || state.getBlock() == ModBlocks.crystallizer_ladder) {
-				world.setBlockState(lpos, ladderState, 3);
+
+			if(world.isAirBlock(lpos)) {
+				world.setBlockState(lpos, ladderState, 2);
+			} else {
+				complete = false;
 			}
 		}
 
@@ -265,10 +277,11 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	}
 
 	@Override
-	public void validate() {
-		super.validate();
-		pendingLadderRestore = true;
-		ladderRestoreCooldown = 5;
+	public void onLoad() {
+		if(!world.isRemote) {
+			pendingLadderRestore = true;
+			ladderRestoreCooldown = 5;
+		}
 	}
 
 	@Override

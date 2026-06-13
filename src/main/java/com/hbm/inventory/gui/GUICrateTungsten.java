@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.container.ContainerCrateTungsten;
 import com.hbm.lib.Library;
 import com.hbm.lib.RefStrings;
@@ -51,20 +52,26 @@ public class GUICrateTungsten extends GuiContainer {
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
 		String title = I18n.format("container.crateTungsten");
-		String percentage = getFillPercentage();
-		String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
-
-		int titleWidth = this.fontRenderer.getStringWidth(title);
-		int percentWidth = this.fontRenderer.getStringWidth(percentText);
-		int totalWidth = titleWidth + percentWidth;
-		int startX = (this.xSize / 2) - (totalWidth / 2);
-
 		int dynamicColor = diFurnace.heatTimer == 0 ? 0xA0A0A0 : 0xFFCA53;
 
-		this.fontRenderer.drawString(title, startX, 6, dynamicColor);
+		if (GeneralConfig.showGuiCrateFillPercentage) {
+			String percentage = getFillPercentage();
+			String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
 
-		if (!percentText.isEmpty()) {
-			this.fontRenderer.drawString(percentText, startX + titleWidth, 6, 0x55FF55);
+			int titleWidth = this.fontRenderer.getStringWidth(title);
+			int percentWidth = this.fontRenderer.getStringWidth(percentText);
+			int totalWidth = titleWidth + percentWidth;
+			int startX = (this.xSize / 2) - (totalWidth / 2);
+
+			this.fontRenderer.drawString(title, startX, 6, dynamicColor);
+
+			if (!percentText.isEmpty()) {
+				this.fontRenderer.drawString(percentText, startX + titleWidth, 6, 0x55FF55);
+			}
+		} else {
+			int titleWidth = this.fontRenderer.getStringWidth(title);
+			int startX = (this.xSize / 2) - (titleWidth / 2);
+			this.fontRenderer.drawString(title, startX, 6, dynamicColor);
 		}
 
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, dynamicColor);

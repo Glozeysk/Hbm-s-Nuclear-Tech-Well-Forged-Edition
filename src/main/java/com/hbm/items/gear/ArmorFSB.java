@@ -346,7 +346,6 @@ public class ArmorFSB extends ItemArmor {
 						e.attackEntityFrom(DamageSource.causeIndirectDamage(e, entity).setDamageBypassesArmor(), (float) (intensity * 10));
 					}
 				}
-				// return;
 			}
 			
 			if(chestplate.fall != null && entity.fallDistance > 0.25 && !entity.isSneaking()){
@@ -647,4 +646,8 @@ public class ArmorFSB extends ItemArmor {
         this.glassLayer = glass;
         return this;
     }
+
+	public boolean isHardLanding() {
+		return hardLanding;
+	}
 }

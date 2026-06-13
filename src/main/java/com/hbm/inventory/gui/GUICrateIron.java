@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.container.ContainerCrateIron;
 import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrateIron;
@@ -56,20 +57,26 @@ public class GUICrateIron extends GuiContainer {
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
 		String baseName = this.diFurnace.hasCustomInventoryName() ? this.diFurnace.getInventoryName() : I18n.format(this.diFurnace.getInventoryName());
-		String percentage = getFillPercentage();
 
-		String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
+		if (GeneralConfig.showGuiCrateFillPercentage) {
+			String percentage = getFillPercentage();
+			String percentText = percentage.isEmpty() ? "" : " (" + percentage + "%)";
 
-		int nameWidth = this.fontRenderer.getStringWidth(baseName);
-		int percentWidth = this.fontRenderer.getStringWidth(percentText);
+			int nameWidth = this.fontRenderer.getStringWidth(baseName);
+			int percentWidth = this.fontRenderer.getStringWidth(percentText);
 
-		int totalWidth = nameWidth + percentWidth;
-		int startX = (this.xSize / 2) - (totalWidth / 2);
+			int totalWidth = nameWidth + percentWidth;
+			int startX = (this.xSize / 2) - (totalWidth / 2);
 
-		this.fontRenderer.drawString(baseName, startX, 6, 4210752);
+			this.fontRenderer.drawString(baseName, startX, 6, 4210752);
 
-		if (!percentText.isEmpty()) {
-			this.fontRenderer.drawString(percentText, startX + nameWidth, 6, 0x55FF55);
+			if (!percentText.isEmpty()) {
+				this.fontRenderer.drawString(percentText, startX + nameWidth, 6, 0x55FF55);
+			}
+		} else {
+			int nameWidth = this.fontRenderer.getStringWidth(baseName);
+			int startX = (this.xSize / 2) - (nameWidth / 2);
+			this.fontRenderer.drawString(baseName, startX, 6, 4210752);
 		}
 
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);

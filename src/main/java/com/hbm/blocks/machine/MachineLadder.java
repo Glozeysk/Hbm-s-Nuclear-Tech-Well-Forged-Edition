@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -27,10 +28,11 @@ import net.minecraft.world.World;
 
 public class MachineLadder extends BlockLadder {
 
-    private final java.util.function.Supplier<Block> ownerSupplier;
+    private final Supplier<Block> ownerSupplier;
     private Block ownerCache;
+    private static final int SEARCH_RADIUS = 6;
 
-    public MachineLadder(String name, java.util.function.Supplier<Block> ownerSupplier) {
+    public MachineLadder(String name, Supplier<Block> ownerSupplier) {
         this.setTranslationKey(name);
         this.setRegistryName(name);
         this.setHardness(-1.0F);
@@ -47,13 +49,13 @@ public class MachineLadder extends BlockLadder {
         return ownerCache;
     }
 
-    private boolean hasCoreNearby(World world, BlockPos pos) {
+    @Nullable
+    private BlockPos findCore(World world, BlockPos pos) {
         Block owner = getOwnerBlock();
-        int radius = 6;
 
-        for(int dx = -radius; dx <= radius; dx++) {
-            for(int dy = -radius; dy <= radius; dy++) {
-                for(int dz = -radius; dz <= radius; dz++) {
+        for(int dx = -SEARCH_RADIUS; dx <= SEARCH_RADIUS; dx++) {
+            for(int dy = -SEARCH_RADIUS; dy <= SEARCH_RADIUS; dy++) {
+                for(int dz = -SEARCH_RADIUS; dz <= SEARCH_RADIUS; dz++) {
                     BlockPos check = pos.add(dx, dy, dz);
 
                     if(!world.isBlockLoaded(check))
@@ -61,26 +63,40 @@ public class MachineLadder extends BlockLadder {
 
                     IBlockState state = world.getBlockState(check);
 
-                    if(state.getBlock() == owner) {
-                        try {
-                            Integer meta = state.getValue(BlockDummyable.META);
-                            if(meta != null && meta >= 12) {
-                                return true;
-                            }
-                        } catch(Exception ignored) {
-                            return true;
+                    if(state.getBlock() != owner)
+                        continue;
+
+                    try {
+                        Integer meta = state.getValue(BlockDummyable.META);
+                        if(meta != null && meta >= 12) {
+                            return check;
                         }
+                    } catch(Exception ignored) {
+                        return check;
                     }
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
     @Override
-    public float getExplosionResistance(World world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
-        if(hasCoreNearby(world, pos)) {
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        if(!world.isRemote) {
+            BlockPos corePos = findCore(world, pos);
+            if(corePos != null) {
+                Block coreBlock = world.getBlockState(corePos).getBlock();
+                world.scheduleUpdate(corePos, coreBlock, 5);
+            }
+        }
+        super.breakBlock(world, pos, state);
+    }
+
+    @Override
+    public float getExplosionResistance(World world, BlockPos pos,
+                                        @Nullable Entity exploder, Explosion explosion) {
+        if(findCore(world, pos) != null) {
             return 3600000.0F;
         }
         return super.getExplosionResistance(world, pos, exploder, explosion);
@@ -88,7 +104,7 @@ public class MachineLadder extends BlockLadder {
 
     @Override
     public void onBlockExploded(World world, BlockPos pos, Explosion explosion) {
-        if(hasCoreNearby(world, pos)) {
+        if(findCore(world, pos) != null) {
             return;
         }
         super.onBlockExploded(world, pos, explosion);
@@ -114,20 +130,17 @@ public class MachineLadder extends BlockLadder {
         return EnumBlockRenderType.INVISIBLE;
     }
 
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        return super.getBoundingBox(state, world, pos);
-    }
-
     @Nullable
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState state,
+                                                 IBlockAccess world, BlockPos pos) {
         return NULL_AABB;
     }
 
     @Nullable
     @Override
-    public RayTraceResult collisionRayTrace(IBlockState state, World world, BlockPos pos, Vec3d start, Vec3d end) {
+    public RayTraceResult collisionRayTrace(IBlockState state, World world,
+                                            BlockPos pos, Vec3d start, Vec3d end) {
         return null;
     }
 
@@ -142,45 +155,13 @@ public class MachineLadder extends BlockLadder {
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
-    }
-
-    public void onBlockDestroyedByPlayer(World world, BlockPos pos, IBlockState state) {
-        if(!world.isRemote) {
-            scheduleRestore(world, pos);
-        }
-    }
-
-    public void onBlockDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        if(!world.isRemote) {
-            scheduleRestore(world, pos);
-        }
-    }
-
-    private void scheduleRestore(World world, BlockPos pos) {
-        Block owner = getOwnerBlock();
-        int radius = 6;
-
-        for(int dx = -radius; dx <= radius; dx++) {
-            for(int dy = -radius; dy <= radius; dy++) {
-                for(int dz = -radius; dz <= radius; dz++) {
-                    BlockPos neighbor = pos.add(dx, dy, dz);
-
-                    if(!world.isBlockLoaded(neighbor))
-                        continue;
-
-                    IBlockState state = world.getBlockState(neighbor);
-                    if(state.getBlock() == owner) {
-                        world.scheduleUpdate(neighbor, owner, 10);
-                        return;
-                    }
-                }
-            }
-        }
+    public void neighborChanged(IBlockState state, World world, BlockPos pos,
+                                Block blockIn, BlockPos fromPos) {
     }
 
     @Override
-    public boolean isLadder(IBlockState state, IBlockAccess world, BlockPos pos, EntityLivingBase entity) {
+    public boolean isLadder(IBlockState state, IBlockAccess world,
+                            BlockPos pos, EntityLivingBase entity) {
         return true;
     }
 
@@ -189,12 +170,14 @@ public class MachineLadder extends BlockLadder {
         return true;
     }
 
-    public float getPlayerRelativeBlockHardness(EntityPlayer player, World world, BlockPos pos) {
+    public float getPlayerRelativeBlockHardness(EntityPlayer player,
+                                                World world, BlockPos pos) {
         return 0.0F;
     }
 
     @Override
-    public boolean canEntityDestroy(IBlockState state, IBlockAccess world, BlockPos pos, Entity entity) {
+    public boolean canEntityDestroy(IBlockState state, IBlockAccess world,
+                                    BlockPos pos, Entity entity) {
         return false;
     }
 

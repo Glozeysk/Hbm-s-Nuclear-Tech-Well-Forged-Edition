@@ -2167,6 +2167,7 @@ public class ClientProxy extends ServerProxy {
 		
 		ItemRenderLibrary.init();
 
+        MinecraftForge.EVENT_BUS.register(new HardLandingClientFXHandler());
 		MinecraftForge.EVENT_BUS.register(new ItemModLens.ClientMarkerHandler());
         MinecraftForge.EVENT_BUS.register(new RenderTurretControlOverlay());
         MinecraftForge.EVENT_BUS.register(new com.hbm.render.event.RenderTurretLaser());

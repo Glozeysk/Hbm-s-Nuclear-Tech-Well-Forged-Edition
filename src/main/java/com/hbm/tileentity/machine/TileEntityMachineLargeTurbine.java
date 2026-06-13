@@ -53,7 +53,6 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 	public float lastRotor;
 	public float fanAcceleration = 0F;
 
-	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	private final float audioDesync;

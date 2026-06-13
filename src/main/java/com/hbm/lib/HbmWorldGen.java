@@ -278,8 +278,8 @@ public class HbmWorldGen implements IWorldGenerator {
 	private void generateBedrockOil(World world, Random rand, int i, int j, int dimID){
 		int dimBedrockOilFreq = parseInt(CompatibilityConfig.bedrockOilSpawn.get(dimID));
 		if (dimBedrockOilFreq > 0 && rand.nextInt(dimBedrockOilFreq) == 0) {
-			int randPosX = i + rand.nextInt(16);
-			int randPosZ = j + rand.nextInt(16);
+			int randPosX = i + 5 + rand.nextInt(6);
+			int randPosZ = j + 5 + rand.nextInt(6);
 
 			for (int v = 5; v >= -5; v--) {
 				for (int w = 5; w >= -5; w--) {
@@ -307,7 +307,10 @@ public class HbmWorldGen implements IWorldGenerator {
 			if (rand.nextInt(50) == 0)
 				r = 50;
 
-			new Sellafield().generate(world, x, z, r, r * 0.35D);
+			int chunkRadius = ((int)Math.ceil(r) + 5);
+			if(areChunksGenerated(world, x - chunkRadius, x + chunkRadius, z - chunkRadius, z + chunkRadius)) {
+				new Sellafield().generate(world, rand, x, z, r, r * 0.35D);
+			}
 
 			if (GeneralConfig.enableDebugMode)
 				MainRegistry.logger.info("[Debug] Successfully spawned raditation hotspot at x=" + x + " z=" + z);
@@ -319,9 +322,7 @@ public class HbmWorldGen implements IWorldGenerator {
 		
 		if(GeneralConfig.enableDungeons) {
 			//Drillgon200: Helps with cascading world gen.
-			i += 8;
-			j += 8;
-			Biome biome = world.getBiome(new BlockPos(i, 0, j));
+			Biome biome = world.getBiome(new BlockPos(i + 8, 64, j + 8));
 			
 			if (biome.getDefaultTemperature() >= 1F && biome.getRainfall() > 1F) {
 				generateAStructure(world, rand, i, j, new Radio01(), parseInt(CompatibilityConfig.radioStructure.get(dimID)));
@@ -350,9 +351,25 @@ public class HbmWorldGen implements IWorldGenerator {
 				generateAStructure(world, rand, i, j, new Satellite(), parseInt(CompatibilityConfig.satelliteStructure.get(dimID)));
 			}
 			generateAStructure(world, rand, i, j, new Spaceship(), parseInt(CompatibilityConfig.spaceshipStructure.get(dimID)));
-			generateAStructure(world, rand, i, j, new Bunker(), parseInt(CompatibilityConfig.bunkerStructure.get(dimID)));
+			int dimBunker = parseInt(CompatibilityConfig.bunkerStructure.get(dimID));
+			if (dimBunker > 0 && rand.nextInt(dimBunker) == 0) {
+				int x = i + rand.nextInt(6);
+				int z = j + rand.nextInt(2);
+				int y = world.getHeight(x, z);
+
+				new Bunker().generate(world, rand, new BlockPos(x, y, z));
+			}
 			generateAStructure(world, rand, i, j, new Silo(), parseInt(CompatibilityConfig.siloStructure.get(dimID)));
-			generateAStructure(world, rand, i, j, new Factory(), parseInt(CompatibilityConfig.factoryStructure.get(dimID)));
+			int dimFactory = parseInt(CompatibilityConfig.factoryStructure.get(dimID));
+			if (dimFactory > 0 && rand.nextInt(dimFactory) == 0) {
+				int x = i + rand.nextInt(2);
+				int z = j + rand.nextInt(4);
+				int y = world.getHeight(x, z);
+
+				if (areChunksGenerated(world, x, x + 14, z, z + 28)) {
+					new Factory().generate(world, rand, new BlockPos(x, y, z));
+				}
+			}
 			generateAStructure(world, rand, i, j, new Dud(), parseInt(CompatibilityConfig.dudStructure.get(dimID)));
 			if(biome.getTempCategory() == Biome.TempCategory.WARM && biome.getTempCategory() != Biome.TempCategory.OCEAN)
 				generateSellafieldPool(world, rand, i, j, dimID);
@@ -624,18 +641,24 @@ public class HbmWorldGen implements IWorldGenerator {
 						int z = j + rand.nextInt(16);
 						int y = world.getHeight(x, z);
 
-						OilSandBubble.spawnOil(world, x, y, z, 15 + rand.nextInt(31));
+						int radius = 15 + rand.nextInt(31);
+						if(areChunksGenerated(world, x - radius, x + radius - 1, z - radius, z + radius - 1)) {
+							OilSandBubble.spawnOil(world, rand, x, y, z, radius);
+						}
 					}
 				}
 			}
 		}
-		
+
 		if(rand.nextInt(25) == 0) {
 			int randPosX = i + rand.nextInt(16);
 			int randPosY = rand.nextInt(25);
 			int randPosZ = j + rand.nextInt(16);
+			int radius = 7 + rand.nextInt(9);
 
-			OilBubble.spawnOil(world, randPosX, randPosY, randPosZ, 7 + rand.nextInt(9));
+			if(areChunksGenerated(world, randPosX - radius, randPosX + radius - 1, randPosZ - radius, randPosZ + radius - 1)) {
+				OilBubble.spawnOil(world, randPosX, randPosY, randPosZ, radius);
+			}
 		}
 
 		if (GeneralConfig.enableNITAN) {
@@ -713,5 +736,21 @@ public class HbmWorldGen implements IWorldGenerator {
 				}
 			}
 		}
+	}
+
+	private boolean areChunksGenerated(World world, int minX, int maxX, int minZ, int maxZ) {
+		int minChunkX = minX >> 4;
+		int maxChunkX = maxX >> 4;
+		int minChunkZ = minZ >> 4;
+		int maxChunkZ = maxZ >> 4;
+
+		for(int cx = minChunkX; cx <= maxChunkX; cx++) {
+			for(int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+				if(!world.isChunkGeneratedAt(cx, cz)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }

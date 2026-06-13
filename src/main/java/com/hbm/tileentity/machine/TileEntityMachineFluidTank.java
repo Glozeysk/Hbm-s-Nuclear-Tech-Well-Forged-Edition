@@ -68,18 +68,21 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 	public void update() {
 		super.update();
 
+		if(world == null || world.isRemote) {
+			return;
+		}
+
 		if(pendingLadderRestore) {
 			if(ladderRestoreCooldown > 0) {
 				ladderRestoreCooldown--;
-				return;
-			}
-
-			boolean complete = restoreLadders();
-
-			if(complete) {
-				pendingLadderRestore = false;
 			} else {
-				ladderRestoreCooldown = 20;
+				boolean complete = restoreLadders();
+
+				if(complete) {
+					pendingLadderRestore = false;
+				} else {
+					ladderRestoreCooldown = 20;
+				}
 			}
 		}
 	}
@@ -116,13 +119,13 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 	public void setLadderData(List<BlockPos> positions, EnumFacing facing) {
 		this.ladderPositions = new ArrayList<>(positions);
 		this.ladderFacing = facing;
-		this.pendingLadderRestore = false;
-		this.ladderRestoreCooldown = 0;
+		this.pendingLadderRestore = true;
+		this.ladderRestoreCooldown = 1;
 		this.markDirty();
 	}
 
 	public boolean restoreLadders() {
-		if(world == null)
+		if(world == null || world.isRemote)
 			return true;
 
 		if(ladderPositions.isEmpty()) {
@@ -132,20 +135,28 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 		if(ladderPositions.isEmpty())
 			return true;
 
-		boolean complete = true;
+		for(BlockPos lpos : ladderPositions) {
+			if(!world.isBlockLoaded(lpos)) {
+				return false;
+			}
+		}
 
 		IBlockState ladderState = ModBlocks.machine_fluidtank_ladder.getDefaultState()
 				.withProperty(BlockLadder.FACING, ladderFacing);
 
+		boolean complete = true;
+
 		for(BlockPos lpos : ladderPositions) {
-			if(!world.isBlockLoaded(lpos)) {
-				complete = false;
+			IBlockState state = world.getBlockState(lpos);
+
+			if(state.getBlock() == ModBlocks.machine_fluidtank_ladder) {
 				continue;
 			}
 
-			IBlockState state = world.getBlockState(lpos);
-			if(world.isAirBlock(lpos) || state.getBlock() == ModBlocks.machine_fluidtank_ladder) {
-				world.setBlockState(lpos, ladderState, 3);
+			if(world.isAirBlock(lpos)) {
+				world.setBlockState(lpos, ladderState, 2);
+			} else {
+				complete = false;
 			}
 		}
 
@@ -179,10 +190,11 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 	}
 
 	@Override
-	public void validate() {
-		super.validate();
-		pendingLadderRestore = true;
-		ladderRestoreCooldown = 5;
+	public void onLoad() {
+		if(!world.isRemote) {
+			pendingLadderRestore = true;
+			ladderRestoreCooldown = 5;
+		}
 	}
 
 	@Override

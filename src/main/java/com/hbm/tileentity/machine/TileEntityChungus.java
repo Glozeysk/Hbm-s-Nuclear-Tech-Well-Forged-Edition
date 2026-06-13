@@ -48,7 +48,6 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	public FluidTank[] tanks;
 	public Fluid[] types = new Fluid[]{ ModForgeFluids.steam, ModForgeFluids.spentsteam };
 
-	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	private final float audioDesync;

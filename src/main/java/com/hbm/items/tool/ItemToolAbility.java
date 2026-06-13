@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.gas.BlockGasBase;
 import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
@@ -21,6 +22,7 @@ import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.NBTItemControlPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.util.EnchantmentUtil;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -31,6 +33,7 @@ import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -44,7 +47,6 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
 import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -169,6 +171,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return availableAbilities;
 	}
 
+
 	public static class Configuration {
 		public List<ToolPreset> presets;
 		public int currentPreset;
@@ -242,30 +245,25 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		config.writeToNBT(stack.getTagCompound());
 	}
 
+
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean isSelected) {
 		super.onUpdate(stack, world, entity, slot, isSelected);
-
 		if (!world.isRemote || !isSelected || !(entity instanceof EntityPlayer)) return;
-
 		handleAltKeyClient((EntityPlayer) entity);
 	}
 
 	@SideOnly(Side.CLIENT)
 	private void handleAltKeyClient(EntityPlayer player) {
 		Minecraft mc = Minecraft.getMinecraft();
-
 		if (mc.currentScreen != null) {
 			wasAltDown = false;
 			return;
 		}
-
 		boolean altDown = HbmKeybinds.abilityAltKey.isKeyDown();
-
 		if (altDown && !wasAltDown && this.availableAbilities.hasAnyRealAbility()) {
 			player.openGui(MainRegistry.instance, ModItems.guiID_item_tool_ability, player.world, 0, 0, 0);
 		}
-
 		wasAltDown = altDown;
 	}
 
@@ -284,11 +282,13 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		if (stack.isEmpty() || !canOperate(stack)) return EnumActionResult.PASS;
 
 		if (player.isSneaking()) {
-			switchMode(player, stack);
+			if (worldIn.isRemote) {
+				switchModeClient(player, stack);
+			} else {
+				switchMode(player, stack);
+			}
 			return EnumActionResult.SUCCESS;
 		}
-
-		if (worldIn.isRemote) return EnumActionResult.PASS;
 
 		TileEntity te = worldIn.getTileEntity(pos);
 		Block block = worldIn.getBlockState(pos).getBlock();
@@ -296,7 +296,11 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 			return EnumActionResult.PASS;
 		}
 
-		switchMode(player, stack);
+		if (worldIn.isRemote) {
+			switchModeClient(player, stack);
+		} else {
+			switchMode(player, stack);
+		}
 		return EnumActionResult.SUCCESS;
 	}
 
@@ -314,22 +318,42 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		ItemStack stack = player.getHeldItem(hand);
 		if (stack.isEmpty() || !canOperate(stack)) return super.onItemRightClick(world, player, hand);
 
-		if (player.isSneaking()) {
-			switchMode(player, stack);
-			return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
-		}
-
 		if (ItemBlockStorageCrate.isContainer(player.getHeldItemMainhand()) || ItemBlockStorageCrate.isContainer(player.getHeldItemOffhand())) {
 			return super.onItemRightClick(world, player, hand);
 		}
 
-		if (world.isRemote) return super.onItemRightClick(world, player, hand);
+		if (world.isRemote) {
+			switchModeClient(player, stack);
+		} else {
+			switchMode(player, stack);
+		}
 
-		switchMode(player, stack);
 		return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
 	}
 
 	private void switchMode(EntityPlayer player, ItemStack stack) {
+		EnchantmentUtil.clearTemporaryAbilityEnchants(stack);
+
+		Configuration config = getConfiguration(stack);
+
+		if (player.isSneaking()) {
+			config.currentPreset = 0;
+		} else {
+			if (config.presets.size() < 2) return;
+			config.currentPreset = (config.currentPreset + 1) % config.presets.size();
+		}
+
+		setConfiguration(stack, config);
+
+		ToolPreset preset = config.getActivePreset();
+
+		player.world.playSound(null, player.posX, player.posY, player.posZ,
+				SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,
+				0.25F, preset.isNone() ? 0.75F : 1.25F);
+	}
+
+	@SideOnly(Side.CLIENT)
+	private void switchModeClient(EntityPlayer player, ItemStack stack) {
 		Configuration config = getConfiguration(stack);
 
 		if (player.isSneaking()) {
@@ -343,15 +367,14 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(stack.getTagCompound()));
 
 		ToolPreset preset = config.getActivePreset();
+
 		String msg = preset.isNone() ?
 				"[§6" + I18nUtil.resolveKey("chat.abildisabled") + "§r]" :
 				"[§e" + I18nUtil.resolveKey("chat.abilenabled") + "§r] " + preset.getMessage().getFormattedText();
 
 		MainRegistry.proxy.displayTooltipLegacy(msg, 11);
-		player.world.playSound(null, player.posX, player.posY, player.posZ,
-				SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,
-				0.25F, preset.isNone() ? 0.75F : 1.25F);
 	}
+
 
 	private boolean isOffHandInteractive(ItemStack offhand, EntityPlayer player) {
 		if (offhand.isEmpty()) return false;
@@ -359,14 +382,8 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		Item item = offhand.getItem();
 
 		if (ItemBlockStorageCrate.isContainer(offhand)) return true;
-
-		if (item instanceof ItemBow || item instanceof ItemFishingRod) {
-			return true;
-		}
-
-		if (item instanceof ItemFood) {
-			return player.getFoodStats().needFood();
-		}
+		if (item instanceof ItemBow || item instanceof ItemFishingRod) return true;
+		if (item instanceof ItemFood) return player.getFoodStats().needFood();
 
 		if (item instanceof ItemBlock) {
 			Vec3d start = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
@@ -374,17 +391,13 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 			Vec3d end = start.add(look.x * 5.0, look.y * 5.0, look.z * 5.0);
 			RayTraceResult rayTrace = player.world.rayTraceBlocks(start, end);
 
-			if (rayTrace == null || rayTrace.typeOfHit != RayTraceResult.Type.BLOCK) {
-				return false;
-			}
+			if (rayTrace == null || rayTrace.typeOfHit != RayTraceResult.Type.BLOCK) return false;
 
 			BlockPos pos = rayTrace.getBlockPos();
 			EnumFacing facing = rayTrace.sideHit;
 			IBlockState state = player.world.getBlockState(pos);
 
-			if (state.getBlock().isReplaceable(player.world, pos)) {
-				return true;
-			}
+			if (state.getBlock().isReplaceable(player.world, pos)) return true;
 
 			BlockPos placePos = pos.offset(facing);
 			return player.world.isAirBlock(placePos) ||
@@ -393,6 +406,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 		return offhand.getItemUseAction() != EnumAction.NONE;
 	}
+
 
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
@@ -405,10 +419,12 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		Configuration config = getConfiguration(stack);
 		ToolPreset preset = config.getActivePreset();
 
-		preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player);
+		EnumHand hand = player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+
+		preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player, hand);
 
 		if (!canHarvestBlock(state, stack)) {
-			preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
+			preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player, hand);
 			return false;
 		}
 
@@ -418,10 +434,9 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 
 		preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
 
-		EnumHand hand = player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 		breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ(), hand);
 
-		preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
+		preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player, hand);
 
 		return true;
 	}
@@ -455,18 +470,113 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		if (!canOperate(stack)) return false;
 		if (isForbiddenBlock(state.getBlock())) return false;
 
-		if (net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(Objects.requireNonNull(Enchantments.SILK_TOUCH), stack) > 0) {
+		if (!isCorrectToolType(state)) return false;
+
+		if (EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0) {
 			return true;
 		}
 
 		return getDestroySpeed(stack, state) > 1.0F;
 	}
 
+	private boolean isCorrectToolType(IBlockState state) {
+		if (toolType == null) return true;
+
+		Block block = state.getBlock();
+		Material material = state.getMaterial();
+
+		if (toolType.blocks.contains(block)) return true;
+
+		if (toolType.materials.contains(material)) return true;
+
+		String harvestTool = block.getHarvestTool(state);
+		if (harvestTool != null) {
+            return switch (toolType) {
+                case PICKAXE -> harvestTool.equals("pickaxe");
+                case AXE -> harvestTool.equals("axe");
+                case SHOVEL -> harvestTool.equals("shovel");
+                case MINER ->
+                        harvestTool.equals("pickaxe") || harvestTool.equals("axe") || harvestTool.equals("shovel");
+            };
+		}
+
+		return false;
+	}
+
 	public static boolean isForbiddenBlock(Block b) {
 		return b == Blocks.BARRIER || b == Blocks.BEDROCK || b == Blocks.COMMAND_BLOCK
 				|| b == Blocks.CHAIN_COMMAND_BLOCK || b == Blocks.REPEATING_COMMAND_BLOCK
-				|| b == ModBlocks.ore_bedrock_oil || b instanceof BlockBedrockOre || b instanceof BlockBedrockOreTE;
+				|| b == ModBlocks.ore_bedrock_oil
+				|| b instanceof BlockBedrockOre || b instanceof BlockBedrockOreTE
+				|| b instanceof BlockGasBase
+				|| b.getDefaultState().getMaterial() == ModBlocks.materialGas;
 	}
+
+
+	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer player, int refX, int refY, int refZ) {
+		breakExtraBlock(world, x, y, z, player, refX, refY, refZ, EnumHand.MAIN_HAND);
+	}
+
+	@Override
+	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
+		BlockPos pos = new BlockPos(x, y, z);
+		if (world.isAirBlock(pos)) return;
+		if (!(playerEntity instanceof EntityPlayerMP)) return;
+
+		EntityPlayerMP player = (EntityPlayerMP) playerEntity;
+		ItemStack stack = player.getHeldItem(hand);
+		if (stack.isEmpty()) return;
+
+		IBlockState state = world.getBlockState(pos);
+		Block block = state.getBlock();
+
+		if (isForbiddenBlock(block)) return;
+
+		if (block.isReplaceable(world, pos) && block.getItemDropped(state, world.rand, 0) == null) return;
+		if (block.isReplaceable(world, pos) && block.getItemDropped(state, world.rand, 0) == net.minecraft.init.Items.AIR) return;
+
+		if (!canHarvestBlock(state, stack)) return;
+
+		IBlockState refState = world.getBlockState(new BlockPos(refX, refY, refZ));
+		float refStrength = ForgeHooks.blockStrength(refState, player, world, new BlockPos(refX, refY, refZ));
+		float strength = ForgeHooks.blockStrength(state, player, world, pos);
+
+		if (!ForgeHooks.canHarvestBlock(block, player, world, pos)) return;
+		if (refStrength / strength > 10f) return;
+
+		int event = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
+		if (event < 0) return;
+
+		if (player.capabilities.isCreativeMode) {
+			block.onBlockHarvested(world, pos, state, player);
+			if (block.removedByPlayer(state, world, pos, player, false))
+				block.onPlayerDestroy(world, pos, state);
+			player.connection.sendPacket(new SPacketBlockChange(world, pos));
+			return;
+		}
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+
+		int meta = block.getMetaFromState(state);
+
+		preset.harvestAbility.onHarvestBlock(
+				preset.harvestAbilityLevel,
+				world,
+				x, y, z,
+				player,
+				block,
+				meta,
+				hand
+		);
+
+		if (world.isAirBlock(pos)) {
+			block.dropXpOnBlockBreak(world, pos, event);
+		}
+
+		player.connection.sendPacket(new SPacketBlockChange(world, pos));
+	}
+
 
 	@Override
 	public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
@@ -479,6 +589,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return true;
 	}
 
+
 	@Override
 	public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot slot) {
 		Multimap<String, AttributeModifier> map = HashMultimap.create();
@@ -489,85 +600,6 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		return map;
 	}
 
-	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer player, int refX, int refY, int refZ) {
-		breakExtraBlock(world, x, y, z, player, refX, refY, refZ, EnumHand.MAIN_HAND);
-	}
-
-	@Override
-	public void breakExtraBlock(World world, int x, int y, int z, EntityPlayer playerEntity, int refX, int refY, int refZ, EnumHand hand) {
-		BlockPos pos = new BlockPos(x, y, z);
-		if (world.isAirBlock(pos))
-			return;
-
-		if(!(playerEntity instanceof EntityPlayerMP))
-			return;
-
-		EntityPlayerMP player = (EntityPlayerMP) playerEntity;
-		ItemStack stack = player.getHeldItem(hand);
-
-		IBlockState block = world.getBlockState(pos);
-
-		if(!canHarvestBlock(block, stack))
-			return;
-
-		IBlockState refBlock = world.getBlockState(new BlockPos(refX, refY, refZ));
-		float refStrength = ForgeHooks.blockStrength(refBlock, player, world, new BlockPos(refX, refY, refZ));
-		float strength = ForgeHooks.blockStrength(block, player, world, pos);
-
-		if (!ForgeHooks.canHarvestBlock(block.getBlock(), player, world, pos) || refStrength/strength > 10f)
-			return;
-
-		int event = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
-		if(event < 0)
-			return;
-
-		if (player.capabilities.isCreativeMode) {
-			block.getBlock().onBlockHarvested(world, pos, block, player);
-			if (block.getBlock().removedByPlayer(block, world, pos, player, false))
-				block.getBlock().onPlayerDestroy(world, pos, block);
-
-			if (!world.isRemote) {
-				player.connection.sendPacket(new SPacketBlockChange(world, pos));
-			}
-			return;
-		}
-
-		player.getHeldItem(hand).onBlockDestroyed(world, block, pos, player);
-
-		if (!world.isRemote) {
-			net.minecraft.tileentity.TileEntity te = world.getTileEntity(pos);
-
-			block.getBlock().onBlockHarvested(world, pos, block, player);
-
-			if(block.getBlock().removedByPlayer(block, world, pos, player, true))
-			{
-				block.getBlock().onPlayerDestroy(world, pos, block);
-				block.getBlock().harvestBlock(world, player, pos, block, te, stack);
-				block.getBlock().dropXpOnBlockBreak(world, pos, event);
-			}
-
-			player.connection.sendPacket(new SPacketBlockChange(world, pos));
-
-		} else {
-			world.playEvent(2001, pos, Block.getStateId(block));
-			if(block.getBlock().removedByPlayer(block, world, pos, player, true))
-			{
-				block.getBlock().onPlayerDestroy(world, pos, block);
-			}
-			ItemStack itemstack = player.getHeldItem(hand);
-			if (itemstack != null)
-			{
-				itemstack.onBlockDestroyed(world, block, new BlockPos(x, y, z), player);
-
-				if (itemstack.isEmpty())
-				{
-					player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
-				}
-			}
-
-			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(x, y, z), Minecraft.getMinecraft().objectMouseOver.sideHit));
-		}
-	}
 
 	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player, EnumHand hand) {
 		BlockPos pos = new BlockPos(x, y, z);
@@ -610,6 +642,7 @@ public class ItemToolAbility extends ItemTool implements IItemAbility, IDepthRoc
 		if (flag) block.onPlayerDestroy(world, pos, state);
 		return flag;
 	}
+
 
 	@SideOnly(Side.CLIENT)
 	@Override

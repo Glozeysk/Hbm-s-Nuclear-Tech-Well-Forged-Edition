@@ -163,8 +163,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
 
         @Override
-        public boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool) {
-            int range = level;
+        public boolean onDig(int range, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool) {
             int x = pos.getX();
             int y = pos.getY();
             int z = pos.getZ();
@@ -210,8 +209,9 @@ public interface IToolAreaAbility extends IBaseAbility {
         @Override
         public boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool) {
             int range = level;
-            RayTraceResult hit = player.rayTrace(4.5, 1.0F);
-            if (hit == null) return true;
+            RayTraceResult hit = raytraceFromEntity(world, player, false, 4.5);
+            if (hit == null || hit.sideHit == null) return true;
+
             int sideHit = hit.sideHit.getIndex();
 
             int x = pos.getX();
@@ -221,10 +221,21 @@ public interface IToolAreaAbility extends IBaseAbility {
             int xRange = range;
             int yRange = range;
             int zRange = 0;
+
             switch (sideHit) {
-                case 0: case 1: yRange = 0; zRange = range; break;
-                case 2: case 3: break;
-                case 4: case 5: xRange = 0; zRange = range; break;
+                case 0:
+                case 1:
+                    yRange = 0;
+                    zRange = range;
+                    break;
+                case 2:
+                case 3:
+                    break;
+                case 4:
+                case 5:
+                    xRange = 0;
+                    zRange = range;
+                    break;
             }
 
             for (int a = x - xRange; a <= x + xRange; a++) {
@@ -235,6 +246,7 @@ public interface IToolAreaAbility extends IBaseAbility {
                     }
                 }
             }
+
             return false;
         }
 
@@ -263,7 +275,6 @@ public interface IToolAreaAbility extends IBaseAbility {
             return world.rayTraceBlocks(start, end, stopOnLiquid, !stopOnLiquid, stopOnLiquid);
         }
     };
-
     IToolAreaAbility EXPLOSION = new IToolAreaAbility() {
         public final float[] strengthAtLevel = { 0F, 2.5F, 5F, 10F, 15F };
 
