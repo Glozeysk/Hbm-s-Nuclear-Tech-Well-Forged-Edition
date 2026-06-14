@@ -2,6 +2,7 @@ package com.hbm.handler.jei;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
+import com.hbm.forgefluid.FFUtils;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.CrystallizerRecipes;
@@ -11,6 +12,7 @@ import com.hbm.inventory.DFCRecipes;
 import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.gui.*;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.ItemCustomMissile;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.main.MainRegistry;
@@ -22,10 +24,14 @@ import mezz.jei.api.IModRegistry;
 import mezz.jei.api.ISubtypeRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.ingredients.IIngredientBlacklist;
+import mezz.jei.api.ingredients.IIngredientRegistry;
+import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
@@ -71,10 +77,15 @@ public class JEIConfig implements IModPlugin {
 	public static final String DFC = "hbm.dfc";
 	public static final String TRANSMUTATION = "hbm.transmutation";
 
+	private IIngredientRegistry ingredientRegistry;
+
 	@Override
 	public void register(IModRegistry registry) {
 		if(!GeneralConfig.jei)
 			return;
+
+		this.ingredientRegistry = registry.getIngredientRegistry();
+
 		registry.addRecipeRegistryPlugin(new HbmJeiRegistryPlugin());
 
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_autocrafter), VanillaRecipeCategoryUid.CRAFTING);
@@ -110,7 +121,6 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shreddermk2), SHREDDER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_fluidtank), FLUIDS);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_crystallizer), CRYSTALLIZER);
-		//This recipe catalyst doesn't work, since the book of is blacklisted.
 		registry.addRecipeCatalyst(new ItemStack(ModItems.book_of_), BOOK);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.iter), FUSION_BYPRODUCT);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.hadron_core), HADRON);
@@ -129,8 +139,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(Blocks.CRAFTING_TABLE), RBMKFUEL);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.fwatz_core), SAFE_REACTOR);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.crate_tungsten), DFC);
-		
-		// registry.addRecipes(AssemblerRecipes.getRecipeFromTempate(), ASSEMBLY);
+
 		registry.addRecipes(JeiRecipes.getChemistryRecipes(), CHEMPLANT);
 		registry.addRecipes(JeiRecipes.getMixerRecipes(), MIXER);
 		registry.addRecipes(JeiRecipes.getCyclotronRecipes(), CYCLOTRON);
@@ -194,18 +203,16 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUICrystallizer.class, 79, 40, 29, 26, CRYSTALLIZER);
 		registry.addRecipeClickArea(GUIBook.class, 89, 34, 23, 16, BOOK);
 		registry.addRecipeClickArea(GUIHadron.class, 71, 28, 32, 32, HADRON);
-		registry.addRecipeClickArea(GUISILEX.class, 45, 82, 113-45, 125-82, SILEX);
-		registry.addRecipeClickArea(GUIAnvil.class, 34, 26, 52-34, 44-26, SMITHING);
-		registry.addRecipeClickArea(GUIAnvil.class, 12, 50, 48-12, 66-50, ANVIL);
+		registry.addRecipeClickArea(GUISILEX.class, 45, 82, 113 - 45, 125 - 82, SILEX);
+		registry.addRecipeClickArea(GUIAnvil.class, 34, 26, 52 - 34, 44 - 26, SMITHING);
+		registry.addRecipeClickArea(GUIAnvil.class, 12, 50, 48 - 12, 66 - 50, ANVIL);
 		registry.addRecipeClickArea(GUIFWatzCore.class, 52, 64, 72, 19, SAFE_REACTOR);
 		registry.addRecipeClickArea(GUIRBMKOutgasser.class, 64, 53, 48, 16, RBMKOUTGASSER);
 		registry.addRecipeClickArea(GUIMachineSchrabidiumTransmutator.class, 64, 56, 66, 31, TRANSMUTATION);
 
 		IIngredientBlacklist blacklist = registry.getJeiHelpers().getIngredientBlacklist();
 
-		// Some things are even beyond my control...or are they?
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.memory));
-
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_coal_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_electric_furnace_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_difurnace_on));
@@ -219,24 +226,14 @@ public class JEIConfig implements IModPlugin {
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.statue_elb_f));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.cheater_virus));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.cheater_virus_seed));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_helmet));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_plate));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_legs));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_boots));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.apple_euphemium));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.ingot_euphemium));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.nugget_euphemium));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_kit));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.euphemium_stopper));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.watch));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.rod_quad_euphemium));
-		// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.rod_euphemium));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.bobmazon_hidden));
+
 		if(MainRegistry.polaroidID != 11) {
 			blacklist.addIngredientToBlacklist(new ItemStack(ModItems.book_secret));
-			// blacklist.addIngredientToBlacklist(new ItemStack(ModItems.book_of_));
 			blacklist.addIngredientToBlacklist(new ItemStack(ModItems.ams_core_thingy));
 		}
+
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.dummy_block_assembler));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.assembly_template));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.chemistry_template));
@@ -275,7 +272,8 @@ public class JEIConfig implements IModPlugin {
 		if(!GeneralConfig.jei)
 			return;
 		IGuiHelper help = registry.getJeiHelpers().getGuiHelper();
-		registry.addRecipeCategories(new AnvilRecipeHandler(help),
+		registry.addRecipeCategories(
+				new AnvilRecipeHandler(help),
 				new SmithingRecipeHandler(help),
 				new PressRecipeHandler(help),
 				new AlloyFurnaceRecipeHandler(help),
@@ -312,38 +310,42 @@ public class JEIConfig implements IModPlugin {
 				new HadronRecipeHandler(help),
 				new SAFERecipeHandler(help),
 				new DFCRecipeHandler(help),
-				new BookRecipeHandler(help));
+				new BookRecipeHandler(help)
+		);
 	}
 
 	@Override
 	public void registerItemSubtypes(ISubtypeRegistry subtypeRegistry) {
 		if(!GeneralConfig.jei)
 			return;
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.cell, (ItemStack stack) -> {
 			FluidStack fluid = FluidUtil.getFluidContained(stack);
 			return ModItems.cell.getTranslationKey() + (fluid == null ? "empty" : fluid.getFluid().getUnlocalizedName() + fluid.amount);
 		});
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.fluid_barrel_full, (ItemStack stack) -> {
 			FluidStack fluid = FluidUtil.getFluidContained(stack);
 			return ModItems.fluid_barrel_full.getTranslationKey() + (fluid == null ? "empty" : fluid.getFluid().getUnlocalizedName() + fluid.amount);
 		});
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.fluid_tank_full, (ItemStack stack) -> {
 			FluidStack fluid = FluidUtil.getFluidContained(stack);
 			return ModItems.fluid_tank_full.getTranslationKey() + (fluid == null ? "empty" : fluid.getFluid().getUnlocalizedName() + fluid.amount);
 		});
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.canister_generic, (ItemStack stack) -> {
 			FluidStack fluid = FluidUtil.getFluidContained(stack);
 			return ModItems.canister_generic.getTranslationKey() + (fluid == null ? "empty" : fluid.getFluid().getUnlocalizedName() + fluid.amount);
 		});
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.missile_custom, (ItemStack stack) -> {
 			return ModItems.missile_custom.getTranslationKey() + "w" + Integer.toString(ItemCustomMissile.readFromNBT(stack, "warhead")) + "f" + Integer.toString(ItemCustomMissile.readFromNBT(stack, "fuselage")) + "s" + Integer.toString(ItemCustomMissile.readFromNBT(stack, "stability")) + "t" + Integer.toString(ItemCustomMissile.readFromNBT(stack, "thruster"));
 		});
+
 		subtypeRegistry.registerSubtypeInterpreter(ModItems.fluid_icon, (ItemStack stack) -> {
-			if(stack.hasTagCompound()) {
-				String s = "";
-				if(stack.getTagCompound().hasKey("type"))
-					s = s + stack.getTagCompound().getString("type");
-				return s;
+			if(stack.hasTagCompound() && stack.getTagCompound().hasKey("type")) {
+				return stack.getTagCompound().getString("type");
 			}
 			return "";
 		});
@@ -351,5 +353,8 @@ public class JEIConfig implements IModPlugin {
 
 	@Override
 	public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+		if(!GeneralConfig.jei || ingredientRegistry == null)
+			return;
+		ingredientRegistry.addIngredientsAtRuntime(VanillaTypes.ITEM, JeiRecipes.getFluidIcons());
 	}
 }

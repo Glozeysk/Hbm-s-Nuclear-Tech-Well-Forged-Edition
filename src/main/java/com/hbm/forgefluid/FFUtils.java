@@ -58,34 +58,8 @@ import org.lwjgl.input.Keyboard;
 
 import javax.annotation.Nullable;
 
-//Drillgon200: This is Library.java except for fluids
-//Drillgon200: Let's hope this works without bugs in 1.12.2...
-//Drillgon200: Still mad they removed the fluid container registry.
 public class FFUtils {
 
-	// Drillgon200: Wow that took a while to fix. Now the code is ugly and I'll
-	// probably never fix it because it works. Dang it.
-	/**
-	 * Tessellates a liquid texture across a rectangle without looking weird and
-	 * stretched.
-	 *
-	 * @param tank
-	 *            - the tank with the fluid to render
-	 * @param guiLeft
-	 *            - the left side of the gui
-	 * @param guiTop
-	 *            - the top of the gui
-	 * @param zLevel
-	 *            - the z level of the gui
-	 * @param sizeX
-	 *            - how big the rectangle should be
-	 * @param sizeY
-	 *            - how tall the rectangle should be
-	 * @param offsetX
-	 *            - where the starting x of the rectangle should be on screen
-	 * @param offsetY
-	 *            - where the starting y of the rectangle should be on screen
-	 */
 	public static void drawLiquid(FluidTank tank, int guiLeft, int guiTop, float zLevel, int sizeX, int sizeY, int offsetX, int offsetY){
 		drawLiquid(tank, guiLeft, guiTop, zLevel, sizeX, sizeY, offsetX, offsetY, false);
 	}
@@ -95,7 +69,6 @@ public class FFUtils {
 	}
 
 	public static void drawLiquid(FluidTank tank, int guiLeft, int guiTop, float zLevel, int sizeX, int sizeY, int offsetX, int offsetY, boolean log){
-		// This is retarded, but it would be too much of a pain to fix it
 		offsetY -= 44;
 		RenderHelper.bindBlockTexture();
 
@@ -133,19 +106,6 @@ public class FFUtils {
 		}
 	}
 
-	/**
-	 * Internal method to actually render the fluid
-	 *
-	 * @param tank
-	 * @param guiLeft
-	 * @param guiTop
-	 * @param zLevel
-	 * @param liquidIcon
-	 * @param level
-	 * @param sizeX
-	 * @param offsetX
-	 * @param offsetY
-	 */
 	private static void drawFull(Fluid f, int guiLeft, int guiTop, float zLevel, TextureAtlasSprite liquidIcon, int level, int sizeX, int offsetX, int offsetY, int sizeY){
 		int color = f.getColor();
 		RenderHelper.setColor(color);
@@ -160,27 +120,6 @@ public class FFUtils {
 		RenderHelper.draw();
 	}
 
-	/**
-	 * Renders tank info, like fluid type and millibucket amount. Same as the
-	 * hbm one, just centralized to a utility file.
-	 *
-	 * @param gui
-	 *            - the gui to render the fluid info on
-	 * @param mouseX
-	 *            - the cursor's x position
-	 * @param mouseY
-	 *            - the cursor's y position
-	 * @param x
-	 *            - the x left corner of where to render the info
-	 * @param y
-	 *            - the y top corner of where to render the info
-	 * @param width
-	 *            - how wide the area to render info inside is
-	 * @param height
-	 *            - how tall the area to render info inside is
-	 * @param fluidTank
-	 *            - the tank to render info of
-	 */
 	public static void renderTankInfo(GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height, FluidTank fluidTank){
 		renderTankInfo(gui, mouseX, mouseY, x, y, width, height, fluidTank, null);
 	}
@@ -193,9 +132,13 @@ public class FFUtils {
 		}
 	}
 
-	public static void addFluidInfo(Fluid fluid, List<String> texts){
-		int temp = fluid.getTemperature()-273;
-		if(temp != 27){
+	public static void addFluidInfo(Fluid fluid, List<String> texts) {
+		addFluidInfo(fluid, texts, false);
+	}
+
+	public static void addFluidInfo(Fluid fluid, List<String> texts, boolean forceDetailed) {
+		int temp = fluid.getTemperature() - 273;
+		if(temp != 27) {
 			String tempColor = "";
 			if(temp < -130) {
 				tempColor = "§3";
@@ -216,82 +159,83 @@ public class FFUtils {
 			}
 			texts.add(String.format("%s%d°C", tempColor, temp));
 		}
+
 		boolean hasInfo = false;
-		boolean isKeyPressed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
+		boolean showDetails = forceDetailed || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
-		if (FluidTypeHandler.isAntimatter(fluid)) {
-			if(isKeyPressed){
-				texts.add("§4["+I18n.format("trait.antimatter")+"]");
+		if(FluidTypeHandler.isAntimatter(fluid)) {
+			if(showDetails) {
+				texts.add("§4[" + I18n.format("trait.antimatter") + "]");
 			}
 			hasInfo = true;
 		}
 
-		if (FluidTypeHandler.isCorrosivePlastic(fluid)) {
-			if (FluidTypeHandler.isCorrosiveIron(fluid)) {
-				if(isKeyPressed){
-					texts.add("§2["+I18n.format("trait.corrosiveIron")+"]");
+		if(FluidTypeHandler.isCorrosivePlastic(fluid)) {
+			if(FluidTypeHandler.isCorrosiveIron(fluid)) {
+				if(showDetails) {
+					texts.add("§2[" + I18n.format("trait.corrosiveIron") + "]");
 				}
-			} else if(isKeyPressed){
-				texts.add("§a["+I18n.format("trait.corrosivePlastic")+"]");
+			} else if(showDetails) {
+				texts.add("§a[" + I18n.format("trait.corrosivePlastic") + "]");
 			}
 			hasInfo = true;
 		}
 
-		if (FluidCombustionRecipes.hasFuelRecipe(fluid)) {
-			if(isKeyPressed){
-				texts.add("§6["+I18n.format("trait.flammable")+"]");
-				texts.add(" "+I18n.format("trait.flammable.desc", Library.getShortNumber(FluidCombustionRecipes.getFlameEnergy(fluid) * 1000L)));
-			}
-			hasInfo = true;
-		}
-		if (EngineRecipes.hasFuelRecipe(fluid)) {
-			if(isKeyPressed){
-				texts.add("§c["+I18n.format("trait.combustable")+"]");
-
-				texts.add(" "+I18n.format("trait.combustable.desc", Library.getShortNumber(EngineRecipes.getEnergy(fluid))));
-				texts.add(" "+I18n.format("trait.combustable.desc2", I18n.format(EngineRecipes.getFuelGrade(fluid).getGrade())));
+		if(FluidCombustionRecipes.hasFuelRecipe(fluid)) {
+			if(showDetails) {
+				texts.add("§6[" + I18n.format("trait.flammable") + "]");
+				texts.add(" " + I18n.format("trait.flammable.desc", Library.getShortNumber(FluidCombustionRecipes.getFlameEnergy(fluid) * 1000L)));
 			}
 			hasInfo = true;
 		}
 
-		if (HeatRecipes.hasCoolRecipe(fluid)) {
-			if(isKeyPressed){
+		if(EngineRecipes.hasFuelRecipe(fluid)) {
+			if(showDetails) {
+				texts.add("§c[" + I18n.format("trait.combustable") + "]");
+				texts.add(" " + I18n.format("trait.combustable.desc", Library.getShortNumber(EngineRecipes.getEnergy(fluid))));
+				texts.add(" " + I18n.format("trait.combustable.desc2", I18n.format(EngineRecipes.getFuelGrade(fluid).getGrade())));
+			}
+			hasInfo = true;
+		}
+
+		if(HeatRecipes.hasCoolRecipe(fluid)) {
+			if(showDetails) {
 				String heat = Library.getShortNumber(HeatRecipes.getResultingHeat(fluid) * 1000 / HeatRecipes.getInputAmountCold(fluid));
-				texts.add("§4["+I18n.format("trait.coolable")+"]");
-				texts.add(" "+I18n.format("trait.coolable.desc", heat));
+				texts.add("§4[" + I18n.format("trait.coolable") + "]");
+				texts.add(" " + I18n.format("trait.coolable.desc", heat));
 			}
 			hasInfo = true;
 		}
 
-		if (HeatRecipes.hasBoilRecipe(fluid)) {
-			if(isKeyPressed){
+		if(HeatRecipes.hasBoilRecipe(fluid)) {
+			if(showDetails) {
 				String heat = Library.getShortNumber(HeatRecipes.getRequiredHeat(fluid) * 1000 / HeatRecipes.getInputAmountHot(fluid));
-				texts.add("§3["+I18n.format("trait.boilable")+"]");
-				texts.add(" "+I18n.format("trait.boilable.desc", heat));
+				texts.add("§3[" + I18n.format("trait.boilable") + "]");
+				texts.add(" " + I18n.format("trait.boilable.desc", heat));
 			}
 			hasInfo = true;
 		}
 
 		float dfcEff = FluidTypeHandler.getDFCEfficiency(fluid);
 
-		if(dfcEff >= 1){
-			if(isKeyPressed){
-				texts.add("§5["+I18n.format("trait.dfcFuel")+"]");
-				dfcEff = (dfcEff-1F);
-				texts.add(" "+I18n.format("trait.dfcFuel.desc", dfcEff >= 0 ? "+"+Library.getPercentage(dfcEff) : Library.getPercentage(dfcEff)));
+		if(dfcEff >= 1) {
+			if(showDetails) {
+				texts.add("§5[" + I18n.format("trait.dfcFuel") + "]");
+				dfcEff = (dfcEff - 1F);
+				texts.add(" " + I18n.format("trait.dfcFuel.desc", dfcEff >= 0 ? "+" + Library.getPercentage(dfcEff) : Library.getPercentage(dfcEff)));
 			}
 			hasInfo = true;
 		}
 
-		if (hasInfo && !isKeyPressed) {
+		if(hasInfo && !showDetails) {
 			texts.add(I18nUtil.resolveKey("desc.tooltip.hold", "LSHIFT"));
 		}
 	}
 
 	private static void renderFluidInfo(GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height, Fluid fluid, int amount, int capacity) {
-		if (x <= mouseX && x + width > mouseX && y < mouseY && y + height >= mouseY) {
+		if(x <= mouseX && x + width > mouseX && y < mouseY && y + height >= mouseY) {
 			List<String> texts = new ArrayList<>();
-			if (fluid != null) {
+			if(fluid != null) {
 				texts.add(fluid.getLocalizedName(new FluidStack(fluid, 1)));
 				texts.add(amount + "/" + capacity + "mB");
 				addFluidInfo(fluid, texts);
@@ -310,29 +254,6 @@ public class FFUtils {
 		if(t.getFluid().isFluidEqual(f) && t.getFluidAmount() >= f.amount) return true;
 		return false;
 	}
-
-	/**
-	 * Replacement method for the old method of transferring fluids out of a
-	 * machine
-	 *
-	 * @param tileEntity
-	 *            - the tile entity it is filling from
-	 * @param tank
-	 *            - the fluid tank to fill from
-	 * @param world
-	 *            - the world the filling is taking place in
-	 * @param i
-	 *            - x coord of place to fill
-	 * @param j
-	 *            - y coord of place to fill
-	 * @param k
-	 *            - z coord of place to fill
-	 * @param maxDrain
-	 *            - the maximum amount that can be drained from the tank at a
-	 *            time
-	 * @return Whether something was actually filled or not, or whether it needs
-	 *         an update
-	 */
 
 	public static boolean fillFluid(TileEntity tileEntity, FluidTank tank, World world, BlockPos toFill, int maxDrain){
 		if(tank.getFluidAmount() <= 0 || tank.getFluid() == null || tank.getFluid().getFluid() == null) {
@@ -360,20 +281,7 @@ public class FFUtils {
 		return false;
 	}
 
-	/**
-	 * Fills a fluid handling item from a tank
-	 *
-	 * @param slots
-	 *            - the slot inventory
-	 * @param tank
-	 *            - the tank to fill from
-	 * @param slot1
-	 *            - the slot with an empty container
-	 * @param slot2
-	 *            - the output slot.
-	 * @return true if something was actually filled
-	 */
-	public static boolean fillFromFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) { // fills fluid from item into tank
+	public static boolean fillFromFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) {
 		if(slots == null || tank == null || slots.getSlots() < slot1 || slots.getSlots() < slot2 || slots.getStackInSlot(slot1) == null || slots.getStackInSlot(slot1).isEmpty()) {
 			return false;
 		}
@@ -488,12 +396,10 @@ public class FFUtils {
 		return false;
 	}
 
-	// Ah yes, hacky special methods to make stacks drain.
 	private static boolean trySpecialFillFromFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){
 		ItemStack in = slots.getStackInSlot(slot1);
 		ItemStack out = slots.getStackInSlot(slot2);
 
-		// Fluid Tank override
 		if(in.getItem() == ModItems.fluid_tank_full && tank.fill(FluidUtil.getFluidContained(in), false) == 1000 && ((ItemFluidTank.isEmptyTank(out) && out.getCount() < 64) || out.isEmpty())) {
 			tank.fill(FluidUtil.getFluidContained(in), true);
 			in.shrink(1);
@@ -505,7 +411,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Fluid barrel override
 		if(in.getItem() == ModItems.fluid_barrel_full && tank.fill(FluidUtil.getFluidContained(in), false) == 16000 && ((ItemFluidTank.isEmptyBarrel(out) && out.getCount() < 64) || out.isEmpty())) {
 			tank.fill(FluidUtil.getFluidContained(in), true);
 			in.shrink(1);
@@ -517,7 +422,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Canister override
 		if(in.getItem() == ModItems.canister_generic && tank.fill(FluidUtil.getFluidContained(in), false) == 1000 && ((ItemFluidCanister.isEmptyCanister(out) && out.getCount() < 64) || out.isEmpty())) {
 			tank.fill(FluidUtil.getFluidContained(in), true);
 			in.shrink(1);
@@ -529,7 +433,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Gas canister override
 		if(in.getItem() == ModItems.gas_canister && tank.fill(FluidUtil.getFluidContained(in), false) == 4000 && ((ItemGasCanister.isEmptyCanister(out) && out.getCount() < 64) || out.isEmpty())) {
 			tank.fill(FluidUtil.getFluidContained(in), true);
 			in.shrink(1);
@@ -541,7 +444,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Cell override
 		if(in.getItem() == ModItems.cell && tank.fill(FluidUtil.getFluidContained(in), false) == 1000 && ((ItemCell.isEmptyCell(out) && out.getCount() < 64) || out.isEmpty())) {
 			tank.fill(FluidUtil.getFluidContained(in), true);
 			in.shrink(1);
@@ -553,15 +455,12 @@ public class FFUtils {
 			return true;
 		}
 
-		//Mercury override
-		//Oh god, these overrides are getting worse and worse, but it would take a large amount of effort to make the code good
 		if(in.getItem() == ModItems.nugget_mercury && tank.fill(new FluidStack(ModForgeFluids.mercury, 125), false) == 125){
 			tank.fill(new FluidStack(ModForgeFluids.mercury, 125), true);
 			in.shrink(1);
 			return true;
 		}
 
-		//That's it. I'm making a fluid container registry just so I don't have to make this method any worse.
 		if(FluidContainerRegistry.hasFluid(in.getItem())) {
 			FluidStack fluid = FluidContainerRegistry.getFluidFromItem(in.getItem());
 			Item container = FluidContainerRegistry.getContainerItem(in.getItem());
@@ -579,7 +478,6 @@ public class FFUtils {
 		return false;
 	}
 
-	//Jesus H. Christ I hate this class
 	public static boolean checkRestrictions(ItemStack stack, Predicate<FluidStack> fluidRestrictor){
 		if(stack.getItem() == ModItems.fluid_barrel_infinite)
 			return true;
@@ -598,19 +496,7 @@ public class FFUtils {
 		return stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && FluidUtil.getFluidContained(stack) == null;
 	}
 
-	/**
-	 * Fills a tank from a fluid handler item.
-	 *
-	 * @param slots
-	 *            - the slot inventory
-	 * @param tank
-	 *            - the tank to be filled
-	 * @param slot1
-	 *            - the slot with the full container
-	 * @param slot2
-	 *            - the output slot
-	 */
-	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) { // fills fluid from tank into item
+	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) {
 		if(slots == null || tank == null || tank.getFluid() == null || slots.getSlots() < slot1 || slots.getSlots() < slot2 || slots.getStackInSlot(slot1) == null || slots.getStackInSlot(slot1).isEmpty()) {
 			return false;
 		}
@@ -776,8 +662,7 @@ public class FFUtils {
 		return returnValue;
 	}
 
-	// Ah yes, hacky special methods to make stacks drain.
-	private static boolean trySpecialFillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){ //drains tank into item
+	private static boolean trySpecialFillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){
 		if(tank == null || tank.getFluid() == null) return false;
 		ItemStack in = slots.getStackInSlot(slot1);
 		ItemStack out = slots.getStackInSlot(slot2);
@@ -786,24 +671,22 @@ public class FFUtils {
 		Item item1 = in.getItem();
 		in1.setCount(1);
 
-		// Bucket override
-        if(item1 == Items.BUCKET && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000) {
+		if(item1 == Items.BUCKET && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000) {
 			if(!out.isEmpty() && in.getCount() > 1)
 				return false;
-            FluidStack f = tank.drain(1000, true);
-            if(f == null)
-                return false;
-            in.shrink(1);
+			FluidStack f = tank.drain(1000, true);
+			if(f == null)
+				return false;
+			in.shrink(1);
 
 			if(out.isEmpty()){
 				slots.setStackInSlot(slot2, FluidUtil.getFilledBucket(f));
 			} else {
 				slots.setStackInSlot(slot1, FluidUtil.getFilledBucket(f));
 			}
-            return true;
-        }
+			return true;
+		}
 
-		// Fluid Tank override
 		if(tank.getFluid() != null && in.getItem() == ModItems.fluid_tank_full && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000 && ItemFluidTank.isEmptyTank(in1) && ((ItemFluidTank.isFullTank(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(1000, true);
 			if(f == null)
@@ -818,7 +701,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Fluid barrel override
 		if(tank.getFluid() != null && in.getItem() == ModItems.fluid_barrel_full && tank.drain(16000, false) != null && tank.drain(16000, false).amount == 16000 && ItemFluidTank.isEmptyBarrel(in1) && ((ItemFluidTank.isFullBarrel(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(16000, true);
 			if(f == null)
@@ -833,7 +715,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Canister override
 		if(tank.getFluid() != null && in.getItem() == ModItems.canister_generic && SpecialContainerFillLists.EnumCanister.contains(tank.getFluid().getFluid()) && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000 && ItemFluidCanister.isEmptyCanister(in1) && ((ItemFluidCanister.isFullCanister(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(1000, true);
 			if(f == null)
@@ -848,7 +729,6 @@ public class FFUtils {
 			return true;
 		}
 
-		// Gas canister override
 		if(tank.getFluid() != null && in.getItem() == ModItems.gas_canister && SpecialContainerFillLists.EnumGasCanister.contains(tank.getFluid().getFluid()) && tank.drain(4000, false) != null && tank.drain(4000, false).amount == 4000 && ItemGasCanister.isEmptyCanister(in1) && ((ItemGasCanister.isFullCanister(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(4000, true);
 			if(f == null)
@@ -863,8 +743,6 @@ public class FFUtils {
 			return true;
 		}
 
-
-		// Cell override
 		if(tank.getFluid() != null && in.getItem() == ModItems.cell && SpecialContainerFillLists.EnumCell.contains(tank.getFluid().getFluid()) && tank.drain(1000, false) != null && tank.drain(1000, false).amount == 1000 && ItemCell.isEmptyCell(in1) && ((ItemCell.isFullCell(out, tank.getFluid().getFluid()) && out.getCount() < 64) || out.isEmpty())) {
 			FluidStack f = tank.drain(1000, true);
 			if(f == null)
@@ -879,12 +757,9 @@ public class FFUtils {
 			return true;
 		}
 
-		// Rod override (extra messy because I don't feel like restarting
-		// minecraft to make a helper method)
 		if(in.getItem() == ModItems.rod_empty) {
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.coolant && tank.getFluid().amount >= 1000 && out.isEmpty()) {
 				tank.drain(1000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_coolant));
@@ -895,7 +770,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.tritium && tank.getFluid().amount >= 1000 && out.isEmpty()) {
 				tank.drain(1000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_tritium));
@@ -906,7 +780,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == FluidRegistry.WATER && tank.getFluid().amount >= 1000 && out.isEmpty()) {
 				tank.drain(1000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_water));
@@ -916,10 +789,10 @@ public class FFUtils {
 				return true;
 			}
 		}
+
 		if(in.getItem() == ModItems.rod_dual_empty) {
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.coolant && tank.getFluid().amount >= 2000 && out.isEmpty()) {
 				tank.drain(2000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_dual_coolant));
@@ -930,7 +803,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.tritium && tank.getFluid().amount >= 2000 && out.isEmpty()) {
 				tank.drain(2000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_dual_tritium));
@@ -941,7 +813,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == FluidRegistry.WATER && tank.getFluid().amount >= 2000 && out.isEmpty()) {
 				tank.drain(2000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_dual_water));
@@ -951,10 +822,10 @@ public class FFUtils {
 				return true;
 			}
 		}
+
 		if(in.getItem() == ModItems.rod_quad_empty) {
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.coolant && tank.getFluid().amount >= 4000 && out.isEmpty()) {
 				tank.drain(4000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_quad_coolant));
@@ -965,7 +836,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == ModForgeFluids.tritium && tank.getFluid().amount >= 4000 && out.isEmpty()) {
 				tank.drain(4000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_quad_tritium));
@@ -976,7 +846,6 @@ public class FFUtils {
 			}
 			if(tank.getFluid() != null && tank.getFluid().getFluid() == FluidRegistry.WATER && tank.getFluid().amount >= 4000 && out.isEmpty()) {
 				tank.drain(4000, true);
-
 				in.shrink(1);
 				if(out.isEmpty()) {
 					slots.setStackInSlot(slot2, new ItemStack(ModItems.rod_quad_water));
@@ -988,7 +857,6 @@ public class FFUtils {
 		}
 
 		if(in.getItem() instanceof JetpackBase && ((JetpackBase)in.getItem()).fuel == tank.getFluid().getFluid()) {
-
 			if(tank.getFluidAmount() > 0 && JetpackBase.getFuel(in) < ((JetpackBase)in.getItem()).maxFuel) {
 				FluidStack st = tank.drain(25, false);
 				int fill = st == null ? 0 : st.amount;
@@ -1026,7 +894,6 @@ public class FFUtils {
 				slots.setStackInSlot(in, slots.getStackInSlot(in).getItem().getContainerItem(slots.getStackInSlot(in)));
 			}
 			if(slots.getStackInSlot(out) == null || slots.getStackInSlot(out).isEmpty()) {
-
 				slots.setStackInSlot(out, slots.getStackInSlot(in));
 				slots.setStackInSlot(in, ItemStack.EMPTY);
 				return true;
@@ -1035,7 +902,6 @@ public class FFUtils {
 				slots.getStackInSlot(in).shrink(amountToTransfer);
 				if(slots.getStackInSlot(in).getCount() <= 0)
 					slots.setStackInSlot(in, ItemStack.EMPTY);
-
 				slots.getStackInSlot(out).grow(amountToTransfer);
 				return true;
 			}
@@ -1067,7 +933,6 @@ public class FFUtils {
 	public static void setColorFromFluid(Fluid f){
 		if(f == null)
 			return;
-
 		setRGBAFromHex(f.getColor());
 	}
 
@@ -1076,7 +941,6 @@ public class FFUtils {
 		float g = (color >> 8 & 0xFF) / 255F;
 		float b = (color & 0xFF) / 255F;
 		float a = (color >> 24 & 0xFF) / 255F;
-
 		GlStateManager.color(r, g, b, a);
 	}
 
@@ -1084,7 +948,6 @@ public class FFUtils {
 		float r = (color >> 16 & 0xFF) / 255F;
 		float g = (color >> 8 & 0xFF) / 255F;
 		float b = (color & 0xFF) / 255F;
-
 		GlStateManager.color(r, g, b, 1);
 	}
 

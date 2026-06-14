@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
 
 public class UpdateChecker {
 
@@ -53,7 +52,6 @@ public class UpdateChecker {
         try {
             MainRegistry.logger.info("[UpdateChecker] Starting update check...");
             MainRegistry.logger.info("[UpdateChecker] Current version: " + RefStrings.VERSION);
-            MainRegistry.logger.info("[UpdateChecker] Current build date: " + RefStrings.BUILD_DATE);
 
             URL url = new URL(CURSEFORGE_API_URL);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -75,10 +73,8 @@ public class UpdateChecker {
                 JsonObject json = new JsonParser().parse(response.toString()).getAsJsonObject();
                 JsonObject latestFile = json.getAsJsonArray("data").get(0).getAsJsonObject();
                 latestVersion = latestFile.get("displayName").getAsString();
-                String latestDateStr = latestFile.get("fileDate").getAsString();
 
                 MainRegistry.logger.info("[UpdateChecker] Latest version on CurseForge: " + latestVersion);
-                MainRegistry.logger.info("[UpdateChecker] Latest file date: " + latestDateStr);
 
                 int versionComparison = compareVersions(latestVersion, RefStrings.VERSION);
                 MainRegistry.logger.info("[UpdateChecker] Version comparison result: " + versionComparison);
@@ -86,24 +82,9 @@ public class UpdateChecker {
                 if(versionComparison > 0) {
                     updateAvailable = true;
                     MainRegistry.logger.info("[UpdateChecker] Update available (version is newer on CF)");
-                } else if(versionComparison == 0) {
-                    String currentBuildDate = RefStrings.BUILD_DATE;
-                    if(currentBuildDate != null && !currentBuildDate.isEmpty()) {
-                        try {
-                            long latestTime = parseDate(latestDateStr);
-                            long buildTime = parseDate(currentBuildDate);
-                            updateAvailable = latestTime > buildTime;
-                            MainRegistry.logger.info("[UpdateChecker] Versions equal, date comparison result: " + updateAvailable);
-                        } catch(Exception e) {
-                            MainRegistry.logger.warn("[UpdateChecker] Date comparison failed: " + e.getMessage());
-                            updateAvailable = false;
-                        }
-                    } else {
-                        updateAvailable = false;
-                    }
                 } else {
                     updateAvailable = false;
-                    MainRegistry.logger.info("[UpdateChecker] Current version is newer, no update");
+                    MainRegistry.logger.info("[UpdateChecker] No update available");
                 }
             } else {
                 MainRegistry.logger.warn("[UpdateChecker] Failed to connect to CurseForge API. Response code: " + connection.getResponseCode());
@@ -113,13 +94,6 @@ public class UpdateChecker {
             MainRegistry.logger.warn("[UpdateChecker] Failed to check for updates: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private long parseDate(String dateStr) throws ParseException {
-        dateStr = dateStr.replaceAll("\\.\\d+Z$", "Z");
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
-        return sdf.parse(dateStr).getTime();
     }
 
     private int compareVersions(String remoteDisplayName, String currentVersion) {
