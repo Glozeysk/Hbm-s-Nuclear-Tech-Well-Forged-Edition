@@ -83,8 +83,12 @@ public class FluidTankPacket extends PrecompiledPacket {
 		@Override
 		@SideOnly(Side.CLIENT)
 		public IMessage onMessage(FluidTankPacket m, MessageContext ctx) {
-			
+
 			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null) {
+					return;
+				}
+
 				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
 				if (te != null && te instanceof ITankPacketAcceptor) {
 					((ITankPacketAcceptor)te).recievePacket(m.tags);

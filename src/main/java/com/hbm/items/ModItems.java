@@ -2052,10 +2052,10 @@ public class ModItems {
 			.addHitAbility(new WeaponAbility.StunAbility(2));
 
 	public static final Item desh_pickaxe = new ItemToolAbility(5F, -2.8F, -0.05, MainRegistry.enumToolMaterialDesh, EnumToolType.PICKAXE, "desh_pickaxe")
-			.addAbility(IToolAreaAbility.HAMMER, 0)
-			.addAbility(IToolAreaAbility.RECURSION, 0)
-			.addAbility(IToolHarvestAbility.SILK, 0)
-			.addAbility(IToolHarvestAbility.LUCK, 1);
+			.addBreakAbility(new ToolAbility.HammerAbility(1))
+			.addBreakAbility(new ToolAbility.RecursionAbility(3))
+			.addBreakAbility(new ToolAbility.SilkAbility())
+			.addBreakAbility(new LuckAbility(2));
 
 	public static final Item desh_axe = new ItemToolAbility(6.5F, -2.8F, -0.05, MainRegistry.enumToolMaterialDesh, EnumToolType.AXE, "desh_axe")
 			.addBreakAbility(new ToolAbility.HammerAbility(1))

@@ -1219,7 +1219,7 @@ public class RadiationSystemNT {
 	public static class ChunkRadiationStorage {
 		//Half a megabyte is good enough isn't it? Right?
 		//This is going to come back to bite me later, isn't it.
-		private static ByteBuffer buf = ByteBuffer.allocate(524288);
+		private ByteBuffer buf = ByteBuffer.allocate(524288);
 		
 		public WorldRadiationData parent;
 		private Chunk chunk;
@@ -1294,36 +1294,39 @@ public class RadiationSystemNT {
 		 * @return the tag written to
 		 */
 		public NBTTagCompound writeToNBT(NBTTagCompound tag){
-			for(SubChunkRadiationStorage st : chunks){
-				if(st == null){
-					buf.put((byte) 0);
-				} else {
-					buf.put((byte) 1);
-					buf.putShort((short) st.yLevel);
-					//Write stored pockets
-					buf.putShort((short)st.pockets.length);
-					for(RadPocket p : st.pockets){
-						writePocket(buf, p);
-					}
-					//If it's null, mark as 0, else mark as 1 and write the index of each pocket in the array sequentially
-					if(st.pocketsByBlock == null){
+			buf.clear();
+			try {
+				for(SubChunkRadiationStorage st : chunks){
+					if(st == null){
 						buf.put((byte) 0);
 					} else {
 						buf.put((byte) 1);
-						for(RadPocket p : st.pocketsByBlock){
-							buf.putShort(arrayIndex(p, st.pockets));
+						buf.putShort((short) st.yLevel);
+						buf.putShort((short)st.pockets.length);
+						for(RadPocket p : st.pockets){
+							writePocket(buf, p);
+						}
+						if(st.pocketsByBlock == null){
+							buf.put((byte) 0);
+						} else {
+							buf.put((byte) 1);
+							for(RadPocket p : st.pocketsByBlock){
+								buf.putShort(arrayIndex(p, st.pockets));
+							}
 						}
 					}
 				}
+				buf.flip();
+				byte[] data = new byte[buf.limit()];
+				buf.get(data);
+				tag.setByteArray("chunkRadData", data);
+			} catch (java.nio.BufferOverflowException e) {
+				MainRegistry.logger.error("[HBM RadFix] Radiation data too large for chunk "
+						+ (chunk != null ? chunk.getPos() : "unknown")
+						+ ". Data will NOT be saved. Consider increasing buffer size.");
+			} finally {
+				buf.clear();
 			}
-			//I decided to use a ByteBuffer instead of straight NBT data for this
-			//because I can be more data efficient if I don't have a bunch of string tags weighing me down
-			//For every little bit of data
-			buf.flip();
-			byte[] data = new byte[buf.limit()];
-			buf.get(data);
-			tag.setByteArray("chunkRadData", data);
-			buf.clear();
 			return tag;
 		}
 		
@@ -1366,42 +1369,102 @@ public class RadiationSystemNT {
 		 * @param tag - the tag to deserialize from
 		 */
 		public void readFromNBT(NBTTagCompound tag){
-			ByteBuffer data = ByteBuffer.wrap(tag.getByteArray("chunkRadData"));
-			//For each chunk, try to deserialize it
-			for(int i = 0; i < chunks.length; i ++){
-				boolean subChunkExists = data.get() == 1 ? true : false;
-				if(subChunkExists){
-					//Y level could be implicitly defined with i, but this works too
-					int yLevel = data.getShort();
-					//Create the new sub chunk, don't pass any data into it because we'll set that manually
-					SubChunkRadiationStorage st = new SubChunkRadiationStorage(this, yLevel, null, null);
-					int pocketsLength = data.getShort();
-					st.pockets = new RadPocket[pocketsLength];
-					//Deserialize each pocket into the pockets array
-					for(int j = 0; j < pocketsLength; j ++){
-						st.pockets[j] = readPocket(data, st);
-						if(st.pockets[j].radiation > 0){
-							//If it has active radiation, add it to the active set to be updated
-							parent.addActivePocket(st.pockets[j]);
-						}
+			if (!tag.hasKey("chunkRadData")) {
+				return;
+			}
+
+			byte[] rawBytes = tag.getByteArray("chunkRadData");
+			if (rawBytes == null || rawBytes.length == 0) {
+				return;
+			}
+
+			ByteBuffer data = ByteBuffer.wrap(rawBytes);
+
+			try {
+				for(int i = 0; i < chunks.length; i ++){
+					if (data.remaining() < 1) {
+						logRadDataCorruption("Unexpected end of data at subchunk header " + i);
+						break;
 					}
-					boolean perBlockDataExists = data.get() == 1 ? true : false;
-					if(perBlockDataExists){
-						//If the per block data exists, read indices sequentially and set each array slot to the rad pocket at that index
-						st.pocketsByBlock = new RadPocket[16*16*16];
-						for(int j = 0; j < 16*16*16; j ++){
-							int idx = data.getShort();
-							if(idx >= 0)
-								st.pocketsByBlock[j] = st.pockets[idx];
+
+					byte subChunkFlag = data.get();
+					boolean subChunkExists = (subChunkFlag == 1);
+
+					if(subChunkExists){
+						if (data.remaining() < 4) {
+							logRadDataCorruption("Truncated subchunk " + i + " header");
+							break;
 						}
+
+						int yLevel = data.getShort();
+						int pocketsLength = data.getShort();
+
+						if (pocketsLength < 0 || pocketsLength > 4096) {
+							logRadDataCorruption("Invalid pocketsLength " + pocketsLength + " at subchunk " + i);
+							break;
+						}
+
+						SubChunkRadiationStorage st = new SubChunkRadiationStorage(this, yLevel, null, null);
+						st.pockets = new RadPocket[pocketsLength];
+
+						for(int j = 0; j < pocketsLength; j ++){
+							st.pockets[j] = readPocket(data, st);
+							if(st.pockets[j].radiation > 0){
+								parent.addActivePocket(st.pockets[j]);
+							}
+						}
+
+						if (data.remaining() < 1) {
+							logRadDataCorruption("Truncated per-block flag at subchunk " + i);
+							chunks[i] = st;
+							break;
+						}
+
+						byte perBlockFlag = data.get();
+						boolean perBlockDataExists = (perBlockFlag == 1);
+
+						if(perBlockDataExists){
+							if (data.remaining() < 16*16*16*2) {
+								logRadDataCorruption("Truncated per-block data at subchunk " + i);
+								chunks[i] = st;
+								break;
+							}
+
+							st.pocketsByBlock = new RadPocket[16*16*16];
+							for(int j = 0; j < 16*16*16; j ++){
+								int idx = data.getShort();
+								if(idx >= 0 && idx < pocketsLength) {
+									st.pocketsByBlock[j] = st.pockets[idx];
+								}
+							}
+						}
+						chunks[i] = st;
+					} else {
+						chunks[i] = null;
 					}
-					chunks[i] = st;
-				} else {
-					chunks[i] = null;
 				}
+			} catch (java.nio.BufferUnderflowException e) {
+				logRadDataCorruption("Buffer underflow during deserialization: " + e.getMessage());
+			} catch (Exception e) {
+				// Ловим любые другие неожиданности (например, IndexOutOfBoundsException)
+				logRadDataCorruption("Unexpected error during deserialization: " + e.getClass().getSimpleName() + " - " + e.getMessage());
 			}
 		}
-		
+
+		/**
+		 * Логирует повреждение данных радиации с координатами чанка
+		 */
+		private void logRadDataCorruption(String details) {
+			if (chunk != null) {
+				ChunkPos pos = chunk.getPos();
+				MainRegistry.logger.warn("[HBM RadFix] Corrupted radiation data at chunk ["
+						+ pos.x + ", " + pos.z + "]: " + details
+						+ ". Chunk will load without radiation data.");
+			} else {
+				MainRegistry.logger.warn("[HBM RadFix] Corrupted radiation data: "
+						+ details + ". Chunk will load without radiation data.");
+			}
+		}
 		/**
 		 * Reads a single pocket from a byte buffer
 		 * @param buf - the buffer to read from

@@ -10,13 +10,17 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.Objects;
 
 @ChestContainer
 public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends Container {
 
     protected final T tileEntity;
+    protected final EntityPlayer player; // <-- ДОБАВЛЕНО: сохраняем ссылку на игрока
     protected int lockedSlotIndex = -1;
     private final int crateSlots;
     private final int playerInvY;
@@ -33,6 +37,7 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
                                  int playerInvStartX,
                                  int playerInvY, int hotbarY) {
         this.tileEntity = te;
+        this.player = invPlayer.player; // <-- ДОБАВЛЕНО: инициализация игрока
         this.crateSlots = crateSlots;
         this.slotsPerRow = slotsPerRow;
         this.rows = rows;
@@ -75,6 +80,57 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
             } else {
                 this.addSlotToContainer(new Slot(invPlayer, i,
                         playerInvStartX + i * 18, hotbarY));
+            }
+        }
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (lockedSlotIndex != -1 && !player.world.isRemote) {
+            ItemStack lockedStack = player.inventory.getStackInSlot(lockedSlotIndex);
+
+            if (lockedStack.isEmpty()) {
+                player.closeScreen();
+            }
+        }
+    }
+
+    @Override
+    public void onContainerClosed(EntityPlayer player) {
+        super.onContainerClosed(player);
+        if (!player.world.isRemote) {
+            tileEntity.closeInventory(player);
+
+            if (tileEntity.isFromItemStack()) {
+                ItemStack lockedStack = player.inventory.getStackInSlot(lockedSlotIndex);
+
+                if (!lockedStack.isEmpty() && lockedStack.getCount() > 1) {
+                    int extraCount = lockedStack.getCount() - 1;
+
+                    ItemStack extraCrates = new ItemStack(lockedStack.getItem(), extraCount, lockedStack.getMetadata());
+
+                    if (lockedStack.hasTagCompound()) {
+                        NBTTagCompound cleanTag = lockedStack.getTagCompound().copy();
+                        cleanTag.removeTag("Items");
+                        cleanTag.removeTag("hbm_inventory");
+                        extraCrates.setTagCompound(cleanTag);
+                    }
+
+                    lockedStack.setCount(1);
+
+                    tileEntity.saveInventoryToStack();
+                    playCloseSound(player);
+
+                    if (!player.inventory.addItemStackToInventory(extraCrates)) {
+                        player.dropItem(extraCrates, false);
+                    }
+
+                } else {
+                    tileEntity.saveInventoryToStack();
+                    playCloseSound(player);
+                }
             }
         }
     }
@@ -153,19 +209,6 @@ public abstract class ContainerCrateBase<T extends TileEntityCrateBase> extends 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return tileEntity.isUseableByPlayer(player);
-    }
-
-    @Override
-    public void onContainerClosed(EntityPlayer player) {
-        super.onContainerClosed(player);
-        if (!player.world.isRemote) {
-            tileEntity.closeInventory(player);
-
-            if (tileEntity.isFromItemStack()) {
-                tileEntity.saveInventoryToStack();
-                playCloseSound(player);
-            }
-        }
     }
 
     public static class SlotCrate extends SlotItemHandler {

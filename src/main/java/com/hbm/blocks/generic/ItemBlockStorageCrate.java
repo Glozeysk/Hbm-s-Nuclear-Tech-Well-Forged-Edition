@@ -35,7 +35,7 @@ public class ItemBlockStorageCrate extends ItemBlock {
         this.addPropertyOverride(new ResourceLocation("open"), new IItemPropertyGetter() {
             @Override
             public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
-                boolean isOpen = (openStackClient != null && ItemStack.areItemStacksEqual(stack, openStackClient));
+                boolean isOpen = (openStackClient != null);
 
                 return isOpen ? 1.0F : 0.0F;
             }
@@ -55,11 +55,11 @@ public class ItemBlockStorageCrate extends ItemBlock {
             return new ActionResult<>(EnumActionResult.FAIL, stack);
         }
 
-        if (!world.isRemote) {
-            if (!hasMatchingKey(stack, player)) {
-                return new ActionResult<>(EnumActionResult.FAIL, stack);
-            }
+        if (!hasMatchingKey(stack, player)) {
+            return new ActionResult<>(EnumActionResult.FAIL, stack);
+        }
 
+        if (!world.isRemote) {
             int guiId = getGuiId(this.getBlock());
             if (guiId != -1) {
                 if (stack.hasTagCompound() && stack.getTagCompound().hasKey("lock")) {
