@@ -1,17 +1,23 @@
 package com.hbm.blocks.network;
 
+import com.hbm.entity.item.EntityMovingItem;
 import net.minecraft.block.material.Material;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class BlockConveyorExpress extends BlockConveyor {
 
     public BlockConveyorExpress(Material materialIn, String s) {
-        super(materialIn, s);
+        super(materialIn, s, () -> new double[]{0.0D});
     }
 
     @Override
-    public Vec3d getTravelLocation(World world, int x, int y, int z, Vec3d itemPos, double speed) {
-        return super.getTravelLocation(world, x, y, z, itemPos, speed * 3);
+    protected double getTravelSpeed(World world, BlockPos pos, double baseSpeed) {
+        return baseSpeed * 3.0D;
+    }
+
+    @Override
+    protected double getEffectiveSpeed(World world, BlockPos pos, EntityMovingItem item, double baseSpeed) {
+        return baseSpeed * 3.0D;
     }
 }
