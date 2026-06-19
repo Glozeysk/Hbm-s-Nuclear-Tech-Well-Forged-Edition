@@ -2,16 +2,16 @@ package com.hbm.handler;
 
 import com.hbm.blocks.network.BlockConveyor;
 import com.hbm.blocks.network.ConveyorArc;
-import com.hbm.blocks.network.ConveyorQueue;
-import com.hbm.entity.item.EntityMovingItem;
+import com.hbm.blocks.network.ConveyorItemData;
+import com.hbm.tileentity.network.TileEntityConveyor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -24,7 +24,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
@@ -84,11 +83,19 @@ public class ConveyorVectorHandler {
         EnumFacing facing = conveyor.getLaneFacing(world, pos);
         double yLine = pos.getY() + 0.27D;
 
-        for (int lane = 0; lane < conveyor.getLaneCount(); lane++) {
-            List<EntityMovingItem> items = getClientLaneItems(world, pos, conveyor, lane);
+        TileEntity te = world.getTileEntity(pos);
+        List<ConveyorItemData> allItems;
+        if (te instanceof TileEntityConveyor) {
+            allItems = ((TileEntityConveyor) te).getItems();
+        } else {
+            allItems = new ArrayList<>();
+        }
 
-            boolean blockedEntry = isClientLaneBlockedAtEntry(pos, conveyor, facing, items);
-            boolean blockedExit = isClientLaneBlockedAtExit(pos, conveyor, facing, items);
+        for (int lane = 0; lane < conveyor.getLaneCount(); lane++) {
+            List<ConveyorItemData> laneItems = getLaneItems(allItems, lane);
+
+            boolean blockedEntry = isLaneBlockedAtEntry(laneItems);
+            boolean blockedExit = isLaneBlockedAtExit(laneItems);
 
             int r, g, bl;
             if (blockedEntry && blockedExit) {
@@ -115,22 +122,59 @@ public class ConveyorVectorHandler {
                     arrowBase.x - right.getXOffset() * as, yLine, arrowBase.z - right.getZOffset() * as,
                     r, g, bl, ALPHA);
 
-            for (int slot = 0; slot < ConveyorQueue.MAX_ITEMS_PER_LANE; slot++) {
-                double progress = ConveyorQueue.ENTRY_PROGRESS + slot * ConveyorQueue.ITEM_LENGTH;
+            for (int slot = 0; slot < ConveyorItemData.MAX_ITEMS_PER_LANE; slot++) {
+                double progress = ConveyorItemData.ENTRY_PROGRESS + slot * ConveyorItemData.ITEM_LENGTH;
                 Vec3d sp = conveyor.getLanePoint(pos, facing, lane, progress);
                 drawLine(b, t, sp.x, yLine, sp.z, sp.x, yLine + 0.08D, sp.z, 0, 180, 255, ALPHA - 50);
             }
 
-            for (EntityMovingItem item : items) {
-                double ip = MathHelper.clamp(
-                        conveyor.getLaneProgress(pos, facing, new Vec3d(item.posX, item.posY, item.posZ)),
-                        0.0D, 1.0D);
+            for (ConveyorItemData item : laneItems) {
+                if (item.isOnArc()) continue;
+                double ip = MathHelper.clamp(item.getProgress(), 0.0D, 1.0D);
                 Vec3d idp = conveyor.getLanePoint(pos, facing, lane, ip);
                 drawLine(b, t, idp.x, yLine, idp.z, idp.x, yLine + 0.15D, idp.z, 255, 0, 255, ALPHA);
             }
 
             renderSideEntryArcs(world, pos, conveyor, facing, lane, yLine, b, t);
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static List<ConveyorItemData> getLaneItems(List<ConveyorItemData> allItems, int lane) {
+        List<ConveyorItemData> result = new ArrayList<>();
+        for (ConveyorItemData item : allItems) {
+            if (item.getLane() == lane) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static boolean isLaneBlockedAtEntry(List<ConveyorItemData> laneItems) {
+        if (laneItems.isEmpty()) return false;
+        if (laneItems.size() >= ConveyorItemData.MAX_ITEMS_PER_LANE) return true;
+
+        for (ConveyorItemData item : laneItems) {
+            if (item.isOnArc()) continue;
+            if (item.getProgress() < ConveyorItemData.ENTRY_PROGRESS + ConveyorItemData.ITEM_LENGTH - EPS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static boolean isLaneBlockedAtExit(List<ConveyorItemData> laneItems) {
+        if (laneItems.isEmpty()) return false;
+
+        for (ConveyorItemData item : laneItems) {
+            if (item.isOnArc()) continue;
+            if (item.getProgress() >= ConveyorItemData.EXIT_PROGRESS - EPS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @SideOnly(Side.CLIENT)
@@ -151,7 +195,7 @@ public class ConveyorVectorHandler {
                         world, sidePos, sideConveyor, sideLane, pos);
                 if (route.lane != lane || route.lane < 0) continue;
 
-                Vec3d entryPoint = sideConveyor.getLanePoint(sidePos, sideFacing, sideLane, ConveyorQueue.EXIT_PROGRESS);
+                Vec3d entryPoint = sideConveyor.getLanePoint(sidePos, sideFacing, sideLane, ConveyorItemData.EXIT_PROGRESS);
                 Vec3d targetPoint = conveyor.getLanePoint(pos, facing, lane, route.progress);
                 ConveyorArc arc = ConveyorArc.createSideEntry(entryPoint, targetPoint, sideFacing, facing);
                 renderBezierArc(arc, yLine, b, t, 0, 200, 200, ALPHA - 50);
@@ -168,48 +212,6 @@ public class ConveyorVectorHandler {
             drawLine(b, t, prev.x, y, prev.z, cur.x, y, cur.z, r, g, bl, a);
             prev = cur;
         }
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static List<EntityMovingItem> getClientLaneItems(World world, BlockPos pos, BlockConveyor conveyor, int lane) {
-        AxisAlignedBB box = new AxisAlignedBB(
-                pos.getX(), pos.getY(), pos.getZ(),
-                pos.getX() + 1.0D, pos.getY() + 1.0D, pos.getZ() + 1.0D);
-        List<EntityMovingItem> found = world.getEntitiesWithinAABB(EntityMovingItem.class, box);
-        List<EntityMovingItem> result = new ArrayList<>();
-        EnumFacing facing = conveyor.getLaneFacing(world, pos);
-
-        for (EntityMovingItem item : found) {
-            if (item == null || item.isDead) continue;
-            BlockPos ibp = new BlockPos(Math.floor(item.posX), Math.floor(item.posY), Math.floor(item.posZ));
-            if (!pos.equals(ibp)) continue;
-            int il = conveyor.getClosestLaneIndex(world, pos, new Vec3d(item.posX, item.posY, item.posZ));
-            if (il != lane) continue;
-            result.add(item);
-        }
-
-        result.sort(Comparator.comparingDouble(
-                item -> -conveyor.getLaneProgress(pos, facing, new Vec3d(item.posX, item.posY, item.posZ))));
-        return result;
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static boolean isClientLaneBlockedAtEntry(BlockPos pos, BlockConveyor conveyor, EnumFacing facing,
-                                                      List<EntityMovingItem> items) {
-        if (items.isEmpty()) return false;
-        if (items.size() >= ConveyorQueue.MAX_ITEMS_PER_LANE) return true;
-        EntityMovingItem tail = items.get(items.size() - 1);
-        double tp = conveyor.getLaneProgress(pos, facing, new Vec3d(tail.posX, tail.posY, tail.posZ));
-        return tp < ConveyorQueue.ENTRY_PROGRESS + ConveyorQueue.ITEM_LENGTH - EPS;
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static boolean isClientLaneBlockedAtExit(BlockPos pos, BlockConveyor conveyor, EnumFacing facing,
-                                                     List<EntityMovingItem> items) {
-        if (items.isEmpty()) return false;
-        EntityMovingItem front = items.get(0);
-        double fp = conveyor.getLaneProgress(pos, facing, new Vec3d(front.posX, front.posY, front.posZ));
-        return fp >= ConveyorQueue.EXIT_PROGRESS - EPS;
     }
 
     @SideOnly(Side.CLIENT)

@@ -3,6 +3,8 @@ package com.hbm.blocks.network;
 import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IConveyorVectorProvider;
 import api.hbm.block.IEnterableBlock;
+import com.hbm.entity.item.EntityMovingItem;
+import com.hbm.tileentity.network.TileEntityConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -11,7 +13,9 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -43,7 +47,18 @@ public class BlockConveyorChute extends BlockConveyor {
 
     @Override
     public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
-        super.onEntityCollision(world, pos, state, entity);
+        if (world.isRemote) return;
+
+        if (entity instanceof EntityItem && entity.ticksExisted > 10 && !entity.isDead) {
+            EntityMovingItem item = new EntityMovingItem(world);
+            item.setItemStack(((EntityItem) entity).getItem());
+            Vec3d entityPos = new Vec3d(entity.posX, entity.posY, entity.posZ);
+            Vec3d snap = this.getClosestSnappingPosition(world, pos, entityPos);
+            item.setPositionAndRotation(snap.x, snap.y, snap.z, 0, 0);
+            world.spawnEntity(item);
+            entity.setDead();
+            return;
+        }
 
         if (shouldGoVertical(world, pos, new Vec3d(entity.posX, entity.posY, entity.posZ))) {
             entity.motionX *= 4.0D;
@@ -68,7 +83,6 @@ public class BlockConveyorChute extends BlockConveyor {
         return super.getTravelLocation(world, x, y, z, itemPos, speed);
     }
 
-    @Override
     public EnumFacing getTravelDirection(World world, BlockPos pos, Vec3d itemPos) {
         if (shouldGoVertical(world, pos, itemPos)) {
             return EnumFacing.UP;
@@ -102,6 +116,15 @@ public class BlockConveyorChute extends BlockConveyor {
             return hasInputBelt ? 2 : 1;
         }
         return 0;
+    }
+
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityConveyor) {
+            ((TileEntityConveyor) te).invalidate();
+        }
+        super.breakBlock(world, pos, state);
     }
 
     @Override

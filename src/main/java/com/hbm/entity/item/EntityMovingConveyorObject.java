@@ -3,7 +3,6 @@ package com.hbm.entity.item;
 import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IEnterableBlock;
 import com.hbm.blocks.network.BlockConveyor;
-import com.hbm.blocks.network.ConveyorQueue;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -76,14 +75,6 @@ public abstract class EntityMovingConveyorObject extends Entity {
         ticksExisted++;
         if (this.ticksExisted <= 5) return;
 
-        if (this instanceof EntityMovingItem) {
-            EntityMovingItem movingItem = (EntityMovingItem) this;
-            if (movingItem.getActiveArc() != null) {
-                movingItem.advanceActiveArc(getMoveSpeed());
-                return;
-            }
-        }
-
         int blockX = (int) Math.floor(posX);
         int blockY = (int) Math.floor(posY);
         int blockZ = (int) Math.floor(posZ);
@@ -94,37 +85,11 @@ public abstract class EntityMovingConveyorObject extends Entity {
                 && ((IConveyorBelt) block).canItemStay(world, blockX, blockY, blockZ, new Vec3d(posX, posY, posZ));
 
         if (!isOnConveyor) {
-            if (this instanceof EntityMovingItem) ConveyorQueue.unregister((EntityMovingItem) this);
             if (onLeaveConveyor()) return;
         } else {
-            Vec3d target;
-
-            if (block instanceof BlockConveyor
-                    && ((BlockConveyor) block).usesLaneQueues()
-                    && this instanceof EntityMovingItem) {
-
-                BlockConveyor conveyor = (BlockConveyor) block;
-                EntityMovingItem movingItem = (EntityMovingItem) this;
-
-                int lane = movingItem.getConveyorLane();
-                if (lane < 0 || lane >= conveyor.getLaneCount()) {
-                    lane = conveyor.getClosestLaneIndex(world, blockPos, new Vec3d(posX, posY, posZ));
-                    movingItem.setConveyorLane(lane);
-                }
-
-                ConveyorQueue.sync(world, blockPos, lane, movingItem);
-                target = conveyor.getTravelLocationForItem(world, blockPos, movingItem, getMoveSpeed());
-                movingItem.updateYawFromFacing(conveyor.getLaneFacing(world, blockPos));
-            } else {
-                target = ((IConveyorBelt) block).getTravelLocation(
-                        world, blockX, blockY, blockZ,
-                        new Vec3d(posX, posY, posZ), getMoveSpeed());
-
-                if (this instanceof EntityMovingItem && block instanceof BlockConveyor) {
-                    ((EntityMovingItem) this).updateYawFromFacing(
-                            ((BlockConveyor) block).getLaneFacing(world, blockPos));
-                }
-            }
+            Vec3d target = ((IConveyorBelt) block).getTravelLocation(
+                    world, blockX, blockY, blockZ,
+                    new Vec3d(posX, posY, posZ), getMoveSpeed());
 
             this.motionX = target.x - posX;
             this.motionY = target.y - posY;
@@ -137,31 +102,11 @@ public abstract class EntityMovingConveyorObject extends Entity {
 
         if (!lastPos.equals(newPos)) {
             handleBlockTransition(lastPos, newPos);
-        } else if (this instanceof EntityMovingItem) {
-            EntityMovingItem movingItem = (EntityMovingItem) this;
-            Block currentBlock = world.getBlockState(blockPos).getBlock();
-            if (currentBlock instanceof BlockConveyor && ((BlockConveyor) currentBlock).usesLaneQueues()) {
-                ConveyorQueue.sync(world, blockPos, movingItem.getConveyorLane(), movingItem);
-            }
         }
     }
 
     private void handleBlockTransition(BlockPos lastPos, BlockPos newPos) {
         Block newBlock = world.getBlockState(newPos).getBlock();
-
-        if (this instanceof EntityMovingItem) {
-            EntityMovingItem movingItem = (EntityMovingItem) this;
-
-            if (newBlock instanceof BlockConveyor && ((BlockConveyor) newBlock).usesLaneQueues()) {
-                BlockConveyor newConveyor = (BlockConveyor) newBlock;
-                int newLane = newConveyor.getClosestLaneIndex(world, newPos, new Vec3d(posX, posY, posZ));
-                movingItem.setConveyorLane(newLane);
-                ConveyorQueue.sync(world, newPos, newLane, movingItem);
-                movingItem.updateYawFromFacing(newConveyor.getLaneFacing(world, newPos));
-            } else {
-                ConveyorQueue.unregister(movingItem);
-            }
-        }
 
         if (newBlock instanceof IEnterableBlock) {
             IEnterableBlock enterable = (IEnterableBlock) newBlock;

@@ -14,6 +14,7 @@ import com.hbm.handler.*;
 import com.hbm.render.entity.item.RenderMovingPackage;
 import com.hbm.render.item.*;
 import com.hbm.tileentity.machine.*;
+import com.hbm.tileentity.network.TileEntityConveyor;
 import com.hbm.tileentity.network.TileEntityCraneSplitter;
 import net.minecraft.util.*;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -608,6 +609,7 @@ public class ClientProxy extends ServerProxy {
 		ClientRegistry.registerKeyBinding(fsbFlashlight);
 
 		HbmKeybinds.register();
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityConveyor.class, new TileEntityConveyorRenderer());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePress.class, new RenderPress());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembler.class, new RenderAssembler());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembly.class, new RenderAssembly());

@@ -3,12 +3,11 @@ package com.hbm.blocks.network;
 import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IEnterableBlock;
 import com.hbm.entity.item.EntityMovingItem;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -22,11 +21,10 @@ public class BlockConveyorLift extends BlockConveyorChute {
 
     @Override
     public EnumFacing getTravelDirection(World world, BlockPos pos, Vec3d itemPos) {
-
         boolean bottom = !(world.getBlockState(pos.down()).getBlock() instanceof IConveyorBelt);
         boolean top = !(world.getBlockState(pos.up()).getBlock() instanceof IConveyorBelt) && !bottom && !(world.getBlockState(pos.up()).getBlock() instanceof IEnterableBlock);
 
-        if(!top) {
+        if (!top) {
             return EnumFacing.DOWN;
         }
 
@@ -56,17 +54,14 @@ public class BlockConveyorLift extends BlockConveyorChute {
 
     @Override
     public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
-        if(!world.isRemote) {
-
-            if(entity instanceof EntityItem && entity.ticksExisted > 10 && !entity.isDead) {
-
+        if (!world.isRemote) {
+            if (entity instanceof EntityItem && entity.ticksExisted > 10 && !entity.isDead) {
                 EntityMovingItem item = new EntityMovingItem(world);
-                item.setItemStack(((EntityItem)entity).getItem());
+                item.setItemStack(((EntityItem) entity).getItem());
                 Vec3d entityPos = new Vec3d(entity.posX, entity.posY, entity.posZ);
                 Vec3d snap = this.getClosestSnappingPosition(world, pos, entityPos);
                 item.setPositionAndRotation(snap.x, snap.y, snap.z, 0, 0);
                 world.spawnEntity(item);
-                
                 entity.setDead();
             }
         }
@@ -74,11 +69,10 @@ public class BlockConveyorLift extends BlockConveyorChute {
 
     @Override
     public Vec3d getClosestSnappingPosition(World world, BlockPos pos, Vec3d itemPos) {
-
         boolean bottom = !(world.getBlockState(pos.down()).getBlock() instanceof IConveyorBelt);
         boolean top = !(world.getBlockState(pos.up()).getBlock() instanceof IConveyorBelt) && !bottom && !(world.getBlockState(pos.up()).getBlock() instanceof IEnterableBlock);
 
-        if(!top) {
+        if (!top) {
             return new Vec3d(pos.getX() + 0.5, itemPos.y, pos.getZ() + 0.5);
         } else {
             return super.getClosestSnappingPosition(world, pos, itemPos);
@@ -86,14 +80,14 @@ public class BlockConveyorLift extends BlockConveyorChute {
     }
 
     @Override
-    public int getUpdatedType(World world, BlockPos pos, EnumFacing side){
+    public int getUpdatedType(World world, BlockPos pos, EnumFacing side) {
         boolean hasChuteBelow = world.getBlockState(pos.down()).getBlock() instanceof BlockConveyorChute;
         boolean hasInputBelt = false;
         Block inputBlock = world.getBlockState(pos.offset(side.getOpposite(), 1)).getBlock();
         if (inputBlock instanceof IConveyorBelt || inputBlock instanceof IEnterableBlock) {
             hasInputBelt = true;
         }
-        if(hasChuteBelow){
+        if (hasChuteBelow) {
             return hasInputBelt ? 2 : 1;
         }
         return 0;
