@@ -3,6 +3,7 @@ package com.hbm.tileentity.network;
 import api.hbm.block.IEnterableBlock;
 import com.hbm.blocks.network.BlockConveyor;
 import com.hbm.blocks.network.ConveyorItemData;
+import com.hbm.render.conveyor.ConveyorVisualManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -20,9 +21,9 @@ import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class TileEntityConveyor extends TileEntity implements ITickable {
 
@@ -38,151 +39,221 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
     }
 
     private final List<ConveyorItemData> items = new ArrayList<>();
-    private int tickCount = 0;
     public boolean needsSync = false;
     private int prevHash = 0;
-    private int moveTimer = 0;
-    private int moveCooldown = 4;
+    private int syncTimer = 0;
+    private static final int SYNC_INTERVAL = 4;
 
     @Override
     public void update() {
         BlockConveyor conveyor = getConveyor();
         if (conveyor == null) return;
 
-        if (world.isRemote) return;
-
-        tickCount++;
-        moveTimer++;
-
-        double speed = getSpeed(conveyor);
-        moveCooldown = Math.max(1, (int) Math.round(ConveyorItemData.ITEM_LENGTH / speed));
-
-        if (moveTimer >= moveCooldown) {
-            moveTimer = 0;
-
-            EnumFacing facing = conveyor.getLaneFacing(world, pos);
-            int laneCount = conveyor.getLaneCount();
-            List<ConveyorItemData> toRemove = new ArrayList<>();
-
-            for (int lane = 0; lane < laneCount; lane++) {
-                tickLane(conveyor, facing, lane, toRemove);
-            }
-
-            if (!toRemove.isEmpty()) {
-                for (ConveyorItemData item : toRemove) {
-                    items.remove(item);
-                }
-            }
+        if (world.isRemote) {
+            clientTick(conveyor);
+            return;
         }
 
+        EnumFacing facing = conveyor.getLaneFacing(world, pos);
+        double speed = getSpeed(conveyor);
+        int laneCount = conveyor.getLaneCount();
+
+        List<ConveyorItemData> toRemove = new ArrayList<>();
+
+        for (int lane = 0; lane < laneCount; lane++) {
+            tickLane(conveyor, facing, speed, lane, toRemove);
+        }
+
+        if (!toRemove.isEmpty()) {
+            for (ConveyorItemData item : toRemove) {
+                items.remove(item);
+            }
+            needsSync = true;
+        }
+
+        syncTimer++;
         int hash = computeStateHash();
         if (hash != prevHash) {
             prevHash = hash;
+            needsSync = true;
+        }
+
+        if (needsSync && syncTimer >= SYNC_INTERVAL) {
+            syncTimer = 0;
             markDirty();
             syncToClient();
+            needsSync = false;
         }
     }
 
-    private void tickLane(BlockConveyor conveyor, EnumFacing facing, int lane,
+    private void clientTick(BlockConveyor conveyor) {
+        EnumFacing facing = conveyor.getLaneFacing(world, pos);
+        double[] offsets = conveyor.getLaneOffsets();
+        double speed = getSpeed(conveyor);
+
+        ConveyorVisualManager mgr = ConveyorVisualManager.get();
+
+        for (ConveyorItemData item : items) {
+            if (!item.isStopped()) {
+                double newProgress = item.getProgress() + speed;
+                double limit = ConveyorItemData.EXIT_PROGRESS;
+                item.setProgress(Math.min(newProgress, limit));
+            }
+
+            int lane = item.getLane();
+            if (lane < 0 || lane >= offsets.length) lane = 0;
+
+            Vec3d wp = conveyor.getWorldPosition(pos, facing, offsets[lane], item.getProgress());
+
+            mgr.updateItem(
+                    item.getUniqueId(),
+                    item.getStack(),
+                    wp.x, wp.y, wp.z,
+                    item.getYaw(),
+                    speed,
+                    item.isStopped()
+            );
+        }
+    }
+
+    private void clientPush(BlockConveyor conveyor) {
+        if (conveyor == null) return;
+        EnumFacing facing = conveyor.getLaneFacing(world, pos);
+        double[] offsets = conveyor.getLaneOffsets();
+        double speed = getSpeed(conveyor);
+
+        ConveyorVisualManager mgr = ConveyorVisualManager.get();
+
+        for (ConveyorItemData item : items) {
+            int lane = item.getLane();
+            if (lane < 0 || lane >= offsets.length) lane = 0;
+
+            Vec3d wp = conveyor.getWorldPosition(pos, facing, offsets[lane], item.getProgress());
+
+            mgr.updateItem(
+                    item.getUniqueId(),
+                    item.getStack(),
+                    wp.x, wp.y, wp.z,
+                    item.getYaw(),
+                    speed,
+                    item.isStopped()
+            );
+        }
+    }
+
+    private void tickLane(BlockConveyor conveyor, EnumFacing facing, double speed, int lane,
                           List<ConveyorItemData> toRemove) {
 
-        ConveyorItemData[] grid = buildGrid(lane);
+        List<ConveyorItemData> laneItems = getSortedLaneItems(lane);
 
-        if (grid[SLOT_COUNT - 1] != null) {
-            if (tryTransferForward(grid[SLOT_COUNT - 1], conveyor, facing, lane, toRemove)) {
-                grid[SLOT_COUNT - 1] = null;
+        for (int i = 0; i < laneItems.size(); i++) {
+            ConveyorItemData item = laneItems.get(i);
+            double currentProgress = item.getProgress();
+
+            double limit;
+            if (i == 0) {
+                limit = getLeaderLimit(conveyor, facing, lane);
+            } else {
+                ConveyorItemData ahead = laneItems.get(i - 1);
+                limit = snapSlotDown(ahead.getProgress()) - ConveyorItemData.ITEM_LENGTH;
+                if (limit < ConveyorItemData.ENTRY_PROGRESS) {
+                    limit = ConveyorItemData.ENTRY_PROGRESS;
+                }
+            }
+
+            double newProgress = currentProgress + speed;
+
+            if (newProgress > limit + EPS) {
+                double snapped = snapSlotDown(limit);
+                newProgress = Math.max(snapped, currentProgress);
+            }
+
+            boolean wasStopped = item.isStopped();
+            boolean nowStopped = Math.abs(newProgress - currentProgress) < EPS;
+
+            item.setProgress(newProgress);
+            item.setStopped(nowStopped);
+            updateItemYaw(item, facing);
+
+            if (wasStopped != nowStopped) {
+                needsSync = true;
             }
         }
 
-        for (int s = SLOT_COUNT - 2; s >= 0; s--) {
-            if (grid[s] == null) continue;
-            if (grid[s + 1] != null) continue;
-
-            grid[s + 1] = grid[s];
-            grid[s] = null;
-            grid[s + 1].setProgress(SLOTS[s + 1]);
-            grid[s + 1].setStopped(false);
-            updateItemYaw(grid[s + 1], facing);
-        }
-
-        for (int s = 0; s < SLOT_COUNT; s++) {
-            if (grid[s] != null) {
-                boolean blocked;
-                if (s == SLOT_COUNT - 1) {
-                    blocked = !canLeaderExit(conveyor, facing, lane);
-                } else {
-                    blocked = grid[s + 1] != null;
-                }
-                grid[s].setStopped(blocked);
+        if (!laneItems.isEmpty()) {
+            ConveyorItemData leader = laneItems.get(0);
+            if (leader.getProgress() >= ConveyorItemData.EXIT_PROGRESS - EPS) {
+                tryTransferForward(leader, conveyor, facing, lane, toRemove);
             }
         }
     }
 
-    private boolean canLeaderExit(BlockConveyor conveyor, EnumFacing facing, int lane) {
+    private double getLeaderLimit(BlockConveyor conveyor, EnumFacing facing, int lane) {
         BlockPos nextPos = pos.offset(facing);
         IBlockState nextState = world.getBlockState(nextPos);
         Block nextBlock = nextState.getBlock();
 
         if (nextBlock instanceof BlockConveyor) {
             BlockConveyor nextConveyor = (BlockConveyor) nextBlock;
-            if (!nextConveyor.usesLaneQueues()) return true;
+            if (!nextConveyor.usesLaneQueues()) return Double.POSITIVE_INFINITY;
 
             TileEntity te = world.getTileEntity(nextPos);
-            if (!(te instanceof TileEntityConveyor)) return false;
+            if (te instanceof TileEntityConveyor) {
+                TileEntityConveyor nextTile = (TileEntityConveyor) te;
+                BlockConveyor.IncomingRoute route = nextConveyor.resolveIncomingRoute(
+                        world, pos, conveyor, lane, nextPos);
 
-            TileEntityConveyor nextTile = (TileEntityConveyor) te;
-            BlockConveyor.IncomingRoute route = nextConveyor.resolveIncomingRoute(
-                    world, pos, conveyor, lane, nextPos);
+                if (route.lane < 0) return ConveyorItemData.EXIT_PROGRESS;
 
-            if (route.lane < 0) return false;
+                int targetSlot;
+                if (route.arc != null) {
+                    targetSlot = getFirstFreeSlotAtOrAbove(nextTile, route.lane, route.progress);
+                } else {
+                    targetSlot = 0;
+                }
 
-            int targetSlot = route.arc != null ?
-                    nextTile.getSlotIndexAtOrAbove(route.progress) : 0;
-
-            return nextTile.isSlotFree(route.lane, targetSlot);
-        }
-
-        if (nextBlock instanceof IEnterableBlock) {
-            IEnterableBlock enterable = (IEnterableBlock) nextBlock;
-            EnumFacing enterDir = facing.getOpposite();
-            return enterable.canItemEnter(world, nextPos.getX(), nextPos.getY(), nextPos.getZ(), enterDir, null);
-        }
-
-        if (nextState.isFullBlock()) return false;
-
-        return true;
-    }
-
-    private ConveyorItemData[] buildGrid(int lane) {
-        ConveyorItemData[] grid = new ConveyorItemData[SLOT_COUNT];
-        for (ConveyorItemData item : items) {
-            if (item.getLane() != lane) continue;
-            int idx = getSlotIndex(item.getProgress());
-            if (idx >= 0 && idx < SLOT_COUNT) {
-                grid[idx] = item;
+                if (targetSlot >= 0 && nextTile.isSlotFree(route.lane, targetSlot)) {
+                    return Double.POSITIVE_INFINITY;
+                }
+                return ConveyorItemData.EXIT_PROGRESS;
             }
         }
-        return grid;
+
+        if (nextBlock instanceof IEnterableBlock) return Double.POSITIVE_INFINITY;
+        if (nextState.isFullBlock()) return ConveyorItemData.EXIT_PROGRESS;
+        return Double.POSITIVE_INFINITY;
     }
 
-    private int getSlotIndex(double progress) {
+    private int getFirstFreeSlotAtOrAbove(TileEntityConveyor tile, int lane, double progress) {
         for (int i = 0; i < SLOT_COUNT; i++) {
-            if (Math.abs(progress - SLOTS[i]) < EPS) return i;
+            if (SLOTS[i] < progress - EPS) continue;
+            if (tile.isSlotFree(lane, i)) return i;
         }
         return -1;
     }
 
-    public int getSlotIndexAtOrAbove(double progress) {
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            if (SLOTS[i] >= progress - EPS) return i;
+    private double snapSlotDown(double progress) {
+        double best = SLOTS[0];
+        for (double slot : SLOTS) {
+            if (slot <= progress + EPS) {
+                best = slot;
+            }
         }
-        return SLOT_COUNT - 1;
+        return best;
+    }
+
+    private List<ConveyorItemData> getSortedLaneItems(int lane) {
+        List<ConveyorItemData> result = new ArrayList<>();
+        for (ConveyorItemData item : items) {
+            if (item.getLane() == lane) result.add(item);
+        }
+        result.sort((a, b) -> Double.compare(b.getProgress(), a.getProgress()));
+        return result;
     }
 
     private boolean tryTransferForward(ConveyorItemData item, BlockConveyor conveyor,
                                        EnumFacing facing, int lane,
                                        List<ConveyorItemData> toRemove) {
-
         BlockPos nextPos = pos.offset(facing);
         IBlockState nextState = world.getBlockState(nextPos);
         Block nextBlock = nextState.getBlock();
@@ -206,10 +277,12 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
 
             int targetSlot;
             if (route.arc != null) {
-                targetSlot = nextTile.getSlotIndexAtOrAbove(route.progress);
+                targetSlot = getFirstFreeSlotAtOrAbove(nextTile, route.lane, route.progress);
             } else {
                 targetSlot = 0;
             }
+
+            if (targetSlot < 0) return false;
 
             if (nextTile.isSlotFree(route.lane, targetSlot)) {
                 toRemove.add(item);
@@ -245,8 +318,21 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
 
     public boolean isSlotFree(int lane, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= SLOT_COUNT) return false;
-        ConveyorItemData[] grid = buildGrid(lane);
-        return grid[slotIndex] == null;
+        double slotProgress = SLOTS[slotIndex];
+        for (ConveyorItemData item : items) {
+            if (item.getLane() != lane) continue;
+            if (Math.abs(item.getProgress() - slotProgress) < ConveyorItemData.ITEM_LENGTH - EPS) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public int getSlotIndexAtOrAbove(double progress) {
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            if (SLOTS[i] >= progress - EPS) return i;
+        }
+        return SLOT_COUNT - 1;
     }
 
     private int computeStateHash() {
@@ -254,7 +340,8 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         for (ConveyorItemData item : items) {
             hash = hash * 31 + Long.hashCode(item.getUniqueId());
             hash = hash * 31 + item.getLane();
-            hash = hash * 31 + Long.hashCode(Double.doubleToLongBits(item.getProgress()));
+            hash = hash * 31 + Long.hashCode(Double.doubleToLongBits(
+                    Math.round(item.getProgress() * 1000.0D) / 1000.0D));
             hash = hash * 31 + (item.isStopped() ? 1 : 0);
         }
         return hash;
@@ -265,6 +352,8 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
             prevHash = computeStateHash();
             markDirty();
             syncToClient();
+            needsSync = false;
+            syncTimer = 0;
         }
     }
 
@@ -298,13 +387,11 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
     public boolean insertItem(ConveyorItemData item) {
         BlockConveyor conveyor = getConveyor();
         if (conveyor == null) return false;
-
         int lane = item.getLane();
         if (lane < 0 || lane >= conveyor.getLaneCount()) {
             lane = 0;
             item.setLane(0);
         }
-
         items.add(item);
         needsSync = true;
         return true;
@@ -326,19 +413,17 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
     }
 
     public int findFirstFreeSlot(int lane) {
-        ConveyorItemData[] grid = buildGrid(lane);
         for (int s = 0; s < SLOT_COUNT; s++) {
-            if (grid[s] == null) return s;
+            if (isSlotFree(lane, s)) return s;
         }
         return -1;
     }
 
     public int findNearestFreeSlot(int lane, double progress) {
-        ConveyorItemData[] grid = buildGrid(lane);
         int best = -1;
         double bestDist = Double.MAX_VALUE;
         for (int s = 0; s < SLOT_COUNT; s++) {
-            if (grid[s] != null) continue;
+            if (!isSlotFree(lane, s)) continue;
             double dist = Math.abs(SLOTS[s] - progress);
             if (dist < bestDist) {
                 bestDist = dist;
@@ -348,6 +433,26 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         return best;
     }
 
+    public ConveyorItemData findNearestItem(int lane, double progress) {
+        ConveyorItemData best = null;
+        double bestDist = Double.MAX_VALUE;
+        for (ConveyorItemData item : items) {
+            if (item.getLane() != lane) continue;
+            double dist = Math.abs(item.getProgress() - progress);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = item;
+            }
+        }
+        if (best != null && bestDist < ConveyorItemData.ITEM_LENGTH) return best;
+        return null;
+    }
+
+    public void removeItem(ConveyorItemData item) {
+        items.remove(item);
+        needsSync = true;
+    }
+
     public int getClosestAvailableLane(Vec3d probePoint) {
         BlockConveyor conveyor = getConveyor();
         if (conveyor == null) return -1;
@@ -355,7 +460,6 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         double[] offsets = conveyor.getLaneOffsets();
         int bestLane = -1;
         double bestDist = Double.MAX_VALUE;
-
         for (int i = 0; i < offsets.length; i++) {
             if (findFirstFreeSlot(i) < 0) continue;
             Vec3d a = conveyor.getLanePoint(pos, facing, i, 0.0D);
@@ -406,45 +510,38 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         super.readFromNBT(nbt);
 
         NBTTagList list = nbt.getTagList("ConveyorItems", Constants.NBT.TAG_COMPOUND);
-        List<ConveyorItemData> incoming = new ArrayList<>();
-        for (int i = 0; i < list.tagCount(); i++) {
-            ConveyorItemData item = ConveyorItemData.readFromNBT(list.getCompoundTagAt(i));
-            if (!item.getStack().isEmpty()) incoming.add(item);
-        }
 
         if (world != null && world.isRemote) {
-            mergeClientItems(incoming);
+            Set<Long> oldUids = new HashSet<>();
+            for (ConveyorItemData item : items) {
+                oldUids.add(item.getUniqueId());
+            }
+
+            items.clear();
+            Set<Long> newUids = new HashSet<>();
+            for (int i = 0; i < list.tagCount(); i++) {
+                ConveyorItemData item = ConveyorItemData.readFromNBT(list.getCompoundTagAt(i));
+                if (!item.getStack().isEmpty()) {
+                    items.add(item);
+                    newUids.add(item.getUniqueId());
+                }
+            }
+
+            ConveyorVisualManager mgr = ConveyorVisualManager.get();
+            for (Long uid : oldUids) {
+                if (!newUids.contains(uid)) {
+                    mgr.removeItem(uid);
+                }
+            }
+
+            clientPush(getConveyor());
         } else {
             items.clear();
-            items.addAll(incoming);
-        }
-    }
-
-    private void mergeClientItems(List<ConveyorItemData> incoming) {
-        Map<Long, ConveyorItemData> existingById = new HashMap<>();
-        for (ConveyorItemData item : items) {
-            existingById.put(item.getUniqueId(), item);
-        }
-
-        List<ConveyorItemData> newList = new ArrayList<>();
-
-        for (ConveyorItemData inc : incoming) {
-            ConveyorItemData existing = existingById.remove(inc.getUniqueId());
-
-            if (existing != null) {
-                existing.setStack(inc.getStack());
-                existing.setLane(inc.getLane());
-                existing.setStopped(inc.isStopped());
-                existing.setProgress(inc.getProgress());
-                existing.setYaw(inc.getYaw());
-                newList.add(existing);
-            } else {
-                newList.add(inc);
+            for (int i = 0; i < list.tagCount(); i++) {
+                ConveyorItemData item = ConveyorItemData.readFromNBT(list.getCompoundTagAt(i));
+                if (!item.getStack().isEmpty()) items.add(item);
             }
         }
-
-        items.clear();
-        items.addAll(newList);
     }
 
     @Override
@@ -481,29 +578,5 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
             items.clear();
         }
         super.invalidate();
-    }
-
-    public ConveyorItemData findNearestItem(int lane, double progress) {
-        ConveyorItemData best = null;
-        double bestDist = Double.MAX_VALUE;
-
-        for (ConveyorItemData item : items) {
-            if (item.getLane() != lane) continue;
-            double dist = Math.abs(item.getProgress() - progress);
-            if (dist < bestDist) {
-                bestDist = dist;
-                best = item;
-            }
-        }
-
-        if (best != null && bestDist < ConveyorItemData.ITEM_LENGTH) {
-            return best;
-        }
-        return null;
-    }
-
-    public void removeItem(ConveyorItemData item) {
-        items.remove(item);
-        needsSync = true;
     }
 }

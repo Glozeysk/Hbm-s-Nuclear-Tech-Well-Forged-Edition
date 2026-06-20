@@ -129,7 +129,6 @@ public class ConveyorVectorHandler {
             }
 
             for (ConveyorItemData item : laneItems) {
-                if (item.isOnArc()) continue;
                 double ip = MathHelper.clamp(item.getProgress(), 0.0D, 1.0D);
                 Vec3d idp = conveyor.getLanePoint(pos, facing, lane, ip);
                 drawLine(b, t, idp.x, yLine, idp.z, idp.x, yLine + 0.15D, idp.z, 255, 0, 255, ALPHA);
@@ -156,7 +155,6 @@ public class ConveyorVectorHandler {
         if (laneItems.size() >= ConveyorItemData.MAX_ITEMS_PER_LANE) return true;
 
         for (ConveyorItemData item : laneItems) {
-            if (item.isOnArc()) continue;
             if (item.getProgress() < ConveyorItemData.ENTRY_PROGRESS + ConveyorItemData.ITEM_LENGTH - EPS) {
                 return true;
             }
@@ -169,7 +167,6 @@ public class ConveyorVectorHandler {
         if (laneItems.isEmpty()) return false;
 
         for (ConveyorItemData item : laneItems) {
-            if (item.isOnArc()) continue;
             if (item.getProgress() >= ConveyorItemData.EXIT_PROGRESS - EPS) {
                 return true;
             }

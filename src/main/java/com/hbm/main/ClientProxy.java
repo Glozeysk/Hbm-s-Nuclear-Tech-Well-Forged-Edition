@@ -609,7 +609,6 @@ public class ClientProxy extends ServerProxy {
 		ClientRegistry.registerKeyBinding(fsbFlashlight);
 
 		HbmKeybinds.register();
-        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityConveyor.class, new TileEntityConveyorRenderer());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePress.class, new RenderPress());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembler.class, new RenderAssembler());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembly.class, new RenderAssembly());
