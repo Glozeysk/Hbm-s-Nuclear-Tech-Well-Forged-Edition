@@ -12,6 +12,7 @@ public class ConveyorVisualManager {
 
     private static final ConveyorVisualManager INSTANCE = new ConveyorVisualManager();
     private static final int TIMEOUT_TICKS = 10;
+    private static final int REMOVAL_GRACE_TICKS = 1;
 
     private final Map<Long, VisualItem> items = new ConcurrentHashMap<>();
     private int currentTick = 0;
@@ -25,8 +26,16 @@ public class ConveyorVisualManager {
         VisualItem existing = items.get(uid);
         if (existing != null) {
             existing.updateTarget(worldX, worldY, worldZ, yaw, stack, speed, stopped, currentTick);
+            existing.removalTick = -1;
         } else {
             items.put(uid, new VisualItem(uid, stack, worldX, worldY, worldZ, yaw, speed, stopped, currentTick));
+        }
+    }
+
+    public void markForRemoval(long uid) {
+        VisualItem item = items.get(uid);
+        if (item != null && item.removalTick < 0) {
+            item.removalTick = currentTick;
         }
     }
 
@@ -43,6 +52,11 @@ public class ConveyorVisualManager {
             VisualItem item = entry.getValue();
 
             item.tick();
+
+            if (item.removalTick >= 0 && currentTick - item.removalTick > REMOVAL_GRACE_TICKS) {
+                it.remove();
+                continue;
+            }
 
             if (currentTick - item.lastUpdateTick > TIMEOUT_TICKS) {
                 it.remove();

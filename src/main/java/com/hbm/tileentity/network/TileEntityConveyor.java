@@ -21,8 +21,10 @@ import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class TileEntityConveyor extends TileEntity implements ITickable {
@@ -50,7 +52,7 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         if (conveyor == null) return;
 
         if (world.isRemote) {
-            clientTick(conveyor);
+            pushVisuals(conveyor);
             return;
         }
 
@@ -86,7 +88,7 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         }
     }
 
-    private void clientTick(BlockConveyor conveyor) {
+    private void pushVisuals(BlockConveyor conveyor) {
         EnumFacing facing = conveyor.getLaneFacing(world, pos);
         double[] offsets = conveyor.getLaneOffsets();
         double speed = getSpeed(conveyor);
@@ -94,50 +96,30 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
         ConveyorVisualManager mgr = ConveyorVisualManager.get();
 
         for (ConveyorItemData item : items) {
-            if (!item.isStopped()) {
-                double newProgress = item.getProgress() + speed;
-                double limit = ConveyorItemData.EXIT_PROGRESS;
-                item.setProgress(Math.min(newProgress, limit));
-            }
-
             int lane = item.getLane();
             if (lane < 0 || lane >= offsets.length) lane = 0;
 
             Vec3d wp = conveyor.getWorldPosition(pos, facing, offsets[lane], item.getProgress());
+            float yaw = facingToYaw(facing);
 
             mgr.updateItem(
                     item.getUniqueId(),
                     item.getStack(),
                     wp.x, wp.y, wp.z,
-                    item.getYaw(),
+                    yaw,
                     speed,
                     item.isStopped()
             );
         }
     }
 
-    private void clientPush(BlockConveyor conveyor) {
-        if (conveyor == null) return;
-        EnumFacing facing = conveyor.getLaneFacing(world, pos);
-        double[] offsets = conveyor.getLaneOffsets();
-        double speed = getSpeed(conveyor);
-
-        ConveyorVisualManager mgr = ConveyorVisualManager.get();
-
-        for (ConveyorItemData item : items) {
-            int lane = item.getLane();
-            if (lane < 0 || lane >= offsets.length) lane = 0;
-
-            Vec3d wp = conveyor.getWorldPosition(pos, facing, offsets[lane], item.getProgress());
-
-            mgr.updateItem(
-                    item.getUniqueId(),
-                    item.getStack(),
-                    wp.x, wp.y, wp.z,
-                    item.getYaw(),
-                    speed,
-                    item.isStopped()
-            );
+    private float facingToYaw(EnumFacing facing) {
+        switch (facing) {
+            case SOUTH: return 0.0F;
+            case WEST: return 90.0F;
+            case NORTH: return 180.0F;
+            case EAST: return -90.0F;
+            default: return 0.0F;
         }
     }
 
@@ -358,14 +340,7 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
     }
 
     private void updateItemYaw(ConveyorItemData item, EnumFacing facing) {
-        float yaw;
-        switch (facing) {
-            case SOUTH: yaw = 0.0F; break;
-            case WEST: yaw = 90.0F; break;
-            case NORTH: yaw = 180.0F; break;
-            case EAST: yaw = -90.0F; break;
-            default: return;
-        }
+        float yaw = facingToYaw(facing);
         item.setYaw(yaw);
     }
 
@@ -530,11 +505,11 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
             ConveyorVisualManager mgr = ConveyorVisualManager.get();
             for (Long uid : oldUids) {
                 if (!newUids.contains(uid)) {
-                    mgr.removeItem(uid);
+                    mgr.markForRemoval(uid);
                 }
             }
 
-            clientPush(getConveyor());
+            pushVisuals(getConveyor());
         } else {
             items.clear();
             for (int i = 0; i < list.tagCount(); i++) {
