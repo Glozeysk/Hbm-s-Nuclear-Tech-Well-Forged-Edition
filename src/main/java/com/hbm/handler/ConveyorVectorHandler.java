@@ -140,16 +140,12 @@ public class ConveyorVectorHandler {
             }
         }
 
-        if (conveyor.getLaneCount() == 1) {
-            renderRoutePoints(world, pos, conveyor, facing, yLine, b, t);
-        }
+        renderRoutePoints(world, pos, conveyor, facing, yLine, b, t);
     }
 
     @SideOnly(Side.CLIENT)
     private static void renderRoutePoints(World world, BlockPos pos, BlockConveyor conveyor, EnumFacing facing,
                                           double yLine, BufferBuilder b, Tessellator t) {
-        if (!isTurningConveyorClient(world, pos, facing)) return;
-
         EnumFacing left = facing.rotateYCCW();
         EnumFacing right = facing.rotateY();
 

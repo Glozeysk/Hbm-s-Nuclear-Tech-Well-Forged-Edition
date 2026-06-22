@@ -112,7 +112,7 @@ public class ConveyorVisualRenderer {
                 Vec3d wp = forwardPos;
                 float yaw = forwardYaw;
 
-                if (conveyor.getLaneCount() == 1 && item.routeType != BeltItemData.ROUTE_FORWARD) {
+                if (item.routeType != BeltItemData.ROUTE_FORWARD) {
                     ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
                     if (route != null && localProgress < route.getMergeProgress()) {
                         wp = route.samplePosition(blockPos, facing, localProgress);

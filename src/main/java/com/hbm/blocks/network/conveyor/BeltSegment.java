@@ -193,22 +193,16 @@ public class BeltSegment {
                 if (!isSideEntry) {
                     targetLane = lane < nextSegment.getLaneCount() ? lane : 0;
                 } else {
-                    if (nextConveyor.getLaneCount() == 1) {
-                        targetLane = 0;
+                    EnumFacing left = nextFacing.rotateYCCW();
+                    EnumFacing right = nextFacing.rotateY();
 
-                        if (isTurningConveyor(world, nextPos, nextFacing, nextSegment)) {
-                            EnumFacing left = nextFacing.rotateYCCW();
-                            EnumFacing right = nextFacing.rotateY();
-
-                            if (direction == right) {
-                                routeType = BeltItemData.ROUTE_LEFT_ENTRY;
-                            } else if (direction == left) {
-                                routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
-                            }
-                        }
-                    } else {
-                        targetLane = findClosestLane(nextConveyor, world, nextPos, lastBlock);
+                    if (direction == right) {
+                        routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                    } else if (direction == left) {
+                        routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
                     }
+
+                    targetLane = findClosestLane(nextConveyor, world, nextPos, lastBlock);
                 }
 
                 double entryProgress = targetBlockIndex + BeltLane.ITEM_LENGTH * 0.5;
@@ -230,6 +224,7 @@ public class BeltSegment {
         ejectItem(world, item, lane);
         return true;
     }
+
     private int findClosestLane(BlockConveyor conveyor, World world, BlockPos conveyorPos, BlockPos fromPos) {
         EnumFacing facing = conveyor.getLaneFacing(world, conveyorPos);
         double[] offsets = conveyor.getLaneOffsets();
