@@ -47,6 +47,7 @@ public final class BeltBufCodec {
         buf.writeByte(item.getLane());
         buf.writeFloat((float) item.getProgress());
         buf.writeBoolean(item.isStopped());
+        buf.writeByte(item.getRouteType());
         writeItemStack(buf, item.getStack());
     }
 
@@ -55,10 +56,13 @@ public final class BeltBufCodec {
         int lane = buf.readByte();
         double progress = buf.readFloat();
         boolean stopped = buf.readBoolean();
+        int routeType = buf.readByte();
         ItemStack stack = readItemStack(buf);
+
         BeltItemData item = new BeltItemData(stack, lane, progress);
         item.setUniqueId(uid);
         item.setStopped(stopped);
+        item.setRouteType(routeType);
         return item;
     }
 }

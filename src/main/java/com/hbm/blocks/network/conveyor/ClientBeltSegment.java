@@ -66,15 +66,26 @@ public class ClientBeltSegment {
             ClientBeltItem existing = itemMap.get(si.getUniqueId());
             if (existing != null) {
                 int oldLane = existing.lane;
-                existing.updateFromServer(si.getProgress(), si.isStopped(), si.getStack(), si.getLane());
+                existing.updateFromServer(
+                        si.getProgress(),
+                        si.isStopped(),
+                        si.getStack(),
+                        si.getLane(),
+                        si.getRouteType()
+                );
                 if (oldLane != si.getLane()) {
                     if (oldLane >= 0 && oldLane < laneCount) lanes[oldLane].remove(existing);
                     if (si.getLane() >= 0 && si.getLane() < laneCount) lanes[si.getLane()].add(existing);
                 }
             } else {
                 ClientBeltItem newItem = new ClientBeltItem(
-                        si.getUniqueId(), si.getStack(), si.getLane(),
-                        si.getProgress(), si.isStopped());
+                        si.getUniqueId(),
+                        si.getStack(),
+                        si.getLane(),
+                        si.getProgress(),
+                        si.isStopped(),
+                        si.getRouteType()
+                );
                 itemMap.put(si.getUniqueId(), newItem);
                 int lane = si.getLane();
                 if (lane >= 0 && lane < laneCount) {

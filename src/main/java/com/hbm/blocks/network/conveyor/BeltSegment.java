@@ -111,7 +111,16 @@ public class BeltSegment {
                 boolean nowStopped = Math.abs(newProgress - currentProgress) < EPS;
                 item.setProgress(newProgress);
                 item.setStopped(nowStopped);
-
+                if (item.getRouteType() != BeltItemData.ROUTE_FORWARD) {
+                    ConveyorRoute route = ConveyorRoute.getByType(item.getRouteType());
+                    if (route != null) {
+                        double localProgress = newProgress - Math.floor(newProgress);
+                        if (localProgress >= route.getMergeProgress() - EPS) {
+                            item.setRouteType(BeltItemData.ROUTE_FORWARD);
+                            dirty = true;
+                        }
+                    }
+                }
                 if (!nowStopped) {
                     dirty = true;
                 }
@@ -168,12 +177,39 @@ public class BeltSegment {
         Block nextBlock = world.getBlockState(nextPos).getBlock();
 
         if (nextBlock instanceof BlockConveyor) {
+            BlockConveyor nextConveyor = (BlockConveyor) nextBlock;
             BeltSegment nextSegment = BeltSegmentManager.getSegmentAt(world, nextPos);
 
             if (nextSegment != null) {
-                int targetLane = lane < nextSegment.laneCount ? lane : 0;
                 int targetBlockIndex = nextSegment.getBlockIndex(nextPos);
                 if (targetBlockIndex < 0) return false;
+
+                EnumFacing nextFacing = nextConveyor.getLaneFacing(world, nextPos);
+                boolean isSideEntry = direction != nextFacing;
+
+                int targetLane;
+                int routeType = BeltItemData.ROUTE_FORWARD;
+
+                if (!isSideEntry) {
+                    targetLane = lane < nextSegment.getLaneCount() ? lane : 0;
+                } else {
+                    if (nextConveyor.getLaneCount() == 1) {
+                        targetLane = 0;
+
+                        if (isTurningConveyor(world, nextPos, nextFacing, nextSegment)) {
+                            EnumFacing left = nextFacing.rotateYCCW();
+                            EnumFacing right = nextFacing.rotateY();
+
+                            if (direction == right) {
+                                routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                            } else if (direction == left) {
+                                routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
+                            }
+                        }
+                    } else {
+                        targetLane = findClosestLane(nextConveyor, world, nextPos, lastBlock);
+                    }
+                }
 
                 double entryProgress = targetBlockIndex + BeltLane.ITEM_LENGTH * 0.5;
                 BeltLane nextLaneBelt = nextSegment.getLane(targetLane);
@@ -181,16 +217,52 @@ public class BeltSegment {
                 if (nextLaneBelt.isSlotFree(entryProgress)) {
                     BeltItemData transferred = new BeltItemData(item.getStack(), targetLane, entryProgress);
                     transferred.setUniqueId(item.getUniqueId());
+                    transferred.setRouteType(routeType);
                     nextLaneBelt.addSorted(transferred);
                     nextSegment.dirty = true;
                     return true;
                 }
+
                 return false;
             }
         }
 
         ejectItem(world, item, lane);
         return true;
+    }
+    private int findClosestLane(BlockConveyor conveyor, World world, BlockPos conveyorPos, BlockPos fromPos) {
+        EnumFacing facing = conveyor.getLaneFacing(world, conveyorPos);
+        double[] offsets = conveyor.getLaneOffsets();
+        if (offsets.length <= 1) return 0;
+
+        Vec3d fromCenter = new Vec3d(fromPos.getX() + 0.5D, fromPos.getY() + 0.5D, fromPos.getZ() + 0.5D);
+
+        int bestLane = 0;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < offsets.length; i++) {
+            Vec3d lanePos = conveyor.getLanePoint(conveyorPos, facing, i, 0.5D);
+            double dist = fromCenter.squareDistanceTo(lanePos);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestLane = i;
+            }
+        }
+
+        return bestLane;
+    }
+
+    private boolean isTurningConveyor(World world, BlockPos pos, EnumFacing facing, BeltSegment segment) {
+        if (segment.getBlockIndex(pos) != 0) return false;
+
+        BlockPos behindPos = pos.offset(facing.getOpposite());
+        Block behindBlock = world.getBlockState(behindPos).getBlock();
+        if (!(behindBlock instanceof BlockConveyor)) return true;
+
+        BlockConveyor behindConveyor = (BlockConveyor) behindBlock;
+        EnumFacing behindFacing = behindConveyor.getLaneFacing(world, behindPos);
+
+        return behindFacing != facing;
     }
 
     private void ejectItem(World world, BeltItemData item, int lane) {

@@ -187,25 +187,18 @@ public class ConveyorVectorHandler {
     private static void renderRoutePointChain(ConveyorRoute route, BlockPos pos, EnumFacing facing,
                                               double yLine, BufferBuilder b, Tessellator t,
                                               int r, int g, int bl) {
-        int count = route.getPointCount();
-        Vec3d prev = null;
-        for (int i = 0; i < count; i++) {
-            double progress = (double) i / (count - 1);
-            Vec3d point = route.samplePosition(pos, facing, progress);
+        double startProg = BeltLane.ITEM_LENGTH * 0.5D;
+        double endProg = route.getMergeProgress();
+        int pointCount = route.getPointCount();
 
+        for (int i = 0; i < pointCount; i++) {
+            double localProgress = startProg + (endProg - startProg) * ((double) i / (pointCount - 1));
+            Vec3d point = route.samplePosition(pos, facing, localProgress);
             drawLine(b, t, point.x, yLine + 0.02D, point.z,
                     point.x, yLine + 0.12D, point.z, r, g, bl, 200);
-
-            if (prev != null) {
-                drawLine(b, t, prev.x, yLine + 0.02D, prev.z,
-                        point.x, yLine + 0.02D, point.z, r, g, bl, 150);
-            }
-            prev = point;
         }
 
-        int mergeIdx = route.getMergeIndex();
-        double mergeProgress = (double) mergeIdx / (count - 1);
-        Vec3d mergePoint = route.samplePosition(pos, facing, mergeProgress);
+        Vec3d mergePoint = route.samplePosition(pos, facing, endProg);
         drawLine(b, t, mergePoint.x, yLine, mergePoint.z,
                 mergePoint.x, yLine + 0.2D, mergePoint.z, 255, 0, 0, 220);
     }

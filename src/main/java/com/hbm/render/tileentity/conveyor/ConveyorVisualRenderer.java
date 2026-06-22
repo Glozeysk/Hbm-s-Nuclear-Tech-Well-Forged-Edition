@@ -1,10 +1,11 @@
 package com.hbm.render.tileentity.conveyor;
 
 import com.hbm.blocks.network.BlockConveyor;
-import com.hbm.blocks.network.conveyor.BeltLane;
+import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.ClientBeltItem;
 import com.hbm.blocks.network.conveyor.ClientBeltManager;
 import com.hbm.blocks.network.conveyor.ClientBeltSegment;
+import com.hbm.blocks.network.conveyor.ConveyorRoute;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -105,15 +106,18 @@ public class ConveyorVisualRenderer {
                 int lane = item.lane;
                 if (lane < 0 || lane >= offsets.length) lane = 0;
 
-                Vec3d wp = conveyor.getWorldPosition(blockPos, facing, offsets[lane], localProgress);
+                Vec3d forwardPos = conveyor.getWorldPosition(blockPos, facing, offsets[lane], localProgress);
+                float forwardYaw = (float) Math.toDegrees(Math.atan2(facing.getXOffset(), facing.getZOffset()));
 
-                float yaw;
-                switch (facing) {
-                    case SOUTH: yaw = 0.0F; break;
-                    case WEST: yaw = -90.0F; break;
-                    case NORTH: yaw = -180.0F; break;
-                    case EAST: yaw = 90.0F; break;
-                    default: yaw = 0.0F;
+                Vec3d wp = forwardPos;
+                float yaw = forwardYaw;
+
+                if (conveyor.getLaneCount() == 1 && item.routeType != BeltItemData.ROUTE_FORWARD) {
+                    ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
+                    if (route != null && localProgress < route.getMergeProgress()) {
+                        wp = route.samplePosition(blockPos, facing, localProgress);
+                        yaw = route.sampleYaw(blockPos, facing, localProgress, forwardYaw);
+                    }
                 }
 
                 boolean isBlock = item.stack.getItem() instanceof ItemBlock;
