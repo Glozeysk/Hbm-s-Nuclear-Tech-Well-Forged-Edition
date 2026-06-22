@@ -1,5 +1,7 @@
 package com.hbm.packet;
 
+import com.hbm.blocks.network.conveyor.PacketBeltRemove;
+import com.hbm.blocks.network.conveyor.PacketBeltSync;
 import com.hbm.lib.RefStrings;
 import com.hbm.api.network.IPacketRegisterListener;
 import com.hbm.main.NetworkHandler;
@@ -7,7 +9,6 @@ import com.hbm.packet.toclient.BufPacket;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,9 @@ public class PacketDispatcher {
 
     public static void registerPackets(){
         int i = 0;
+
+        wrapper.registerMessage(PacketBeltRemove.Handler.class, PacketBeltRemove.class, i++, Side.CLIENT);
+        wrapper.registerMessage(PacketBeltSync.Handler.class, PacketBeltSync.class, i++, Side.CLIENT);
         //PressPacket
         wrapper.registerMessage(TEPressPacket.Handler.class, TEPressPacket.class, i++, Side.CLIENT);
         //Send chunk radiation packet to individual players

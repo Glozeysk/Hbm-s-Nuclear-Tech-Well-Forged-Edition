@@ -6,6 +6,10 @@ import api.hbm.block.IConveyorLaneSelector;
 import api.hbm.block.IConveyorVectorProvider;
 import api.hbm.block.IToolable;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.network.conveyor.BeltItemData;
+import com.hbm.blocks.network.conveyor.BeltLane;
+import com.hbm.blocks.network.conveyor.BeltSegment;
+import com.hbm.blocks.network.conveyor.BeltSegmentManager;
 import com.hbm.tileentity.network.TileEntityConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -34,7 +38,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
@@ -66,13 +69,13 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
 	@Override
 	public boolean hasTileEntity(IBlockState state) {
-		return usesLaneQueues();
+		return true;
 	}
 
 	@Nullable
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
-		return usesLaneQueues() ? new TileEntityConveyor() : null;
+		return new TileEntityConveyor();
 	}
 
 	public boolean usesLaneQueues() {
@@ -132,133 +135,6 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return laneSelector.selectLane(world, pos, getLaneFacing(world, pos), probePoint, getLaneOffsets(), vectorProvider);
 	}
 
-	public boolean canMergeForwardTo(World world, BlockPos pos, BlockPos nextPos, BlockConveyor nextConveyor) {
-		if (nextConveyor == null || !nextConveyor.usesLaneQueues()) return false;
-		if (!pos.offset(getLaneFacing(world, pos)).equals(nextPos)) return false;
-		if (nextConveyor.getLaneFacing(world, nextPos) != getLaneFacing(world, pos)) return false;
-
-		double[] a = getLaneOffsets();
-		double[] b = nextConveyor.getLaneOffsets();
-
-		if (a.length != b.length) return false;
-
-		for (int i = 0; i < a.length; i++) {
-			if (Math.abs(a[i] - b[i]) > EPS) return false;
-		}
-
-		return true;
-	}
-
-	public IncomingRoute resolveIncomingRoute(World world, BlockPos fromPos, BlockConveyor fromConveyor, int fromLane, BlockPos toPos) {
-		IncomingRoute forward = resolveForwardIncomingRoute(world, fromPos, fromConveyor, fromLane, toPos);
-		if (forward != null) {
-			return forward;
-		}
-
-		if (fromConveyor != null) {
-			EnumFacing fromFacing = fromConveyor.getLaneFacing(world, fromPos);
-			EnumFacing toFacing = getLaneFacing(world, toPos);
-			int safeFromLane = clampLane(fromLane, fromConveyor.getLaneCount());
-			double sourceOffset = fromConveyor.getLaneOffsets()[safeFromLane];
-
-			Vec3d sourceStart = fromConveyor.getLanePoint(fromPos, fromFacing, safeFromLane, 0.0D);
-			Vec3d sourceEnd = fromConveyor.getLanePoint(fromPos, fromFacing, safeFromLane, 2.0D);
-
-			int bestLane = -1;
-			double bestSourceParam = Double.POSITIVE_INFINITY;
-			double bestProgress = 0.0D;
-
-			for (int lane = 0; lane < getLaneCount(); lane++) {
-				Vec3d targetStart = getLanePoint(toPos, toFacing, lane, 0.0D);
-				Vec3d targetEnd = getLanePoint(toPos, toFacing, lane, 1.0D);
-				IntersectionResult result = intersectLinesXZ(sourceStart, sourceEnd, targetStart, targetEnd);
-
-				if (result == null) continue;
-				if (result.sourceParam < -EPS) continue;
-				if (result.targetParam < -EPS || result.targetParam > 1.0D + EPS) continue;
-
-				double snapped = quantizeProgressUp(result.targetParam);
-
-				if (result.sourceParam < bestSourceParam) {
-					bestSourceParam = result.sourceParam;
-					bestLane = lane;
-					bestProgress = snapped;
-				}
-			}
-
-			if (bestLane >= 0) {
-				Vec3d entryPoint = fromConveyor.getLanePoint(fromPos, fromFacing, safeFromLane, ConveyorItemData.EXIT_PROGRESS);
-				Vec3d targetPoint = getLanePoint(toPos, toFacing, bestLane, bestProgress);
-				ConveyorArc arc = ConveyorArc.createSideEntry(entryPoint, targetPoint, fromFacing, toFacing);
-				return new IncomingRoute(bestLane, bestProgress, false, sourceOffset, arc);
-			}
-		}
-
-		return new IncomingRoute(-1, 0.0D, false, 0.0D, null);
-	}
-
-	protected IncomingRoute resolveForwardIncomingRoute(World world, BlockPos fromPos, BlockConveyor fromConveyor, int fromLane, BlockPos toPos) {
-		if (fromConveyor == null) return null;
-
-		EnumFacing fromFacing = fromConveyor.getLaneFacing(world, fromPos);
-		if (!fromPos.offset(fromFacing).equals(toPos)) return null;
-
-		EnumFacing toFacing = getLaneFacing(world, toPos);
-		if (toFacing != fromFacing) return null;
-
-		int safeFromLane = clampLane(fromLane, fromConveyor.getLaneCount());
-		double sourceOffset = fromConveyor.getLaneOffsets()[safeFromLane];
-
-		if (fromConveyor.getLaneCount() > getLaneCount()) {
-			int bestLane = -1;
-			double bestDiff = Double.MAX_VALUE;
-
-			for (int i = 0; i < getLaneCount(); i++) {
-				double diff = Math.abs(getLaneOffsets()[i] - sourceOffset);
-				if (diff < bestDiff) {
-					bestDiff = diff;
-					bestLane = i;
-				}
-			}
-
-			if (bestLane >= 0) {
-				boolean merged = fromConveyor.canMergeForwardTo(world, fromPos, toPos, this);
-				return new IncomingRoute(bestLane, ConveyorItemData.ENTRY_PROGRESS, merged, sourceOffset, null);
-			}
-
-			return new IncomingRoute(-1, 0.0D, false, sourceOffset, null);
-		}
-
-		int bestLane = -1;
-		double bestDiff = Double.MAX_VALUE;
-		double maxAllowedDiff = ConveyorItemData.HALF_ITEM + EPS;
-
-		for (int i = 0; i < getLaneCount(); i++) {
-			double diff = Math.abs(getLaneOffsets()[i] - sourceOffset);
-			if (diff <= maxAllowedDiff && diff < bestDiff) {
-				bestDiff = diff;
-				bestLane = i;
-			}
-		}
-
-		if (bestLane < 0) {
-			return new IncomingRoute(-1, 0.0D, false, sourceOffset, null);
-		}
-
-		boolean merged = fromConveyor.canMergeForwardTo(world, fromPos, toPos, this);
-		return new IncomingRoute(bestLane, 0.0D, merged, sourceOffset, null);
-	}
-
-	protected double quantizeProgressUp(double progress) {
-		if (progress <= ConveyorItemData.ENTRY_PROGRESS) {
-			return ConveyorItemData.ENTRY_PROGRESS;
-		}
-
-		double steps = Math.ceil((progress - ConveyorItemData.ENTRY_PROGRESS - EPS) / ConveyorItemData.ITEM_LENGTH);
-		double snapped = ConveyorItemData.ENTRY_PROGRESS + steps * ConveyorItemData.ITEM_LENGTH;
-		return MathHelper.clamp(snapped, ConveyorItemData.ENTRY_PROGRESS, ConveyorItemData.EXIT_PROGRESS);
-	}
-
 	@Override
 	public boolean canItemStay(World world, int x, int y, int z, Vec3d itemPos) {
 		return true;
@@ -285,7 +161,7 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		EnumFacing facing = getLaneFacing(world, pos);
 		int lane = getClosestLaneIndex(world, pos, itemPos);
 		double progress = MathHelper.clamp(getLaneProgress(pos, facing, itemPos),
-				ConveyorItemData.ENTRY_PROGRESS, ConveyorItemData.EXIT_PROGRESS);
+				BeltLane.ITEM_LENGTH * 0.5, 1.0 - BeltLane.ITEM_LENGTH * 0.5);
 		return getLanePoint(pos, facing, lane, progress);
 	}
 
@@ -295,27 +171,30 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		if (player.isSneaking()) return false;
 		if (world.isRemote) return true;
 
-		TileEntity te = world.getTileEntity(pos);
-		if (!(te instanceof TileEntityConveyor)) return false;
-		TileEntityConveyor tile = (TileEntityConveyor) te;
+		BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos);
+		if (segment == null) return false;
+
+		int blockIndex = segment.getBlockIndex(pos);
+		if (blockIndex < 0) return false;
 
 		EnumFacing laneFacing = getLaneFacing(world, pos);
 		Vec3d hitPos = new Vec3d(pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ);
 		int lane = getClosestLaneIndex(world, pos, hitPos);
 		if (lane < 0 || lane >= getLaneCount()) return false;
 
-		double hitProgress = getLaneProgress(pos, laneFacing, hitPos);
+		double localProgress = getLaneProgress(pos, laneFacing, hitPos);
+		double hitProgress = blockIndex + localProgress;
 		ItemStack heldStack = player.getHeldItem(hand);
 
 		if (!heldStack.isEmpty()) {
-			int slotIdx = tile.findNearestFreeSlot(lane, hitProgress);
-			if (slotIdx < 0) return true;
+			BeltLane beltLane = segment.getLane(lane);
+			double slotProgress = blockIndex + 0.5D;
+			if (!beltLane.isSlotFree(slotProgress)) return true;
 
 			ItemStack placed = heldStack.copy();
 			placed.setCount(1);
 
-			if (tile.insertStack(placed, lane, slotIdx)) {
-				tile.forceSyncNow();
+			if (segment.insertStack(placed, lane, slotProgress)) {
 				if (!player.isCreative()) {
 					heldStack.shrink(1);
 				}
@@ -323,11 +202,11 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 			return true;
 		}
 
-		ConveyorItemData target = tile.findNearestItem(lane, hitProgress);
+		BeltLane beltLane = segment.getLane(lane);
+		BeltItemData target = beltLane.findNearest(hitProgress);
 		if (target != null) {
 			ItemStack dropped = target.getStack().copy();
-			tile.removeItem(target);
-			tile.forceSyncNow();
+			segment.removeItem(target.getUniqueId());
 
 			if (!player.inventory.addItemStackToInventory(dropped)) {
 				EntityItem entityItem = new EntityItem(world, player.posX, player.posY + 0.5D, player.posZ, dropped);
@@ -340,28 +219,27 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return true;
 	}
 
-
-
 	@Override
 	public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
 		if (world.isRemote) return;
 
 		if (entity instanceof EntityItem && entity.ticksExisted > 10 && !entity.isDead) {
-			TileEntity te = world.getTileEntity(pos);
-			if (!(te instanceof TileEntityConveyor)) return;
+			BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos);
+			if (segment == null) return;
 
-			TileEntityConveyor tile = (TileEntityConveyor) te;
+			int blockIndex = segment.getBlockIndex(pos);
+			if (blockIndex < 0) return;
+
 			Vec3d entityPos = new Vec3d(entity.posX, entity.posY, entity.posZ);
-			int lane = tile.getClosestAvailableLane(entityPos);
+			int lane = getClosestLaneIndex(world, pos, entityPos);
+			if (lane < 0 || lane >= segment.getLaneCount()) return;
 
-			if (lane < 0) return;
-
-			int slotIdx = tile.findFirstFreeSlot(lane);
-			if (slotIdx < 0) return;
+			double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5;
+			BeltLane beltLane = segment.getLane(lane);
+			if (!beltLane.isSlotFree(slotProgress)) return;
 
 			ItemStack stack = ((EntityItem) entity).getItem().copy();
-			if (tile.insertStack(stack, lane, slotIdx)) {
-				tile.forceSyncNow();
+			if (segment.insertStack(stack, lane, slotProgress)) {
 				entity.setDead();
 			}
 		}
@@ -369,9 +247,8 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
-		TileEntity te = world.getTileEntity(pos);
-		if (te instanceof TileEntityConveyor) {
-			((TileEntityConveyor) te).invalidate();
+		if (!world.isRemote) {
+			BeltSegmentManager.onBlockRemoved(world, pos, state);
 		}
 		super.breakBlock(world, pos, state);
 	}
@@ -379,6 +256,29 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
+		if (!worldIn.isRemote) {
+			BeltSegmentManager.onBlockPlaced(worldIn, pos);
+		}
+	}
+
+	@Override
+	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, IToolable.ToolType tool) {
+		if (tool != IToolable.ToolType.SCREWDRIVER) return false;
+		BlockPos pos = new BlockPos(x, y, z);
+		IBlockState state = world.getBlockState(pos);
+		EnumFacing currentFacing = state.getValue(FACING);
+
+		if (!world.isRemote) {
+			BeltSegmentManager.onBlockRotated(world, pos);
+		}
+
+		world.setBlockState(pos, state.withProperty(FACING, currentFacing.rotateY()));
+
+		if (!world.isRemote) {
+			BeltSegmentManager.onBlockPlaced(world, pos);
+		}
+
+		return true;
 	}
 
 	@Override
@@ -448,16 +348,6 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
 	}
 
-	@Override
-	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, IToolable.ToolType tool) {
-		if (tool != IToolable.ToolType.SCREWDRIVER) return false;
-		BlockPos pos = new BlockPos(x, y, z);
-		IBlockState state = world.getBlockState(pos);
-		EnumFacing facing = state.getValue(FACING);
-		world.setBlockState(pos, state.withProperty(FACING, facing.rotateY()));
-		return true;
-	}
-
 	protected static int clampLane(int lane, int laneCount) {
 		if (laneCount <= 0) return 0;
 		if (lane < 0) return 0;
@@ -500,47 +390,32 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return (p.x - cx) * (p.x - cx) + (p.z - cz) * (p.z - cz);
 	}
 
-	protected static IntersectionResult intersectLinesXZ(Vec3d a1, Vec3d a2, Vec3d b1, Vec3d b2) {
-		double rX = a2.x - a1.x;
-		double rZ = a2.z - a1.z;
-		double sX = b2.x - b1.x;
-		double sZ = b2.z - b1.z;
-
-		double denom = rX * sZ - rZ * sX;
-		if (Math.abs(denom) <= EPS) return null;
-
-		double qpx = b1.x - a1.x;
-		double qpz = b1.z - a1.z;
-
-		return new IntersectionResult(
-				(qpx * sZ - qpz * sX) / denom,
-				(qpx * rZ - qpz * rX) / denom
-		);
-	}
-
-	public static final class IncomingRoute {
+	public static class IncomingRoute {
 		public final int lane;
 		public final double progress;
-		public final boolean merged;
-		public final double sourceLateralOffset;
-		public final ConveyorArc arc;
 
-		public IncomingRoute(int lane, double progress, boolean merged, double sourceLateralOffset, ConveyorArc arc) {
+		public IncomingRoute(int lane, double progress) {
 			this.lane = lane;
 			this.progress = progress;
-			this.merged = merged;
-			this.sourceLateralOffset = sourceLateralOffset;
-			this.arc = arc;
 		}
+
+		public static final IncomingRoute NONE = new IncomingRoute(-1, 0.0D);
 	}
 
-	protected static final class IntersectionResult {
-		public final double sourceParam;
-		public final double targetParam;
+	public IncomingRoute resolveIncomingRoute(World world, BlockPos fromPos, BlockConveyor fromConveyor, int fromLane, BlockPos toPos) {
+		EnumFacing fromFacing = fromConveyor.getLaneFacing(world, fromPos);
 
-		public IntersectionResult(double sourceParam, double targetParam) {
-			this.sourceParam = sourceParam;
-			this.targetParam = targetParam;
-		}
+		EnumFacing enterDir = EnumFacing.getFacingFromVector(
+				(float)(toPos.getX() - fromPos.getX()),
+				0,
+				(float)(toPos.getZ() - fromPos.getZ())
+		);
+
+		if (enterDir != fromFacing) return IncomingRoute.NONE;
+
+		int targetLane = fromLane < getLaneCount() ? fromLane : getLaneCount() - 1;
+		double entryProgress = BeltLane.ITEM_LENGTH * 0.5;
+
+		return new IncomingRoute(targetLane, entryProgress);
 	}
 }
