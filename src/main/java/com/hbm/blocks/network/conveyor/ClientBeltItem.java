@@ -44,7 +44,6 @@ public class ClientBeltItem {
 
     public void tick(double speed, double limit) {
         this.prevRenderProgress = this.renderProgress;
-
         if (stopped) return;
 
         this.renderProgress += speed;

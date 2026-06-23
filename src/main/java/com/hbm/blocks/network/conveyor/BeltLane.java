@@ -28,9 +28,7 @@ public class BeltLane {
     public boolean addSorted(BeltItemData item) {
         int maxTotal = segmentBlocks * maxItemsPerBlock;
         if (items.size() >= maxTotal) return false;
-
         if (!isSlotFree(item.getProgress())) return false;
-
         insertSorted(item);
         return true;
     }
@@ -89,17 +87,6 @@ public class BeltLane {
         }
         if (best != null && bestDist < ITEM_LENGTH) return best;
         return null;
-    }
-
-    public int findFirstFreeSlot(double segmentLength) {
-        for (int block = 0; block < segmentBlocks; block++) {
-            for (int slot = 0; slot < maxItemsPerBlock; slot++) {
-                double slotProgress = block + ITEM_LENGTH * 0.5 + slot * ITEM_LENGTH;
-                if (slotProgress >= segmentLength) continue;
-                if (isSlotFree(slotProgress)) return block * maxItemsPerBlock + slot;
-            }
-        }
-        return -1;
     }
 
     public boolean isSlotFree(double slotProgress) {

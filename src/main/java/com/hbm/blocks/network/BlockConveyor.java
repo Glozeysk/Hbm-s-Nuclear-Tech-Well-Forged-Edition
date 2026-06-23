@@ -78,10 +78,6 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return new TileEntityConveyor();
 	}
 
-	public boolean usesLaneQueues() {
-		return true;
-	}
-
 	public double getConveyorSpeed() {
 		return 0.0625D;
 	}
@@ -129,6 +125,14 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		double dx = itemPos.x - (pos.getX() + 0.5D);
 		double dz = itemPos.z - (pos.getZ() + 0.5D);
 		return dx * right.getXOffset() + dz * right.getZOffset();
+	}
+
+	public boolean isVerticalConveyor() {
+		return false;
+	}
+
+	public boolean usesLaneQueues() {
+		return true;
 	}
 
 	public int getClosestLaneIndex(World world, BlockPos pos, Vec3d probePoint) {

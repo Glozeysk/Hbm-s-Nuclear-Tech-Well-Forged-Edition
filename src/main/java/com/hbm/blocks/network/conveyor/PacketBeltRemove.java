@@ -34,9 +34,7 @@ public class PacketBeltRemove extends ThreadedPacket {
         @SideOnly(Side.CLIENT)
         public IMessage onMessage(PacketBeltRemove message, MessageContext ctx) {
             Minecraft mc = Minecraft.getMinecraft();
-            mc.addScheduledTask(() -> {
-                ClientBeltManager.get().removeSegment(message.segmentId);
-            });
+            mc.addScheduledTask(() -> ClientBeltManager.get().removeSegment(message.segmentId));
             return null;
         }
     }

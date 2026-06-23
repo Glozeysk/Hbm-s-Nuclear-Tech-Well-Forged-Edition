@@ -15,19 +15,28 @@ public class ClientBeltSegment {
     public final EnumFacing direction;
     public final double speed;
     public final int laneCount;
+    public final boolean isVertical;
+    public final boolean isUpward;
 
     private final Map<Long, ClientBeltItem> itemMap = new HashMap<>();
     private final List<ClientBeltItem>[] lanes;
 
     @SuppressWarnings("unchecked")
     public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount) {
+        this(segmentId, blocks, direction, speed, laneCount, false, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount, boolean isVertical, boolean isUpward) {
         this.segmentId = segmentId;
         this.blocks = new ArrayList<>(blocks);
         this.direction = direction;
         this.speed = speed;
-        this.laneCount = laneCount;
-        this.lanes = new List[laneCount];
-        for (int i = 0; i < laneCount; i++) {
+        this.laneCount = Math.max(1, laneCount);
+        this.isVertical = isVertical;
+        this.isUpward = isUpward;
+        this.lanes = new List[this.laneCount];
+        for (int i = 0; i < this.laneCount; i++) {
             lanes[i] = new ArrayList<>();
         }
     }
@@ -52,6 +61,7 @@ public class ClientBeltSegment {
                 toRemove.add(uid);
             }
         }
+
         for (Long uid : toRemove) {
             ClientBeltItem removed = itemMap.remove(uid);
             if (removed != null) {
@@ -63,6 +73,11 @@ public class ClientBeltSegment {
         }
 
         for (BeltItemData si : serverItems) {
+            int newLane = si.getLane();
+            if (newLane < 0 || newLane >= laneCount) {
+                newLane = 0;
+            }
+
             ClientBeltItem existing = itemMap.get(si.getUniqueId());
             if (existing != null) {
                 int oldLane = existing.lane;
@@ -70,26 +85,29 @@ public class ClientBeltSegment {
                         si.getProgress(),
                         si.isStopped(),
                         si.getStack(),
-                        si.getLane(),
+                        newLane,
                         si.getRouteType()
                 );
-                if (oldLane != si.getLane()) {
-                    if (oldLane >= 0 && oldLane < laneCount) lanes[oldLane].remove(existing);
-                    if (si.getLane() >= 0 && si.getLane() < laneCount) lanes[si.getLane()].add(existing);
+                if (oldLane != newLane) {
+                    if (oldLane >= 0 && oldLane < laneCount) {
+                        lanes[oldLane].remove(existing);
+                    }
+                    if (newLane >= 0 && newLane < laneCount && !lanes[newLane].contains(existing)) {
+                        lanes[newLane].add(existing);
+                    }
                 }
             } else {
                 ClientBeltItem newItem = new ClientBeltItem(
                         si.getUniqueId(),
                         si.getStack(),
-                        si.getLane(),
+                        newLane,
                         si.getProgress(),
                         si.isStopped(),
                         si.getRouteType()
                 );
                 itemMap.put(si.getUniqueId(), newItem);
-                int lane = si.getLane();
-                if (lane >= 0 && lane < laneCount) {
-                    lanes[lane].add(newItem);
+                if (newLane >= 0 && newLane < laneCount) {
+                    lanes[newLane].add(newItem);
                 }
             }
         }
