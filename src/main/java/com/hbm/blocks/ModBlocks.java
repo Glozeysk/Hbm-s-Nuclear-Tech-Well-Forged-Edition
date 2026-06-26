@@ -41,7 +41,6 @@ import com.hbm.blocks.bomb.NukePrototype;
 import com.hbm.blocks.bomb.NukeSolinium;
 import com.hbm.blocks.bomb.NukeTsar;
 import com.hbm.blocks.bomb.RailgunPlasma;
-import com.hbm.blocks.deco.BlockDecoSign;
 import com.hbm.blocks.gas.BlockGasAsbestos;
 import com.hbm.blocks.gas.BlockGasCoal;
 import com.hbm.blocks.gas.BlockGasExplosive;
@@ -1170,10 +1169,15 @@ public class ModBlocks {
 	public static final Block conveyor_express = new BlockConveyorExpress(Material.IRON, "conveyor_express").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block conveyor_chute = new BlockConveyorChute(Material.IRON, "conveyor_chute").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block conveyor_lift = new BlockConveyorLift(Material.IRON, "conveyor_lift").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_ejector = new CraneExtractor(Material.IRON, "crane_ejector").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+
+	public static final Block crane_ejector = new CraneEjector(Material.IRON, "crane_ejector").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_ejector_alt = new CraneEjectorAlt(Material.IRON, "crane_ejector_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_ejector_alt_2 = new CraneEjectorAlt2(Material.IRON, "crane_ejector_alt_2").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+
 	public static final Block crane_inserter = new CraneInserter(Material.IRON, "crane_inserter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_ejector_alt = new CraneExtractorAlt(Material.IRON, "crane_ejector_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_inserter_alt = new CraneInserterAlt(Material.IRON, "crane_inserter_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_inserter_alt_2 = new CraneInserterAlt2(Material.IRON, "crane_inserter_alt_2").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+
 	public static final Block crane_splitter = new CraneSplitter(Material.IRON, "crane_splitter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_boxer = new CraneBoxer(Material.IRON, "crane_boxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_unboxer = new CraneUnboxer(Material.IRON, "crane_unboxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);

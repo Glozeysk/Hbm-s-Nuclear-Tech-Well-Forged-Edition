@@ -2,15 +2,15 @@ package com.hbm.tileentity.network;
 
 import net.minecraft.util.EnumFacing;
 
-public class TileEntityCraneInserterAlt extends TileEntityCraneInserterBase {
+public class TileEntityCraneInserterAlt2 extends TileEntityCraneInserterBase {
 
     @Override
     public String getName() {
-        return "container.craneInserterAlt";
+        return "container.craneInserterAlt2";
     }
 
     @Override
     public EnumFacing getOutputSide() {
-        return EnumFacing.DOWN;
+        return EnumFacing.UP;
     }
 }

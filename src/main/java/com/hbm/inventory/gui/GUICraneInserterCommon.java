@@ -1,22 +1,22 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.inventory.container.ContainerCraneInserter;
+import com.hbm.inventory.container.ContainerCraneInserterCommon;
 import com.hbm.lib.RefStrings;
-import com.hbm.tileentity.network.TileEntityCraneInserter;
+import com.hbm.tileentity.network.TileEntityCraneInserterBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-public class GUICraneInserter extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_inserter.png");
-    private TileEntityCraneInserter inserter;
+public class GUICraneInserterCommon extends GuiInfoContainer {
 
-    public GUICraneInserter(InventoryPlayer invPlayer, TileEntityCraneInserter tedf) {
-        super(new ContainerCraneInserter(invPlayer, tedf));
-        inserter = tedf;
+    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_inserter.png");
+    private final TileEntityCraneInserterBase inserter;
 
+    public GUICraneInserterCommon(InventoryPlayer invPlayer, TileEntityCraneInserterBase tedf) {
+        super(new ContainerCraneInserterCommon(invPlayer, tedf));
+        this.inserter = tedf;
         this.xSize = 176;
         this.ySize = 185;
     }
@@ -35,7 +35,7 @@ public class GUICraneInserter extends GuiInfoContainer {
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawDefaultBackground();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);

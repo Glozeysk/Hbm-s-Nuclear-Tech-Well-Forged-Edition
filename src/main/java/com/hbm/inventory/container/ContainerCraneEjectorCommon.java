@@ -2,9 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.SlotPattern;
 import com.hbm.inventory.SlotUpgrade;
-import com.hbm.items.ModItems;
-import com.hbm.tileentity.network.TileEntityCraneExtractor;
-
+import com.hbm.tileentity.network.TileEntityCraneEjectorBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
@@ -13,27 +11,25 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class ContainerCraneExtractor extends Container  {
-    protected TileEntityCraneExtractor extractor;
+public class ContainerCraneEjectorCommon extends Container {
 
-    public ContainerCraneExtractor(InventoryPlayer invPlayer, TileEntityCraneExtractor extractor) {
+    protected final TileEntityCraneEjectorBase extractor;
+
+    public ContainerCraneEjectorCommon(InventoryPlayer invPlayer, TileEntityCraneEjectorBase extractor) {
         this.extractor = extractor;
 
-        //filter
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 this.addSlotToContainer(new SlotPattern(extractor.inventory, j + i * 3, 71 + j * 18, 17 + i * 18));
             }
         }
 
-        //buffer
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
                 this.addSlotToContainer(new SlotItemHandler(extractor.inventory, 9 + j + i * 3, 8 + j * 18, 17 + i * 18));
             }
         }
 
-        //upgrades
         this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 18, 152, 23));
         this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 19, 152, 47));
 
@@ -50,7 +46,7 @@ public class ContainerCraneExtractor extends Container  {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
-        if (slotId < 0 || slotId >= 9) {
+        if(slotId < 0 || slotId >= 9) {
             return super.slotClick(slotId, dragType, clickTypeIn, player);
         }
 
@@ -59,17 +55,17 @@ public class ContainerCraneExtractor extends Container  {
         ItemStack ret = ItemStack.EMPTY;
         ItemStack held = player.inventory.getItemStack();
 
-        if (slot.getHasStack()) {
+        if(slot.getHasStack()) {
             ret = slot.getStack().copy();
         }
 
-        if (clickTypeIn == ClickType.PICKUP && dragType == 1 && slot.getHasStack()) {
+        if(clickTypeIn == ClickType.PICKUP && dragType == 1 && slot.getHasStack()) {
             extractor.nextMode(slotId);
             return ret;
         } else {
             slot.putStack(held.isEmpty() ? ItemStack.EMPTY : held.copy());
 
-            if (slot.getHasStack()) {
+            if(slot.getHasStack()) {
                 slot.getStack().setCount(1);
             }
 
@@ -83,21 +79,21 @@ public class ContainerCraneExtractor extends Container  {
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
         ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(slot);
+        Slot var4 = this.inventorySlots.get(slot);
 
         if(var4 != null && var4.getHasStack()) {
             ItemStack var5 = var4.getStack();
             var3 = var5.copy();
 
-            if(slot < 9) { //filters
+            if(slot < 9) {
                 return ItemStack.EMPTY;
             }
 
-            if(slot >= 9 && slot <= 17) { // buffer -> player inventory
+            if(slot >= 9 && slot <= 17) {
                 if(!this.mergeItemStack(var5, 20, 56, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if(slot >= 20 && slot <= 55) { // player inventory -> buffer slots
+            } else if(slot >= 20 && slot <= 55) {
                 if(!this.mergeItemStack(var5, 9, 18, false)) {
                     return ItemStack.EMPTY;
                 }

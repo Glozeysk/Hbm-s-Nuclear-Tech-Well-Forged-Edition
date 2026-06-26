@@ -859,10 +859,13 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityBMPowerBox.class, new ResourceLocation(RefStrings.MODID, "tileentity_bm_power_box"));
 		GameRegistry.registerTileEntity(TileEntityRadioTorchSender.class, new ResourceLocation(RefStrings.MODID, "tileentity_radio_torch_sender"));
 		GameRegistry.registerTileEntity(TileEntityRadioTorchReceiver.class, new ResourceLocation(RefStrings.MODID, "tileentity_radio_torch_receiver"));
-		GameRegistry.registerTileEntity(TileEntityCraneExtractor.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector"));
 		GameRegistry.registerTileEntity(TileEntityCraneInserter.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneinserter"));
-		GameRegistry.registerTileEntity(TileEntityCraneExtractorAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt"));
+		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt"));
 		GameRegistry.registerTileEntity(TileEntityCraneInserterAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneinserter_alt"));
+		GameRegistry.registerTileEntity(TileEntityCraneInserterAlt2.class, new ResourceLocation(RefStrings.MODID, "tileentity.craneinserter_alt_2"));
+		GameRegistry.registerTileEntity(TileEntityCraneEjector.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector"));
+		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt"));
+		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt2.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt_2"));
 		GameRegistry.registerTileEntity(TileEntityCraneSplitter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranesplitter"));
 		GameRegistry.registerTileEntity(TileEntityCraneBoxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneboxer"));
 		GameRegistry.registerTileEntity(TileEntityCraneUnboxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneunboxer"));

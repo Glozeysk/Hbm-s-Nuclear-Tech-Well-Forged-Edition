@@ -1,34 +1,16 @@
 package com.hbm.blocks.network;
 
-import api.hbm.block.IConveyorItem;
-import api.hbm.block.IConveyorPackage;
-import api.hbm.block.IEnterableBlock;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneInserterAlt;
-import com.hbm.tileentity.TileEntityMachineBase;
-
-import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityFurnace;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.items.IItemHandler;
 
-public class CraneInserterAlt extends BlockCraneBase implements IEnterableBlock {
+public class CraneInserterAlt extends BlockCraneInserterBase {
+
     public CraneInserterAlt(Material materialIn, String s) {
-        super(materialIn);
-        this.setTranslationKey(s);
-        this.setRegistryName(s);
-        ModBlocks.ALL_BLOCKS.add(this);
+        super(materialIn, s);
     }
 
     @Override
@@ -37,48 +19,7 @@ public class CraneInserterAlt extends BlockCraneBase implements IEnterableBlock 
     }
 
     @Override
-    public boolean canItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) {
-        BlockPos pos = new BlockPos(x, y, z);
-        IBlockState state = world.getBlockState(pos);
-        EnumFacing orientation = state.getValue(BlockHorizontal.FACING);
-        return dir == orientation;
+    protected Block getNextBlock() {
+        return ModBlocks.crane_inserter_alt_2;
     }
-
-    @Override
-    public void onItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) {
-        if (entity == null || entity.getItemStack() == ItemStack.EMPTY || entity.getItemStack().getCount() <= 0) {
-            return;
-        }
-
-        ItemStack toAdd = entity.getItemStack().copy();
-        
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-        boolean worked = false;
-        if(te instanceof TileEntityCraneInserterAlt)
-            worked = ((TileEntityCraneInserterAlt)te).tryFillTeDirect(toAdd);
-
-        if(!worked) {
-            EntityItem drop = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, toAdd.copy());
-            world.spawnEntity(drop);
-        }
-    }
-
-    @Override
-    public boolean canPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) {
-        return false;
-    }
-
-    @Override
-    public void onPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { }
-
-    @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        TileEntity tileentity = world.getTileEntity(pos);
-
-        if(tileentity instanceof TileEntityCraneInserterAlt) {
-            InventoryHelper.dropInventoryItems(world, pos, (TileEntityCraneInserterAlt) tileentity);
-        }
-        super.breakBlock(world, pos, state);
-    }
-
 }

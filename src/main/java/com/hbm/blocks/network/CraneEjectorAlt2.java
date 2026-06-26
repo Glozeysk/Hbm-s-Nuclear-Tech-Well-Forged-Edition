@@ -2,24 +2,24 @@ package com.hbm.blocks.network;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.tileentity.network.TileEntityCraneBase;
-import com.hbm.tileentity.network.TileEntityCraneInserter;
+import com.hbm.tileentity.network.TileEntityCraneEjectorAlt2;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.world.World;
 
-public class CraneInserter extends BlockCraneInserterBase {
+public class CraneEjectorAlt2 extends BlockCraneEjectorBase {
 
-    public CraneInserter(Material materialIn, String s) {
+    public CraneEjectorAlt2(Material materialIn, String s) {
         super(materialIn, s);
     }
 
     @Override
     public TileEntityCraneBase createNewTileEntity(World world, int meta) {
-        return new TileEntityCraneInserter();
+        return new TileEntityCraneEjectorAlt2();
     }
 
     @Override
     protected Block getNextBlock() {
-        return ModBlocks.crane_inserter_alt;
+        return ModBlocks.crane_ejector;
     }
 }

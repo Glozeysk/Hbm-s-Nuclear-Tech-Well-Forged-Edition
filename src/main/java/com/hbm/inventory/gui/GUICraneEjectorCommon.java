@@ -1,11 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.handler.threading.PacketThreading;
-import com.hbm.inventory.container.ContainerCraneExtractorAlt;
+import com.hbm.inventory.container.ContainerCraneEjectorCommon;
 import com.hbm.lib.RefStrings;
 import com.hbm.packet.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.tileentity.network.TileEntityCraneExtractorAlt;
+import com.hbm.tileentity.network.TileEntityCraneEjectorBase;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -21,15 +20,14 @@ import org.lwjgl.opengl.GL11;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class GUICraneExtractorAlt extends GuiInfoContainer {
+public class GUICraneEjectorCommon extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_ejector.png");
-    public TileEntityCraneExtractorAlt ejector;
+    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_ejector.png");
+    public final TileEntityCraneEjectorBase ejector;
 
-    public GUICraneExtractorAlt(InventoryPlayer invPlayer, TileEntityCraneExtractorAlt tedf) {
-        super(new ContainerCraneExtractorAlt(invPlayer, tedf));
-        ejector = tedf;
-
+    public GUICraneEjectorCommon(InventoryPlayer invPlayer, TileEntityCraneEjectorBase tedf) {
+        super(new ContainerCraneEjectorCommon(invPlayer, tedf));
+        this.ejector = tedf;
         this.xSize = 176;
         this.ySize = 185;
     }
@@ -37,25 +35,31 @@ public class GUICraneExtractorAlt extends GuiInfoContainer {
     @Override
     public void drawScreen(int x, int y, float interp) {
         super.drawScreen(x, y, interp);
-        
+
         if(this.mc.player.getHeldItemMainhand().isEmpty()) {
             for(int i = 0; i < 9; ++i) {
-                Slot slot = (Slot) this.inventorySlots.inventorySlots.get(i);
+                Slot slot = this.inventorySlots.inventorySlots.get(i);
 
                 if(this.isMouseOverSlot(slot, x, y) && ejector.matcher.modes[i] != null) {
-
                     String label = TextFormatting.YELLOW + "";
 
                     switch(ejector.matcher.modes[i]) {
-                        case "exact": label += I18nUtil.resolveKey("desc.exact"); break;
-                        case "wildcard": label += I18nUtil.resolveKey("desc.wildcard"); break;
-                        default: label += I18nUtil.resolveKey("desc.oredictmatch")+" " + ejector.matcher.modes[i]; break;
+                        case "exact":
+                            label += I18nUtil.resolveKey("desc.exact");
+                            break;
+                        case "wildcard":
+                            label += I18nUtil.resolveKey("desc.wildcard");
+                            break;
+                        default:
+                            label += I18nUtil.resolveKey("desc.oredictmatch") + " " + ejector.matcher.modes[i];
+                            break;
                     }
 
-                    this.drawHoveringText(Arrays.asList(new String[] { TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label }), x, y - 30);
+                    this.drawHoveringText(Arrays.asList(TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label), x, y - 30);
                 }
             }
         }
+
         this.renderHoveredToolTip(x, y);
     }
 
@@ -64,7 +68,6 @@ public class GUICraneExtractorAlt extends GuiInfoContainer {
         super.mouseClicked(x, y, i);
 
         if(guiLeft + 128 <= x && guiLeft + 128 + 14 > x && guiTop + 30 < y && guiTop + 30 + 26 >= y) {
-
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("isWhitelist", true);
@@ -80,7 +83,7 @@ public class GUICraneExtractorAlt extends GuiInfoContainer {
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawDefaultBackground();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);

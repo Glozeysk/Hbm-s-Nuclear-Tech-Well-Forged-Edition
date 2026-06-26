@@ -5,8 +5,8 @@
 		"up": "hbm:blocks/crane_in_top",
 		"north": "hbm:blocks/crane_side_in",
 		"south": "hbm:blocks/crane_side_out",
-		"west": "hbm:blocks/crane_side",
-		"east": "hbm:blocks/crane_side",
+		"west": "hbm:blocks/crane_in_side_turn_right",
+		"east": "hbm:blocks/crane_in_side_turn_left",
 		"particle": "hbm:blocks/crane_side"
 	}
 }
