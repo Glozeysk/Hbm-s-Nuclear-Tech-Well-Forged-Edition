@@ -19,6 +19,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase implements IGUIProvider {
 
     private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+    private static final int[] BUFFER_SLOTS = {9, 10, 11, 12, 13, 14, 15, 16, 17};
 
     public TileEntityCraneInserterBase() {
         super(21);
@@ -36,38 +37,23 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
         EnumFacing outputSide = getOutputSide();
         TileEntity te = world.getTileEntity(pos.offset(outputSide));
 
-        if(te != null) {
-            if(te instanceof TileEntityCraneEjectorBase) {
-                TileEntityCraneEjectorBase ejector = (TileEntityCraneEjectorBase) te;
-                for(int i = 0; i < inventory.getSlots(); i++) {
-                    ItemStack stack = inventory.getStackInSlot(i);
-                    if(!stack.isEmpty()) {
-                        int toInsert = stack.getCount();
-                        ItemStack extracted = inventory.extractItem(i, toInsert, true);
-                        if(!extracted.isEmpty()) {
-                            int accepted = ejector.tryInsertDirect(extracted.copy());
-                            if(accepted > 0) {
-                                inventory.extractItem(i, accepted, false);
-                            }
-                        }
-                    }
-                }
-                return;
-            }
+        if(te == null) return;
 
-            EnumFacing accessFace = outputSide.getOpposite();
-            IItemHandler cap = null;
+        if(te instanceof TileEntityCraneInserterBase) return;
+        if(te instanceof TileEntityCraneEjectorBase) return;
 
-            if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
-                cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
-            } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-                cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-            }
+        EnumFacing accessFace = outputSide.getOpposite();
+        IItemHandler cap = null;
 
-            if(cap != null) {
-                for(int i = 0; i < inventory.getSlots(); i++) {
-                    tryFillContainerCap(cap, i);
-                }
+        if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        }
+
+        if(cap != null) {
+            for(int i : BUFFER_SLOTS) {
+                tryFillContainerCap(cap, i);
             }
         }
     }
@@ -77,7 +63,7 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
 
         int filledAmount = 0;
 
-        for(int i : ALL_SLOTS) {
+        for(int i : BUFFER_SLOTS) {
             if(stack.isEmpty() || stack.getCount() < 1) {
                 return filledAmount;
             }
@@ -103,7 +89,7 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
     }
 
     public boolean tryFillTeDirect(ItemStack stack) {
-        return tryInsertItemCap(inventory, stack);
+        return tryInsertDirect(stack) > 0;
     }
 
     public boolean tryFillContainerCap(IItemHandler chest, int slot) {

@@ -74,11 +74,11 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
             TileEntity te = world.getTileEntity(pos.offset(inputSide));
             Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
-            if(te != null) {
+            if(te != null && !(te instanceof TileEntityCraneEjectorBase)) {
                 int[] access = null;
                 ISidedInventory sided = null;
 
-                if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneEjectorBase)) {
+                if(te instanceof ISidedInventory) {
                     sided = (ISidedInventory) te;
                     access = masquerade(sided, accessFace);
                 }
@@ -103,7 +103,7 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
                             boolean match = this.matchesFilter(stack);
 
                             if(isWhitelist == match) {
-                                int toSend = stack.getCount();
+                                int toSend = Math.min(amount, stack.getCount());
                                 ItemStack extracted = inv.extractItem(handlerSlot, toSend, true);
 
                                 if(!extracted.isEmpty()) {
