@@ -31,6 +31,7 @@ public final class BeltSegmentManager {
     private BeltSegmentManager() {}
 
     private static final Map<World, Map<BlockPos, BeltSegment>> worldSegments = new IdentityHashMap<>();
+    private static final Set<BlockPos> pendingRebuild = new HashSet<>();
     private static final int SYNC_INTERVAL = 4;
 
     public static BeltSegment getSegmentAt(World world, BlockPos pos) {
@@ -343,6 +344,21 @@ public final class BeltSegmentManager {
         if (!(event.world instanceof WorldServer)) return;
 
         WorldServer world = (WorldServer) event.world;
+
+        if (!pendingRebuild.isEmpty()) {
+            Set<BlockPos> toRebuild = new HashSet<>(pendingRebuild);
+            pendingRebuild.clear();
+
+            for (BlockPos pos : toRebuild) {
+                if (world.isBlockLoaded(pos)) {
+                    BeltSegment existing = getSegmentAt(world, pos);
+                    if (existing == null || existing.getBlocks().size() == 1) {
+                        rebuildMergedSegment(world, pos);
+                    }
+                }
+            }
+        }
+
         Map<BlockPos, BeltSegment> segments = worldSegments.get(world);
         if (segments == null) return;
 
@@ -367,6 +383,10 @@ public final class BeltSegmentManager {
         }
     }
 
+    public static void scheduleRebuild(BlockPos pos) {
+        pendingRebuild.add(pos);
+    }
+
     private static void sendSync(WorldServer world, BeltSegment segment) {
         BlockPos head = segment.getHeadPos();
         PacketBeltSync pkt = new PacketBeltSync(segment);
@@ -389,6 +409,7 @@ public final class BeltSegmentManager {
 
     public static void clearAll() {
         worldSegments.clear();
+        pendingRebuild.clear();
     }
 
     private static class BeltItemSnapshot {

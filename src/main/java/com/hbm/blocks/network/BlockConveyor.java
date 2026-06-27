@@ -6,10 +6,7 @@ import api.hbm.block.IConveyorLaneSelector;
 import api.hbm.block.IConveyorVectorProvider;
 import api.hbm.block.IToolable;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.network.conveyor.BeltItemData;
-import com.hbm.blocks.network.conveyor.BeltLane;
-import com.hbm.blocks.network.conveyor.BeltSegment;
-import com.hbm.blocks.network.conveyor.BeltSegmentManager;
+import com.hbm.blocks.network.conveyor.*;
 import com.hbm.tileentity.network.TileEntityConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -48,23 +45,51 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	protected final IConveyorLaneProvider laneProvider;
 	protected final IConveyorVectorProvider vectorProvider;
 	protected final IConveyorLaneSelector laneSelector;
+	protected final ConveyorEntryPoints entryPoints;
 
 	public BlockConveyor(Material materialIn, String s) {
-		this(materialIn, s, () -> new double[]{0.0D}, IConveyorVectorProvider.linear(), BlockConveyor::selectNearestLane);
+		this(materialIn, s, () -> new double[]{0.0D}, IConveyorVectorProvider.linear(), BlockConveyor::selectNearestLane, createSingleEntryPoints());
 	}
 
 	public BlockConveyor(Material materialIn, String s, IConveyorLaneProvider laneProvider) {
-		this(materialIn, s, laneProvider, IConveyorVectorProvider.linear(), BlockConveyor::selectNearestLane);
+		this(materialIn, s, laneProvider, IConveyorVectorProvider.linear(), BlockConveyor::selectNearestLane, null);
 	}
 
 	public BlockConveyor(Material materialIn, String s, IConveyorLaneProvider laneProvider, IConveyorVectorProvider vectorProvider, IConveyorLaneSelector laneSelector) {
+		this(materialIn, s, laneProvider, vectorProvider, laneSelector, null);
+	}
+
+	public BlockConveyor(Material materialIn, String s, IConveyorLaneProvider laneProvider, IConveyorVectorProvider vectorProvider, IConveyorLaneSelector laneSelector, ConveyorEntryPoints entryPoints) {
 		super(materialIn);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.laneProvider = laneProvider;
 		this.vectorProvider = vectorProvider;
 		this.laneSelector = laneSelector;
+		this.entryPoints = entryPoints;
 		ModBlocks.ALL_BLOCKS.add(this);
+	}
+
+	public ConveyorEntryPoints getEntryPoints() {
+		return entryPoints;
+	}
+
+	private static ConveyorEntryPoints createSingleEntryPoints() {
+		double[][][] rightPoints = {
+				{{14, 3}, {10, 3}, {8, 6}},
+				{{14, 4}, {10, 4}, {8, 6}},
+				{{14, 8}, {10, 8}, {8, 10}},
+				{{14, 12}, {10, 12}, {8, 14}},
+				{{14, 13}, {10, 13}, {8, 14}}
+		};
+		double[][][] leftPoints = {
+				{{2, 3}, {6, 3}, {8, 6}},
+				{{2, 4}, {6, 4}, {8, 6}},
+				{{2, 8}, {6, 8}, {8, 10}},
+				{{2, 12}, {6, 12}, {8, 14}},
+				{{2, 13}, {6, 13}, {8, 14}}
+		};
+		return new ConveyorEntryPoints(leftPoints, rightPoints, 0.625D);
 	}
 
 	@Override

@@ -18,10 +18,6 @@ public class ConveyorRoute {
         return points.length;
     }
 
-    public int getMergeIndex() {
-        return points.length - 1;
-    }
-
     public double getMergeProgress() {
         return mergeProgress;
     }
@@ -31,38 +27,77 @@ public class ConveyorRoute {
         return toWorld(pos, facing, grid[0], grid[1]);
     }
 
+    public Vec3d samplePosition(BlockPos pos, EnumFacing facing, double localProgress, int targetLane, double[] laneOffsets) {
+        double startProgress = BeltLane.ITEM_LENGTH * 0.5D;
+        double endProgress = mergeProgress;
+
+        if (localProgress >= endProgress) {
+            double forwardProgress = localProgress - endProgress + BeltLane.ITEM_LENGTH * 0.5D;
+            double laneOffset = (targetLane < laneOffsets.length) ? laneOffsets[targetLane] : 0.0D;
+            double laneX = 8.0D + laneOffset * 16.0D;
+            return toWorld(pos, facing, laneX, 8.0D + forwardProgress * 16.0D);
+        }
+
+        double t = localProgress;
+        if (t < startProgress) t = startProgress;
+
+        double normalized = (t - startProgress) / (endProgress - startProgress);
+        normalized = Math.max(0.0D, Math.min(1.0D, normalized));
+
+        double entryX = points[0][0];
+        double entryZ = points[0][1];
+        double laneOffset = (targetLane < laneOffsets.length) ? laneOffsets[targetLane] : 0.0D;
+        double laneX = 8.0D + laneOffset * 16.0D;
+        double turnX = 8.0D;
+        double turnZ = 10.0D;
+
+        double currentX, currentZ;
+        if (normalized < 0.5D) {
+            double phase = normalized * 2.0D;
+            double smoothPhase = phase * phase * (3 - 2 * phase);
+            currentX = entryX + (turnX - entryX) * smoothPhase;
+            currentZ = entryZ + (turnZ - entryZ) * smoothPhase;
+        } else {
+            double phase = (normalized - 0.5D) * 2.0D;
+            double smoothPhase = phase * phase * (3 - 2 * phase);
+            currentX = turnX + (laneX - turnX) * smoothPhase;
+            currentZ = turnZ;
+        }
+
+        return toWorld(pos, facing, currentX, currentZ);
+    }
+
     public float sampleYaw(BlockPos pos, EnumFacing facing, double localProgress, float forwardYaw) {
-        if (localProgress >= mergeProgress) {
+        double startProgress = BeltLane.ITEM_LENGTH * 0.5D;
+        double endProgress = mergeProgress;
+
+        if (localProgress >= endProgress) {
             return forwardYaw;
         }
 
-        double start = BeltLane.ITEM_LENGTH * 0.5D;
-        double delta = 0.01D;
+        double normalized = (localProgress - startProgress) / (endProgress - startProgress);
+        normalized = Math.max(0.0D, Math.min(1.0D, normalized));
 
-        double t0 = localProgress - delta;
-        double t1 = localProgress + delta;
+        float turnAngle = (points[0][0] > 8) ? -45.0F : 45.0F;
+        float currentYaw = forwardYaw + turnAngle * (1.0F - (float) normalized);
 
-        if (t0 < start) t0 = start;
-        if (t1 > mergeProgress) t1 = mergeProgress;
+        return currentYaw;
+    }
 
-        if (t1 <= t0) {
-            return forwardYaw;
+    public float sampleScale(BlockPos pos, EnumFacing facing, double localProgress) {
+        double startProgress = BeltLane.ITEM_LENGTH * 0.5D;
+        double endProgress = mergeProgress;
+
+        if (localProgress >= endProgress) {
+            return 1.0F;
         }
 
-        double[] a = sampleGrid(t0);
-        double[] b = sampleGrid(t1);
+        double normalized = (localProgress - startProgress) / (endProgress - startProgress);
+        normalized = Math.max(0.0D, Math.min(1.0D, normalized));
 
-        Vec3d wa = toWorld(pos, facing, a[0], a[1]);
-        Vec3d wb = toWorld(pos, facing, b[0], b[1]);
-
-        double dx = wb.x - wa.x;
-        double dz = wb.z - wa.z;
-
-        if (dx * dx + dz * dz < 1.0E-8D) {
-            return forwardYaw;
-        }
-
-        return (float) Math.toDegrees(Math.atan2(dx, dz));
+        double smoothNormalized = normalized * normalized * (3 - 2 * normalized);
+        float minScale = 0.3F;
+        return (float) (minScale + (1.0F - minScale) * smoothNormalized);
     }
 
     private double[] sampleGrid(double localProgress) {
@@ -77,25 +112,22 @@ public class ConveyorRoute {
         if (normalized < 0.0D) normalized = 0.0D;
         if (normalized > 1.0D) normalized = 1.0D;
 
-        double scaled = normalized * (points.length - 1);
-        int idx = (int) Math.floor(scaled);
-        double frac = scaled - idx;
+        double entryX = points[0][0];
+        double entryZ = points[0][1];
+        double mergeX = 8.0D;
+        double mergeZ = 10.0D;
 
-        if (idx >= points.length - 1) {
-            return new double[]{points[points.length - 1][0], points[points.length - 1][1]};
-        }
+        double currentX = entryX + (mergeX - entryX) * normalized;
+        double currentZ = entryZ + (mergeZ - entryZ) * normalized;
 
-        double x = points[idx][0] + (points[idx + 1][0] - points[idx][0]) * frac;
-        double z = points[idx][1] + (points[idx + 1][1] - points[idx][1]) * frac;
-        return new double[]{x, z};
+        return new double[]{currentX, currentZ};
     }
 
     private Vec3d toWorld(BlockPos pos, EnumFacing facing, double gridX, double gridZ) {
         double lx = gridX / 16.0D - 0.5D;
         double lz = gridZ / 16.0D - 0.5D;
 
-        double wx;
-        double wz;
+        double wx, wz;
 
         switch (facing) {
             case SOUTH:
@@ -123,17 +155,13 @@ public class ConveyorRoute {
         return new Vec3d(wx, pos.getY() + 0.25D, wz);
     }
 
-    public static final ConveyorRoute LEFT_ENTRY = new ConveyorRoute(new double[][]{
-            {14, 8},
-            {10, 8},
-            {8, 10}
-    }, 0.625D);
-
     public static final ConveyorRoute RIGHT_ENTRY = new ConveyorRoute(new double[][]{
-            {2, 8},
-            {6, 8},
-            {8, 10}
-    }, 0.625D);
+            {14, 8}
+    }, 0.5D);
+
+    public static final ConveyorRoute LEFT_ENTRY = new ConveyorRoute(new double[][]{
+            {2, 8}
+    }, 0.5D);
 
     public static ConveyorRoute getByType(int routeType) {
         switch (routeType) {

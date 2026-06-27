@@ -1,11 +1,9 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.blocks.network.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
 import com.hbm.blocks.network.conveyor.BeltSegmentManager;
-import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
@@ -13,20 +11,28 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TileEntityConveyor extends TileEntity implements ITickable {
 
     private NBTTagCompound pendingItems = null;
+    private boolean restored = false;
+    private int restoreAttempts = 0;
+    private static final int MAX_RESTORE_ATTEMPTS = 20;
 
     @Override
     public void update() {
         if (world.isRemote) return;
 
-        if (pendingItems != null) {
-            restorePendingItems();
-            pendingItems = null;
+        if (pendingItems != null && !restored) {
+            if (restorePendingItems()) {
+                restored = true;
+                pendingItems = null;
+            } else {
+                restoreAttempts++;
+                if (restoreAttempts >= MAX_RESTORE_ATTEMPTS) {
+                    System.out.println("Failed to restore items at " + pos + " after " + MAX_RESTORE_ATTEMPTS + " attempts");
+                    pendingItems = null;
+                }
+            }
         }
     }
 
@@ -68,20 +74,28 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
 
         if (nbt.hasKey("BeltItems")) {
             pendingItems = nbt.copy();
+            restored = false;
+            restoreAttempts = 0;
         }
     }
 
-    private void restorePendingItems() {
-        if (pendingItems == null) return;
-        if (!pendingItems.hasKey("BeltItems")) return;
+    private boolean restorePendingItems() {
+        if (pendingItems == null) return true;
+        if (!pendingItems.hasKey("BeltItems")) return true;
 
         BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos);
-        if (segment == null) return;
+        if (segment == null) {
+            return false;
+        }
 
         int blockIndex = segment.getBlockIndex(pos);
-        if (blockIndex < 0) return;
+        if (blockIndex < 0) {
+            return false;
+        }
 
         NBTTagList itemList = pendingItems.getTagList("BeltItems", Constants.NBT.TAG_COMPOUND);
+        int restoredCount = 0;
+
         for (int i = 0; i < itemList.tagCount(); i++) {
             NBTTagCompound itemNbt = itemList.getCompoundTagAt(i);
             BeltItemData item = BeltItemData.readFromNBT(itemNbt);
@@ -92,11 +106,20 @@ public class TileEntityConveyor extends TileEntity implements ITickable {
             item.setProgress(globalProgress);
 
             if (!item.getStack().isEmpty()) {
-                segment.insertItemDirect(item);
+                BeltLane lane = segment.getLane(item.getLane());
+                if (lane.findByUid(item.getUniqueId()) == null) {
+                    if (segment.insertItemDirect(item)) {
+                        restoredCount++;
+                    }
+                }
             }
         }
 
-        segment.markDirty();
+        if (restoredCount > 0) {
+            segment.markDirty();
+        }
+
+        return true;
     }
 
     @Override

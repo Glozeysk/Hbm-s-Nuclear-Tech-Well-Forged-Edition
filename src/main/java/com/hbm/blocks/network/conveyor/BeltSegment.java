@@ -111,6 +111,7 @@ public class BeltSegment {
                 boolean nowStopped = Math.abs(newProgress - currentProgress) < EPS;
                 item.setProgress(newProgress);
                 item.setStopped(nowStopped);
+
                 if (item.getRouteType() != BeltItemData.ROUTE_FORWARD) {
                     ConveyorRoute route = ConveyorRoute.getByType(item.getRouteType());
                     if (route != null) {
@@ -121,6 +122,7 @@ public class BeltSegment {
                         }
                     }
                 }
+
                 if (!nowStopped) {
                     dirty = true;
                 }
@@ -178,11 +180,14 @@ public class BeltSegment {
 
         if (nextBlock instanceof BlockConveyor) {
             BlockConveyor nextConveyor = (BlockConveyor) nextBlock;
-            BeltSegment nextSegment = BeltSegmentManager.getSegmentAt(world, nextPos);
+            BeltSegment nextSegment = BeltSegmentManager.getOrCreateSegment(world, nextPos);
 
             if (nextSegment != null) {
                 int targetBlockIndex = nextSegment.getBlockIndex(nextPos);
-                if (targetBlockIndex < 0) return false;
+                if (targetBlockIndex < 0) {
+                    System.out.println("Transfer failed: targetBlockIndex < 0 at " + nextPos);
+                    return false;
+                }
 
                 EnumFacing nextFacing = nextConveyor.getLaneFacing(world, nextPos);
                 boolean isSideEntry = direction != nextFacing;
@@ -197,32 +202,105 @@ public class BeltSegment {
                     EnumFacing right = nextFacing.rotateY();
 
                     if (direction == right) {
-                        routeType = BeltItemData.ROUTE_LEFT_ENTRY;
-                    } else if (direction == left) {
                         routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
+                    } else if (direction == left) {
+                        routeType = BeltItemData.ROUTE_LEFT_ENTRY;
                     }
 
-                    targetLane = findClosestLane(nextConveyor, world, nextPos, lastBlock);
+                    targetLane = findBestLaneForEntry(nextConveyor, world, nextPos, lastBlock, routeType);
                 }
 
                 double entryProgress = targetBlockIndex + BeltLane.ITEM_LENGTH * 0.5;
                 BeltLane nextLaneBelt = nextSegment.getLane(targetLane);
 
-                if (nextLaneBelt.isSlotFree(entryProgress)) {
+                boolean slotFree = nextLaneBelt.isSlotFree(entryProgress);
+
+                if (!slotFree) {
+                    System.out.println("Transfer failed: slot not free at lane=" + targetLane +
+                            " progress=" + entryProgress + " items in lane=" + nextLaneBelt.size());
+                }
+
+                if (slotFree) {
                     BeltItemData transferred = new BeltItemData(item.getStack(), targetLane, entryProgress);
                     transferred.setUniqueId(item.getUniqueId());
                     transferred.setRouteType(routeType);
-                    nextLaneBelt.addSorted(transferred);
+                    boolean inserted = nextLaneBelt.addSorted(transferred);
+
+                    if (!inserted) {
+                        System.out.println("Transfer failed: addSorted returned false");
+                        return false;
+                    }
+
                     nextSegment.dirty = true;
                     return true;
                 }
 
                 return false;
+            } else {
+                System.out.println("Transfer failed: nextSegment is null at " + nextPos);
             }
         }
 
+        System.out.println("Ejecting item at " + lastBlock + " direction=" + direction + " lane=" + lane);
         ejectItem(world, item, lane);
         return true;
+    }
+
+    private int findBestLaneForEntry(BlockConveyor conveyor, World world, BlockPos pos, BlockPos fromPos, int routeType) {
+        if (routeType == BeltItemData.ROUTE_FORWARD) return 0;
+
+        double[] offsets = conveyor.getLaneOffsets();
+        if (offsets.length <= 1) return 0;
+
+        EnumFacing facing = conveyor.getLaneFacing(world, pos);
+
+        double targetX = (routeType == BeltItemData.ROUTE_RIGHT_ENTRY) ? 2.0D : 14.0D;
+
+        double bestDist = Double.MAX_VALUE;
+        int bestLane = 0;
+
+        for (int i = 0; i < offsets.length; i++) {
+            double laneX = 8.0D + offsets[i] * 16.0D;
+            double dist = Math.abs(laneX - targetX);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestLane = i;
+            }
+        }
+
+        return bestLane;
+    }
+
+    private Vec3d toWorldPoint(BlockPos pos, EnumFacing facing, double gridX, double gridZ) {
+        double lx = gridX / 16.0D - 0.5D;
+        double lz = gridZ / 16.0D - 0.5D;
+
+        double wx, wz;
+
+        switch (facing) {
+            case SOUTH:
+                wx = pos.getX() + 0.5D - lx;
+                wz = pos.getZ() + 0.5D + lz;
+                break;
+            case NORTH:
+                wx = pos.getX() + 0.5D + lx;
+                wz = pos.getZ() + 0.5D - lz;
+                break;
+            case EAST:
+                wx = pos.getX() + 0.5D + lz;
+                wz = pos.getZ() + 0.5D + lx;
+                break;
+            case WEST:
+                wx = pos.getX() + 0.5D - lz;
+                wz = pos.getZ() + 0.5D - lx;
+                break;
+            default:
+                wx = pos.getX() + 0.5D - lx;
+                wz = pos.getZ() + 0.5D + lz;
+                break;
+        }
+
+        return new Vec3d(wx, pos.getY() + 0.25D, wz);
     }
 
     private int findClosestLane(BlockConveyor conveyor, World world, BlockPos conveyorPos, BlockPos fromPos) {

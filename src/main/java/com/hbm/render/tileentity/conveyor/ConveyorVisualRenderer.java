@@ -125,7 +125,7 @@ public class ConveyorVisualRenderer {
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(wp.x, wp.y, wp.z);
                 GlStateManager.rotate(yaw, 0.0F, 1.0F, 0.0F);
-                GlStateManager.scale(0.5F, 0.5F, 0.5F);
+                GlStateManager.scale(0.4F, 0.4F, 0.4F);
 
                 if (isBlock) {
                     GlStateManager.translate(0.0F, 0.25F, 0.0F);
