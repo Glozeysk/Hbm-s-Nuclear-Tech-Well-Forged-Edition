@@ -498,6 +498,7 @@ chem.VIT_LIQUID=Остекловывание жидких ядерных отх�
 chem.XENON=Ксеноновый цикл Линде
 chem.XENON_OXY=Улучшенный ксеноновый цикл Линде
 chem.YELLOWCAKE=Производство йеллоукейка
+chem.CONVEYOR_LUBRICATION=Смазка конвейеров
 commands.hbmrad.not_found_player=Не могу найти игрока с ником %1$s!
 commands.hbmrad.not_rad=Пожалуйста, введите значение радиации!
 commands.hbmrad.player_success=Успешно очищено радиационное заражение всех игроков!

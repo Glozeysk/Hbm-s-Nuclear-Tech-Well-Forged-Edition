@@ -64,7 +64,7 @@ public class NetworkHandler {
                     discriminator = types.get(msgClass);
                     headerBuf.writeByte(discriminator);
                     ByteBuf cb = packet.getCompiledBuffer();
-                    payload = cb.retainedDuplicate();
+                    payload = cb.copy();
                 } else if (msg instanceof IMessage message) {
                     if (!types.containsKey(msgClass)) {
                         throw new CodecException("Unregistered packet type " + msgClass.getName());
@@ -90,7 +90,6 @@ public class NetworkHandler {
                 FMLProxyPacket old = ref == null ? null : ref.get();
                 if (old != null) proxy.setDispatcher(old.getDispatcher());
                 out.add(proxy);
-                //noinspection UnusedAssignment
                 combined = null;
             } catch (Throwable t) {
                 if (combined != null && combined.refCnt() > 0) combined.release();

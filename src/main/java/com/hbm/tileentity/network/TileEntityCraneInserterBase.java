@@ -13,6 +13,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -23,6 +24,22 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
 
     public TileEntityCraneInserterBase() {
         super(21);
+        replaceInventoryWithAllValid();
+    }
+
+    private void replaceInventoryWithAllValid() {
+        ItemStackHandler old = this.inventory;
+        this.inventory = new ItemStackHandler(21) {
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                return true;
+            }
+        };
+        if (old != null) {
+            for (int i = 0; i < Math.min(old.getSlots(), 21); i++) {
+                this.inventory.setStackInSlot(i, old.getStackInSlot(i));
+            }
+        }
     }
 
     @Override
@@ -52,7 +69,7 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
         }
 
         if(cap != null) {
-            for(int i : BUFFER_SLOTS) {
+            for(int i : ALL_SLOTS) {
                 tryFillContainerCap(cap, i);
             }
         }
@@ -63,7 +80,7 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
 
         int filledAmount = 0;
 
-        for(int i : BUFFER_SLOTS) {
+        for(int i : ALL_SLOTS) {
             if(stack.isEmpty() || stack.getCount() < 1) {
                 return filledAmount;
             }
@@ -124,6 +141,16 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase im
             }
         }
 
+        return false;
+    }
+
+    public boolean canAcceptAny() {
+        for (int i : ALL_SLOTS) {
+            ItemStack stack = inventory.getStackInSlot(i);
+            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+                return true;
+            }
+        }
         return false;
     }
 

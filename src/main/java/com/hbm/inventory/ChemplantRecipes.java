@@ -232,6 +232,8 @@ public class ChemplantRecipes {
 		makeRecipe(910, "COMPDAFF", new AStack[] {new ComparableStack(ModBlocks.block_daffergon, 16) }, new FluidStack[]{ new FluidStack(ModForgeFluids.corium_fluid, 2000) }, new AStack[] { new ComparableStack(ModBlocks.block_compressed_daffergon, 1) }, null, 2400);
 
 		makeRecipe(920, "PINKWOOD", new AStack[] {new ComparableStack(ModBlocks.block_compressed_daffergon, 64), new ComparableStack(Blocks.LOG, 64), new ComparableStack(ModItems.powder_magic, 64) }, new FluidStack[]{ new FluidStack(ModForgeFluids.volcanic_lava_fluid, 16000) }, new AStack[] { new ComparableStack(ModBlocks.pink_log, 1) }, null, 4800);
+
+		makeRecipe(930, "CONVEYOR_LUBRICATION", new AStack[]{new ComparableStack(ModBlocks.conveyor, 8)}, new FluidStack[]{new FluidStack(ModForgeFluids.lubricant, 1000)}, new AStack[]{new ComparableStack(ModBlocks.conveyor_express, 8)}, null, 80);
 		
 	}
 

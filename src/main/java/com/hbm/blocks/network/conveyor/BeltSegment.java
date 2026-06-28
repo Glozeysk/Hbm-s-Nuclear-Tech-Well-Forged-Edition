@@ -165,6 +165,18 @@ public class BeltSegment {
             }
         }
 
+        if (nextBlock instanceof com.hbm.blocks.network.BlockCraneInserterBase) {
+            net.minecraft.tileentity.TileEntity te = world.getTileEntity(nextPos);
+            boolean canAccept = false;
+            if (te instanceof com.hbm.tileentity.network.TileEntityCraneInserterBase) {
+                canAccept = ((com.hbm.tileentity.network.TileEntityCraneInserterBase) te).canAcceptAny();
+            }
+            for (int l = 0; l < laneCount; l++) {
+                exitBlocked[l] = !canAccept;
+            }
+            return;
+        }
+
         boolean isSolidBlock = !nextBlock.isAir(world.getBlockState(nextPos), world, nextPos)
                 && !(nextBlock instanceof BlockConveyor);
 
@@ -185,7 +197,6 @@ public class BeltSegment {
             if (nextSegment != null) {
                 int targetBlockIndex = nextSegment.getBlockIndex(nextPos);
                 if (targetBlockIndex < 0) {
-                    System.out.println("Transfer failed: targetBlockIndex < 0 at " + nextPos);
                     return false;
                 }
 
@@ -215,11 +226,6 @@ public class BeltSegment {
 
                 boolean slotFree = nextLaneBelt.isSlotFree(entryProgress);
 
-                if (!slotFree) {
-                    System.out.println("Transfer failed: slot not free at lane=" + targetLane +
-                            " progress=" + entryProgress + " items in lane=" + nextLaneBelt.size());
-                }
-
                 if (slotFree) {
                     BeltItemData transferred = new BeltItemData(item.getStack(), targetLane, entryProgress);
                     transferred.setUniqueId(item.getUniqueId());
@@ -227,7 +233,6 @@ public class BeltSegment {
                     boolean inserted = nextLaneBelt.addSorted(transferred);
 
                     if (!inserted) {
-                        System.out.println("Transfer failed: addSorted returned false");
                         return false;
                     }
 
@@ -236,12 +241,28 @@ public class BeltSegment {
                 }
 
                 return false;
-            } else {
-                System.out.println("Transfer failed: nextSegment is null at " + nextPos);
             }
+            return false;
         }
 
-        System.out.println("Ejecting item at " + lastBlock + " direction=" + direction + " lane=" + lane);
+        if (nextBlock instanceof com.hbm.blocks.network.BlockCraneInserterBase) {
+            net.minecraft.tileentity.TileEntity te = world.getTileEntity(nextPos);
+            if (te instanceof com.hbm.tileentity.network.TileEntityCraneInserterBase) {
+                com.hbm.tileentity.network.TileEntityCraneInserterBase inserter = (com.hbm.tileentity.network.TileEntityCraneInserterBase) te;
+                ItemStack stack = item.getStack();
+                int accepted = inserter.tryInsertDirect(stack);
+                if (accepted > 0) {
+                    item.getStack().setCount(stack.getCount());
+                    if (stack.isEmpty()) {
+                        return true;
+                    }
+                    dirty = true;
+                    return false;
+                }
+            }
+            return false;
+        }
+
         ejectItem(world, item, lane);
         return true;
     }

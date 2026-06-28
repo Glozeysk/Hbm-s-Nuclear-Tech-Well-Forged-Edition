@@ -19,7 +19,13 @@ public class ContainerCraneInserterCommon extends Container {
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 7; j++) {
-                this.addSlotToContainer(new SlotItemHandler(inserter.inventory, j + i * 7, 26 + j * 18, 17 + i * 18));
+                final int slotIndex = j + i * 7;
+                this.addSlotToContainer(new SlotItemHandler(inserter.inventory, slotIndex, 26 + j * 18, 17 + i * 18) {
+                    @Override
+                    public boolean isItemValid(ItemStack stack) {
+                        return true;
+                    }
+                });
             }
         }
 

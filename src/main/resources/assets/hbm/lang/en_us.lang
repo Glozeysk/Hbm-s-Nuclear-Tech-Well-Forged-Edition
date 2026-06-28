@@ -462,6 +462,7 @@ chem.VIT_LIQUID=Liquid Nuclear Waste Vitrification
 chem.XENON=Linde Xenon Cycle
 chem.XENON_OXY=Boosted Linde Xenon Cycle
 chem.YELLOWCAKE=Yellowcake Production
+chem.CONVEYOR_LUBRICATION=Conveyor Lubrication
 commands.hbmrad.not_found_player=Cannot find player %1$s!
 commands.hbmrad.not_rad=Please enter new rad value!
 commands.hbmrad.player_success=Successfully cleared radiation for all online players!
