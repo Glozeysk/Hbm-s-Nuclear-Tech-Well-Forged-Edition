@@ -1,6 +1,11 @@
 package com.hbm.tileentity.network;
 
 import api.hbm.block.IConveyorBelt;
+import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.BeltItemData;
+import com.hbm.blocks.network.conveyor.BeltLane;
+import com.hbm.blocks.network.conveyor.BeltSegment;
+import com.hbm.blocks.network.conveyor.BeltSegmentManager;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneEjectorCommon;
@@ -59,20 +64,15 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
 
         tickCounter++;
 
+        // Извлечение из входного инвентаря (с задержкой)
         if(tickCounter >= getDelay() && !this.world.isBlockPowered(pos)) {
             tickCounter = 0;
 
-            int xCoord = pos.getX();
-            int yCoord = pos.getY();
-            int zCoord = pos.getZ();
             int amount = getAmount();
-
             EnumFacing inputSide = getInputSide();
-            EnumFacing outputSide = getOutputSide();
             EnumFacing accessFace = inputSide.getOpposite();
 
             TileEntity te = world.getTileEntity(pos.offset(inputSide));
-            Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
             if(te != null && !(te instanceof TileEntityCraneEjectorBase)) {
                 int[] access = null;
@@ -118,59 +118,75 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
                     }
                 }
             }
+        }
 
-            TileEntity outputTe = world.getTileEntity(pos.offset(outputSide));
-            if(outputTe instanceof TileEntityCraneInserterBase) {
-                TileEntityCraneInserterBase inserter = (TileEntityCraneInserterBase) outputTe;
-                for(int index : ALLOWED_SLOTS) {
-                    ItemStack stack = inventory.getStackInSlot(index);
+        // Выталкивание в конвейер КАЖДЫЙ ТИК (без задержки и без проверки tickCounter)
+        if(!this.world.isBlockPowered(pos)) {
+            EnumFacing outputSide = getOutputSide();
+            Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
-                    if(!stack.isEmpty()) {
-                        boolean match = this.matchesFilter(stack);
+            if(b instanceof BlockConveyor) {
+                pushToConveyorEveryTick(outputSide);
+            } else {
+                // Старая логика для других целей (работает только при tickCounter == 0)
+                if(tickCounter == 0) {
+                    TileEntity outputTe = world.getTileEntity(pos.offset(outputSide));
+                    if(outputTe instanceof TileEntityCraneInserterBase) {
+                        TileEntityCraneInserterBase inserter = (TileEntityCraneInserterBase) outputTe;
+                        for(int index : ALLOWED_SLOTS) {
+                            ItemStack stack = inventory.getStackInSlot(index);
 
-                        if(isWhitelist == match) {
-                            int toSend = Math.min(amount, stack.getCount());
-                            ItemStack cStack = stack.copy();
-                            cStack.setCount(toSend);
+                            if(!stack.isEmpty()) {
+                                boolean match = this.matchesFilter(stack);
 
-                            int accepted = inserter.tryInsertDirect(cStack.copy());
-                            if(accepted > 0) {
-                                stack.shrink(accepted);
-                                if(stack.getCount() == 0) {
-                                    inventory.setStackInSlot(index, ItemStack.EMPTY);
+                                if(isWhitelist == match) {
+                                    int toSend = Math.min(getAmount(), stack.getCount());
+                                    ItemStack cStack = stack.copy();
+                                    cStack.setCount(toSend);
+
+                                    int accepted = inserter.tryInsertDirect(cStack.copy());
+                                    if(accepted > 0) {
+                                        stack.shrink(accepted);
+                                        if(stack.getCount() == 0) {
+                                            inventory.setStackInSlot(index, ItemStack.EMPTY);
+                                        }
+                                        break;
+                                    }
                                 }
-                                break;
                             }
                         }
-                    }
-                }
-            } else if(b instanceof IConveyorBelt) {
-                IConveyorBelt belt = (IConveyorBelt) b;
+                    } else if(b instanceof IConveyorBelt) {
+                        IConveyorBelt belt = (IConveyorBelt) b;
+                        int xCoord = pos.getX();
+                        int yCoord = pos.getY();
+                        int zCoord = pos.getZ();
 
-                for(int index : ALLOWED_SLOTS) {
-                    ItemStack stack = inventory.getStackInSlot(index);
+                        for(int index : ALLOWED_SLOTS) {
+                            ItemStack stack = inventory.getStackInSlot(index);
 
-                    if(!stack.isEmpty()) {
-                        boolean match = this.matchesFilter(stack);
+                            if(!stack.isEmpty()) {
+                                boolean match = this.matchesFilter(stack);
 
-                        if(isWhitelist == match) {
-                            int toSend = Math.min(amount, stack.getCount());
-                            ItemStack cStack = stack.copy();
-                            stack.shrink(toSend);
+                                if(isWhitelist == match) {
+                                    int toSend = Math.min(getAmount(), stack.getCount());
+                                    ItemStack cStack = stack.copy();
+                                    stack.shrink(toSend);
 
-                            if(stack.getCount() == 0) {
-                                inventory.setStackInSlot(index, ItemStack.EMPTY);
+                                    if(stack.getCount() == 0) {
+                                        inventory.setStackInSlot(index, ItemStack.EMPTY);
+                                    }
+
+                                    cStack.setCount(toSend);
+
+                                    EntityMovingItem moving = new EntityMovingItem(world);
+                                    Vec3d itemPos = new Vec3d(xCoord + 0.5 + outputSide.getDirectionVec().getX() * 0.55, yCoord + 0.5 + outputSide.getDirectionVec().getY() * 0.55, zCoord + 0.5 + outputSide.getDirectionVec().getZ() * 0.55);
+                                    Vec3d snap = belt.getClosestSnappingPosition(world, new BlockPos(xCoord + outputSide.getDirectionVec().getX(), yCoord + outputSide.getDirectionVec().getY(), zCoord + outputSide.getDirectionVec().getZ()), itemPos);
+                                    moving.setPosition(snap.x, snap.y, snap.z);
+                                    moving.setItemStack(cStack);
+                                    world.spawnEntity(moving);
+                                    break;
+                                }
                             }
-
-                            cStack.setCount(toSend);
-
-                            EntityMovingItem moving = new EntityMovingItem(world);
-                            Vec3d itemPos = new Vec3d(xCoord + 0.5 + outputSide.getDirectionVec().getX() * 0.55, yCoord + 0.5 + outputSide.getDirectionVec().getY() * 0.55, zCoord + 0.5 + outputSide.getDirectionVec().getZ() * 0.55);
-                            Vec3d snap = belt.getClosestSnappingPosition(world, new BlockPos(xCoord + outputSide.getDirectionVec().getX(), yCoord + outputSide.getDirectionVec().getY(), zCoord + outputSide.getDirectionVec().getZ()), itemPos);
-                            moving.setPosition(snap.x, snap.y, snap.z);
-                            moving.setItemStack(cStack);
-                            world.spawnEntity(moving);
-                            break;
                         }
                     }
                 }
@@ -178,6 +194,74 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
         }
 
         networkPackNT(15);
+    }
+
+    private void pushToConveyorEveryTick(EnumFacing outputSide) {
+        BlockPos conveyorPos = pos.offset(outputSide);
+        Block block = world.getBlockState(conveyorPos).getBlock();
+
+        if(!(block instanceof BlockConveyor)) {
+            return;
+        }
+
+        BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, conveyorPos);
+        if(segment == null) {
+            return;
+        }
+
+        int blockIndex = segment.getBlockIndex(conveyorPos);
+        if(blockIndex < 0) {
+            return;
+        }
+
+        BlockConveyor conveyor = (BlockConveyor) block;
+        EnumFacing conveyorFacing = conveyor.getLaneFacing(world, conveyorPos);
+
+        if(conveyorFacing != outputSide) {
+            return;
+        }
+
+        int amount = getAmount();
+
+        // Перебираем ВСЕ слоты и выталкиваем максимум
+        for(int index : ALLOWED_SLOTS) {
+            ItemStack stack = inventory.getStackInSlot(index);
+
+            if(!stack.isEmpty()) {
+                boolean match = this.matchesFilter(stack);
+
+                if(isWhitelist == match) {
+                    int toSend = Math.min(amount, stack.getCount());
+
+                    // Пытаемся вставить в любую свободную полосу
+                    boolean inserted = false;
+                    for(int lane = 0; lane < segment.getLaneCount(); lane++) {
+                        BeltLane beltLane = segment.getLane(lane);
+                        double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+
+                        if(beltLane.isSlotFree(slotProgress)) {
+                            ItemStack toInsert = stack.copy();
+                            toInsert.setCount(toSend);
+
+                            if(segment.insertStack(toInsert, lane, slotProgress)) {
+                                stack.shrink(toSend);
+                                if(stack.getCount() == 0) {
+                                    inventory.setStackInSlot(index, ItemStack.EMPTY);
+                                }
+                                segment.markDirty();
+                                inserted = true;
+                                break; // Переходим к следующему слоту
+                            }
+                        }
+                    }
+
+                    // Если не удалось вставить - конвейер заполнен, создаем очередь
+                    if(!inserted) {
+                        break; // Останавливаем выталкивание
+                    }
+                }
+            }
+        }
     }
 
     public int tryInsertDirect(ItemStack stack) {

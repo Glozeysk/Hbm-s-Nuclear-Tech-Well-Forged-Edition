@@ -9,6 +9,7 @@ import com.hbm.blocks.network.conveyor.ConveyorRoute;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
@@ -90,7 +91,7 @@ public class ConveyorVisualRenderer {
 
                 double interpProgress = item.getInterpolatedProgress(pt);
 
-                int blockIndex = (int) interpProgress;
+                int blockIndex = (int) Math.floor(interpProgress);
                 if (blockIndex < 0) blockIndex = 0;
                 if (blockIndex >= blocks.size()) blockIndex = blocks.size() - 1;
 
@@ -120,12 +121,20 @@ public class ConveyorVisualRenderer {
                     }
                 }
 
+                // Получаем освещение в позиции предмета
+                int combinedLight = world.getCombinedLight(blockPos, 0);
+                int lightMapX = combinedLight % 65536;
+                int lightMapY = combinedLight / 65536;
+
                 boolean isBlock = item.stack.getItem() instanceof ItemBlock;
 
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(wp.x, wp.y, wp.z);
                 GlStateManager.rotate(yaw, 0.0F, 1.0F, 0.0F);
                 GlStateManager.scale(0.4F, 0.4F, 0.4F);
+
+                // Устанавливаем освещение как у сущностей
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lightMapX, lightMapY);
 
                 if (isBlock) {
                     GlStateManager.translate(0.0F, 0.25F, 0.0F);

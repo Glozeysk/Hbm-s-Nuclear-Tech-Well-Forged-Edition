@@ -13,160 +13,97 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase implements IGUIProvider {
-
-    private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-    private static final int[] BUFFER_SLOTS = {9, 10, 11, 12, 13, 14, 15, 16, 17};
+public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase {
 
     public TileEntityCraneInserterBase() {
-        super(21);
-        replaceInventoryWithAllValid();
-    }
-
-    private void replaceInventoryWithAllValid() {
-        ItemStackHandler old = this.inventory;
-        this.inventory = new ItemStackHandler(21) {
-            @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
-                return true;
-            }
-        };
-        if (old != null) {
-            for (int i = 0; i < Math.min(old.getSlots(), 21); i++) {
-                this.inventory.setStackInSlot(i, old.getStackInSlot(i));
-            }
-        }
-    }
-
-    @Override
-    public void update() {
-        super.update();
-        if(!world.isRemote) {
-            tryFillTe();
-        }
-    }
-
-    public void tryFillTe() {
-        EnumFacing outputSide = getOutputSide();
-        TileEntity te = world.getTileEntity(pos.offset(outputSide));
-
-        if(te == null) return;
-
-        if(te instanceof TileEntityCraneInserterBase) return;
-        if(te instanceof TileEntityCraneEjectorBase) return;
-
-        EnumFacing accessFace = outputSide.getOpposite();
-        IItemHandler cap = null;
-
-        if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
-            cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
-        } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-            cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-        }
-
-        if(cap != null) {
-            for(int i : ALL_SLOTS) {
-                tryFillContainerCap(cap, i);
-            }
-        }
+        super(0);
     }
 
     public int tryInsertDirect(ItemStack stack) {
-        if(stack.isEmpty()) return 0;
+        if (stack.isEmpty()) return 0;
 
-        int filledAmount = 0;
+        EnumFacing outputSide = getOutputSide();
+        TileEntity targetTe = world.getTileEntity(pos.offset(outputSide));
+        if (targetTe == null) return 0;
+        if (targetTe instanceof TileEntityCraneInserterBase) return 0;
+        if (targetTe instanceof TileEntityCraneEjectorBase) return 0;
 
-        for(int i : ALL_SLOTS) {
-            if(stack.isEmpty() || stack.getCount() < 1) {
-                return filledAmount;
-            }
+        EnumFacing accessFace = outputSide.getOpposite();
+        IItemHandler targetCap = null;
 
-            ItemStack outputStack = stack.copy();
-            ItemStack chestItem = inventory.getStackInSlot(i).copy();
-
-            if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-                int fillAmount = Math.min(chestItem.getMaxStackSize() - chestItem.getCount(), outputStack.getCount());
-                outputStack.setCount(fillAmount);
-
-                ItemStack rest = inventory.insertItem(i, outputStack, true);
-
-                if(rest.getCount() < outputStack.getCount()) {
-                    stack.shrink(fillAmount - rest.getCount());
-                    filledAmount += fillAmount - rest.getCount();
-                    inventory.insertItem(i, outputStack, false);
-                }
-            }
+        if (targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            targetCap = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if (targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            targetCap = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         }
 
-        return filledAmount;
+        if (targetCap == null) return 0;
+
+        return insertIntoTarget(targetCap, stack);
     }
 
     public boolean tryFillTeDirect(ItemStack stack) {
         return tryInsertDirect(stack) > 0;
     }
 
-    public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-        if(inventory.getStackInSlot(slot).isEmpty())
-            return false;
-
-        return tryInsertItemCap(chest, inventory.getStackInSlot(slot));
-    }
-
-    public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        if(stack.isEmpty())
-            return false;
-
-        for(int i = 0; i < chest.getSlots(); i++) {
-            ItemStack outputStack = stack.copy();
-
-            if(outputStack.isEmpty() || outputStack.getCount() == 0)
-                return true;
-
-            ItemStack chestItem = chest.getStackInSlot(i).copy();
-
-            if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-                int fillAmount = Math.min(chestItem.getMaxStackSize() - chestItem.getCount(), outputStack.getCount());
-                outputStack.setCount(fillAmount);
-
-                ItemStack rest = chest.insertItem(i, outputStack, true);
-
-                if(rest.getCount() < outputStack.getCount()) {
-                    stack.shrink(outputStack.getCount() - rest.getCount());
-                    chest.insertItem(i, outputStack, false);
-                }
-            }
-        }
-
-        return false;
-    }
-
     public boolean canAcceptAny() {
-        for (int i : ALL_SLOTS) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+        EnumFacing outputSide = getOutputSide();
+        TileEntity targetTe = world.getTileEntity(pos.offset(outputSide));
+        if (targetTe == null) return false;
+        if (targetTe instanceof TileEntityCraneInserterBase) return false;
+        if (targetTe instanceof TileEntityCraneEjectorBase) return false;
+
+        EnumFacing accessFace = outputSide.getOpposite();
+        IItemHandler targetCap = null;
+
+        if (targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            targetCap = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if (targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            targetCap = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        }
+
+        if (targetCap == null) return false;
+
+        for (int i = 0; i < targetCap.getSlots(); i++) {
+            ItemStack slotStack = targetCap.getStackInSlot(i);
+            if (slotStack.isEmpty() || slotStack.getCount() < slotStack.getMaxStackSize()) {
                 return true;
             }
         }
+
         return false;
     }
 
-    @Override
-    public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new ContainerCraneInserterCommon(player.inventory, this);
-    }
+    private int insertIntoTarget(IItemHandler target, ItemStack stack) {
+        if (stack.isEmpty()) return 0;
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new GUICraneInserterCommon(player.inventory, this);
+        int totalInserted = 0;
+
+        for (int i = 0; i < target.getSlots(); i++) {
+            if (stack.isEmpty()) break;
+
+            ItemStack slotStack = target.getStackInSlot(i);
+
+            if (slotStack.isEmpty() || (Library.areItemStacksCompatible(stack, slotStack, false) &&
+                    slotStack.getCount() < slotStack.getMaxStackSize())) {
+
+                ItemStack toInsert = stack.copy();
+                ItemStack rest = target.insertItem(i, toInsert, false);
+
+                int inserted = toInsert.getCount() - rest.getCount();
+                totalInserted += inserted;
+                stack.shrink(inserted);
+            }
+        }
+
+        return totalInserted;
     }
 
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-        return ALL_SLOTS;
+        return new int[0];
     }
 }
