@@ -74,7 +74,7 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return entryPoints;
 	}
 
-	private static ConveyorEntryPoints createSingleEntryPoints() {
+	static ConveyorEntryPoints createSingleEntryPoints() {
 		double[][][] rightPoints = {
 				{{14, 3}, {10, 3}, {8, 6}},
 				{{14, 4}, {10, 4}, {8, 6}},

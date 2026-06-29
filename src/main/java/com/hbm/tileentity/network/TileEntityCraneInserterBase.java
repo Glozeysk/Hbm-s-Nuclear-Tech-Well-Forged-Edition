@@ -4,6 +4,7 @@ import com.hbm.inventory.container.ContainerCraneInserterCommon;
 import com.hbm.inventory.gui.GUICraneInserterCommon;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -105,5 +106,9 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase {
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
         return new int[0];
+    }
+
+    public EnumFacing getInputSide() {
+        return world.getBlockState(pos).getValue(BlockHorizontal.FACING);
     }
 }

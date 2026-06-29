@@ -38,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase implements IGUIProvider, IControlReceiver, IBufPacketReceiver {
 
-    public boolean isWhitelist = false;
+    public boolean isWhitelist = true;
     private int inserterTickCounter = 0;
     private static final int INSERTER_DELAY = 3;
     public ModulePatternMatcher matcher;

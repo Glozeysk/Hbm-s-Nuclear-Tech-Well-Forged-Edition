@@ -1171,12 +1171,16 @@ public class ModBlocks {
 	public static final Block conveyor_lift = new BlockConveyorLift(Material.IRON, "conveyor_lift").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 
 	public static final Block crane_ejector = new CraneEjector(Material.IRON, "crane_ejector").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_ejector_alt = new CraneEjectorAlt(Material.IRON, "crane_ejector_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_ejector_alt_2 = new CraneEjectorAlt2(Material.IRON, "crane_ejector_alt_2").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_ejector_alt = new CraneEjectorAlt(Material.IRON, "crane_ejector_alt").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_ejector_alt_2 = new CraneEjectorAlt2(Material.IRON, "crane_ejector_alt_2").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_ejector_alt_3 = new CraneEjectorAlt3(Material.IRON, "crane_ejector_alt_3").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_ejector_alt_4 = new CraneEjectorAlt4(Material.IRON, "crane_ejector_alt_4").setHardness(3.0F).setResistance(2.0F);
 
 	public static final Block crane_inserter = new CraneInserter(Material.IRON, "crane_inserter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_inserter_alt = new CraneInserterAlt(Material.IRON, "crane_inserter_alt").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_inserter_alt_2 = new CraneInserterAlt2(Material.IRON, "crane_inserter_alt_2").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_inserter_alt = new CraneInserterAlt(Material.IRON, "crane_inserter_alt").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_inserter_alt_2 = new CraneInserterAlt2(Material.IRON, "crane_inserter_alt_2").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_inserter_alt_3 = new CraneInserterAlt3(Material.IRON, "crane_inserter_alt_3").setHardness(3.0F).setResistance(2.0F);
+	public static final Block crane_inserter_alt_4 = new CraneInserterAlt4(Material.IRON, "crane_inserter_alt_4").setHardness(3.0F).setResistance(2.0F);
 
 	public static final Block crane_splitter = new CraneSplitter(Material.IRON, "crane_splitter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_boxer = new CraneBoxer(Material.IRON, "crane_boxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);

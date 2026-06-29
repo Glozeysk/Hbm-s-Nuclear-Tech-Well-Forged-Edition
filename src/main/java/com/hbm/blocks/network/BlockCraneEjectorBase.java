@@ -59,8 +59,18 @@ public abstract class BlockCraneEjectorBase extends BlockCraneBase implements IT
     }
 
     @Override
+    public void getDrops(net.minecraft.util.NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        drops.clear();
+        drops.add(new ItemStack(ModBlocks.crane_ejector, 1));
+    }
+
+    public ItemStack getPickBlock(IBlockState state, World world, BlockPos pos, EntityPlayer player) {
+        return new ItemStack(ModBlocks.crane_ejector, 1);
+    }
+
+    @Override
     public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
-        if(tool != ToolType.SCREWDRIVER || !player.isSneaking()) {
+        if(tool != ToolType.SCREWDRIVER) {
             return false;
         }
 
@@ -77,7 +87,48 @@ public abstract class BlockCraneEjectorBase extends BlockCraneBase implements IT
 
         NBTTagCompound data = tile.writeToNBT(new NBTTagCompound());
         IBlockState oldState = world.getBlockState(pos);
-        IBlockState newState = copyState(oldState, getNextBlock().getDefaultState());
+        Block currentBlock = oldState.getBlock();
+        EnumFacing facing = oldState.getValue(BlockHorizontal.FACING);
+
+        boolean isVertical = (side == EnumFacing.UP || side == EnumFacing.DOWN);
+        boolean isFront = (side == facing);
+        boolean isBack = (side == facing.getOpposite());
+        boolean isSide = !isVertical && !isFront && !isBack;
+
+        Block nextBlock = null;
+
+        if(player.isSneaking()) {
+            if(isVertical || isBack) {
+                if(currentBlock == ModBlocks.crane_ejector) {
+                    nextBlock = ModBlocks.crane_ejector_alt;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt) {
+                    nextBlock = ModBlocks.crane_ejector_alt_2;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt_2) {
+                    nextBlock = ModBlocks.crane_ejector;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt_3 || currentBlock == ModBlocks.crane_ejector_alt_4) {
+                    nextBlock = ModBlocks.crane_ejector_alt;
+                }
+            }
+
+            if(isFront || isSide) {
+                // Горизонтальный цикл
+                if(currentBlock == ModBlocks.crane_ejector) {
+                    nextBlock = ModBlocks.crane_ejector_alt_3;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt_3) {
+                    nextBlock = ModBlocks.crane_ejector_alt_4;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt_4) {
+                    nextBlock = ModBlocks.crane_ejector;
+                } else if(currentBlock == ModBlocks.crane_ejector_alt || currentBlock == ModBlocks.crane_ejector_alt_2) {
+                    nextBlock = ModBlocks.crane_ejector_alt_3;
+                }
+            }
+        }
+
+        if(nextBlock == null) {
+            return false;
+        }
+
+        IBlockState newState = copyState(oldState, nextBlock.getDefaultState());
 
         try {
             switching = true;

@@ -55,7 +55,11 @@ public abstract class BlockCraneBase extends BlockContainer implements ITooltipP
 
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+        EnumFacing facing = placer.getHorizontalFacing();
+
+        if (placer.isSneaking()) {
+            worldIn.setBlockState(pos, state.withProperty(BlockHorizontal.FACING, facing));
+        }
     }
 
     @Override

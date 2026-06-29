@@ -117,6 +117,8 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.crane_router), new Object[] { "PIP", "ICI", "PIP", 'P', ModItems.piston_pneumatic, 'I', ModItems.plate_polymer, 'C', ModItems.circuit_copper });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt });
  		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_2});
+		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_3});
+		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_4});
 		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt_2 });
 
