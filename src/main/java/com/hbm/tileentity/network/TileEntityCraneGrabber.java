@@ -69,15 +69,6 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
                 }
                 this.delay = 20;
                 inventory.getStackInSlot(10);
-                if(!inventory.getStackInSlot(10).isEmpty()){
-                    if(inventory.getStackInSlot(10).getItem() == ModItems.upgrade_ejector_1) {
-                        this.delay = 10;
-                    } else if(inventory.getStackInSlot(10).getItem() == ModItems.upgrade_ejector_2){
-                        this.delay = 5;
-                    } else if(inventory.getStackInSlot(10).getItem() == ModItems.upgrade_ejector_3){
-                        this.delay = 2;
-                    }
-                }
 
                 EnumFacing inputSide = getInputSide();
                 double reach = 1D;

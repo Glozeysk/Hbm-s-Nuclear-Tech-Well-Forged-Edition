@@ -6,12 +6,12 @@ import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
 import com.hbm.blocks.network.conveyor.BeltSegmentManager;
+import com.hbm.blocks.network.conveyor.ConveyorEntryPoints;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneEjectorCommon;
 import com.hbm.inventory.gui.GUICraneEjectorCommon;
 import com.hbm.items.ModItems;
-import com.hbm.lib.Library;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
@@ -39,14 +39,15 @@ import org.jetbrains.annotations.NotNull;
 public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase implements IGUIProvider, IControlReceiver, IBufPacketReceiver {
 
     public boolean isWhitelist = false;
-    private int tickCounter = 0;
+    private int inserterTickCounter = 0;
+    private static final int INSERTER_DELAY = 3;
     public ModulePatternMatcher matcher;
 
-    public static final int[] ALLOWED_SLOTS = {9, 10, 11, 12, 13, 14, 15, 16, 17};
+    public static final int FILTER_COUNT = 18;
 
     public TileEntityCraneEjectorBase() {
-        super(20);
-        this.matcher = new ModulePatternMatcher(9);
+        super(19);
+        this.matcher = new ModulePatternMatcher(FILTER_COUNT);
     }
 
     @Override
@@ -62,133 +63,25 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
             return;
         }
 
-        tickCounter++;
-
-        // Извлечение из входного инвентаря (с задержкой)
-        if(tickCounter >= getDelay() && !this.world.isBlockPowered(pos)) {
-            tickCounter = 0;
-
-            int amount = getAmount();
-            EnumFacing inputSide = getInputSide();
-            EnumFacing accessFace = inputSide.getOpposite();
-
-            TileEntity te = world.getTileEntity(pos.offset(inputSide));
-
-            if(te != null && !(te instanceof TileEntityCraneEjectorBase)) {
-                int[] access = null;
-                ISidedInventory sided = null;
-
-                if(te instanceof ISidedInventory) {
-                    sided = (ISidedInventory) te;
-                    access = masquerade(sided, accessFace);
-                }
-
-                IItemHandler inv = null;
-
-                if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
-                    inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
-                } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-                    inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-                }
-
-                if(inv != null) {
-                    int size = access == null ? inv.getSlots() : access.length;
-
-                    for(int i = 0; i < size; i++) {
-                        int actualSlot = access == null ? i : access[i];
-                        int handlerSlot = access == null ? i : inv.getSlots() == access.length ? i : actualSlot;
-                        ItemStack stack = inv.getStackInSlot(handlerSlot);
-
-                        if(!stack.isEmpty() && (sided == null || canExtract(sided, actualSlot, stack, accessFace))) {
-                            boolean match = this.matchesFilter(stack);
-
-                            if(isWhitelist == match) {
-                                int toSend = Math.min(amount, stack.getCount());
-                                ItemStack extracted = inv.extractItem(handlerSlot, toSend, true);
-
-                                if(!extracted.isEmpty()) {
-                                    int fill = tryInsertItemCap(inventory, extracted.copy(), ALLOWED_SLOTS);
-
-                                    if(fill > 0 && fill <= toSend) {
-                                        inv.extractItem(handlerSlot, fill, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if(this.world.isBlockPowered(pos)) {
+            return;
         }
 
-        // Выталкивание в конвейер КАЖДЫЙ ТИК (без задержки и без проверки tickCounter)
-        if(!this.world.isBlockPowered(pos)) {
-            EnumFacing outputSide = getOutputSide();
-            Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
+        EnumFacing outputSide = getOutputSide();
+        Block outputBlock = world.getBlockState(pos.offset(outputSide)).getBlock();
 
-            if(b instanceof BlockConveyor) {
-                pushToConveyorEveryTick(outputSide);
-            } else {
-                // Старая логика для других целей (работает только при tickCounter == 0)
-                if(tickCounter == 0) {
-                    TileEntity outputTe = world.getTileEntity(pos.offset(outputSide));
-                    if(outputTe instanceof TileEntityCraneInserterBase) {
-                        TileEntityCraneInserterBase inserter = (TileEntityCraneInserterBase) outputTe;
-                        for(int index : ALLOWED_SLOTS) {
-                            ItemStack stack = inventory.getStackInSlot(index);
+        if(outputBlock instanceof BlockConveyor) {
+            pushToConveyorDirect(outputSide);
+        } else {
+            inserterTickCounter++;
+            if(inserterTickCounter >= INSERTER_DELAY) {
+                inserterTickCounter = 0;
 
-                            if(!stack.isEmpty()) {
-                                boolean match = this.matchesFilter(stack);
-
-                                if(isWhitelist == match) {
-                                    int toSend = Math.min(getAmount(), stack.getCount());
-                                    ItemStack cStack = stack.copy();
-                                    cStack.setCount(toSend);
-
-                                    int accepted = inserter.tryInsertDirect(cStack.copy());
-                                    if(accepted > 0) {
-                                        stack.shrink(accepted);
-                                        if(stack.getCount() == 0) {
-                                            inventory.setStackInSlot(index, ItemStack.EMPTY);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    } else if(b instanceof IConveyorBelt) {
-                        IConveyorBelt belt = (IConveyorBelt) b;
-                        int xCoord = pos.getX();
-                        int yCoord = pos.getY();
-                        int zCoord = pos.getZ();
-
-                        for(int index : ALLOWED_SLOTS) {
-                            ItemStack stack = inventory.getStackInSlot(index);
-
-                            if(!stack.isEmpty()) {
-                                boolean match = this.matchesFilter(stack);
-
-                                if(isWhitelist == match) {
-                                    int toSend = Math.min(getAmount(), stack.getCount());
-                                    ItemStack cStack = stack.copy();
-                                    stack.shrink(toSend);
-
-                                    if(stack.getCount() == 0) {
-                                        inventory.setStackInSlot(index, ItemStack.EMPTY);
-                                    }
-
-                                    cStack.setCount(toSend);
-
-                                    EntityMovingItem moving = new EntityMovingItem(world);
-                                    Vec3d itemPos = new Vec3d(xCoord + 0.5 + outputSide.getDirectionVec().getX() * 0.55, yCoord + 0.5 + outputSide.getDirectionVec().getY() * 0.55, zCoord + 0.5 + outputSide.getDirectionVec().getZ() * 0.55);
-                                    Vec3d snap = belt.getClosestSnappingPosition(world, new BlockPos(xCoord + outputSide.getDirectionVec().getX(), yCoord + outputSide.getDirectionVec().getY(), zCoord + outputSide.getDirectionVec().getZ()), itemPos);
-                                    moving.setPosition(snap.x, snap.y, snap.z);
-                                    moving.setItemStack(cStack);
-                                    world.spawnEntity(moving);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                TileEntity outputTe = world.getTileEntity(pos.offset(outputSide));
+                if(outputTe instanceof TileEntityCraneInserterBase) {
+                    pushToInserterDirect((TileEntityCraneInserterBase) outputTe);
+                } else if(outputBlock instanceof IConveyorBelt) {
+                    pushToOldConveyorDirect(outputSide, (IConveyorBelt) outputBlock);
                 }
             }
         }
@@ -196,92 +89,262 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
         networkPackNT(15);
     }
 
-    private void pushToConveyorEveryTick(EnumFacing outputSide) {
+    private void pushToConveyorDirect(EnumFacing outputSide) {
         BlockPos conveyorPos = pos.offset(outputSide);
         Block block = world.getBlockState(conveyorPos).getBlock();
 
-        if(!(block instanceof BlockConveyor)) {
-            return;
-        }
+        if(!(block instanceof BlockConveyor)) return;
 
         BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, conveyorPos);
-        if(segment == null) {
-            return;
-        }
+        if(segment == null) return;
 
         int blockIndex = segment.getBlockIndex(conveyorPos);
-        if(blockIndex < 0) {
-            return;
-        }
+        if(blockIndex < 0) return;
 
         BlockConveyor conveyor = (BlockConveyor) block;
         EnumFacing conveyorFacing = conveyor.getLaneFacing(world, conveyorPos);
 
-        if(conveyorFacing != outputSide) {
-            return;
+        boolean isSideEntry = (conveyorFacing != outputSide);
+
+        if(isSideEntry) {
+            pushToConveyorSide(segment, conveyor, conveyorPos, blockIndex, outputSide, conveyorFacing);
+        } else {
+            pushToConveyorFront(segment, conveyorPos, blockIndex, outputSide, conveyorFacing);
+        }
+    }
+
+    private void pushToConveyorFront(BeltSegment segment, BlockPos conveyorPos, int blockIndex, EnumFacing outputSide, EnumFacing conveyorFacing) {
+        for(int lane = 0; lane < segment.getLaneCount(); lane++) {
+            BeltLane beltLane = segment.getLane(lane);
+            double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+
+            if(beltLane.isSlotFree(slotProgress)) {
+                int extracted = extractAndInsertToConveyor(segment, lane, slotProgress, BeltItemData.ROUTE_FORWARD);
+                if(extracted > 0) {
+                    segment.markDirty();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void pushToConveyorSide(BeltSegment segment, BlockConveyor conveyor, BlockPos conveyorPos, int blockIndex, EnumFacing outputSide, EnumFacing conveyorFacing) {
+        ConveyorEntryPoints entryPoints = conveyor.getEntryPoints();
+        if(entryPoints == null) return;
+
+        EnumFacing left = conveyorFacing.rotateYCCW();
+        EnumFacing right = conveyorFacing.rotateY();
+
+        boolean fromLeft = (outputSide == left);
+        boolean fromRight = (outputSide == right);
+
+        if(!fromLeft && !fromRight) return;
+
+        int routeType = fromLeft ? BeltItemData.ROUTE_LEFT_ENTRY : BeltItemData.ROUTE_RIGHT_ENTRY;
+
+        int targetLane = findBestLaneForSideEntry(conveyor, fromLeft);
+
+        BeltLane beltLane = segment.getLane(targetLane);
+        double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+
+        if(beltLane.isSlotFree(slotProgress)) {
+            int extracted = extractAndInsertToConveyor(segment, targetLane, slotProgress, routeType);
+            if(extracted > 0) {
+                segment.markDirty();
+            }
+        }
+    }
+
+    private int findBestLaneForSideEntry(BlockConveyor conveyor, boolean fromLeft) {
+        double[] offsets = conveyor.getLaneOffsets();
+        if(offsets.length <= 1) return 0;
+
+        double targetX = fromLeft ? 2.0D : 14.0D;
+
+        double bestDist = Double.MAX_VALUE;
+        int bestLane = 0;
+
+        for(int i = 0; i < offsets.length; i++) {
+            double laneX = 8.0D + offsets[i] * 16.0D;
+            double dist = Math.abs(laneX - targetX);
+            if(dist < bestDist) {
+                bestDist = dist;
+                bestLane = i;
+            }
         }
 
+        return bestLane;
+    }
+
+    private int extractAndInsertToConveyor(BeltSegment segment, int lane, double slotProgress, int routeType) {
+        EnumFacing inputSide = getInputSide();
+        EnumFacing accessFace = inputSide.getOpposite();
+
+        TileEntity te = world.getTileEntity(pos.offset(inputSide));
+        if(te == null || te instanceof TileEntityCraneEjectorBase) return 0;
+
+        int[] access = null;
+        ISidedInventory sided = null;
+
+        if(te instanceof ISidedInventory) {
+            sided = (ISidedInventory) te;
+            access = masquerade(sided, accessFace);
+        }
+
+        IItemHandler inv = null;
+        if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        }
+
+        if(inv == null) return 0;
+
+        int size = access == null ? inv.getSlots() : access.length;
         int amount = getAmount();
 
-        // Перебираем ВСЕ слоты и выталкиваем максимум
-        for(int index : ALLOWED_SLOTS) {
-            ItemStack stack = inventory.getStackInSlot(index);
+        for(int i = 0; i < size; i++) {
+            int actualSlot = access == null ? i : access[i];
+            int handlerSlot = access == null ? i : inv.getSlots() == access.length ? i : actualSlot;
+            ItemStack stack = inv.getStackInSlot(handlerSlot);
 
-            if(!stack.isEmpty()) {
-                boolean match = this.matchesFilter(stack);
+            if(!stack.isEmpty() && (sided == null || canExtract(sided, actualSlot, stack, accessFace))) {
+                boolean match = matchesFilter(stack);
 
                 if(isWhitelist == match) {
                     int toSend = Math.min(amount, stack.getCount());
+                    ItemStack extracted = inv.extractItem(handlerSlot, toSend, true);
 
-                    // Пытаемся вставить в любую свободную полосу
-                    boolean inserted = false;
-                    for(int lane = 0; lane < segment.getLaneCount(); lane++) {
-                        BeltLane beltLane = segment.getLane(lane);
-                        double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+                    if(!extracted.isEmpty()) {
+                        ItemStack toInsert = extracted.copy();
+                        BeltItemData item = new BeltItemData(toInsert, lane, slotProgress);
+                        item.setRouteType(routeType);
 
-                        if(beltLane.isSlotFree(slotProgress)) {
-                            ItemStack toInsert = stack.copy();
-                            toInsert.setCount(toSend);
-
-                            if(segment.insertStack(toInsert, lane, slotProgress)) {
-                                stack.shrink(toSend);
-                                if(stack.getCount() == 0) {
-                                    inventory.setStackInSlot(index, ItemStack.EMPTY);
-                                }
-                                segment.markDirty();
-                                inserted = true;
-                                break; // Переходим к следующему слоту
-                            }
+                        if(segment.insertItem(item)) {
+                            inv.extractItem(handlerSlot, extracted.getCount(), false);
+                            return extracted.getCount();
                         }
                     }
+                }
+            }
+        }
 
-                    // Если не удалось вставить - конвейер заполнен, создаем очередь
-                    if(!inserted) {
-                        break; // Останавливаем выталкивание
+        return 0;
+    }
+
+    private void pushToInserterDirect(TileEntityCraneInserterBase inserter) {
+        EnumFacing inputSide = getInputSide();
+        EnumFacing accessFace = inputSide.getOpposite();
+
+        TileEntity te = world.getTileEntity(pos.offset(inputSide));
+        if(te == null || te instanceof TileEntityCraneEjectorBase) return;
+
+        int[] access = null;
+        ISidedInventory sided = null;
+
+        if(te instanceof ISidedInventory) {
+            sided = (ISidedInventory) te;
+            access = masquerade(sided, accessFace);
+        }
+
+        IItemHandler inv = null;
+        if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        }
+
+        if(inv == null) return;
+
+        int size = access == null ? inv.getSlots() : access.length;
+        int amount = getAmount();
+
+        for(int i = 0; i < size; i++) {
+            int actualSlot = access == null ? i : access[i];
+            int handlerSlot = access == null ? i : inv.getSlots() == access.length ? i : actualSlot;
+            ItemStack stack = inv.getStackInSlot(handlerSlot);
+
+            if(!stack.isEmpty() && (sided == null || canExtract(sided, actualSlot, stack, accessFace))) {
+                boolean match = matchesFilter(stack);
+
+                if(isWhitelist == match) {
+                    int toSend = Math.min(amount, stack.getCount());
+                    ItemStack cStack = stack.copy();
+                    cStack.setCount(toSend);
+
+                    int accepted = inserter.tryInsertDirect(cStack.copy());
+                    if(accepted > 0) {
+                        inv.extractItem(handlerSlot, accepted, false);
+                        return;
                     }
                 }
             }
         }
     }
 
-    public int tryInsertDirect(ItemStack stack) {
-        return tryInsertItemCap(inventory, stack, ALLOWED_SLOTS);
-    }
+    private void pushToOldConveyorDirect(EnumFacing outputSide, IConveyorBelt belt) {
+        EnumFacing inputSide = getInputSide();
+        EnumFacing accessFace = inputSide.getOpposite();
 
-    protected int getDelay() {
-        int delay = 20;
+        TileEntity te = world.getTileEntity(pos.offset(inputSide));
+        if(te == null || te instanceof TileEntityCraneEjectorBase) return;
 
-        if(!inventory.getStackInSlot(19).isEmpty()) {
-            if(inventory.getStackInSlot(19).getItem() == ModItems.upgrade_ejector_1) {
-                delay = 10;
-            } else if(inventory.getStackInSlot(19).getItem() == ModItems.upgrade_ejector_2) {
-                delay = 5;
-            } else if(inventory.getStackInSlot(19).getItem() == ModItems.upgrade_ejector_3) {
-                delay = 2;
-            }
+        int[] access = null;
+        ISidedInventory sided = null;
+
+        if(te instanceof ISidedInventory) {
+            sided = (ISidedInventory) te;
+            access = masquerade(sided, accessFace);
         }
 
-        return delay;
+        IItemHandler inv = null;
+        if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessFace);
+        } else if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        }
+
+        if(inv == null) return;
+
+        int size = access == null ? inv.getSlots() : access.length;
+        int amount = getAmount();
+
+        for(int i = 0; i < size; i++) {
+            int actualSlot = access == null ? i : access[i];
+            int handlerSlot = access == null ? i : inv.getSlots() == access.length ? i : actualSlot;
+            ItemStack stack = inv.getStackInSlot(handlerSlot);
+
+            if(!stack.isEmpty() && (sided == null || canExtract(sided, actualSlot, stack, accessFace))) {
+                boolean match = matchesFilter(stack);
+
+                if(isWhitelist == match) {
+                    int toSend = Math.min(amount, stack.getCount());
+                    ItemStack extracted = inv.extractItem(handlerSlot, toSend, false);
+
+                    if(!extracted.isEmpty()) {
+                        int xCoord = pos.getX();
+                        int yCoord = pos.getY();
+                        int zCoord = pos.getZ();
+
+                        EntityMovingItem moving = new EntityMovingItem(world);
+                        Vec3d itemPos = new Vec3d(
+                                xCoord + 0.5 + outputSide.getDirectionVec().getX() * 0.55,
+                                yCoord + 0.5 + outputSide.getDirectionVec().getY() * 0.55,
+                                zCoord + 0.5 + outputSide.getDirectionVec().getZ() * 0.55
+                        );
+                        Vec3d snap = belt.getClosestSnappingPosition(world,
+                                new BlockPos(xCoord + outputSide.getDirectionVec().getX(),
+                                        yCoord + outputSide.getDirectionVec().getY(),
+                                        zCoord + outputSide.getDirectionVec().getZ()),
+                                itemPos);
+                        moving.setPosition(snap.x, snap.y, snap.z);
+                        moving.setItemStack(extracted);
+                        world.spawnEntity(moving);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     protected int getAmount() {
@@ -302,94 +365,33 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
 
     public static boolean canExtract(ISidedInventory sided, int index, ItemStack stack, EnumFacing dir) {
         boolean can = false;
-
         try {
             can = sided.canExtractItem(index, stack, dir);
         } catch(IndexOutOfBoundsException e) {
             return false;
         }
-
         return can;
-    }
-
-    public int tryInsertItemCap(IItemHandler chest, ItemStack stack, int[] allowedSlots) {
-        if(stack.isEmpty()) {
-            return 0;
-        }
-
-        int filledAmount = 0;
-
-        for(int i : allowedSlots) {
-            if(stack.isEmpty() || stack.getCount() < 1) {
-                return filledAmount;
-            }
-
-            ItemStack outputStack = stack.copy();
-            ItemStack chestItem = chest.getStackInSlot(i).copy();
-
-            if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-                int fillAmount = Math.min(chestItem.getMaxStackSize() - chestItem.getCount(), outputStack.getCount());
-                outputStack.setCount(fillAmount);
-
-                ItemStack rest = chest.insertItem(i, outputStack, true);
-
-                if(rest.getCount() < outputStack.getCount()) {
-                    stack.shrink(fillAmount - rest.getCount());
-                    filledAmount += fillAmount - rest.getCount();
-                    chest.insertItem(i, outputStack, false);
-                }
-            }
-        }
-
-        return filledAmount;
     }
 
     public static int[] masquerade(ISidedInventory sided, EnumFacing side) {
         if(sided instanceof TileEntityFurnace) {
             return new int[] {2};
         }
-
         return sided.getSlotsForFace(side);
     }
 
-    @Override
-    public void serialize(ByteBuf buf) {
-        buf.writeBoolean(this.isWhitelist);
-
-        for(int i = 0; i < matcher.modes.length; i++) {
-            if(matcher.modes[i] != null) {
-                buf.writeBoolean(true);
-                ByteBufUtils.writeUTF8String(buf, matcher.modes[i]);
-            } else {
-                buf.writeBoolean(false);
-            }
-        }
-    }
-
-    @Override
-    public void deserialize(ByteBuf buf) {
-        this.isWhitelist = buf.readBoolean();
-        this.matcher.modes = new String[this.matcher.modes.length];
-
-        for(int i = 0; i < matcher.modes.length; i++) {
-            if(buf.readBoolean()) {
-                matcher.modes[i] = ByteBufUtils.readUTF8String(buf);
-            } else {
-                matcher.modes[i] = null;
-            }
-        }
-    }
-
     public boolean matchesFilter(ItemStack stack) {
-        for(int i = 0; i < 9; i++) {
+        boolean hasAnyFilter = false;
+        for(int i = 0; i < FILTER_COUNT; i++) {
             ItemStack filter = inventory.getStackInSlot(i);
-
-            if(!filter.isEmpty() && this.matcher.isValidForFilter(filter, i, stack)) {
-                return true;
+            if(!filter.isEmpty()) {
+                hasAnyFilter = true;
+                if(this.matcher.isValidForFilter(filter, i, stack)) {
+                    return true;
+                }
             }
         }
-
-        return false;
+        return !hasAnyFilter;
     }
 
     public void nextMode(int i) {
@@ -402,7 +404,7 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return i > 8 && i < 18;
+        return i < FILTER_COUNT || i == 18;
     }
 
     @Override
@@ -448,11 +450,37 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
 
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-        return ALLOWED_SLOTS;
+        return new int[0];
     }
 
     @Override
     public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
         return false;
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(this.isWhitelist);
+        for(int i = 0; i < FILTER_COUNT; i++) {
+            if(matcher.modes[i] != null) {
+                buf.writeBoolean(true);
+                ByteBufUtils.writeUTF8String(buf, matcher.modes[i]);
+            } else {
+                buf.writeBoolean(false);
+            }
+        }
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.isWhitelist = buf.readBoolean();
+        this.matcher.modes = new String[FILTER_COUNT];
+        for(int i = 0; i < FILTER_COUNT; i++) {
+            if(buf.readBoolean()) {
+                matcher.modes[i] = ByteBufUtils.readUTF8String(buf);
+            } else {
+                matcher.modes[i] = null;
+            }
+        }
     }
 }

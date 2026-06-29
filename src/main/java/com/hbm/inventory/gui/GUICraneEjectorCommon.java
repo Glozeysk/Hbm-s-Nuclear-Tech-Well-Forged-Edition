@@ -37,7 +37,7 @@ public class GUICraneEjectorCommon extends GuiInfoContainer {
         super.drawScreen(x, y, interp);
 
         if(this.mc.player.getHeldItemMainhand().isEmpty()) {
-            for(int i = 0; i < 9; ++i) {
+            for(int i = 0; i < 18; ++i) {
                 Slot slot = this.inventorySlots.inventorySlots.get(i);
 
                 if(this.isMouseOverSlot(slot, x, y) && ejector.matcher.modes[i] != null) {

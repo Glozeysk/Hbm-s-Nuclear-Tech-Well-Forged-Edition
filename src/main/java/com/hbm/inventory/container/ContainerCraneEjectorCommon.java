@@ -9,7 +9,6 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerCraneEjectorCommon extends Container {
 
@@ -19,19 +18,12 @@ public class ContainerCraneEjectorCommon extends Container {
         this.extractor = extractor;
 
         for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                this.addSlotToContainer(new SlotPattern(extractor.inventory, j + i * 3, 71 + j * 18, 17 + i * 18));
+            for(int j = 0; j < 6; j++) {
+                this.addSlotToContainer(new SlotPattern(extractor.inventory, j + i * 6, 17 + j * 18, 17 + i * 18));
             }
         }
 
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                this.addSlotToContainer(new SlotItemHandler(extractor.inventory, 9 + j + i * 3, 8 + j * 18, 17 + i * 18));
-            }
-        }
-
-        this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 18, 152, 23));
-        this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 19, 152, 47));
+        this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 18, 152, 35));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {
@@ -46,7 +38,7 @@ public class ContainerCraneEjectorCommon extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
-        if(slotId < 0 || slotId >= 9) {
+        if(slotId < 0 || slotId >= 18) {
             return super.slotClick(slotId, dragType, clickTypeIn, player);
         }
 
@@ -85,16 +77,16 @@ public class ContainerCraneEjectorCommon extends Container {
             ItemStack var5 = var4.getStack();
             var3 = var5.copy();
 
-            if(slot < 9) {
+            if(slot < 18) {
                 return ItemStack.EMPTY;
             }
 
-            if(slot >= 9 && slot <= 17) {
-                if(!this.mergeItemStack(var5, 20, 56, true)) {
+            if(slot == 18) {
+                if(!this.mergeItemStack(var5, 19, 55, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if(slot >= 20 && slot <= 55) {
-                if(!this.mergeItemStack(var5, 9, 18, false)) {
+            } else if(slot >= 19 && slot <= 54) {
+                if(!this.mergeItemStack(var5, 18, 19, false)) {
                     return ItemStack.EMPTY;
                 }
             }

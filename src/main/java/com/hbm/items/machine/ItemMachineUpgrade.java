@@ -283,24 +283,6 @@ public class ItemMachineUpgrade extends Item {
 			list.add(" "+I18nUtil.resolveKey("desc.upgrade19"));
 		}
 
-		if(this == ModItems.upgrade_ejector_1)
-		{
-			list.add(TextFormatting.GOLD+I18nUtil.resolveKey("desc.upgrade22"));
-			list.add(" "+I18nUtil.resolveKey("desc.upgradeej1"));
-		}
-
-		if(this == ModItems.upgrade_ejector_2)
-		{
-			list.add(TextFormatting.GOLD+I18nUtil.resolveKey("desc.upgrade22"));
-			list.add(" "+I18nUtil.resolveKey("desc.upgradeej2"));
-		}
-
-		if(this == ModItems.upgrade_ejector_3)
-		{
-			list.add(TextFormatting.GOLD+I18nUtil.resolveKey("desc.upgrade22"));
-			list.add(" "+I18nUtil.resolveKey("desc.upgradeej3"));
-		}
-
 		if(this == ModItems.upgrade_stack_1)
 		{
 			list.add(TextFormatting.GOLD+I18nUtil.resolveKey("desc.upgrade22"));

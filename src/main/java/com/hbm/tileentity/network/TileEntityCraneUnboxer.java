@@ -50,15 +50,6 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
             int yCoord = pos.getY();
             int zCoord = pos.getZ();
             int delay = 20;
-            if (inventory.getStackInSlot(22) != null && inventory.getStackInSlot(22) != ItemStack.EMPTY) {
-                if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_1) {
-                    delay = 10;
-                } else if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_2) {
-                    delay = 5;
-                } else if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_3) {
-                    delay = 2;
-                }
-            }
 
             if (tickCounter >= delay && !this.world.isBlockPowered(pos)) {
                 tickCounter = 0;

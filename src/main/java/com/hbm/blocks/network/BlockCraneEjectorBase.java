@@ -51,7 +51,8 @@ public abstract class BlockCraneEjectorBase extends BlockCraneBase implements IT
         TileEntity tileentity = world.getTileEntity(pos);
 
         if(!switching && tileentity instanceof TileEntityCraneEjectorBase) {
-            InventoryHelper.dropInventoryItems(world, pos, tileentity, 9, 19);
+            InventoryHelper.dropInventoryItems(world, pos, tileentity, 0, 18);
+            InventoryHelper.dropInventoryItems(world, pos, tileentity, 18, 19);
         }
 
         super.breakBlock(world, pos, state);
