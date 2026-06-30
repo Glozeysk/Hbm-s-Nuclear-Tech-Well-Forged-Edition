@@ -212,6 +212,17 @@ public class JEIConfig implements IModPlugin {
 
 		IIngredientBlacklist blacklist = registry.getJeiHelpers().getIngredientBlacklist();
 
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_ejector_alt));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_ejector_alt_2));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_ejector_alt_3));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_ejector_alt_4));
+
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_inserter_alt));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_inserter_alt_2));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_inserter_alt_3));
+		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.crane_inserter_alt_4));
+
+
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.memory));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_coal_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_electric_furnace_on));

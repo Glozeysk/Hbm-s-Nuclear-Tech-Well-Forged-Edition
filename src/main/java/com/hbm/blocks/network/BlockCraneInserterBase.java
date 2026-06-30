@@ -37,6 +37,10 @@ public abstract class BlockCraneInserterBase extends BlockCraneBase implements I
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
+    public ItemStack getPickBlock(IBlockState state, World world, BlockPos pos, EntityPlayer player) {
+        return new ItemStack(ModBlocks.crane_inserter, 1);
+    }
+
     protected abstract Block getNextBlock();
 
     @Override
@@ -129,7 +133,6 @@ public abstract class BlockCraneInserterBase extends BlockCraneBase implements I
 
         if(player.isSneaking()) {
             if(isVertical || isBack) {
-                // Вертикальный цикл
                 if(currentBlock == ModBlocks.crane_inserter) {
                     nextBlock = ModBlocks.crane_inserter_alt;
                 } else if(currentBlock == ModBlocks.crane_inserter_alt) {
@@ -142,7 +145,6 @@ public abstract class BlockCraneInserterBase extends BlockCraneBase implements I
             }
 
             if(isFront || isSide) {
-                // Горизонтальный цикл
                 if(currentBlock == ModBlocks.crane_inserter) {
                     nextBlock = ModBlocks.crane_inserter_alt_3;
                 } else if(currentBlock == ModBlocks.crane_inserter_alt_3) {

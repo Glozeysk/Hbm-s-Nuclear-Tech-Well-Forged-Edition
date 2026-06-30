@@ -39,6 +39,10 @@ public abstract class BlockCraneEjectorBase extends BlockCraneBase implements IT
         tooltip.add(I18nUtil.resolveKey("desc.crane_ejector"));
     }
 
+    public ItemStack getPickBlock(IBlockState state, World world, BlockPos pos, EntityPlayer player) {
+        return new ItemStack(ModBlocks.crane_ejector, 1);
+    }
+
     protected abstract Block getNextBlock();
 
     @Override
@@ -62,10 +66,6 @@ public abstract class BlockCraneEjectorBase extends BlockCraneBase implements IT
     public void getDrops(net.minecraft.util.NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         drops.clear();
         drops.add(new ItemStack(ModBlocks.crane_ejector, 1));
-    }
-
-    public ItemStack getPickBlock(IBlockState state, World world, BlockPos pos, EntityPlayer player) {
-        return new ItemStack(ModBlocks.crane_ejector, 1);
     }
 
     @Override

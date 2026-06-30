@@ -195,60 +195,6 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if (hand != EnumHand.MAIN_HAND) return false;
-		if (player.isSneaking()) return false;
-		if (world.isRemote) return true;
-
-		BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos);
-		if (segment == null) return false;
-
-		int blockIndex = segment.getBlockIndex(pos);
-		if (blockIndex < 0) return false;
-
-		EnumFacing laneFacing = getLaneFacing(world, pos);
-		Vec3d hitPos = new Vec3d(pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ);
-		int lane = getClosestLaneIndex(world, pos, hitPos);
-		if (lane < 0 || lane >= getLaneCount()) return false;
-
-		double localProgress = getLaneProgress(pos, laneFacing, hitPos);
-		double hitProgress = blockIndex + localProgress;
-		ItemStack heldStack = player.getHeldItem(hand);
-
-		if (!heldStack.isEmpty()) {
-			BeltLane beltLane = segment.getLane(lane);
-			double slotProgress = blockIndex + 0.5D;
-			if (!beltLane.isSlotFree(slotProgress)) return true;
-
-			ItemStack placed = heldStack.copy();
-			placed.setCount(1);
-
-			if (segment.insertStack(placed, lane, slotProgress)) {
-				if (!player.isCreative()) {
-					heldStack.shrink(1);
-				}
-			}
-			return true;
-		}
-
-		BeltLane beltLane = segment.getLane(lane);
-		BeltItemData target = beltLane.findNearest(hitProgress);
-		if (target != null) {
-			ItemStack dropped = target.getStack().copy();
-			segment.removeItem(target.getUniqueId());
-
-			if (!player.inventory.addItemStackToInventory(dropped)) {
-				EntityItem entityItem = new EntityItem(world, player.posX, player.posY + 0.5D, player.posZ, dropped);
-				entityItem.setNoPickupDelay();
-				world.spawnEntity(entityItem);
-			}
-			return true;
-		}
-
-		return true;
-	}
-
-	@Override
 	public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
 		if (world.isRemote) return;
 
