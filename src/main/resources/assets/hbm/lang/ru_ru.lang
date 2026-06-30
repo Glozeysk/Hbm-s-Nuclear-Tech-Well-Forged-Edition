@@ -4286,6 +4286,7 @@ tile.control_panel_custom.name=Кастомная панель управлен�
 tile.conveyor.name=Конвейер
 tile.conveyor_chute.name=Конвейерный желоб
 tile.conveyor_double.name=Двухполосный конвейер
+tile.conveyor_double_express.name=Быстрый двухполосный конвейер
 tile.conveyor_express.name=Быстрый конвейер
 tile.conveyor_lift.name=Конвейерный цепной лифт
 tile.conveyor_triple.name=Трёхполосный конвейер

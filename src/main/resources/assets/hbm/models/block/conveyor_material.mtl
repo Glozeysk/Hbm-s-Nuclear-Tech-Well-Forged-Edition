@@ -7,12 +7,12 @@ newmtl m_conveyor_side
 map_Kd hbm:blocks/conveyor_side
 newmtl m_conveyor_double
 map_Kd hbm:blocks/conveyor_double
-newmtl m_conveyor_triple
-map_Kd hbm:blocks/conveyor_triple
 newmtl m_conveyor_express
 map_Kd hbm:blocks/conveyor_express
 newmtl m_titanium
 map_Kd hbm:blocks/block_titanium
 newmtl m_grate_top
 map_Kd hbm:blocks/grate_top
+newmtl m_conveyor_double_express
+map_Kd hbm:blocks/conveyor_double_express
 newmtl none

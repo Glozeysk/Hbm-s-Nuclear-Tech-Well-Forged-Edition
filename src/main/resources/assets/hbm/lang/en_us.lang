@@ -4222,6 +4222,7 @@ tile.control_panel_custom.name=Custom Control Panel [WIP]
 tile.conveyor.name=Conveyor Belt
 tile.conveyor_chute.name=Conveyor Chute
 tile.conveyor_double.name=Double-Lane Conveyor Belt
+tile.conveyor_double_express.name=Express Double-Lane Conveyor Belt
 tile.conveyor_express.name=Express Conveyor Belt
 tile.conveyor_lift.name=Conveyor Chain Lift
 tile.conveyor_triple.name=Triple-Lane Conveyor Belt

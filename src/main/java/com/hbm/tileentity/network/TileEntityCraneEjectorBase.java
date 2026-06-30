@@ -122,7 +122,6 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
                 int extracted = extractAndInsertToConveyor(segment, lane, slotProgress, BeltItemData.ROUTE_FORWARD);
                 if(extracted > 0) {
                     segment.markDirty();
-                    return;
                 }
             }
         }
@@ -159,7 +158,7 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
         double[] offsets = conveyor.getLaneOffsets();
         if(offsets.length <= 1) return 0;
 
-        double targetX = fromLeft ? 2.0D : 14.0D;
+        double targetX = fromLeft ? 14.0D : 2.0D;
 
         double bestDist = Double.MAX_VALUE;
         int bestLane = 0;

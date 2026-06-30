@@ -1,0 +1,5 @@
+newmtl m_f3b9132b-3651-2704-8942-4a27662c81cb
+map_Kd hbm:blocks/conveyor_side
+newmtl m_conveyor_double_express
+map_Kd hbm:blocks/conveyor_double_express
+newmtl none

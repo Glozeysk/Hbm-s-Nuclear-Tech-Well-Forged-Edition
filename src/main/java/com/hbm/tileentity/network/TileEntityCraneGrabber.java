@@ -74,7 +74,6 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
                 double reach = 1D;
                 Block b = world.getBlockState(pos.offset(inputSide)).getBlock();
                 if(b == ModBlocks.conveyor_double) reach = 0.5D;
-                if(b == ModBlocks.conveyor_triple) reach = 0.33D;
                 double x = (pos.offset(inputSide).getX()-pos.getX()) * reach + pos.getX();
                 double y = (pos.offset(inputSide).getY()-pos.getY()) * reach + pos.getY();
                 double z = (pos.offset(inputSide).getZ()-pos.getZ()) * reach + pos.getZ();
