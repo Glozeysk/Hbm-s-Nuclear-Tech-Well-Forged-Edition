@@ -1,16 +1,29 @@
 {
 	"forge_marker": 1,
 	"defaults": {
-		"textures": {},
-		"model": "hbm:conveyor_express.obj"
+		"textures": {}
 	},
 	"variants": {
 		"facing": {
 			"north": { },
-     	   		"south": { "y": 180 },
-      	  		"west":  { "y": 270 },
-      			"east":  { "y": 90 }
+			"south": { "y": 180 },
+			"west":  { "y": 270 },
+			"east":  { "y": 90 }
 		},
-		"inventory": [{ "transform": "forge:default-block" }]
+		"curve": {
+			"none": {
+				"model": "hbm:conveyor_express.obj"
+			},
+			"left": {
+				"model": "hbm:conveyor_express_curve_left.obj"
+			},
+			"right": {
+				"model": "hbm:conveyor_express_curve_right.obj"
+			}
+		},
+		"inventory": [{
+			"model": "hbm:conveyor_express.obj",
+			"transform": "forge:default-block"
+		}]
 	}
 }

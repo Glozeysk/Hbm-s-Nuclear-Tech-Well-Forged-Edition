@@ -21,3 +21,13 @@ newmtl m_conveyor_curve_left
 map_Kd hbm:blocks/conveyor_curve_left
 newmtl m_conveyor_curve_right
 map_Kd hbm:blocks/conveyor_curve_right
+
+newmtl m_conveyor_express_curve_left
+map_Kd hbm:blocks/conveyor_express_curve_left
+newmtl m_conveyor_express_curve_right
+map_Kd hbm:blocks/conveyor_express_curve_right
+
+newmtl m_conveyor_curve_left
+map_Kd hbm:blocks/conveyor_curve_left
+newmtl m_conveyor_curve_right
+map_Kd hbm:blocks/conveyor_curve_right
