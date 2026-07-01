@@ -13,6 +13,7 @@ import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -25,6 +26,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -39,8 +41,18 @@ import javax.annotation.Nullable;
 public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
+	public static final PropertyEnum<CurveType> CURVE = PropertyEnum.create("curve", CurveType.class);
 	public static final AxisAlignedBB CONVEYOR_BB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.25D, 1.0D);
 	protected static final double EPS = 1.0E-5D;
+
+	public enum CurveType implements IStringSerializable {
+		NONE, LEFT, RIGHT;
+
+		@Override
+		public String getName() {
+			return name().toLowerCase();
+		}
+	}
 
 	protected final IConveyorLaneProvider laneProvider;
 	protected final IConveyorVectorProvider vectorProvider;
@@ -115,7 +127,7 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 		return getLaneOffsets().length;
 	}
 
-	public EnumFacing getLaneFacing(World world, BlockPos pos) {
+	public EnumFacing getLaneFacing(IBlockAccess world, BlockPos pos) {
 		return world.getBlockState(pos).getValue(FACING).getOpposite();
 	}
 
@@ -237,6 +249,13 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	}
 
 	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		if(!world.isRemote) {
+			world.notifyBlockUpdate(pos, state, state, 3);
+		}
+	}
+
+	@Override
 	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, IToolable.ToolType tool) {
 		if (tool != IToolable.ToolType.SCREWDRIVER) return false;
 		BlockPos pos = new BlockPos(x, y, z);
@@ -298,7 +317,7 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 
 	@Override
 	public BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[]{FACING});
+		return new BlockStateContainer(this, new IProperty[]{FACING, CURVE});
 	}
 
 	@Override
@@ -310,7 +329,60 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	public IBlockState getStateFromMeta(int meta) {
 		EnumFacing enumFacing = EnumFacing.byIndex(meta);
 		if (enumFacing.getAxis() == EnumFacing.Axis.Y) enumFacing = EnumFacing.NORTH;
-		return this.getDefaultState().withProperty(FACING, enumFacing);
+		return this.getDefaultState().withProperty(FACING, enumFacing).withProperty(CURVE, CurveType.NONE);
+	}
+
+	@Override
+	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+		EnumFacing facing = state.getValue(FACING);
+		CurveType curve = detectCurve(world, pos, facing);
+		return state.withProperty(CURVE, curve);
+	}
+
+	private CurveType detectCurve(IBlockAccess world, BlockPos pos, EnumFacing facing) {
+		// facing = FACING блока (куда "смотрит")
+		// Направление движения предметов = facing.getOpposite()
+		EnumFacing moveDir = facing.getOpposite();
+
+		// Проверяем что СЗАДИ нет конвейера который подаёт нам
+		BlockPos backPos = pos.offset(moveDir.getOpposite());
+		IBlockState backState = world.getBlockState(backPos);
+		if(backState.getBlock() instanceof BlockConveyor) {
+			EnumFacing backMoveDir = backState.getValue(FACING).getOpposite();
+			if(backMoveDir == moveDir) {
+				return CurveType.NONE; // Сзади кто-то подаёт - мы обычный
+			}
+		}
+
+		// Проверяем ЛЕВУЮ сторону
+		EnumFacing leftSide = moveDir.rotateYCCW();
+		BlockPos leftPos = pos.offset(leftSide);
+		IBlockState leftState = world.getBlockState(leftPos);
+		boolean leftFeeds = false;
+		if(leftState.getBlock() instanceof BlockConveyor) {
+			EnumFacing leftMoveDir = leftState.getValue(FACING).getOpposite();
+			if(leftMoveDir == moveDir.rotateY()) { // Его движение вправо = в нашу сторону
+				leftFeeds = true;
+			}
+		}
+
+		// Проверяем ПРАВУЮ сторону
+		EnumFacing rightSide = moveDir.rotateY();
+		BlockPos rightPos = pos.offset(rightSide);
+		IBlockState rightState = world.getBlockState(rightPos);
+		boolean rightFeeds = false;
+		if(rightState.getBlock() instanceof BlockConveyor) {
+			EnumFacing rightMoveDir = rightState.getValue(FACING).getOpposite();
+			if(rightMoveDir == moveDir.rotateYCCW()) { // Его движение влево = в нашу сторону
+				rightFeeds = true;
+			}
+		}
+
+		// Определяем тип
+		if(leftFeeds && !rightFeeds) return CurveType.LEFT;
+		if(rightFeeds && !leftFeeds) return CurveType.RIGHT;
+
+		return CurveType.NONE;
 	}
 
 	@Override

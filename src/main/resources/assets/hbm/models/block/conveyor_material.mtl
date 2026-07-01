@@ -16,3 +16,8 @@ map_Kd hbm:blocks/grate_top
 newmtl m_conveyor_double_express
 map_Kd hbm:blocks/conveyor_double_express
 newmtl none
+
+newmtl m_conveyor_curve_left
+map_Kd hbm:blocks/conveyor_curve_left
+newmtl m_conveyor_curve_right
+map_Kd hbm:blocks/conveyor_curve_right
