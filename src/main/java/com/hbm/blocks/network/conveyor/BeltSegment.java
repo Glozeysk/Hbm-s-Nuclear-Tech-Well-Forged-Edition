@@ -2,6 +2,7 @@ package com.hbm.blocks.network.conveyor;
 
 import com.hbm.blocks.network.BlockConveyor;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -218,7 +219,7 @@ public class BeltSegment {
                         routeType = BeltItemData.ROUTE_LEFT_ENTRY;
                     }
 
-                    targetLane = findBestLaneForEntry(nextConveyor, world, nextPos, lastBlock, routeType);
+                    targetLane = findBestLaneForEntry(nextConveyor, world, nextPos, lastBlock, routeType, lane);
                 }
 
                 double entryProgress = targetBlockIndex + BeltLane.ITEM_LENGTH * 0.5;
@@ -267,24 +268,30 @@ public class BeltSegment {
         return true;
     }
 
-    private int findBestLaneForEntry(BlockConveyor conveyor, World world, BlockPos pos, BlockPos fromPos, int routeType) {
-        if (routeType == BeltItemData.ROUTE_FORWARD) return 0;
+    private int findBestLaneForEntry(BlockConveyor conveyor, World world, BlockPos pos, BlockPos fromPos, int routeType, int sourceLane) {
+        IBlockState state = world.getBlockState(pos);
+        IBlockState actualState = conveyor.getActualState(state, world, pos);
+        BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
+
+        if (curve != BlockConveyor.CurveType.NONE) {
+            return sourceLane < conveyor.getLaneCount() ? sourceLane : 0;
+        }
+
+        EnumFacing nextFacing = conveyor.getLaneFacing(world, pos);
+        EnumFacing lateralPositiveDir = nextFacing.rotateY();
+
+        double dx = fromPos.getX() - pos.getX();
+        double dz = fromPos.getZ() - pos.getZ();
+        double entryLateral = dx * lateralPositiveDir.getXOffset() + dz * lateralPositiveDir.getZOffset();
 
         double[] offsets = conveyor.getLaneOffsets();
-        if (offsets.length <= 1) return 0;
-
-        EnumFacing facing = conveyor.getLaneFacing(world, pos);
-
-        double targetX = (routeType == BeltItemData.ROUTE_RIGHT_ENTRY) ? 2.0D : 14.0D;
-
-        double bestDist = Double.MAX_VALUE;
         int bestLane = 0;
+        double minDiff = Double.MAX_VALUE;
 
         for (int i = 0; i < offsets.length; i++) {
-            double laneX = 8.0D + offsets[i] * 16.0D;
-            double dist = Math.abs(laneX - targetX);
-            if (dist < bestDist) {
-                bestDist = dist;
+            double diff = Math.abs(offsets[i] - entryLateral);
+            if (diff < minDiff) {
+                minDiff = diff;
                 bestLane = i;
             }
         }

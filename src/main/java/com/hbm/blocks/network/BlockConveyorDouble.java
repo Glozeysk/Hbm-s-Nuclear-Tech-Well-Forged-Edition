@@ -14,14 +14,16 @@ public class BlockConveyorDouble extends BlockConveyor {
     }
 
     private static ConveyorEntryPoints createDoubleEntryPoints() {
-        double[][][] rightPoints = {
-                {{14, 2}, {10, 2}, {8, 5}},
-                {{14, 6}, {10, 6}, {8, 9}}
-        };
         double[][][] leftPoints = {
                 {{2, 2}, {6, 2}, {8, 5}},
-                {{2, 6}, {6, 6}, {8, 9}}
+                {{1, 1}, {7, 1}, {8, 6}}
         };
+
+        double[][][] rightPoints = {
+                {{15, 1}, {9, 1}, {8, 6}},
+                {{14, 2}, {10, 2}, {8, 5}}
+        };
+
         return new ConveyorEntryPoints(leftPoints, rightPoints, 0.5D);
     }
 }
