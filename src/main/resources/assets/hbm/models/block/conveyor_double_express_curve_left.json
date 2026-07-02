@@ -1,0 +1,9 @@
+{
+  "parent": "block/block",
+  "loader": "forge:obj",
+  "model": "hbm:models/block/conveyor_double_express_curve_left.obj",
+  "flip-v": true,
+  "textures": {
+    "particle": "hbm:blocks/conveyor_side"
+  }
+}

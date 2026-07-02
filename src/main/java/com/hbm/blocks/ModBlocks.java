@@ -1165,6 +1165,7 @@ public class ModBlocks {
 	
 	public static final Block conveyor = new BlockConveyor(Material.IRON, "conveyor").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block conveyor_double = new BlockConveyorDouble(Material.IRON, "conveyor_double").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+
 	public static final Block conveyor_express = new BlockConveyorExpress(Material.IRON, "conveyor_express").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block conveyor_double_express = new BlockConveyorDoubleExpress(Material.IRON, "conveyor_double_express").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 

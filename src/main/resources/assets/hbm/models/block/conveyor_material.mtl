@@ -36,3 +36,8 @@ newmtl m_conveyor_double_curve_left
 map_Kd hbm:blocks/conveyor_double_curve_left
 newmtl m_conveyor_double_curve_right
 map_Kd hbm:blocks/conveyor_double_curve_right
+
+newmtl m_conveyor_double_express_curve_left
+map_Kd hbm:blocks/conveyor_double_express_curve_left
+newmtl m_conveyor_double_express_curve_right
+map_Kd hbm:blocks/conveyor_double_express_curve_right
