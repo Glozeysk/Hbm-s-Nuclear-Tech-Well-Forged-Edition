@@ -113,7 +113,7 @@ public class ConveyorVisualRenderer {
                 Vec3d wp = forwardPos;
                 float yaw = forwardYaw;
 
-                if (item.routeType != BeltItemData.ROUTE_FORWARD) {
+                if (item.routeType != BeltItemData.ROUTE_FORWARD && segment.laneCount == 1) {
                     ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
                     if (route != null && localProgress < route.getMergeProgress()) {
                         wp = route.samplePosition(blockPos, facing, localProgress);
@@ -121,7 +121,6 @@ public class ConveyorVisualRenderer {
                     }
                 }
 
-                // Получаем освещение в позиции предмета
                 int combinedLight = world.getCombinedLight(blockPos, 0);
                 int lightMapX = combinedLight % 65536;
                 int lightMapY = combinedLight / 65536;
@@ -133,7 +132,6 @@ public class ConveyorVisualRenderer {
                 GlStateManager.rotate(yaw, 0.0F, 1.0F, 0.0F);
                 GlStateManager.scale(0.4F, 0.4F, 0.4F);
 
-                // Устанавливаем освещение как у сущностей
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lightMapX, lightMapY);
 
                 if (isBlock) {

@@ -15,17 +15,21 @@ public class ClientBeltItem {
     public int routeType;
 
     private static final double CORRECTION = 0.2D;
-    private static final double HARD_SNAP = 0.5D;
 
     public ClientBeltItem(long uid, ItemStack stack, int lane, double progress, boolean stopped, int routeType) {
         this.uid = uid;
         this.stack = stack.copy();
         this.lane = lane;
         this.serverProgress = progress;
-        this.renderProgress = progress;
-        this.prevRenderProgress = progress;
         this.stopped = stopped;
         this.routeType = routeType;
+
+        if (routeType != BeltItemData.ROUTE_FORWARD) {
+            this.renderProgress = Math.floor(progress) + BeltLane.ITEM_LENGTH * 0.5D;
+        } else {
+            this.renderProgress = progress;
+        }
+        this.prevRenderProgress = this.renderProgress;
     }
 
     public void updateFromServer(double progress, boolean stopped, ItemStack stack, int lane, int routeType) {
@@ -34,12 +38,6 @@ public class ClientBeltItem {
         this.stopped = stopped;
         this.serverProgress = progress;
         this.routeType = routeType;
-
-        double err = Math.abs(progress - renderProgress);
-        if (err > HARD_SNAP) {
-            this.renderProgress = progress;
-            this.prevRenderProgress = progress;
-        }
     }
 
     public void tick(double speed, double limit) {
