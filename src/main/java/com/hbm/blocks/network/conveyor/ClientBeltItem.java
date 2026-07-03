@@ -14,15 +14,21 @@ public class ClientBeltItem {
     public boolean stopped;
     public int routeType;
 
-    private static final double CORRECTION = 0.2D;
+    public double serverLateral;
+    public double renderLateral;
+    public double prevRenderLateral;
 
-    public ClientBeltItem(long uid, ItemStack stack, int lane, double progress, boolean stopped, int routeType) {
+    private static final double CORRECTION = 0.2D;
+    private static final double LATERAL_CORRECTION = 0.15D;
+
+    public ClientBeltItem(long uid, ItemStack stack, int lane, double progress, boolean stopped, int routeType, double lateralOffset) {
         this.uid = uid;
         this.stack = stack.copy();
         this.lane = lane;
         this.serverProgress = progress;
         this.stopped = stopped;
         this.routeType = routeType;
+        this.serverLateral = lateralOffset;
 
         if (routeType != BeltItemData.ROUTE_FORWARD) {
             this.renderProgress = Math.floor(progress) + BeltLane.ITEM_LENGTH * 0.5D;
@@ -30,18 +36,23 @@ public class ClientBeltItem {
             this.renderProgress = progress;
         }
         this.prevRenderProgress = this.renderProgress;
+
+        this.renderLateral = lateralOffset;
+        this.prevRenderLateral = lateralOffset;
     }
 
-    public void updateFromServer(double progress, boolean stopped, ItemStack stack, int lane, int routeType) {
+    public void updateFromServer(double progress, boolean stopped, ItemStack stack, int lane, int routeType, double lateralOffset) {
         this.stack = stack.copy();
         this.lane = lane;
         this.stopped = stopped;
         this.serverProgress = progress;
         this.routeType = routeType;
+        this.serverLateral = lateralOffset;
     }
 
     public void tick(double speed, double limit) {
         this.prevRenderProgress = this.renderProgress;
+        this.prevRenderLateral = this.renderLateral;
         if (stopped) return;
 
         this.renderProgress += speed;
@@ -52,6 +63,11 @@ public class ClientBeltItem {
             renderProgress += err * CORRECTION;
         }
 
+        double lateralErr = serverLateral - renderLateral;
+        if (Math.abs(lateralErr) > 0.001D) {
+            renderLateral += lateralErr * LATERAL_CORRECTION;
+        }
+
         if (renderProgress > limit) {
             renderProgress = limit;
         }
@@ -59,5 +75,9 @@ public class ClientBeltItem {
 
     public double getInterpolatedProgress(float partialTicks) {
         return prevRenderProgress + (renderProgress - prevRenderProgress) * partialTicks;
+    }
+
+    public double getInterpolatedLateral(float partialTicks) {
+        return prevRenderLateral + (renderLateral - prevRenderLateral) * partialTicks;
     }
 }

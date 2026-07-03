@@ -55,11 +55,11 @@ public class ClientBeltManager {
         }
     }
 
-    public void applySync(long segmentId, List<BlockPos> blocks, EnumFacing facing, double speed, int laneCount, BeltItemData[] items) {
-        applySync(segmentId, blocks, facing, speed, laneCount, false, false, items);
+    public void applySync(long segmentId, List<BlockPos> blocks, EnumFacing facing, double speed, int laneCount, double[] laneOffsets, BeltItemData[] items) {
+        applySync(segmentId, blocks, facing, speed, laneCount, false, false, laneOffsets, items);
     }
 
-    public void applySync(long segmentId, List<BlockPos> blocks, EnumFacing facing, double speed, int laneCount, boolean isVertical, boolean isUpward, BeltItemData[] items) {
+    public void applySync(long segmentId, List<BlockPos> blocks, EnumFacing facing, double speed, int laneCount, boolean isVertical, boolean isUpward, double[] laneOffsets, BeltItemData[] items) {
         int actualLaneCount = Math.max(1, laneCount);
 
         ClientBeltSegment segment = segmentsById.get(segmentId);
@@ -69,7 +69,7 @@ public class ClientBeltManager {
                 || segment.isUpward != isUpward
                 || segment.direction != facing
                 || !sameBlocks(segment.blocks, blocks)) {
-            segment = new ClientBeltSegment(segmentId, blocks, facing, speed, actualLaneCount, isVertical, isUpward);
+            segment = new ClientBeltSegment(segmentId, blocks, facing, speed, actualLaneCount, isVertical, isUpward, laneOffsets);
             putSegment(segment);
         }
 

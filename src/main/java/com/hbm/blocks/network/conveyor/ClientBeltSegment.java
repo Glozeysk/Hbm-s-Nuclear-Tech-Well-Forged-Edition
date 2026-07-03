@@ -17,17 +17,18 @@ public class ClientBeltSegment {
     public final int laneCount;
     public final boolean isVertical;
     public final boolean isUpward;
+    public final double[] laneOffsets;
 
     private final Map<Long, ClientBeltItem> itemMap = new HashMap<>();
     private final List<ClientBeltItem>[] lanes;
 
     @SuppressWarnings("unchecked")
-    public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount) {
-        this(segmentId, blocks, direction, speed, laneCount, false, false);
+    public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount, double[] laneOffsets) {
+        this(segmentId, blocks, direction, speed, laneCount, false, false, laneOffsets);
     }
 
     @SuppressWarnings("unchecked")
-    public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount, boolean isVertical, boolean isUpward) {
+    public ClientBeltSegment(long segmentId, List<BlockPos> blocks, EnumFacing direction, double speed, int laneCount, boolean isVertical, boolean isUpward, double[] laneOffsets) {
         this.segmentId = segmentId;
         this.blocks = new ArrayList<>(blocks);
         this.direction = direction;
@@ -35,6 +36,7 @@ public class ClientBeltSegment {
         this.laneCount = Math.max(1, laneCount);
         this.isVertical = isVertical;
         this.isUpward = isUpward;
+        this.laneOffsets = laneOffsets != null ? laneOffsets : new double[]{0.0D};
         this.lanes = new List[this.laneCount];
         for (int i = 0; i < this.laneCount; i++) {
             lanes[i] = new ArrayList<>();
@@ -78,6 +80,8 @@ public class ClientBeltSegment {
                 newLane = 0;
             }
 
+            double lateralOffset = (newLane >= 0 && newLane < laneOffsets.length) ? laneOffsets[newLane] : 0.0D;
+
             ClientBeltItem existing = itemMap.get(si.getUniqueId());
             if (existing != null) {
                 int oldLane = existing.lane;
@@ -86,7 +90,8 @@ public class ClientBeltSegment {
                         si.isStopped(),
                         si.getStack(),
                         newLane,
-                        si.getRouteType()
+                        si.getRouteType(),
+                        lateralOffset
                 );
                 if (oldLane != newLane) {
                     if (oldLane >= 0 && oldLane < laneCount) {
@@ -103,7 +108,8 @@ public class ClientBeltSegment {
                         newLane,
                         si.getProgress(),
                         si.isStopped(),
-                        si.getRouteType()
+                        si.getRouteType(),
+                        lateralOffset
                 );
                 itemMap.put(si.getUniqueId(), newItem);
                 if (newLane >= 0 && newLane < laneCount) {

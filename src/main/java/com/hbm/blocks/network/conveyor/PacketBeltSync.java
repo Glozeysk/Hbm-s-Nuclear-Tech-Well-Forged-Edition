@@ -1,5 +1,6 @@
 package com.hbm.blocks.network.conveyor;
 
+import com.hbm.blocks.network.BlockConveyor;
 import com.hbm.packet.threading.ThreadedPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ public class PacketBeltSync extends ThreadedPacket {
     private int facingIndex;
     private float speed;
     private int laneCount;
+    private double[] laneOffsets;
     private BeltItemData[] items;
 
     public PacketBeltSync() {}
@@ -32,6 +34,20 @@ public class PacketBeltSync extends ThreadedPacket {
         this.facingIndex = segment.getDirection().getIndex();
         this.speed = (float) segment.getSpeed();
         this.laneCount = segment.getLaneCount();
+
+        if (!blockList.isEmpty()) {
+            net.minecraft.world.World world = net.minecraftforge.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
+            if (world != null) {
+                net.minecraft.block.Block block = world.getBlockState(blockList.get(0)).getBlock();
+                if (block instanceof BlockConveyor) {
+                    this.laneOffsets = ((BlockConveyor) block).getLaneOffsets();
+                }
+            }
+        }
+        if (this.laneOffsets == null) {
+            this.laneOffsets = new double[]{0.0D};
+        }
+
         List<BeltItemData> allItems = segment.getAllItems();
         this.items = allItems.toArray(new BeltItemData[0]);
     }
@@ -46,6 +62,10 @@ public class PacketBeltSync extends ThreadedPacket {
         buf.writeByte(facingIndex);
         buf.writeFloat(speed);
         buf.writeByte(laneCount);
+        buf.writeByte(laneOffsets.length);
+        for (double offset : laneOffsets) {
+            buf.writeFloat((float) offset);
+        }
         buf.writeShort(items.length);
         for (BeltItemData item : items) {
             BeltBufCodec.writeBeltItem(buf, item);
@@ -63,6 +83,11 @@ public class PacketBeltSync extends ThreadedPacket {
         facingIndex = buf.readByte();
         speed = buf.readFloat();
         laneCount = buf.readByte();
+        int offsetCount = buf.readByte() & 0xFF;
+        laneOffsets = new double[offsetCount];
+        for (int i = 0; i < offsetCount; i++) {
+            laneOffsets[i] = buf.readFloat();
+        }
         int itemCount = buf.readShort() & 0xFFFF;
         items = new BeltItemData[itemCount];
         for (int i = 0; i < itemCount; i++) {
@@ -88,6 +113,7 @@ public class PacketBeltSync extends ThreadedPacket {
                         facing,
                         message.speed,
                         message.laneCount,
+                        message.laneOffsets,
                         message.items
                 );
             });

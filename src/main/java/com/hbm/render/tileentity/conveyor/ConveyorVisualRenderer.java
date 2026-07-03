@@ -85,6 +85,7 @@ public class ConveyorVisualRenderer {
 
             List<BlockPos> blocks = segment.blocks;
             EnumFacing facing = segment.direction;
+            boolean isDouble = segment.laneCount > 1;
 
             for (ClientBeltItem item : items) {
                 if (item.stack.isEmpty()) continue;
@@ -107,17 +108,39 @@ public class ConveyorVisualRenderer {
                 int lane = item.lane;
                 if (lane < 0 || lane >= offsets.length) lane = 0;
 
-                Vec3d forwardPos = conveyor.getWorldPosition(blockPos, facing, offsets[lane], localProgress);
+                double interpLateral = item.getInterpolatedLateral(pt);
+                Vec3d wp = conveyor.getWorldPosition(blockPos, facing, interpLateral, localProgress);
                 float forwardYaw = (float) Math.toDegrees(Math.atan2(facing.getXOffset(), facing.getZOffset()));
-
-                Vec3d wp = forwardPos;
                 float yaw = forwardYaw;
 
-                if (item.routeType != BeltItemData.ROUTE_FORWARD && segment.laneCount == 1) {
-                    ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
-                    if (route != null && localProgress < route.getMergeProgress()) {
-                        wp = route.samplePosition(blockPos, facing, localProgress);
-                        yaw = route.sampleYaw(blockPos, facing, localProgress, forwardYaw);
+                if (item.routeType != BeltItemData.ROUTE_FORWARD) {
+                    if (isDouble) {
+                        boolean isTurning = false;
+                        if (blockIndex == 0) {
+                            BlockPos behindPos = blockPos.offset(facing.getOpposite());
+                            Block behindBlock = world.getBlockState(behindPos).getBlock();
+                            if (behindBlock instanceof BlockConveyor) {
+                                BlockConveyor behindConveyor = (BlockConveyor) behindBlock;
+                                EnumFacing behindFacing = behindConveyor.getLaneFacing(world, behindPos);
+                                isTurning = behindFacing != facing;
+                            } else {
+                                isTurning = true;
+                            }
+                        }
+
+                        if (isTurning && localProgress < 0.625D) {
+                            ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
+                            if (route != null) {
+                                wp = route.samplePosition(blockPos, facing, localProgress);
+                                yaw = route.sampleYaw(blockPos, facing, localProgress, forwardYaw);
+                            }
+                        }
+                    } else {
+                        ConveyorRoute route = ConveyorRoute.getByType(item.routeType);
+                        if (route != null && localProgress < route.getMergeProgress()) {
+                            wp = route.samplePosition(blockPos, facing, localProgress);
+                            yaw = route.sampleYaw(blockPos, facing, localProgress, forwardYaw);
+                        }
                     }
                 }
 
