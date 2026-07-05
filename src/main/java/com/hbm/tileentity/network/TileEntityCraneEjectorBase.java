@@ -122,6 +122,7 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
                 int extracted = extractAndInsertToConveyor(segment, lane, slotProgress, BeltItemData.ROUTE_FORWARD);
                 if(extracted > 0) {
                     segment.markDirty();
+                    return;
                 }
             }
         }
@@ -134,12 +135,13 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
         EnumFacing left = conveyorFacing.rotateYCCW();
         EnumFacing right = conveyorFacing.rotateY();
 
-        boolean fromLeft = (outputSide == left);
-        boolean fromRight = (outputSide == right);
+        EnumFacing fromConveyorToEjector = outputSide.getOpposite();
+        boolean fromLeft = (fromConveyorToEjector == left);
+        boolean fromRight = (fromConveyorToEjector == right);
 
         if(!fromLeft && !fromRight) return;
 
-        int routeType = fromLeft ? BeltItemData.ROUTE_LEFT_ENTRY : BeltItemData.ROUTE_RIGHT_ENTRY;
+        int routeType = fromLeft ? BeltItemData.ROUTE_RIGHT_ENTRY : BeltItemData.ROUTE_LEFT_ENTRY;
 
         int targetLane = findBestLaneForSideEntry(conveyor, fromLeft);
 
@@ -158,21 +160,11 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
         double[] offsets = conveyor.getLaneOffsets();
         if(offsets.length <= 1) return 0;
 
-        double targetX = fromLeft ? 14.0D : 2.0D;
-
-        double bestDist = Double.MAX_VALUE;
-        int bestLane = 0;
-
-        for(int i = 0; i < offsets.length; i++) {
-            double laneX = 8.0D + offsets[i] * 16.0D;
-            double dist = Math.abs(laneX - targetX);
-            if(dist < bestDist) {
-                bestDist = dist;
-                bestLane = i;
-            }
+        if(fromLeft) {
+            return 0;
+        } else {
+            return offsets.length - 1;
         }
-
-        return bestLane;
     }
 
     private int extractAndInsertToConveyor(BeltSegment segment, int lane, double slotProgress, int routeType) {

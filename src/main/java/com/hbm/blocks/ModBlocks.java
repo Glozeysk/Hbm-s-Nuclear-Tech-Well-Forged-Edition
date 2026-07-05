@@ -1184,12 +1184,13 @@ public class ModBlocks {
 	public static final Block crane_inserter_alt_3 = new CraneInserterAlt3(Material.IRON, "crane_inserter_alt_3").setHardness(3.0F).setResistance(2.0F);
 	public static final Block crane_inserter_alt_4 = new CraneInserterAlt4(Material.IRON, "crane_inserter_alt_4").setHardness(3.0F).setResistance(2.0F);
 
-	public static final Block crane_splitter = new CraneSplitter(Material.IRON, "crane_splitter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_boxer = new CraneBoxer(Material.IRON, "crane_boxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_unboxer = new CraneUnboxer(Material.IRON, "crane_unboxer").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	public static final Block crane_router = new CraneRouter(Material.IRON, "crane_router").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block crane_sorter = new CraneSorter(Material.IRON, "crane_sorter").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block crane_grabber = new CraneGrabber(Material.IRON, "crane_grabber").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
-	
+
+	public static final Block crane_router = new BlockCraneRouter(Material.IRON, "crane_router").setHardness(3.0F).setResistance(2.0F).setCreativeTab(MainRegistry.machineTab);
+
 	//The usual machines
 	public static final Block machine_nuke_furnace_off = new MachineNukeFurnace(false, "machine_nuke_furnace_off", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_nuke_furnace_on = new MachineNukeFurnace(true, "machine_nuke_furnace_on", true).setHardness(5.0F).setLightLevel(1.0F).setResistance(10.0F);

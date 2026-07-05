@@ -8,8 +8,10 @@ import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
 import com.hbm.blocks.network.conveyor.BeltSegmentManager;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.container.ContainerCraneRouter;
-import com.hbm.inventory.gui.GUICraneRouter;
+import com.hbm.inventory.container.ContainerCraneSorter;
+import com.hbm.inventory.gui.GUICraneSorter;
+import com.hbm.lib.Library;
+import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -26,6 +28,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -33,67 +36,35 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, ITickable, IBufPacketReceiver, IConveyorInput, IConveyorOutput {
-    public static final int MODE_NONE = 0;
-    public static final int MODE_INPUT = 1;
-    public static final int MODE_OUTPUT = 2;
-    private static final int MAX_LANES = 2;
-
-    private static final ThreadLocal<Set<BlockPos>> INSERTING_VISITED = ThreadLocal.withInitial(HashSet::new);
-    private static final ThreadLocal<Set<BlockPos>> CAN_ACCEPT_VISITED = ThreadLocal.withInitial(HashSet::new);
-
+public class TileEntityCraneSorter extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, ITickable, IBufPacketReceiver, IConveyorInput, IConveyorOutput {
+    public ModulePatternMatcher[] patterns = new ModulePatternMatcher[6];
     public int[] modes = new int[6];
-    private boolean[] manualOverride = new boolean[6];
-    private int[] currentOutputDir = new int[MAX_LANES];
+    public static final int MODE_NONE = 0;
+    public static final int MODE_WHITELIST = 1;
+    public static final int MODE_BLACKLIST = 2;
+    public static final int MODE_WILDCARD = 3;
 
-    public TileEntityCraneRouter() {
-        super(0);
+    private boolean[] blockedDirections = new boolean[6];
+    private boolean[] manualOverride = new boolean[6];
+    private int[] currentOutputIndex = new int[2];
+
+    public TileEntityCraneSorter() {
+        super(30);
+        for(int i = 0; i < patterns.length; i++) {
+            patterns[i] = new ModulePatternMatcher(5);
+        }
     }
 
     @Override
     public String getName() {
-        return "container.craneRouter";
+        return "container.craneSorter";
     }
 
     @Override
     public int tryInsertDirect(ItemStack stack) {
         return tryInsertDirect(stack, 0);
-    }
-
-    @Override
-    public int tryInsertDirect(ItemStack stack, int sourceLane) {
-        if (stack.isEmpty()) return 0;
-        if (sourceLane < 0 || sourceLane >= MAX_LANES) sourceLane = 0;
-
-        Set<BlockPos> visited = INSERTING_VISITED.get();
-        if (visited.contains(pos)) {
-            return 0;
-        }
-        visited.add(pos);
-
-        try {
-            List<EnumFacing> outputDirs = getOutputDirections();
-            if (outputDirs.isEmpty()) return 0;
-
-            for (int attempt = 0; attempt < outputDirs.size(); attempt++) {
-                int idx = (currentOutputDir[sourceLane] + attempt) % outputDirs.size();
-                EnumFacing dir = outputDirs.get(idx);
-
-                int accepted = tryInsertToDirection(dir, stack, sourceLane);
-                if (accepted > 0) {
-                    currentOutputDir[sourceLane] = (idx + 1) % outputDirs.size();
-                    return accepted;
-                }
-            }
-
-            return 0;
-        } finally {
-            visited.remove(pos);
-        }
     }
 
     private boolean isInputDirection(EnumFacing dir) {
@@ -109,16 +80,60 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         return false;
     }
 
-    private int tryInsertToDirection(EnumFacing dir, ItemStack stack, int sourceLane) {
-        if (isInputDirection(dir)) {
+    @Override
+    public int tryInsertDirect(ItemStack stack, int sourceLane) {
+        if (stack.isEmpty()) return 0;
+        if (sourceLane < 0 || sourceLane >= 2) sourceLane = 0;
+
+        List<EnumFacing> validDirs = new ArrayList<>();
+
+        for(int i = 0; i < 6; i++) {
+            if (modes[i] == MODE_NONE) continue;
+
+            EnumFacing dir = getDirectionFromIndex(i);
+            if (dir == null) continue;
+
+            if (isInputDirection(dir)) continue;
+
+            ModulePatternMatcher matcher = patterns[i];
+            int mode = modes[i];
+
+            boolean matchesFilter = false;
+
+            if(mode == MODE_WILDCARD) {
+                matchesFilter = true;
+            } else {
+                for(int slot = 0; slot < 5; slot++) {
+                    ItemStack filter = inventory.getStackInSlot(i * 5 + slot);
+                    if(filter.isEmpty()) continue;
+                    if(matcher.isValidForFilter(filter, slot, stack)) {
+                        matchesFilter = true;
+                        break;
+                    }
+                }
+            }
+
+            if((mode == MODE_WHITELIST && matchesFilter) || (mode == MODE_BLACKLIST && !matchesFilter) || mode == MODE_WILDCARD) {
+                validDirs.add(dir);
+            }
+        }
+
+        if(validDirs.isEmpty()) {
             return 0;
         }
+
+        int idx = currentOutputIndex[sourceLane] % validDirs.size();
+        EnumFacing dir = validDirs.get(idx);
+        currentOutputIndex[sourceLane]++;
 
         TileEntity targetTe = world.getTileEntity(pos.offset(dir));
         Block targetBlock = world.getBlockState(pos.offset(dir)).getBlock();
 
         if (targetTe instanceof IConveyorInput) {
-            return ((IConveyorInput) targetTe).tryInsertDirect(stack.copy(), sourceLane);
+            int accepted = ((IConveyorInput) targetTe).tryInsertDirect(stack.copy(), sourceLane);
+            if (accepted > 0) {
+                return accepted;
+            }
         } else if (targetBlock instanceof BlockConveyor) {
             BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos.offset(dir));
             if (segment != null) {
@@ -126,25 +141,24 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
                 if (blockIndex >= 0) {
                     BlockConveyor conveyor = (BlockConveyor) targetBlock;
                     EnumFacing conveyorFacing = conveyor.getLaneFacing(world, pos.offset(dir));
-                    EnumFacing fromConveyorToRouter = dir.getOpposite();
+                    EnumFacing fromConveyorToSorter = dir.getOpposite();
 
-                    int targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
-                    int targetLaneForInsert = determineTargetLane(segment, fromConveyorToRouter, conveyorFacing, targetLane);
+                    int targetLane = determineTargetLane(segment, fromConveyorToSorter, conveyorFacing, sourceLane);
 
                     int routeType = BeltItemData.ROUTE_FORWARD;
                     EnumFacing left = conveyorFacing.rotateYCCW();
                     EnumFacing right = conveyorFacing.rotateY();
 
-                    if (fromConveyorToRouter == left) {
+                    if (fromConveyorToSorter == left) {
                         routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
-                    } else if (fromConveyorToRouter == right) {
+                    } else if (fromConveyorToSorter == right) {
                         routeType = BeltItemData.ROUTE_LEFT_ENTRY;
                     }
 
-                    BeltLane beltLane = segment.getLane(targetLaneForInsert);
+                    BeltLane beltLane = segment.getLane(targetLane);
                     double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
                     if (beltLane.isSlotFree(slotProgress)) {
-                        BeltItemData item = new BeltItemData(stack.copy(), targetLaneForInsert, slotProgress);
+                        BeltItemData item = new BeltItemData(stack.copy(), targetLane, slotProgress);
                         item.setRouteType(routeType);
 
                         if (segment.insertItem(item)) {
@@ -154,20 +168,22 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
                     }
                 }
             }
-            return 0;
         } else if (targetTe != null && targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite())) {
             IItemHandler handler = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite());
             if (handler != null) {
                 ItemStack toInsert = stack.copy();
                 ItemStack rest = insertIntoHandler(handler, toInsert);
-                return stack.getCount() - rest.getCount();
+                int accepted = stack.getCount() - rest.getCount();
+                if (accepted > 0) {
+                    return accepted;
+                }
             }
         }
 
         return 0;
     }
 
-    private boolean canAcceptFromDirection(EnumFacing dir) {
+    private boolean canSendToDirection(EnumFacing dir, ItemStack stack) {
         if (isInputDirection(dir)) {
             return false;
         }
@@ -197,22 +213,59 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
             if (handler != null) {
                 for (int i = 0; i < handler.getSlots(); i++) {
                     ItemStack slotStack = handler.getStackInSlot(i);
-                    if (slotStack.isEmpty() || slotStack.getCount() < slotStack.getMaxStackSize()) {
+                    if (slotStack.isEmpty() || (Library.areItemStacksCompatible(stack, slotStack, false) && slotStack.getCount() < slotStack.getMaxStackSize())) {
                         return true;
                     }
                 }
             }
         }
-
         return false;
     }
 
-    private ItemStack insertIntoHandler(IItemHandler handler, ItemStack stack) {
-        ItemStack remaining = stack.copy();
-        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
-            remaining = handler.insertItem(i, remaining, false);
+    @Override
+    public boolean canAcceptAny() {
+        for(int i = 0; i < 6; i++) {
+            if (modes[i] == MODE_NONE) continue;
+
+            EnumFacing dir = getDirectionFromIndex(i);
+            if (dir == null) continue;
+
+            if (isInputDirection(dir)) continue;
+
+            TileEntity targetTe = world.getTileEntity(pos.offset(dir));
+            Block targetBlock = world.getBlockState(pos.offset(dir)).getBlock();
+
+            if (targetTe instanceof IConveyorInput) {
+                if (((IConveyorInput) targetTe).canAcceptAny()) {
+                    return true;
+                }
+            } else if (targetBlock instanceof BlockConveyor) {
+                BeltSegment segment = BeltSegmentManager.getOrCreateSegment(world, pos.offset(dir));
+                if (segment != null) {
+                    int blockIndex = segment.getBlockIndex(pos.offset(dir));
+                    if (blockIndex >= 0) {
+                        for (int lane = 0; lane < segment.getLaneCount(); lane++) {
+                            BeltLane beltLane = segment.getLane(lane);
+                            double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+                            if (beltLane.isSlotFree(slotProgress)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } else if (targetTe != null && targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite())) {
+                IItemHandler handler = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite());
+                if (handler != null) {
+                    for (int j = 0; j < handler.getSlots(); j++) {
+                        ItemStack slotStack = handler.getStackInSlot(j);
+                        if (slotStack.isEmpty() || slotStack.getCount() < slotStack.getMaxStackSize()) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
-        return remaining;
+        return false;
     }
 
     private int determineTargetLane(BeltSegment segment, EnumFacing fromDirection, EnumFacing conveyorFacing, int sourceLane) {
@@ -231,57 +284,21 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
     }
 
     @Override
-    public boolean canAcceptAny() {
-        Set<BlockPos> visited = CAN_ACCEPT_VISITED.get();
-        if (visited.contains(pos)) {
-            return false;
-        }
-        visited.add(pos);
-
-        try {
-            List<EnumFacing> outputDirs = getOutputDirections();
-            if (outputDirs.isEmpty()) return false;
-
-            for (EnumFacing dir : outputDirs) {
-                if (canAcceptFromDirection(dir)) {
-                    return true;
-                }
-            }
-            return false;
-        } finally {
-            visited.remove(pos);
-        }
-    }
-
-    @Override
     public boolean canExtractFrom(EnumFacing side) {
-        int index = getIndexFromDirection(side);
-        return index >= 0 && modes[index] == MODE_INPUT;
+        return true;
     }
 
     @Override
     public ItemStack extractItem(EnumFacing side, int maxAmount) {
-        int index = getIndexFromDirection(side);
-        if (index < 0 || modes[index] != MODE_INPUT) return ItemStack.EMPTY;
-
-        TileEntity sourceTe = world.getTileEntity(pos.offset(side));
-        if (sourceTe instanceof IConveyorOutput) {
-            return ((IConveyorOutput) sourceTe).extractItem(side.getOpposite(), maxAmount);
-        }
         return ItemStack.EMPTY;
     }
 
-    private List<EnumFacing> getOutputDirections() {
-        List<EnumFacing> dirs = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            if (modes[i] == MODE_OUTPUT) {
-                EnumFacing dir = getDirectionFromIndex(i);
-                if (dir != null) {
-                    dirs.add(dir);
-                }
-            }
+    private ItemStack insertIntoHandler(IItemHandler handler, ItemStack stack) {
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
+            remaining = handler.insertItem(i, remaining, false);
         }
-        return dirs;
+        return remaining;
     }
 
     private EnumFacing getDirectionFromIndex(int index) {
@@ -303,15 +320,25 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         return -1;
     }
 
+    public void resetBlockedDirections() {
+        for (int i = 0; i < blockedDirections.length; i++) {
+            blockedDirections[i] = false;
+        }
+    }
+
     @Override
     public void update() {
-        if (!world.isRemote) {
+        if(!world.isRemote) {
             boolean changed = false;
+
+            if (world.getTotalWorldTime() % 20 == 0) {
+                resetBlockedDirections();
+            }
+
             for (int i = 0; i < 6; i++) {
                 if (modes[i] == MODE_NONE && !manualOverride[i]) {
                     EnumFacing dir = getDirectionFromIndex(i);
-
-                    if (dir == EnumFacing.DOWN) {
+                    if (dir == EnumFacing.UP || dir == EnumFacing.DOWN) {
                         continue;
                     }
 
@@ -322,15 +349,9 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
                         BlockConveyor conv = (BlockConveyor) block;
                         EnumFacing convFacing = conv.getLaneFacing(world, neighbor);
                         if (convFacing == dir.getOpposite()) {
-                            modes[i] = MODE_INPUT;
-                            changed = true;
-                        } else {
-                            modes[i] = MODE_OUTPUT;
+                            modes[i] = MODE_WHITELIST;
                             changed = true;
                         }
-                    } else if (world.getTileEntity(neighbor) != null) {
-                        modes[i] = MODE_OUTPUT;
-                        changed = true;
                     }
                 }
             }
@@ -344,30 +365,43 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
 
     @Override
     public void serialize(ByteBuf buf) {
-        for (int i = 0; i < 6; i++) {
+        for(int i = 0; i < patterns.length; i++) {
+            NBTTagCompound compound = new NBTTagCompound();
+            patterns[i].writeToNBT(compound);
+            ByteBufUtils.writeTag(buf, compound != null ? compound : new NBTTagCompound());
+        }
+        for(int i = 0; i < 6; i++) {
             buf.writeInt(i < modes.length ? modes[i] : 0);
         }
         for (int i = 0; i < 6; i++) {
             buf.writeBoolean(manualOverride[i]);
         }
-        for (int i = 0; i < MAX_LANES; i++) {
-            buf.writeInt(currentOutputDir[i]);
+        for (int i = 0; i < 2; i++) {
+            buf.writeInt(currentOutputIndex[i]);
         }
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
+        for(int i = 0; i < patterns.length; i++) {
+            NBTTagCompound compound = ByteBufUtils.readTag(buf);
+            if(compound != null) {
+                patterns[i].readFromNBT(compound);
+            } else {
+                patterns[i] = new ModulePatternMatcher(5);
+            }
+        }
         this.modes = new int[6];
-        for (int i = 0; i < 6; i++) {
+        for(int i = 0; i < 6; i++) {
             this.modes[i] = buf.readInt();
         }
         this.manualOverride = new boolean[6];
         for (int i = 0; i < 6; i++) {
             this.manualOverride[i] = buf.readBoolean();
         }
-        this.currentOutputDir = new int[MAX_LANES];
-        for (int i = 0; i < MAX_LANES; i++) {
-            this.currentOutputDir[i] = buf.readInt();
+        this.currentOutputIndex = new int[2];
+        for (int i = 0; i < 2; i++) {
+            this.currentOutputIndex[i] = buf.readInt();
         }
     }
 
@@ -375,9 +409,18 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
 
-        if (nbt.hasKey("modes")) {
+        for(int i = 0; i < patterns.length; i++) {
+            if(nbt.hasKey("pattern" + i)) {
+                NBTTagCompound compound = nbt.getCompoundTag("pattern" + i);
+                patterns[i].readFromNBT(compound);
+            } else {
+                patterns[i] = new ModulePatternMatcher(5);
+            }
+        }
+
+        if(nbt.hasKey("modes")) {
             int[] loaded = nbt.getIntArray("modes");
-            if (loaded != null && loaded.length == 6) {
+            if(loaded != null && loaded.length == 6) {
                 this.modes = loaded;
             } else {
                 this.modes = new int[6];
@@ -391,34 +434,52 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
             this.manualOverride[i] = nbt.getBoolean("manualOverride_" + i);
         }
 
-        this.currentOutputDir = new int[MAX_LANES];
-        for (int i = 0; i < MAX_LANES; i++) {
-            this.currentOutputDir[i] = nbt.getInteger("outputDir_" + i);
+        this.currentOutputIndex = new int[2];
+        for (int i = 0; i < 2; i++) {
+            this.currentOutputIndex[i] = nbt.getInteger("outputIndex_" + i);
         }
-    }
-
-    @Override
-    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        super.writeToNBT(nbt);
-        nbt.setIntArray("modes", this.modes);
-        for (int i = 0; i < 6; i++) {
-            nbt.setBoolean("manualOverride_" + i, this.manualOverride[i]);
-        }
-        for (int i = 0; i < MAX_LANES; i++) {
-            nbt.setInteger("outputDir_" + i, this.currentOutputDir[i]);
-        }
-        return nbt;
     }
 
     @Override
     public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new ContainerCraneRouter(player.inventory, this);
+        return new ContainerCraneSorter(player.inventory, this);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new GUICraneRouter(player.inventory, this);
+        return new GUICraneSorter(player.inventory, this);
+    }
+
+    public void nextMode(int index) {
+        int matcher = index / 5;
+        int mIndex = index % 5;
+        this.patterns[matcher].nextMode(world, inventory.getStackInSlot(index), mIndex);
+    }
+
+    public void initPattern(ItemStack stack, int index) {
+        int matcher = index / 5;
+        int mIndex = index % 5;
+        this.patterns[matcher].initPatternSmart(world, stack, mIndex);
+    }
+
+    @Override
+    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+
+        for(int i = 0; i < patterns.length; i++) {
+            NBTTagCompound compound = new NBTTagCompound();
+            patterns[i].writeToNBT(compound);
+            nbt.setTag("pattern" + i, compound);
+        }
+        nbt.setIntArray("modes", this.modes);
+        for (int i = 0; i < 6; i++) {
+            nbt.setBoolean("manualOverride_" + i, this.manualOverride[i]);
+        }
+        for (int i = 0; i < 2; i++) {
+            nbt.setInteger("outputIndex_" + i, this.currentOutputIndex[i]);
+        }
+        return nbt;
     }
 
     @Override
@@ -434,14 +495,11 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         int i = data.getInteger("toggle");
         if (i < 0 || i >= 6) return;
 
-        if (modes[i] == MODE_INPUT) return;
-
         manualOverride[i] = true;
 
-        if (modes[i] == MODE_NONE) {
-            modes[i] = MODE_OUTPUT;
-        } else {
-            modes[i] = MODE_NONE;
+        modes[i]++;
+        if(modes[i] > 3) {
+            modes[i] = 0;
         }
 
         markDirty();
@@ -449,6 +507,6 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return false;
+        return i < 30;
     }
 }

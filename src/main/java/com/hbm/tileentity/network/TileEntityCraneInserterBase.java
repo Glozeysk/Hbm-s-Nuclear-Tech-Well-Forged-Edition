@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import api.hbm.block.IConveyorInput;
 import com.hbm.inventory.container.ContainerCraneInserterCommon;
 import com.hbm.inventory.gui.GUICraneInserterCommon;
 import com.hbm.lib.Library;
@@ -17,13 +18,18 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase {
+public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase implements IConveyorInput {
 
     public TileEntityCraneInserterBase() {
         super(0);
     }
 
+    @Override
     public int tryInsertDirect(ItemStack stack) {
+        return tryInsertDirect(stack, 0);
+    }
+
+    public int tryInsertDirect(ItemStack stack, int sourceLane) {
         if (stack.isEmpty()) return 0;
 
         EnumFacing outputSide = getOutputSide();
@@ -46,10 +52,7 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase {
         return insertIntoTarget(targetCap, stack);
     }
 
-    public boolean tryFillTeDirect(ItemStack stack) {
-        return tryInsertDirect(stack) > 0;
-    }
-
+    @Override
     public boolean canAcceptAny() {
         EnumFacing outputSide = getOutputSide();
         TileEntity targetTe = world.getTileEntity(pos.offset(outputSide));
@@ -76,6 +79,10 @@ public abstract class TileEntityCraneInserterBase extends TileEntityCraneBase {
         }
 
         return false;
+    }
+
+    public boolean tryFillTeDirect(ItemStack stack) {
+        return tryInsertDirect(stack) > 0;
     }
 
     private int insertIntoTarget(IItemHandler target, ItemStack stack) {

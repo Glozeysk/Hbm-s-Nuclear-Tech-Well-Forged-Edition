@@ -531,7 +531,7 @@ container.craneGrabber=Конвейерный сборщик
 container.craneInserter=Конвейерный вставщик
 container.craneInserterAlt=Конвейерный вставщик
 container.craneInserterAlt2=Конвейерный вставщик
-container.craneRouter=Конвейерный сортировщик
+container.craneSorter=Конвейерный сортировщик
 container.craneUnboxer=Конвейерный распаковщик
 container.crateDesh=Деш ящик
 container.crateIron=Железный ящик
@@ -4303,7 +4303,8 @@ tile.crane_inserter_alt.name=Опускающий конвейерный вст�
 tile.crane_inserter_alt_2.name=Поднимающий конвейерный вставщик
 tile.crane_inserter_alt_3.name=Боковой конвейерный вставщик (Влево)
 tile.crane_inserter_alt_4.name=Боковой конвейерный вставщик (Вправо)
-tile.crane_router.name=Конвейерный сортировщик
+tile.crane_sorter.name=Конвейерный сортировщик
+tile.crane_router.name=Конвейерный маршрутизатор
 tile.crane_splitter.name=Конвейерный разделитель
 tile.crane_unboxer.name=Конвейерный распаковщик
 tile.crashed_bomb.name=Неразорвавшаяся бомба
@@ -5267,4 +5268,6 @@ hbm.button.void_contents=Очистить жидкостный буфер
 tool.ability.title=Умения:
 item.rod_quad_euphemium.desc=С небольшим шансом можно получить при обеднении счетверённого шрабидиевого топливного стержня
 desc.crane_ejector=ПКМ отвёрткой для смены направления!
-desc.crane_inserter=ПКМ отвёрткой для смены направления!
+
+desc.screwdriver1=Right clicking fluid pipes will toggle extraction mode
+item.balefire_kit.name=Balefire Bomb Kitdesc.crane_inserter=ПКМ отвёрткой для смены направления!

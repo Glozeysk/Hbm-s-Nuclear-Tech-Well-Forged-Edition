@@ -1,5 +1,6 @@
 package com.hbm.blocks.network.conveyor;
 
+import api.hbm.block.IConveyorInput;
 import com.hbm.blocks.network.BlockConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -7,6 +8,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -147,6 +149,7 @@ public class BeltSegment {
         BlockPos lastBlock = blocks.get(blocks.size() - 1);
         BlockPos nextPos = lastBlock.offset(direction);
         Block nextBlock = world.getBlockState(nextPos).getBlock();
+        TileEntity nextTe = world.getTileEntity(nextPos);
 
         if (nextBlock instanceof BlockConveyor) {
             BeltSegment nextSegment = BeltSegmentManager.getSegmentAt(world, nextPos);
@@ -166,12 +169,8 @@ public class BeltSegment {
             }
         }
 
-        if (nextBlock instanceof com.hbm.blocks.network.BlockCraneInserterBase) {
-            net.minecraft.tileentity.TileEntity te = world.getTileEntity(nextPos);
-            boolean canAccept = false;
-            if (te instanceof com.hbm.tileentity.network.TileEntityCraneInserterBase) {
-                canAccept = ((com.hbm.tileentity.network.TileEntityCraneInserterBase) te).canAcceptAny();
-            }
+        if (nextTe instanceof IConveyorInput) {
+            boolean canAccept = ((IConveyorInput) nextTe).canAcceptAny();
             for (int l = 0; l < laneCount; l++) {
                 exitBlocked[l] = !canAccept;
             }
@@ -190,6 +189,7 @@ public class BeltSegment {
         BlockPos lastBlock = blocks.get(blocks.size() - 1);
         BlockPos nextPos = lastBlock.offset(direction);
         Block nextBlock = world.getBlockState(nextPos).getBlock();
+        TileEntity nextTe = world.getTileEntity(nextPos);
 
         if (nextBlock instanceof BlockConveyor) {
             BlockConveyor nextConveyor = (BlockConveyor) nextBlock;
@@ -246,20 +246,17 @@ public class BeltSegment {
             return false;
         }
 
-        if (nextBlock instanceof com.hbm.blocks.network.BlockCraneInserterBase) {
-            net.minecraft.tileentity.TileEntity te = world.getTileEntity(nextPos);
-            if (te instanceof com.hbm.tileentity.network.TileEntityCraneInserterBase) {
-                com.hbm.tileentity.network.TileEntityCraneInserterBase inserter = (com.hbm.tileentity.network.TileEntityCraneInserterBase) te;
-                ItemStack stack = item.getStack();
-                int accepted = inserter.tryInsertDirect(stack);
-                if (accepted > 0) {
-                    item.getStack().setCount(stack.getCount());
-                    if (stack.isEmpty()) {
-                        return true;
-                    }
-                    dirty = true;
-                    return false;
+        if (nextTe instanceof IConveyorInput) {
+            IConveyorInput input = (IConveyorInput) nextTe;
+            ItemStack stack = item.getStack();
+            int accepted = input.tryInsertDirect(stack.copy(), lane);
+            if (accepted > 0) {
+                item.getStack().shrink(accepted);
+                if (item.getStack().isEmpty()) {
+                    return true;
                 }
+                dirty = true;
+                return false;
             }
             return false;
         }

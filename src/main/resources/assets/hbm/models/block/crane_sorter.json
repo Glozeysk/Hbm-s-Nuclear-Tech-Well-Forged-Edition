@@ -1,0 +1,12 @@
+{
+	"parent": "block/cube",
+	"textures": {
+		"down": "hbm:blocks/crane_sorter_cyan",
+		"up": "hbm:blocks/crane_sorter_orange",
+		"north": "hbm:blocks/crane_sorter_red",
+		"south": "hbm:blocks/crane_sorter_blue",
+		"west": "hbm:blocks/crane_sorter_green",
+		"east": "hbm:blocks/crane_sorter_yellow",
+		"particle": "hbm:blocks/crane_in"
+	}
+}

@@ -1,12 +1,9 @@
 package com.hbm.main;
 
-import java.util.Map.Entry;
-
 import static com.hbm.inventory.OreDictManager.*;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
-import com.hbm.crafting.RecipeArmorConversion;
 import com.hbm.crafting.handlers.MKUCraftingHandler;
 import com.hbm.crafting.handlers.RBMKFuelCraftingHandler;
 import com.hbm.crafting.handlers.SmallReactorFuelCraftingHandler;
@@ -16,7 +13,6 @@ import com.hbm.inventory.BedrockOreRegistry;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemFluidTank;
-import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.items.machine.ItemFuelRod;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemHot;
@@ -47,11 +43,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.IngredientNBT;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -110,15 +104,17 @@ public class CraftingManager {
 
 		addRecipeAuto(new ItemStack(ModBlocks.crane_boxer, 1), new Object[] { "WWW", "WPW", "CCC", 'W', KEY_PLANKS, 'P', ModItems.piston_pneumatic, 'C', ModBlocks.conveyor });
 		addRecipeAuto(new ItemStack(ModBlocks.crane_unboxer, 1), new Object[] { "WWW", "WPW", "CCC", 'W', KEY_STICK, 'P', Items.SHEARS, 'C', ModBlocks.conveyor });
-		addRecipeAuto(new ItemStack(ModBlocks.crane_splitter), new Object[] { "III", "PCP", "III", 'P', ModItems.piston_pneumatic, 'I', STEEL.ingot(), 'C', ModItems.circuit_aluminium });
-		addRecipeAuto(new ItemStack(ModBlocks.crane_router), new Object[] { "PIP", "ICI", "PIP", 'P', ModItems.piston_pneumatic, 'I', ModItems.plate_polymer, 'C', ModItems.circuit_copper });
+		addRecipeAuto(new ItemStack(ModBlocks.crane_router, 2), new Object[] { "IPI", "PCP", "IPI", 'P', ModItems.piston_pneumatic, 'I', STEEL.ingot(), 'C', ModItems.circuit_aluminium });
+		addRecipeAuto(new ItemStack(ModBlocks.crane_sorter), new Object[] { "PIP", "ICI", "PIP", 'P', ModItems.piston_pneumatic, 'I', ModItems.plate_polymer, 'C', ModItems.circuit_copper });
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt });
  		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_2});
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_3});
 		addShapelessAuto(new ItemStack(ModBlocks.crane_ejector, 1), new Object[] { ModBlocks.crane_ejector_alt_4});
-		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt });
-		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt_2 });
 
+		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt });
+		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt_2});
+		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt_3});
+		addShapelessAuto(new ItemStack(ModBlocks.crane_inserter, 1), new Object[] { ModBlocks.crane_inserter_alt_4});
 
 
 		addRecipeAuto(new ItemStack(ModItems.circuit_raw, 1), new Object[] { "A", "R", "S", 'S', STEEL.plate(), 'R', REDSTONE.dust(), 'A', ModItems.wire_aluminium });

@@ -601,6 +601,7 @@ public class MainRegistry {
 		aMatDNS.setRepairItem(new ItemStack(ModItems.plate_armor_dnt));
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
+		GameRegistry.registerTileEntity(TileEntityCraneRouter.class, new ResourceLocation(RefStrings.MODID, "crane_router"));
 		GameRegistry.registerTileEntity(TileEntityConveyor.class, new ResourceLocation(RefStrings.MODID, "tile_conveyor"));
 		GameRegistry.registerTileEntity(TileEntityDummy.class, new ResourceLocation(RefStrings.MODID, "tileentity_dummy"));
 		GameRegistry.registerTileEntity(TileEntityMachineAssembler.class, new ResourceLocation(RefStrings.MODID, "tileentity_machine_assembler"));
@@ -871,10 +872,9 @@ public class MainRegistry {
 		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt2.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt_2"));
 		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt3.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt_3"));
 		GameRegistry.registerTileEntity(TileEntityCraneEjectorAlt4.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneejector_alt_4"));
-		GameRegistry.registerTileEntity(TileEntityCraneSplitter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranesplitter"));
 		GameRegistry.registerTileEntity(TileEntityCraneBoxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneboxer"));
 		GameRegistry.registerTileEntity(TileEntityCraneUnboxer.class, new ResourceLocation(RefStrings.MODID, "tileentity_craneunboxer"));
-		GameRegistry.registerTileEntity(TileEntityCraneRouter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranerouter"));
+		GameRegistry.registerTileEntity(TileEntityCraneSorter.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranesorter"));
 		GameRegistry.registerTileEntity(TileEntityCraneGrabber.class, new ResourceLocation(RefStrings.MODID, "tileentity_cranegrabber"));
 
 		int i = 0;

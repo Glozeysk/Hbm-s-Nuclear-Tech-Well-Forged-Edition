@@ -14,8 +14,6 @@ import com.hbm.handler.*;
 import com.hbm.render.entity.item.RenderMovingPackage;
 import com.hbm.render.item.*;
 import com.hbm.tileentity.machine.*;
-import com.hbm.tileentity.network.TileEntityConveyor;
-import com.hbm.tileentity.network.TileEntityCraneSplitter;
 import net.minecraft.util.*;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -692,7 +690,6 @@ public class ClientProxy extends ServerProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk2.class, new RenderFluidDuctMk2());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk3.class, new RenderFluidDuctMk3<>());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityFFFluidDuctMk4.class, new RenderFluidDuctMk4<>());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCraneSplitter.class, new RenderCraneSplitter());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBarrel.class, new RenderFluidBarrel());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTesla.class, new RenderTesla());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCoreEmitter.class, new RenderCoreComponent());

@@ -246,9 +246,6 @@ public class ResourceManager {
 	public static final IModelCustom pipe_neo = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/blocks/pipe_neo.obj")).asVBO();
 	public static final IModelCustom pipe_neo_mk4 = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/blocks/pipe_neo_mk4.obj")).asVBO();
 
-	//Conveyor blocks/cranes //FIXME: Doesnt work with VBO
-	public static final IModelCustom crane_splitter = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/blocks/crane_splitter.obj"));
-
 	//Laser Miner
 	public static final IModelCustom mining_laser = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/mining_laser.obj")).asVBO();
 

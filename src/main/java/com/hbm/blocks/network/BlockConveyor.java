@@ -340,49 +340,78 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 	}
 
 	private CurveType detectCurve(IBlockAccess world, BlockPos pos, EnumFacing facing) {
-		// facing = FACING блока (куда "смотрит")
-		// Направление движения предметов = facing.getOpposite()
 		EnumFacing moveDir = facing.getOpposite();
 
-		// Проверяем что СЗАДИ нет конвейера который подаёт нам
 		BlockPos backPos = pos.offset(moveDir.getOpposite());
 		IBlockState backState = world.getBlockState(backPos);
-		if(backState.getBlock() instanceof BlockConveyor) {
+		if (backState.getBlock().getClass() == this.getClass()) {
 			EnumFacing backMoveDir = backState.getValue(FACING).getOpposite();
-			if(backMoveDir == moveDir) {
-				return CurveType.NONE; // Сзади кто-то подаёт - мы обычный
+			if (backMoveDir == moveDir) {
+				return CurveType.NONE;
 			}
 		}
 
-		// Проверяем ЛЕВУЮ сторону
 		EnumFacing leftSide = moveDir.rotateYCCW();
 		BlockPos leftPos = pos.offset(leftSide);
 		IBlockState leftState = world.getBlockState(leftPos);
-		boolean leftFeeds = false;
-		if(leftState.getBlock() instanceof BlockConveyor) {
-			EnumFacing leftMoveDir = leftState.getValue(FACING).getOpposite();
-			if(leftMoveDir == moveDir.rotateY()) { // Его движение вправо = в нашу сторону
-				leftFeeds = true;
-			}
-		}
+		boolean leftFeeds = isSideFeeding(world, leftState, moveDir, leftSide.getOpposite(), leftPos);
 
-		// Проверяем ПРАВУЮ сторону
 		EnumFacing rightSide = moveDir.rotateY();
 		BlockPos rightPos = pos.offset(rightSide);
 		IBlockState rightState = world.getBlockState(rightPos);
-		boolean rightFeeds = false;
-		if(rightState.getBlock() instanceof BlockConveyor) {
-			EnumFacing rightMoveDir = rightState.getValue(FACING).getOpposite();
-			if(rightMoveDir == moveDir.rotateYCCW()) { // Его движение влево = в нашу сторону
-				rightFeeds = true;
+		boolean rightFeeds = isSideFeeding(world, rightState, moveDir, rightSide.getOpposite(), rightPos);
+
+		if (leftFeeds && !rightFeeds) return CurveType.LEFT;
+		if (rightFeeds && !leftFeeds) return CurveType.RIGHT;
+
+		return CurveType.NONE;
+	}
+
+	private boolean isSideFeeding(IBlockAccess world, IBlockState sideState, EnumFacing moveDir, EnumFacing sideToConveyor, BlockPos sidePos) {
+		Block sideBlock = sideState.getBlock();
+
+		if (sideBlock.getClass() == this.getClass()) {
+			EnumFacing sideMoveDir = sideState.getValue(FACING).getOpposite();
+			return sideMoveDir == sideToConveyor;
+		}
+
+		if (sideBlock instanceof com.hbm.blocks.network.BlockCraneEjectorBase) {
+			EnumFacing ejectorFacing = sideState.getValue(net.minecraft.block.BlockHorizontal.FACING);
+			return ejectorFacing == sideToConveyor.getOpposite();
+		}
+
+		if (sideBlock instanceof com.hbm.blocks.network.CraneSorter) {
+			net.minecraft.tileentity.TileEntity te = world.getTileEntity(sidePos);
+			if (te instanceof com.hbm.tileentity.network.TileEntityCraneSorter) {
+				com.hbm.tileentity.network.TileEntityCraneSorter sorter = (com.hbm.tileentity.network.TileEntityCraneSorter) te;
+				if (sorter.modes == null) return false;
+				int sideIndex = getIndexFromDirection(sideToConveyor);
+				return sideIndex >= 0 && sorter.modes[sideIndex] != com.hbm.tileentity.network.TileEntityCraneSorter.MODE_NONE;
 			}
 		}
 
-		// Определяем тип
-		if(leftFeeds && !rightFeeds) return CurveType.LEFT;
-		if(rightFeeds && !leftFeeds) return CurveType.RIGHT;
+		if (sideBlock instanceof com.hbm.blocks.network.BlockCraneRouter) {
+			net.minecraft.tileentity.TileEntity te = world.getTileEntity(sidePos);
+			if (te instanceof com.hbm.tileentity.network.TileEntityCraneRouter) {
+				com.hbm.tileentity.network.TileEntityCraneRouter router = (com.hbm.tileentity.network.TileEntityCraneRouter) te;
+				if (router.modes == null) return false;
+				int sideIndex = getIndexFromDirection(sideToConveyor);
+				return sideIndex >= 0 && router.modes[sideIndex] == com.hbm.tileentity.network.TileEntityCraneRouter.MODE_OUTPUT;
+			}
+		}
 
-		return CurveType.NONE;
+		return false;
+	}
+
+	private int getIndexFromDirection(EnumFacing dir) {
+		EnumFacing[] customEnumOrder = new EnumFacing[]{
+				EnumFacing.NORTH, EnumFacing.UP, EnumFacing.EAST,
+				EnumFacing.SOUTH, EnumFacing.DOWN, EnumFacing.WEST
+		};
+		for (int i = 0; i < customEnumOrder.length; i++) {
+			if (customEnumOrder[i] == dir) return i;
+		}
+		return -1;
 	}
 
 	@Override
