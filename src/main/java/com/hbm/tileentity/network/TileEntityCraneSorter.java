@@ -141,18 +141,29 @@ public class TileEntityCraneSorter extends TileEntityMachineBase implements IGUI
                 if (blockIndex >= 0) {
                     BlockConveyor conveyor = (BlockConveyor) targetBlock;
                     EnumFacing conveyorFacing = conveyor.getLaneFacing(world, pos.offset(dir));
+                    net.minecraft.block.state.IBlockState state = world.getBlockState(pos.offset(dir));
+                    net.minecraft.block.state.IBlockState actualState = conveyor.getActualState(state, world, pos.offset(dir));
+                    BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
                     EnumFacing fromConveyorToSorter = dir.getOpposite();
 
-                    int targetLane = determineTargetLane(segment, fromConveyorToSorter, conveyorFacing, sourceLane);
-
+                    int targetLane;
                     int routeType = BeltItemData.ROUTE_FORWARD;
-                    EnumFacing left = conveyorFacing.rotateYCCW();
-                    EnumFacing right = conveyorFacing.rotateY();
 
-                    if (fromConveyorToSorter == left) {
-                        routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
-                    } else if (fromConveyorToSorter == right) {
-                        routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                    if (curve != BlockConveyor.CurveType.NONE) {
+                        targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
+                    } else {
+                        EnumFacing left = conveyorFacing.rotateYCCW();
+                        EnumFacing right = conveyorFacing.rotateY();
+
+                        if (fromConveyorToSorter == left) {
+                            targetLane = 0;
+                            routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
+                        } else if (fromConveyorToSorter == right) {
+                            targetLane = segment.getLaneCount() - 1;
+                            routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                        } else {
+                            targetLane = 0;
+                        }
                     }
 
                     BeltLane beltLane = segment.getLane(targetLane);
@@ -160,7 +171,6 @@ public class TileEntityCraneSorter extends TileEntityMachineBase implements IGUI
                     if (beltLane.isSlotFree(slotProgress)) {
                         BeltItemData item = new BeltItemData(stack.copy(), targetLane, slotProgress);
                         item.setRouteType(routeType);
-
                         if (segment.insertItem(item)) {
                             segment.markDirty();
                             return stack.getCount();
@@ -168,7 +178,12 @@ public class TileEntityCraneSorter extends TileEntityMachineBase implements IGUI
                     }
                 }
             }
-        } else if (targetTe != null && targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite())) {
+            int dirIndex = getIndexFromDirection(dir);
+            if (dirIndex >= 0) blockedDirections[dirIndex] = true;
+            return 0;
+        }
+
+        else if (targetTe != null && targetTe.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite())) {
             IItemHandler handler = targetTe.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, dir.getOpposite());
             if (handler != null) {
                 ItemStack toInsert = stack.copy();

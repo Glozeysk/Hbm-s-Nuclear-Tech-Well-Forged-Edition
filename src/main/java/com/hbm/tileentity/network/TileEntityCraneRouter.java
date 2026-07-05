@@ -126,27 +126,36 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
                 if (blockIndex >= 0) {
                     BlockConveyor conveyor = (BlockConveyor) targetBlock;
                     EnumFacing conveyorFacing = conveyor.getLaneFacing(world, pos.offset(dir));
+                    net.minecraft.block.state.IBlockState state = world.getBlockState(pos.offset(dir));
+                    net.minecraft.block.state.IBlockState actualState = conveyor.getActualState(state, world, pos.offset(dir));
+                    BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
                     EnumFacing fromConveyorToRouter = dir.getOpposite();
 
-                    int targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
-                    int targetLaneForInsert = determineTargetLane(segment, fromConveyorToRouter, conveyorFacing, targetLane);
-
+                    int targetLane;
                     int routeType = BeltItemData.ROUTE_FORWARD;
-                    EnumFacing left = conveyorFacing.rotateYCCW();
-                    EnumFacing right = conveyorFacing.rotateY();
 
-                    if (fromConveyorToRouter == left) {
-                        routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
-                    } else if (fromConveyorToRouter == right) {
-                        routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                    if (curve != BlockConveyor.CurveType.NONE) {
+                        targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
+                    } else {
+                        EnumFacing left = conveyorFacing.rotateYCCW();
+                        EnumFacing right = conveyorFacing.rotateY();
+
+                        if (fromConveyorToRouter == left) {
+                            targetLane = 0;
+                            routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
+                        } else if (fromConveyorToRouter == right) {
+                            targetLane = segment.getLaneCount() - 1;
+                            routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+                        } else {
+                            targetLane = 0;
+                        }
                     }
 
-                    BeltLane beltLane = segment.getLane(targetLaneForInsert);
+                    BeltLane beltLane = segment.getLane(targetLane);
                     double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
                     if (beltLane.isSlotFree(slotProgress)) {
-                        BeltItemData item = new BeltItemData(stack.copy(), targetLaneForInsert, slotProgress);
+                        BeltItemData item = new BeltItemData(stack.copy(), targetLane, slotProgress);
                         item.setRouteType(routeType);
-
                         if (segment.insertItem(item)) {
                             segment.markDirty();
                             return stack.getCount();

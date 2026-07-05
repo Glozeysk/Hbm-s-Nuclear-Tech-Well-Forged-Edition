@@ -129,29 +129,50 @@ public abstract class TileEntityCraneEjectorBase extends TileEntityCraneBase imp
     }
 
     private void pushToConveyorSide(BeltSegment segment, BlockConveyor conveyor, BlockPos conveyorPos, int blockIndex, EnumFacing outputSide, EnumFacing conveyorFacing) {
-        ConveyorEntryPoints entryPoints = conveyor.getEntryPoints();
-        if(entryPoints == null) return;
-
-        EnumFacing left = conveyorFacing.rotateYCCW();
-        EnumFacing right = conveyorFacing.rotateY();
-
+        net.minecraft.block.state.IBlockState state = world.getBlockState(conveyorPos);
+        net.minecraft.block.state.IBlockState actualState = conveyor.getActualState(state, world, conveyorPos);
+        BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
         EnumFacing fromConveyorToEjector = outputSide.getOpposite();
-        boolean fromLeft = (fromConveyorToEjector == left);
-        boolean fromRight = (fromConveyorToEjector == right);
 
-        if(!fromLeft && !fromRight) return;
+        if (curve != BlockConveyor.CurveType.NONE) {
+            for(int lane = 0; lane < segment.getLaneCount(); lane++) {
+                BeltLane beltLane = segment.getLane(lane);
+                double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
 
-        int routeType = fromLeft ? BeltItemData.ROUTE_RIGHT_ENTRY : BeltItemData.ROUTE_LEFT_ENTRY;
+                if(beltLane.isSlotFree(slotProgress)) {
+                    int extracted = extractAndInsertToConveyor(segment, lane, slotProgress, BeltItemData.ROUTE_FORWARD);
+                    if(extracted > 0) {
+                        segment.markDirty();
+                        return;
+                    }
+                }
+            }
+        } else {
+            EnumFacing left = conveyorFacing.rotateYCCW();
+            EnumFacing right = conveyorFacing.rotateY();
 
-        int targetLane = findBestLaneForSideEntry(conveyor, fromLeft);
+            int targetLane;
+            int routeType;
 
-        BeltLane beltLane = segment.getLane(targetLane);
-        double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+            if (fromConveyorToEjector == left) {
+                targetLane = 0;
+                routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
+            } else if (fromConveyorToEjector == right) {
+                targetLane = segment.getLaneCount() - 1;
+                routeType = BeltItemData.ROUTE_LEFT_ENTRY;
+            } else {
+                targetLane = 0;
+                routeType = BeltItemData.ROUTE_FORWARD;
+            }
 
-        if(beltLane.isSlotFree(slotProgress)) {
-            int extracted = extractAndInsertToConveyor(segment, targetLane, slotProgress, routeType);
-            if(extracted > 0) {
-                segment.markDirty();
+            BeltLane beltLane = segment.getLane(targetLane);
+            double slotProgress = blockIndex + BeltLane.ITEM_LENGTH * 0.5D;
+
+            if(beltLane.isSlotFree(slotProgress)) {
+                int extracted = extractAndInsertToConveyor(segment, targetLane, slotProgress, routeType);
+                if(extracted > 0) {
+                    segment.markDirty();
+                }
             }
         }
     }
