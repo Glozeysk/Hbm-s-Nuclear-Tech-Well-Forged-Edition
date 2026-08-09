@@ -22,8 +22,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.InventoryBasic;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -33,6 +36,8 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 
 	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_assembler.png");
 	private TileEntityMachineAssembler assembler;
+	private List<GhostItem> currentGhosts = new ArrayList<>();
+	private List<GhostSlot> ghostSlots = new ArrayList<>();
 
 	public GUIMachineAssembler(InventoryPlayer invPlayer, TileEntityMachineAssembler tedf) {
 		super(new ContainerMachineAssembler(invPlayer, tedf));
@@ -40,6 +45,18 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 
 		this.xSize = 176;
 		this.ySize = 222;
+
+		for (int i = 0; i < 12; i++) {
+			int col = i % 2;
+			int row = i / 2;
+			int slotX = 8 + col * 18;
+			int slotY = 18 + row * 18;
+			GhostSlot ghostSlot = new GhostSlot(slotX, slotY);
+			ghostSlot.slotNumber = this.inventorySlots.inventorySlots.size();
+			this.inventorySlots.inventorySlots.add(ghostSlot);
+			this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+			ghostSlots.add(ghostSlot);
+		}
 	}
 
 	@Override
@@ -55,12 +72,52 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 
 		String[] text = I18nUtil.resolveKeyArray("desc.guiacceptupgrades1");
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 141, guiTop + 40, 8, 8, guiLeft + 141, guiTop + 40 + 16, text);
+
+		for (int i = 0; i < currentGhosts.size(); i++) {
+			GhostItem ghost = currentGhosts.get(i);
+			if (mouseX >= ghost.x && mouseX < ghost.x + ghost.width && mouseY >= ghost.y && mouseY < ghost.y + ghost.height) {
+				if (i < ghostSlots.size()) {
+					this.hoveredSlot = ghostSlots.get(i);
+				}
+				this.renderToolTip(ghost.stack, mouseX, mouseY);
+				break;
+			}
+		}
 	}
 
 	@Override
 	protected void mouseClicked(int x, int y, int button) throws IOException {
+		if (button == 0) {
+			for (GhostItem ghost : currentGhosts) {
+				if (x >= ghost.x && x < ghost.x + ghost.width && y >= ghost.y && y < ghost.y + ghost.height) {
+					openJeiRecipe(ghost.stack);
+					return;
+				}
+			}
+		}
 		super.mouseClicked(x, y, button);
 		if(this.checkClick(x, y, 79, 52, 18, 18)) GUIScreenAssemblerTemplate.openSelector(assembler, this, 4);
+	}
+
+	private void openJeiRecipe(ItemStack stack) {
+		if (stack.isEmpty()) return;
+		try {
+			Class<?> focusModeClass = Class.forName("mezz.jei.api.recipe.IFocus$Mode");
+			Object outputMode = focusModeClass.getField("OUTPUT").get(null);
+			Class<?> focusClass = Class.forName("mezz.jei.api.recipe.Focus");
+			Object focus = focusClass.getConstructor(focusModeClass, Object.class).newInstance(outputMode, stack);
+
+			Class<?> jeiRuntimeClass = Class.forName("mezz.jei.startup.JeiRuntime");
+			java.lang.reflect.Method getRuntimeMethod = jeiRuntimeClass.getMethod("getRuntime");
+			Object runtime = getRuntimeMethod.invoke(null);
+
+			if (runtime != null) {
+				java.lang.reflect.Method getRecipesGuiMethod = runtime.getClass().getMethod("getRecipesGui");
+				Object recipesGui = getRecipesGuiMethod.invoke(runtime);
+				java.lang.reflect.Method showMethod = recipesGui.getClass().getMethod("show", Class.forName("mezz.jei.api.recipe.IFocus"));
+				showMethod.invoke(recipesGui, focus);
+			}
+		} catch (Exception e) {}
 	}
 
 	@Override
@@ -91,6 +148,11 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 		}
 
 		this.drawInfoPanel(guiLeft + 141, guiTop + 40, 8, 8, 8);
+
+		for (GhostSlot gs : ghostSlots) {
+			gs.setGhostStack(ItemStack.EMPTY);
+		}
+		currentGhosts.clear();
 
 		ItemStack templateStack = assembler.inventory.getStackInSlot(4);
 		if (!templateStack.isEmpty() && templateStack.getItem() instanceof ItemAssemblyTemplate) {
@@ -174,6 +236,12 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 							ItemStack ghostStack = status.getDisplayStack();
 							if (!ghostStack.isEmpty()) {
 								ghostStack.setCount(1);
+								currentGhosts.add(new GhostItem(guiLeft + slotX, guiTop + slotY, 16, 16, ghostStack.copy()));
+
+								int ghostSlotIndex = k - 6;
+								if (ghostSlotIndex >= 0 && ghostSlotIndex < ghostSlots.size()) {
+									ghostSlots.get(ghostSlotIndex).setGhostStack(ghostStack.copy());
+								}
 
 								RenderHelper.enableGUIStandardItemLighting();
 								GlStateManager.enableDepth();
@@ -219,7 +287,14 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 				OreDictStack ods = (OreDictStack) req;
 				NonNullList<ItemStack> ores = OreDictionary.getOres(ods.name);
 				if (!ores.isEmpty()) {
-					return ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size())).copy();
+					int index = (int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size());
+					for (int i = 0; i < ores.size(); i++) {
+						int checkIndex = (index + i) % ores.size();
+						ItemStack stack = ores.get(checkIndex);
+						if (!stack.isEmpty() && stack.getItem() != Items.AIR) {
+							return stack.copy();
+						}
+					}
 				}
 				return ItemStack.EMPTY;
 			} else if (req instanceof ComparableStack) {
@@ -227,6 +302,59 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 				return stack != null ? stack : ItemStack.EMPTY;
 			}
 			return ItemStack.EMPTY;
+		}
+	}
+
+	private static class GhostItem {
+		int x, y, width, height;
+		ItemStack stack;
+		public GhostItem(int x, int y, int w, int h, ItemStack stack) {
+			this.x = x; this.y = y; this.width = w; this.height = h; this.stack = stack;
+		}
+	}
+
+	private static class GhostSlot extends Slot {
+		private ItemStack ghostStack = ItemStack.EMPTY;
+
+		public GhostSlot(int xPosition, int yPosition) {
+			super(new InventoryBasic("ghost", false, 1), 0, xPosition, yPosition);
+		}
+
+		@Override
+		public ItemStack getStack() {
+			return ghostStack;
+		}
+
+		@Override
+		public boolean getHasStack() {
+			return !ghostStack.isEmpty();
+		}
+
+		public void setGhostStack(ItemStack stack) {
+			this.ghostStack = stack;
+		}
+
+		@Override
+		public void putStack(ItemStack stack) {}
+
+		@Override
+		public ItemStack decrStackSize(int amount) {
+			return ItemStack.EMPTY;
+		}
+
+		@Override
+		public boolean isItemValid(ItemStack stack) {
+			return false;
+		}
+
+		@Override
+		public boolean canTakeStack(EntityPlayer playerIn) {
+			return false;
+		}
+
+		@Override
+		public boolean isEnabled() {
+			return false;
 		}
 	}
 }
