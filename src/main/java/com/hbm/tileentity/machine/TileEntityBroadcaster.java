@@ -19,28 +19,40 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TileEntityBroadcaster extends TileEntity implements ITickable {
+	private int soundSyncTick;
+	private int scanTick;
 
 	@Override
 	public void update() {
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos.getX() + 0.5 - 25, pos.getY() + 0.5 - 25, pos.getZ() + 0.5 - 25, pos.getX() + 0.5 + 25, pos.getY() + 0.5 + 25, pos.getZ() + 0.5 + 25));
-		
-		for(int i = 0; i < list.size(); i++) {
-			if(list.get(i) instanceof EntityLivingBase) {
-				EntityLivingBase e = (EntityLivingBase)list.get(i);
-				double d = Math.sqrt(Math.pow(e.posX - (pos.getX() + 0.5), 2) + Math.pow(e.posY - (pos.getY() + 0.5), 2) + Math.pow(e.posZ - (pos.getZ() + 0.5), 2));
-				
-				if(d <= 25) {
-					double t = (25 - d) / 25 * 10;
-					e.attackEntityFrom(ModDamageSource.broadcast, (float) t);
-					if(!(e instanceof EntityPlayer && (((EntityPlayer) e).capabilities.isCreativeMode || ((EntityPlayer) e).isSpectator())))
-						if(e.getActivePotionEffect(MobEffects.NAUSEA) == null || e.getActivePotionEffect(MobEffects.NAUSEA).getDuration() < 100)
-							e.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 300, 0));
+		if(!world.isRemote) {
+			scanTick++;
+			if(scanTick >= 2) {
+				scanTick = 0;
+				List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos.getX() + 0.5 - 25, pos.getY() + 0.5 - 25, pos.getZ() + 0.5 - 25, pos.getX() + 0.5 + 25, pos.getY() + 0.5 + 25, pos.getZ() + 0.5 + 25));
+
+				for(int i = 0; i < list.size(); i++) {
+					if(list.get(i) instanceof EntityLivingBase) {
+						EntityLivingBase e = (EntityLivingBase)list.get(i);
+						double d = Math.sqrt(Math.pow(e.posX - (pos.getX() + 0.5), 2) + Math.pow(e.posY - (pos.getY() + 0.5), 2) + Math.pow(e.posZ - (pos.getZ() + 0.5), 2));
+
+						if(d <= 25) {
+							double t = (25 - d) / 25 * 10;
+							e.attackEntityFrom(ModDamageSource.broadcast, (float) t);
+							if(!(e instanceof EntityPlayer && (((EntityPlayer) e).capabilities.isCreativeMode || ((EntityPlayer) e).isSpectator())))
+								if(e.getActivePotionEffect(MobEffects.NAUSEA) == null || e.getActivePotionEffect(MobEffects.NAUSEA).getDuration() < 100)
+									e.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 300, 0));
+						}
+					}
 				}
 			}
 		}
 
 		if(!world.isRemote) {
-			PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 500));
+			soundSyncTick++;
+			if(soundSyncTick >= 20) {
+				soundSyncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 500));
+			}
 		}
 	}
 

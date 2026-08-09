@@ -6,9 +6,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.Library;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.ModItems;
-import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.weapon.ItemGunEgon;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.lib.HBMSoundHandler;
@@ -51,7 +50,7 @@ public class ItemGeigerCounter extends Item implements IBauble {
 		
 		if(entity instanceof EntityPlayer) {
 			
-			if(ArmorFSB.hasFSBArmor((EntityPlayer)entity) && ((ArmorFSB)((EntityPlayer)entity).inventory.armorInventory.get(2).getItem()).geigerSound)
+			if(ArmorFSBPowered.hasGeigerCounter((EntityPlayer)entity))
 				return;
 			
 			playGeiger(world, (EntityPlayer)entity);

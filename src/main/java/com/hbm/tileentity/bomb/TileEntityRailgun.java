@@ -60,6 +60,8 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 	public int delay;
 	//countdown to firing
 	public int fireDelay;
+	private long lastPowerSyncTick = -1;
+	private long lastSyncedPower = Long.MIN_VALUE;
 	
 	private String customName;
 	
@@ -146,9 +148,12 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 			}
 			this.updateConnectionsExcept(world, pos, ForgeDirection.UP);
 			power = Library.chargeTEFromItems(inventory, 0, power, RadiationConfig.railgunBuffer);
-			
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
-			PacketDispatcher.wrapper.sendToAllAround(new RailgunRotationPacket(pos.getX(), pos.getY(), pos.getZ(), pitch, yaw), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			long worldTime = world.getTotalWorldTime();
+			if (lastPowerSyncTick < 0 || worldTime - lastPowerSyncTick >= 5 || power == 0 || power == RadiationConfig.railgunBuffer || power != lastSyncedPower) {
+				PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+				lastPowerSyncTick = worldTime;
+				lastSyncedPower = power;
+			}
 		}
 	}
 	
@@ -182,12 +187,15 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
     		if(vec.z > 0)
     			newYaw = 0 - (float) (yaw * 180D / Math.PI);
     		
-    		if(newYaw != this.yaw || newPitch != this.pitch) {
-    			this.yaw = newYaw;
-    			this.pitch = newPitch;
-    			this.delay = cooldownDurationTicks;
-    			return true;
-    		}
+			if(newYaw != this.yaw || newPitch != this.pitch) {
+				this.yaw = newYaw;
+				this.pitch = newPitch;
+				this.delay = cooldownDurationTicks;
+				if(!world.isRemote) {
+					PacketDispatcher.wrapper.sendToAllAround(new RailgunRotationPacket(pos.getX(), pos.getY(), pos.getZ(), pitch, yaw), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+				}
+				return true;
+			}
 		}
 		
 		return false;
@@ -212,6 +220,8 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 			power -= RadiationConfig.railgunUse;
 			if(power < 0)
 				power = 0;
+			lastSyncedPower = power;
+			lastPowerSyncTick = world.getTotalWorldTime();
 			PacketDispatcher.wrapper.sendToAll(new AuxGaugePacket(pos.getX(), pos.getY(), pos.getZ(), 0, 0));
 		} else {
 			world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.buttonNo, SoundCategory.BLOCKS, 1.0F, 1.0F);

@@ -48,6 +48,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
 	private int soundTimer = 0;
 	private boolean isProcessing = false;
+	private int syncTick = 0;
 
 	private String customName;
 
@@ -257,7 +258,14 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			needsUpdate = true;
 			detectTanks[4] = FFUtils.copyTank(tanks[4]);
 		}
-		PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+		syncTick++;
+		if(syncTick >= 5) {
+			syncTick = 0;
+			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] {tanks[0], tanks[1], tanks[2], tanks[3], tanks[4]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+		}
+		if(mark) {
+			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+		}
 		if(mark)
 			markDirty();
 	}

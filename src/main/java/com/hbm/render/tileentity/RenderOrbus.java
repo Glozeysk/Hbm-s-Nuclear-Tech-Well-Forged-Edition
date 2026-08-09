@@ -23,7 +23,7 @@ public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbu
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineOrbus te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

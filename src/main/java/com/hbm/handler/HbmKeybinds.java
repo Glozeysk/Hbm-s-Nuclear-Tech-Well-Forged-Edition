@@ -2,9 +2,11 @@ package com.hbm.handler;
 
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
+import com.hbm.inventory.gui.GuiPerformanceSettings;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.KeybindPacket;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -21,6 +23,7 @@ public class HbmKeybinds {
 	public static KeyBinding reloadKey = new KeyBinding(category + ".reload", Keyboard.KEY_R, category);
 	public static KeyBinding gogglesKey = new KeyBinding(category + ".toggleGoggles", Keyboard.KEY_NUMPAD7, category);
 	public static KeyBinding abilityAltKey = new KeyBinding(category + ".abilityAlt", Keyboard.KEY_LMENU, category);
+	public static KeyBinding performanceMenuKey = new KeyBinding(category + ".performanceMenu", Keyboard.KEY_F10, category);
 
 	public static KeyBinding craneUpKey = new KeyBinding(category + ".craneMoveUp", Keyboard.KEY_UP, category);
 	public static KeyBinding craneDownKey = new KeyBinding(category + ".craneMoveDown", Keyboard.KEY_DOWN, category);
@@ -39,10 +42,14 @@ public class HbmKeybinds {
 		ClientRegistry.registerKeyBinding(craneRightKey);
 		ClientRegistry.registerKeyBinding(craneLoadKey);
 		ClientRegistry.registerKeyBinding(abilityAltKey);
+		ClientRegistry.registerKeyBinding(performanceMenuKey);
 	}
 
 	@SubscribeEvent
 	public void keyEvent(KeyInputEvent event) {
+		if(performanceMenuKey.isPressed()) {
+			Minecraft.getMinecraft().displayGuiScreen(new GuiPerformanceSettings());
+		}
 
 		IHBMData props = HbmCapability.getData(MainRegistry.proxy.me());
 		for(EnumKeybind key : EnumKeybind.values()) {

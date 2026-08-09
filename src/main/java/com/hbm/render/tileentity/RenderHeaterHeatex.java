@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderHeaterHeatex extends TileEntitySpecialRenderer<TileEntityHeaterHeatex> {
     @Override
     public boolean isGlobalRenderer(TileEntityHeaterHeatex te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

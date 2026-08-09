@@ -25,7 +25,7 @@ public class RenderBAT9000 extends TileEntitySpecialRenderer<TileEntityMachineBA
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineBAT9000 te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

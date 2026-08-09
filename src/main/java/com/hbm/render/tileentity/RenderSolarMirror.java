@@ -17,11 +17,13 @@ public class RenderSolarMirror extends TileEntitySpecialRenderer<TileEntitySolar
 
 	@Override
 	public boolean isGlobalRenderer(TileEntitySolarMirror te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override
 	public void render(TileEntitySolarMirror te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+		if(RenderPerformance.skipDistant(te, 576.0D))
+			return;
 		GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5D, y, z + 0.5D);
         GlStateManager.enableLighting();
@@ -52,7 +54,7 @@ public class RenderSolarMirror extends TileEntitySpecialRenderer<TileEntitySolar
         GL11.glTranslated(0, -1, 0);
         ResourceManager.solar_mirror.renderPart("Mirror");
 
-        if(mirror.isOn) {
+        if(mirror.isOn && !RenderPerformance.isLow()) {
 			float min = 0.008F;
 	        float max = 0.008F;
 

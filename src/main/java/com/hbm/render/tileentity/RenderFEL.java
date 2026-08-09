@@ -21,7 +21,7 @@ public class RenderFEL extends TileEntitySpecialRenderer<TileEntityFEL> {
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityFEL fel) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

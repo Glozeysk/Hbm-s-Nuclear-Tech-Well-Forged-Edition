@@ -12,7 +12,7 @@ public class RenderDeuteriumTower extends TileEntitySpecialRenderer<TileEntityDe
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityDeuteriumTower te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

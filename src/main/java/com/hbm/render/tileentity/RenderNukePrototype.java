@@ -12,7 +12,7 @@ public class RenderNukePrototype extends TileEntitySpecialRenderer<TileEntityNuk
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukePrototype te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

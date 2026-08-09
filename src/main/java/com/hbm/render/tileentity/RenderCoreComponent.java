@@ -22,7 +22,7 @@ public class RenderCoreComponent extends TileEntitySpecialRenderer<TileEntityMac
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineBase te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

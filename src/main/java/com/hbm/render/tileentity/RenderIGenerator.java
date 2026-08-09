@@ -17,7 +17,7 @@ public class RenderIGenerator extends TileEntitySpecialRenderer<TileEntityMachin
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineIGenerator te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

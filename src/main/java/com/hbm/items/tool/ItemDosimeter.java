@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.hbm.items.ModItems;
 import com.hbm.capability.HbmLivingProps;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.ModItems;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.util.ContaminationUtil;
 
@@ -43,7 +43,7 @@ public class ItemDosimeter extends Item implements IBauble {
 		
 		if(entity instanceof EntityPlayer) {
 			
-			if(ArmorFSB.hasFSBArmor((EntityPlayer)entity) && ((ArmorFSB)((EntityPlayer)entity).inventory.armorInventory.get(2).getItem()).geigerSound)
+			if(ArmorFSBPowered.hasGeigerCounter((EntityPlayer)entity))
 				return;
 			
 			double x = ContaminationUtil.getActualPlayerRads((EntityPlayer)entity);

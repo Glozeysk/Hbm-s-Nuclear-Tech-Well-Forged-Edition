@@ -14,7 +14,7 @@ public class RenderChungus extends TileEntitySpecialRenderer<TileEntityChungus> 
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityChungus te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

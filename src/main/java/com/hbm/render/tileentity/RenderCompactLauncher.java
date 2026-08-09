@@ -13,7 +13,7 @@ public class RenderCompactLauncher extends TileEntitySpecialRenderer<TileEntityC
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityCompactLauncher te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

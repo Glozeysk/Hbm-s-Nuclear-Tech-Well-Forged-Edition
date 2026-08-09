@@ -19,7 +19,7 @@ public class RenderMultiblock extends TileEntitySpecialRenderer<TileEntityMultib
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityMultiblock te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

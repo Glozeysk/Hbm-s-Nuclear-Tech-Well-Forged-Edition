@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderChemfac extends TileEntitySpecialRenderer<TileEntityMachineChemfac> {
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineChemfac te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

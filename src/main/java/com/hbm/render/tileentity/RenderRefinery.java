@@ -12,7 +12,7 @@ public class RenderRefinery extends TileEntitySpecialRenderer<TileEntityMachineR
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineRefinery te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

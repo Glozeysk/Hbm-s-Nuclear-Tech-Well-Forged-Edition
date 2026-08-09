@@ -69,7 +69,7 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
     @Override
     public void injectData(Map<String, Object> data) {
         runtimeDeobfEnabled = (Boolean) data.get("runtimeDeobfuscationEnabled");
-        String prop = System.getProperty("hbm.core.disablecrash");
+        String prop = getSystemProperty("hbm.core.disablecrash");
         if (prop != null) {
             hardCrash = false;
             coreLogger.info("Crash suppressed with -Dhbm.core.disablecrash");
@@ -79,6 +79,14 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
     @Override
     public String getAccessTransformerClass() {
         return null;
+    }
+
+    private static String getSystemProperty(String key) {
+        try {
+            return (String) Class.forName("java.lang.System").getMethod("getProperty", String.class).invoke(null, key);
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
     }
 
     public enum Brand {

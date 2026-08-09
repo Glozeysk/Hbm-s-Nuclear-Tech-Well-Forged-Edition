@@ -13,7 +13,7 @@ public class RenderAMSBase extends TileEntitySpecialRenderer<TileEntityAMSBase> 
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityAMSBase te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

@@ -24,6 +24,7 @@ import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.TrappedBrick.Trap;
 import com.hbm.capability.HbmCapability;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.capability.HbmLivingCapability.EntityHbmPropsProvider;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.mob.EntityHunterChopper;
@@ -46,6 +47,7 @@ import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.gui.GUIArmorTable;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.gear.ArmorFSB;
@@ -224,11 +226,36 @@ public class ModEventHandlerClient {
 
 	public static Set<EntityLivingBase> specialDeathEffectEntities = new HashSet<>();
 	public static ArrayDeque<ParticleFirstPerson> firstPersonAuxParticles = Queues.newArrayDeque();
+	private static final ArrayDeque<RadiationPixelFlash> radiationPixelFlashes = new ArrayDeque<>();
 
 	public static float deltaMouseX;
 	public static float deltaMouseY;
 	
 	public static float currentFOV = 70;
+
+	private static class RadiationPixelFlash {
+		private final int x;
+		private final int y;
+		private final int width;
+		private final int height;
+		private final float r;
+		private final float g;
+		private final float b;
+		private final float alpha;
+		private final long endTime;
+
+		private RadiationPixelFlash(int x, int y, int width, int height, float r, float g, float b, float alpha, long lifetimeMs) {
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+			this.r = r;
+			this.g = g;
+			this.b = b;
+			this.alpha = alpha;
+			this.endTime = System.currentTimeMillis() + lifetimeMs;
+		}
+	}
 	
 	public static void updateMouseDelta() {
 		Minecraft mc = Minecraft.getMinecraft();
@@ -1624,6 +1651,7 @@ public class ModEventHandlerClient {
 		}*/
 		//HbmShaderManager2.doPostProcess();
 		if(!(Minecraft.getMinecraft().player.getHeldItemMainhand().getItem() instanceof IPostRender || Minecraft.getMinecraft().player.getHeldItemOffhand().getItem() instanceof IPostRender)){
+			this.renderPowerArmorRadiationRipple();
 			HbmShaderManager2.postProcess();
 		}
 	}
@@ -1639,8 +1667,88 @@ public class ModEventHandlerClient {
 	            mc.entityRenderer.enableLightmap();
 	            mc.entityRenderer.itemRenderer.renderItemInFirstPerson(e.getPartialTicks());
 	            mc.entityRenderer.disableLightmap();
-	        }
+		        }
 			HbmShaderManager2.postProcess();
+		}
+	}
+
+	private void renderPowerArmorRadiationRipple() {
+		Minecraft mc = Minecraft.getMinecraft();
+		EntityPlayer player = mc.player;
+		if(player == null || !GeneralConfig.powerArmorRadiationRipple || !ArmorFSBPowered.hasPoweredArmorIgnoreCharge(player))
+			return;
+
+		double exposure = HbmLivingProps.getRadEnv(player);
+		if(exposure < 5.0D)
+			return;
+
+		float strength = (float) MathHelper.clamp((exposure - 5.0D) * 0.015D, 0.0D, 0.45D);
+		if(strength <= 0.0F)
+			return;
+
+		int width = mc.displayWidth;
+		int height = mc.displayHeight;
+		float intensity = MathHelper.clamp((float)((exposure - 5.0D) / 60.0D), 0.0F, 1.0F);
+		int pixelSize = 2 + MathHelper.floor(intensity * 4.0F);
+		int spawnCount = 2 + MathHelper.floor(intensity * 12.0F);
+		float alpha = 0.05F + intensity * 0.18F;
+
+		Random rand = new Random(System.nanoTime() ^ mc.player.getUniqueID().getMostSignificantBits() ^ mc.player.ticksExisted);
+		for(int i = 0; i < spawnCount; i++) {
+			if(rand.nextFloat() > 0.35F + intensity * 0.5F) {
+				continue;
+			}
+			int x = rand.nextInt(Math.max(width, 1));
+			int y = rand.nextInt(Math.max(height, 1));
+			int w = pixelSize + rand.nextInt(Math.max(pixelSize, 1));
+			int h = pixelSize + rand.nextInt(Math.max(pixelSize, 1));
+			float r = 0.7F + rand.nextFloat() * 0.3F;
+			float g = 0.7F + rand.nextFloat() * 0.3F;
+			float b = 0.7F + rand.nextFloat() * 0.3F;
+			long lifetime = 40L + rand.nextInt(90);
+			radiationPixelFlashes.add(new RadiationPixelFlash(x, y, w, h, r, g, b, alpha, lifetime));
+		}
+
+		Runnable renderNoise = () -> {
+			mc.entityRenderer.setupOverlayRendering();
+			GlStateManager.disableDepth();
+			GlStateManager.depthMask(false);
+			mc.getTextureManager().bindTexture(ResourceManager.noise_2);
+			net.minecraft.client.renderer.Tessellator tessellator = net.minecraft.client.renderer.Tessellator.getInstance();
+			BufferBuilder bufferbuilder = tessellator.getBuffer();
+			long now = System.currentTimeMillis();
+			Iterator<RadiationPixelFlash> itr = radiationPixelFlashes.iterator();
+			bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+			while(itr.hasNext()) {
+				RadiationPixelFlash flash = itr.next();
+				if(flash.endTime <= now) {
+					itr.remove();
+					continue;
+				}
+				long age = flash.endTime - now;
+				float fade = MathHelper.clamp(age / 80.0F, 0.0F, 1.0F);
+				float u0 = (now % 1000L) * 0.001F;
+				float v0 = ((now / 7L) % 1000L) * 0.001F;
+				float u1 = u0 + 0.08F;
+				float v1 = v0 + 0.08F;
+				float a = flash.alpha * fade;
+				bufferbuilder.pos(flash.x, flash.y + flash.height, -90.0D).tex(u0, v1).color(flash.r, flash.g, flash.b, a).endVertex();
+				bufferbuilder.pos(flash.x + flash.width, flash.y + flash.height, -90.0D).tex(u1, v1).color(flash.r, flash.g, flash.b, a).endVertex();
+				bufferbuilder.pos(flash.x + flash.width, flash.y, -90.0D).tex(u1, v0).color(flash.r, flash.g, flash.b, a).endVertex();
+				bufferbuilder.pos(flash.x, flash.y, -90.0D).tex(u0, v0).color(flash.r, flash.g, flash.b, a).endVertex();
+			}
+			tessellator.draw();
+			GlStateManager.depthMask(true);
+			GlStateManager.enableDepth();
+		};
+
+		if(GeneralConfig.useShaders2) {
+			HbmShaderManager2.distort(strength, renderNoise);
+		} else {
+			GlStateManager.enableBlend();
+			GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
+			renderNoise.run();
+			GlStateManager.disableBlend();
 		}
 	}
 	
@@ -1715,7 +1823,7 @@ public class ModEventHandlerClient {
 
 		/// HANDLE GEIGER COUNTER AND JETPACK HUD ///
 		if(event.getType() == ElementType.HOTBAR) {
-			if(!(ArmorFSB.hasFSBArmorHelmet(player) && ((ArmorFSB)player.inventory.armorInventory.get(3).getItem()).customGeiger)) {
+			if(!ArmorFSBPowered.hasCustomGeigerCounter(player)) {
 				if(Library.hasInventoryItem(player.inventory, ModItems.geiger_counter) || hasBauble(player, ModItems.geiger_counter)) {
 	
 					float rads = (float)Library.getEntRadCap(player).getRads();
@@ -1788,6 +1896,14 @@ public class ModEventHandlerClient {
 		if(helmet.getItem() instanceof ArmorFSB) {
 			((ArmorFSB)helmet.getItem()).handleOverlay(event, player);
 		}
+	}
+
+	@SubscribeEvent
+	public void onOverlayRenderPost(RenderGameOverlayEvent.Post event) {
+		if(event.getType() != ElementType.ALL) {
+			return;
+		}
+		this.renderPowerArmorRadiationRipple();
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGH)

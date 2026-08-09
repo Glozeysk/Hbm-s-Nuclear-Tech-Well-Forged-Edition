@@ -12,7 +12,7 @@ public class RenderGasFlare extends TileEntitySpecialRenderer<TileEntityMachineG
     
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineGasFlare te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

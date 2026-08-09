@@ -11,11 +11,13 @@ public class RenderConnector extends TileEntitySpecialRenderer<TileEntityConnect
 
     @Override
 	public boolean isGlobalRenderer(TileEntityConnector te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
     @Override
     public void render(TileEntityConnector tile, double x, double y, double z, float f, int destroyStage, float alpha) {
+		if(RenderPerformance.skipDistant(tile, 1024.0D))
+			return;
         GlStateManager.enableLighting();
 
         GlStateManager.pushMatrix();
@@ -51,8 +53,10 @@ public class RenderConnector extends TileEntitySpecialRenderer<TileEntityConnect
         ResourceManager.red_connector.renderAll();
         GlStateManager.popMatrix();
 
-        GlStateManager.pushMatrix();
-        RenderPylon.renderPowerLines(tile, x, y, z);
-        GlStateManager.popMatrix();
+        if(!RenderPerformance.isLow()) {
+            GlStateManager.pushMatrix();
+            RenderPylon.renderPowerLines(tile, x, y, z);
+            GlStateManager.popMatrix();
+        }
     }
 }

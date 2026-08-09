@@ -7,6 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.render.amlfrom1710.Vec3;
@@ -29,6 +35,8 @@ public class ExplosionNukeRayBatched {
 	int posX;
 	int posY;
 	int posZ;
+	int chunkCenterX;
+	int chunkCenterZ;
 	World world;
 
 	int strength;
@@ -41,6 +49,9 @@ public class ExplosionNukeRayBatched {
 
 	private static final int maxY = 255;
 	private static final int minY = 0;
+	private static final int LARGE_BLAST_WORKERS = 4;
+	private static final int LARGE_BLAST_RADIUS = 256;
+	private static final ExecutorService WORKERS = Executors.newFixedThreadPool(LARGE_BLAST_WORKERS, new NukeThreadFactory());
 
 	public boolean isAusf3Complete = false;
 
@@ -49,6 +60,8 @@ public class ExplosionNukeRayBatched {
 		this.posX = x;
 		this.posY = y;
 		this.posZ = z;
+		this.chunkCenterX = x >> 4;
+		this.chunkCenterZ = z >> 4;
 		this.strength = strength;
 		this.radius = radius;
 
@@ -86,11 +99,12 @@ public class ExplosionNukeRayBatched {
 	}
 
 	public void addPos(int x, int y, int z){
-		HashSet<IntTriplet> triplets = perChunk.get(new ChunkPos(x >> 4, z >> 4));
+		ChunkPos chunkPos = new ChunkPos(x >> 4, z >> 4);
+		HashSet<IntTriplet> triplets = perChunk.get(chunkPos);
 				
 		if(triplets == null) {
 			triplets = new HashSet();
-			perChunk.put(new ChunkPos(x >> 4, z >> 4), triplets); //we re-use the same pos instead of using individualized per-chunk ones to save on RAM
+			perChunk.put(chunkPos, triplets);
 		}
 				
 		triplets.add(new IntTriplet(x, y, z));
@@ -99,6 +113,10 @@ public class ExplosionNukeRayBatched {
 	public void collectTip(int time) {
 		if(!CompatibilityConfig.isWarDim(world)){
 			isAusf3Complete = true;
+			return;
+		}
+		if(this.radius >= LARGE_BLAST_RADIUS) {
+			collectTipParallel(time);
 			return;
 		}
 		MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -134,6 +152,10 @@ public class ExplosionNukeRayBatched {
 
 
 				pos.setPos(iX, iY, iZ);
+				if(!world.isBlockLoaded(pos, false)) {
+					isContained = false;
+					break;
+				}
 				blockState = world.getBlockState(pos);
 				b = blockState.getBlock();
 				if(b.getExplosionResistance(null) >= 2_000_000)
@@ -169,6 +191,43 @@ public class ExplosionNukeRayBatched {
 		
 		isAusf3Complete = true;
 	}
+
+	private void collectTipParallel(int time) {
+		long start = System.currentTimeMillis();
+		int batches = Math.max(1, LARGE_BLAST_WORKERS);
+
+		while(this.gspNumMax >= this.gspNum && System.currentTimeMillis() < start + time) {
+			List<RayTask> tasks = new ArrayList<RayTask>(batches);
+			for(int i = 0; i < batches && this.gspNumMax >= this.gspNum; i++) {
+				tasks.add(new RayTask(this.getSpherical2cartesian()));
+				this.generateGspUp();
+			}
+
+			try {
+				List<Future<RayResult>> results = WORKERS.invokeAll(tasks, Math.max(1, time), TimeUnit.MILLISECONDS);
+				for(Future<RayResult> future : results) {
+					if(!future.isDone() || future.isCancelled()) {
+						continue;
+					}
+					RayResult result = future.get();
+					if(!result.contained) {
+						isContained = false;
+					}
+					for(IntTriplet triplet : result.positions) {
+						addPos(triplet.xCoord, triplet.yCoord, triplet.zCoord);
+					}
+				}
+			} catch(Exception ignored) {
+				break;
+			}
+		}
+
+		if(this.gspNumMax < this.gspNum) {
+			orderedChunks.addAll(perChunk.keySet());
+			orderedChunks.sort(comparator);
+			isAusf3Complete = true;
+		}
+	}
 	
 	public static float getNukeResistance(IBlockState blockState, Block b) {
 		if(blockState.getMaterial().isLiquid()){
@@ -186,11 +245,8 @@ public class ExplosionNukeRayBatched {
 		@Override
 		public int compare(ChunkPos o1, ChunkPos o2) {
 
-			int chunkX = ExplosionNukeRayBatched.this.posX >> 4;
-			int chunkZ = ExplosionNukeRayBatched.this.posZ >> 4;
-
-			int diff1 = Math.abs((chunkX - (int) (o1.getXStart() >> 4))) + Math.abs((chunkZ - (int) (o1.getZStart() >> 4)));
-			int diff2 = Math.abs((chunkX - (int) (o2.getXStart() >> 4))) + Math.abs((chunkZ - (int) (o2.getZStart() >> 4)));
+			int diff1 = Math.abs(chunkCenterX - o1.x) + Math.abs(chunkCenterZ - o1.z);
+			int diff2 = Math.abs(chunkCenterX - o2.x) + Math.abs(chunkCenterZ - o2.z);
 			
 			return diff1 > diff2 ? 1 : diff1 < diff2 ? -1 : 0;
 		}
@@ -213,18 +269,23 @@ public class ExplosionNukeRayBatched {
 		if(this.perChunk.isEmpty()) return;
 		int i = 0;
 
-		if(positions.size() == 0)
+		if(positions.size() == 0) {
 			chunk = orderedChunks.get(0);
 			positions = perChunk.get(chunk);
+		}
 		
 		List<IntTriplet> done = new ArrayList<IntTriplet>();
 		MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		for(IntTriplet coord : positions) {
 			pos.setPos(coord.xCoord, coord.yCoord, coord.zCoord);
+			if(!world.isBlockLoaded(pos, false)) {
+				done.add(coord);
+				continue;
+			}
 			world.setBlockToAir(pos);
 			done.add(coord);
 			i++;
-			if(i % 256 == 0 && System.currentTimeMillis()+1 > start + time){
+			if(i % Math.max(256, time * 16) == 0 && System.currentTimeMillis()+1 > start + time){
 				// System.out.println("NTM B "+Math.round(1000D * 100D*i/(double)positions.size())/1000D+"% "+i+"/"+positions.size()+" "+(System.currentTimeMillis()-start)+"ms");
 				break;
 			}
@@ -273,5 +334,76 @@ public class ExplosionNukeRayBatched {
 	    public int hashCode() {
 	        return this.hashCode;
 	    }
+	}
+
+	private class RayTask implements Callable<RayResult> {
+		private final Vec3 vec;
+
+		private RayTask(Vec3 vec) {
+			this.vec = vec;
+		}
+
+		@Override
+		public RayResult call() {
+			RayResult result = new RayResult();
+			MutableBlockPos pos = new BlockPos.MutableBlockPos();
+			int rayRadius = (int)Math.ceil(ExplosionNukeRayBatched.this.radius);
+			float rayStrength = ExplosionNukeRayBatched.this.strength * 0.3F;
+
+			for(int r = 0; r < rayRadius + 1; r++) {
+				int iY = (int)Math.floor(posY + (vec.yCoord * r));
+
+				if(iY < minY || iY > maxY) {
+					result.contained = false;
+					break;
+				}
+
+				int iX = (int)Math.floor(posX + (vec.xCoord * r));
+				int iZ = (int)Math.floor(posZ + (vec.zCoord * r));
+
+				pos.setPos(iX, iY, iZ);
+				if(!world.isBlockLoaded(pos, false)) {
+					result.contained = false;
+					break;
+				}
+
+				IBlockState blockState = world.getBlockState(pos);
+				Block b = blockState.getBlock();
+				if(b.getExplosionResistance(null) >= 2_000_000) {
+					break;
+				}
+
+				rayStrength -= Math.pow(getNukeResistance(blockState, b) + 1, 3 * ((double)r) / ((double)rayRadius)) - 1;
+
+				if(rayStrength > 0) {
+					if(b != Blocks.AIR) {
+						result.positions.add(new IntTriplet(iX, iY, iZ));
+					}
+					if(r >= rayRadius) {
+						result.contained = false;
+					}
+				} else {
+					break;
+				}
+			}
+
+			return result;
+		}
+	}
+
+	private class RayResult {
+		private boolean contained = true;
+		private final List<IntTriplet> positions = new ArrayList<IntTriplet>();
+	}
+
+	private static class NukeThreadFactory implements ThreadFactory {
+		private int index;
+
+		@Override
+		public Thread newThread(Runnable runnable) {
+			Thread thread = new Thread(runnable, "NTM-Nuke-Ray-" + index++);
+			thread.setDaemon(true);
+			return thread;
+		}
 	}
 }

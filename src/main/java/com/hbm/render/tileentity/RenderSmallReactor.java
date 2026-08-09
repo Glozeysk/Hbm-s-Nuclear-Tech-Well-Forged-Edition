@@ -18,7 +18,7 @@ public class RenderSmallReactor extends TileEntitySpecialRenderer<TileEntityMach
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineReactorSmall te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

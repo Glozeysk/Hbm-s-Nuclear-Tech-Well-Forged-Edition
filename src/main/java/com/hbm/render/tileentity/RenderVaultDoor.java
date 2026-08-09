@@ -13,7 +13,7 @@ public class RenderVaultDoor extends TileEntitySpecialRenderer<TileEntityVaultDo
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityVaultDoor te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

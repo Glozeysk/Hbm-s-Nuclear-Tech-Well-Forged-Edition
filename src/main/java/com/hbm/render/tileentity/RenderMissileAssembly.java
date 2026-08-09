@@ -16,7 +16,7 @@ public class RenderMissileAssembly extends TileEntitySpecialRenderer<TileEntityM
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineMissileAssembly te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

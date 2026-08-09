@@ -70,6 +70,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 	public boolean beam;
 	boolean lock = false;
 	double breakProgress;
+	private int soundSyncTick;
 
 	public TileEntityMachineMiningLaser() {
 		super(0);
@@ -181,7 +182,13 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			this.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() + 2);
 			this.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() - 2);
 
-			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+			if(isOn) {
+				soundSyncTick++;
+				if(soundSyncTick >= 10) {
+					soundSyncTick = 0;
+					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+				}
+			}
 
 			this.breakProgress = clientBreakProgress;
 			networkPackNT(250);

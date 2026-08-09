@@ -43,6 +43,7 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 	public Fluid[] tankTypes;
 	//Drillgon200: Not even used but I'm too lazy to remove them
 	public boolean needsTankTypeUpdate;
+	private int syncTick = 0;
 
 	// private static final int[] slots_top = new int[] {4};
 	// private static final int[] slots_bottom = new int[] {6};
@@ -102,8 +103,12 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 				}
 			}
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTypePacketTest(pos.getX(), pos.getY(), pos.getZ(), tankTypes), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			syncTick++;
+			if(syncTick >= 5) {
+				syncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+				PacketDispatcher.wrapper.sendToAllAround(new FluidTypePacketTest(pos.getX(), pos.getY(), pos.getZ(), tankTypes), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			}
 
 			power = Library.chargeItemsFromTE(inventory, 4, power, maxPower);
 
@@ -286,8 +291,6 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 
 		boolean mark = false;
 		
-		PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-		
 		if(detectPower != power) {
 			mark = true;
 			detectPower = power;
@@ -307,6 +310,9 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 		if(detectFluids[1] != tankTypes[1]) {
 			mark = true;
 			detectFluids[1] = tankTypes[1];
+		}
+		if(mark) {
+			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 		}
 		if(mark)
 			markDirty();

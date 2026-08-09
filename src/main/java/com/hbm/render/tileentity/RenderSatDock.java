@@ -12,7 +12,7 @@ public class RenderSatDock extends TileEntitySpecialRenderer<TileEntityMachineSa
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineSatDock te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

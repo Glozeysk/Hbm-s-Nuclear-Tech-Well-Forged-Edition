@@ -6,6 +6,7 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.FluidTypeHandler;
 import com.hbm.forgefluid.FluidTypeHandler.FluidTrait;
 import com.hbm.interfaces.ITankPacketAcceptor;
+import com.hbm.lib.ItemStackHandlerWrapper;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -26,6 +27,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.items.CapabilityItemHandler;
 
 public class TileEntityBarrel extends TileEntityMachineBase implements ITickable, IFluidHandler, ITankPacketAcceptor {
 
@@ -34,6 +36,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 	public short mode = 0;
 	public static final short modes = 4;
 	private int age = 0;
+	private int syncTick = 0;
 
 	private static final int[] slots_top = new int[] {0};
 	private static final int[] slots_bottom = new int[] {1, 3};
@@ -68,7 +71,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 				checkFluidInteraction();
 			}
 			
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			syncTick++;
+			if(syncTick >= 10) {
+				syncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, new FluidTank[]{tank}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			}
 			if(!FFUtils.areTanksEqual(tank, compareTank))
 				markDirty();
 		}
@@ -189,6 +196,35 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 	
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
+			if(facing == null) {
+				return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, new int[] { 0, 1, 2, 3 }) {
+					@Override
+					public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+						int realSlot = mapSlotPublic(slot);
+						if(realSlot == -1) {
+							return stack;
+						}
+						if(canInsertItem(realSlot, stack, stack.getCount())) {
+							return super.insertItem(slot, stack, simulate);
+						}
+						return stack;
+					}
+
+					@Override
+					public ItemStack extractItem(int slot, int amount, boolean simulate) {
+						int realSlot = mapSlotPublic(slot);
+						if(realSlot == -1) {
+							return ItemStack.EMPTY;
+						}
+						if(canExtractItem(realSlot, inventory.getStackInSlot(realSlot), amount)) {
+							return super.extractItem(slot, amount, simulate);
+						}
+						return ItemStack.EMPTY;
+					}
+				});
+			}
+		}
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY){
 			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
 		}
@@ -215,11 +251,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack) {
 		if(i == 0){
-			return true;
+			return FFUtils.canDrainIntoTank(stack);
 		}
 		
 		if(i == 2){
-			return true;
+			return FFUtils.canFillFromTank(stack);
 		}
 		
 		return false;

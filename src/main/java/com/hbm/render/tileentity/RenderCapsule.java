@@ -12,7 +12,7 @@ public class RenderCapsule extends TileEntitySpecialRenderer<TileEntitySoyuzCaps
 
 	@Override
 	public boolean isGlobalRenderer(TileEntitySoyuzCapsule te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

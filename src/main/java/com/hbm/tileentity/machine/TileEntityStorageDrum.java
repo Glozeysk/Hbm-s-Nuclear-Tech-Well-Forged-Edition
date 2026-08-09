@@ -40,6 +40,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 	public FluidTank[] tanks;
 	private static final int[] slots_arr = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
 	public int age = 0;
+	private int syncTick = 0;
 
 	private static final float decayRate = 0.9965402628F; //10s Halflife
 
@@ -117,7 +118,11 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 				fillFluidInit(tanks[1]);
 			}
 
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			syncTick++;
+			if(syncTick >= 10) {
+				syncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos, tanks), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			}
 			
 			if(rad > 0) {
 				ContaminationUtil.radiate(world, pos.getZ(), pos.getY(), pos.getX(), 32, rad);

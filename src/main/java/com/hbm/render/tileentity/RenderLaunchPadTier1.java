@@ -18,7 +18,7 @@ public class RenderLaunchPadTier1 extends TileEntitySpecialRenderer<TileEntityLa
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityLaunchPad te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

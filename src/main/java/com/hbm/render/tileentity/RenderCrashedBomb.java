@@ -12,7 +12,7 @@ public class RenderCrashedBomb extends TileEntitySpecialRenderer<TileEntityCrash
     
     @Override
     public boolean isGlobalRenderer(TileEntityCrashedBomb te) {
-    	return true;
+    	return RenderPerformance.renderGlobalInLow();
     }
     
     @Override

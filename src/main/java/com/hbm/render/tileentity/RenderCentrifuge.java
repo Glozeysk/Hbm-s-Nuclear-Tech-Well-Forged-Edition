@@ -12,7 +12,7 @@ public class RenderCentrifuge extends TileEntitySpecialRenderer<TileEntityMachin
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineCentrifuge te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

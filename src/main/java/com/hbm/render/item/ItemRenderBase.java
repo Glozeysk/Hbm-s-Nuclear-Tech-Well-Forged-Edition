@@ -11,6 +11,12 @@ public class ItemRenderBase extends TEISRBase {
 	public void renderByItem(ItemStack itemStackIn) {
 		GL11.glPushMatrix();
 		GlStateManager.enableCull();
+		if(type == null) {
+			renderNonInv(itemStackIn);
+			renderCommon(itemStackIn);
+			GL11.glPopMatrix();
+			return;
+		}
 		switch(type){
 		case FIRST_PERSON_LEFT_HAND:
 		case FIRST_PERSON_RIGHT_HAND:

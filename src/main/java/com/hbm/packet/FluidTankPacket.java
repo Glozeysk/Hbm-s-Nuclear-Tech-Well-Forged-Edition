@@ -43,6 +43,15 @@ public class FluidTankPacket extends PrecompiledPacket {
 	}
 
 	@Override
+	public long hbm$getSyncKey() {
+		long key = 1469598103934665603L ^ 0x4654554c49444cL;
+		key = (key ^ this.x) * 1099511628211L;
+		key = (key ^ this.y) * 1099511628211L;
+		key = (key ^ this.z) * 1099511628211L;
+		return key;
+	}
+
+	@Override
 	public void fromBytes(ByteBuf buf) {
 		x = buf.readInt();
 		y = buf.readInt();

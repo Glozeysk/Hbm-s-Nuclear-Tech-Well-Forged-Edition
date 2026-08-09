@@ -34,7 +34,7 @@ public class RenderDecoBlockAlt extends TileEntitySpecialRenderer<TileEntityDeco
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityDecoBlockAlt te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

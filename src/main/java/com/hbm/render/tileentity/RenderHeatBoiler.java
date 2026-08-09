@@ -13,7 +13,7 @@ public class RenderHeatBoiler extends TileEntitySpecialRenderer<TileEntityHeatBo
 
     @Override
     public boolean isGlobalRenderer(TileEntityHeatBoiler te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

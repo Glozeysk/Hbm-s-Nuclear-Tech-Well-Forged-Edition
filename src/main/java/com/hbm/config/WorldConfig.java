@@ -75,6 +75,11 @@ public class WorldConfig {
 			return 0;
 		return (int)e;
 	}
+
+	private static int structureValue(Object value, int fallback) {
+		int result = convertToInt(value);
+		return result > 0 ? result : fallback;
+	}
 	
 	public static void loadFromCompatibilityConfig() {
 
@@ -115,33 +120,33 @@ public class WorldConfig {
 		endTikiteSpawn = convertToInt(CompatibilityConfig.endTixiteSpawn.get(1));
 		
         
-		radioStructure = convertToInt(CompatibilityConfig.radioStructure.get(0));
-		antennaStructure = convertToInt(CompatibilityConfig.antennaStructure.get(0));
-		atomStructure = convertToInt(CompatibilityConfig.atomStructure.get(0));
-		vertibirdStructure = convertToInt(CompatibilityConfig.vertibirdStructure.get(0));
-		dungeonStructure = convertToInt(CompatibilityConfig.dungeonStructure.get(0));
-		relayStructure = convertToInt(CompatibilityConfig.relayStructure.get(0));
-		satelliteStructure = convertToInt(CompatibilityConfig.satelliteStructure.get(0));
-		bunkerStructure = convertToInt(CompatibilityConfig.bunkerStructure.get(0));
-		siloStructure = convertToInt(CompatibilityConfig.siloStructure.get(0));
-		factoryStructure = convertToInt(CompatibilityConfig.factoryStructure.get(0));
-		dudStructure = convertToInt(CompatibilityConfig.dudStructure.get(0));
-		spaceshipStructure = convertToInt(CompatibilityConfig.spaceshipStructure.get(0));
-		barrelStructure = convertToInt(CompatibilityConfig.barrelStructure.get(0));
-		broadcaster = convertToInt(CompatibilityConfig.broadcaster.get(0));
-		minefreq = convertToInt(CompatibilityConfig.minefreq.get(0));
-		radfreq = convertToInt(CompatibilityConfig.radfreq.get(0));
-		vaultfreq = convertToInt(CompatibilityConfig.vaultfreq.get(0));
-		geyserWater = convertToInt(CompatibilityConfig.geyserWater.get(0));
-		geyserChlorine = convertToInt(CompatibilityConfig.geyserChlorine.get(0));
+		radioStructure = structureValue(CompatibilityConfig.radioStructure.get(0), radioStructure);
+		antennaStructure = structureValue(CompatibilityConfig.antennaStructure.get(0), antennaStructure);
+		atomStructure = structureValue(CompatibilityConfig.atomStructure.get(0), atomStructure);
+		vertibirdStructure = structureValue(CompatibilityConfig.vertibirdStructure.get(0), vertibirdStructure);
+		dungeonStructure = structureValue(CompatibilityConfig.dungeonStructure.get(0), dungeonStructure);
+		relayStructure = structureValue(CompatibilityConfig.relayStructure.get(0), relayStructure);
+		satelliteStructure = structureValue(CompatibilityConfig.satelliteStructure.get(0), satelliteStructure);
+		bunkerStructure = structureValue(CompatibilityConfig.bunkerStructure.get(0), bunkerStructure);
+		siloStructure = structureValue(CompatibilityConfig.siloStructure.get(0), siloStructure);
+		factoryStructure = structureValue(CompatibilityConfig.factoryStructure.get(0), factoryStructure);
+		dudStructure = structureValue(CompatibilityConfig.dudStructure.get(0), dudStructure);
+		spaceshipStructure = structureValue(CompatibilityConfig.spaceshipStructure.get(0), spaceshipStructure);
+		barrelStructure = structureValue(CompatibilityConfig.barrelStructure.get(0), barrelStructure);
+		broadcaster = structureValue(CompatibilityConfig.broadcaster.get(0), broadcaster);
+		minefreq = structureValue(CompatibilityConfig.minefreq.get(0), minefreq);
+		radfreq = structureValue(CompatibilityConfig.radfreq.get(0), radfreq);
+		vaultfreq = structureValue(CompatibilityConfig.vaultfreq.get(0), vaultfreq);
+		geyserWater = structureValue(CompatibilityConfig.geyserWater.get(0), geyserWater);
+		geyserChlorine = structureValue(CompatibilityConfig.geyserChlorine.get(0), geyserChlorine);
 		
 
-		geyserVapor = convertToInt(CompatibilityConfig.geyserVapor.get(0));
-		meteorStructure = convertToInt(CompatibilityConfig.meteorStructure.get(0));
-		capsuleStructure = convertToInt(CompatibilityConfig.capsuleStructure.get(0));
-		arcticStructure = convertToInt(CompatibilityConfig.arcticStructure.get(0));
-		jungleStructure = convertToInt(CompatibilityConfig.jungleStructure.get(0));
-		pyramidStructure = convertToInt(CompatibilityConfig.pyramidStructure.get(0));
+		geyserVapor = structureValue(CompatibilityConfig.geyserVapor.get(0), geyserVapor);
+		meteorStructure = structureValue(CompatibilityConfig.meteorStructure.get(0), meteorStructure);
+		capsuleStructure = structureValue(CompatibilityConfig.capsuleStructure.get(0), capsuleStructure);
+		arcticStructure = structureValue(CompatibilityConfig.arcticStructure.get(0), arcticStructure);
+		jungleStructure = structureValue(CompatibilityConfig.jungleStructure.get(0), jungleStructure);
+		pyramidStructure = structureValue(CompatibilityConfig.pyramidStructure.get(0), pyramidStructure);
 		
 
 		meteorStrikeChance = convertToInt(CompatibilityConfig.meteorStrikeChance.get(0));

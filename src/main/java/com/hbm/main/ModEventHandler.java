@@ -31,6 +31,8 @@ import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.handler.MeteorControlHandler;
+import com.hbm.packet.MeteorControlPacket;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.entity.mob.EntityCyberCrab;
 import com.hbm.entity.mob.EntityDuck;
@@ -586,6 +588,10 @@ public class ModEventHandler {
 
 	@SubscribeEvent
 	public void worldTick(WorldTickEvent event) {
+		if(event.world == null || event.world.isRemote) {
+			return;
+		}
+
 		if(!MainRegistry.allPipeNetworks.isEmpty() && !event.world.isRemote) {
 			Iterator<FFPipeNetwork> itr = MainRegistry.allPipeNetworks.iterator();
 			while(itr.hasNext()) {
@@ -602,14 +608,14 @@ public class ModEventHandler {
 			}
 		}
 		
-		if(event.world != null && !event.world.isRemote && event.world.getTotalWorldTime() % 100 == 97){
+		if(event.world.getTotalWorldTime() % 100 == 97){
 			//Drillgon200: Retarded hack because I'm not convinced game rules are client sync'd
 			PacketDispatcher.wrapper.sendToAll(new SurveyPacket(RBMKDials.getColumnHeight(event.world)));
 		}
 
 		if(event.phase == Phase.START) {
 			BossSpawnHandler.rollTheDice(event.world);
-			TimedGenerator.automaton(event.world, 100);
+			TimedGenerator.automaton(event.world, 25);
 		}
 	}
 	
@@ -1023,24 +1029,12 @@ public class ModEventHandler {
 			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_JETPACK, props.getEnableBackpack()), playerMP);
 			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_HEAD, props.getEnableHUD()), playerMP);
 			PacketDispatcher.sendTo(new KeybindPacket(EnumKeybind.TOGGLE_GOGGLES, props.getEnableGoggles()), playerMP);
+			PacketDispatcher.sendTo(new MeteorControlPacket(MeteorControlHandler.isEnabled(playerMP.world)), playerMP);
 			
 			if (GeneralConfig.enableWelcomeMessage) {
 				e.player.sendMessage(new TextComponentTranslation("chat.welcome"));
 			}
 
-			// if(HTTPHandler.newVersion && GeneralConfig.changelog) {
-			// 	e.player.sendMessage(new TextComponentTranslation("chat.newver", HTTPHandler.versionNumber));
-			// 	e.player.sendMessage(new TextComponentTranslation("chat.curver", RefStrings.VERSION));
-
-			// 	if(HTTPHandler.changes != ""){
-			// 		String[] lines = HTTPHandler.changes.split("\\$");
-			// 		e.player.sendMessage(new TextComponentString("§6[Some of the new Features]§r"));//RefStrings.CHANGELOG
-			// 		for(String w: lines){
-			// 			e.player.sendMessage(new TextComponentString(w));//RefStrings.CHANGELOG
-			// 		}
-			// 	}
-			// }
-			
 			if(HTTPHandler.optifine){
 				e.player.sendMessage(new TextComponentString("Optifine detected, may cause compatibility issues. Check log for details."));
 			}
@@ -1055,6 +1049,7 @@ public class ModEventHandler {
 	@SubscribeEvent
 	public void worldLoad(WorldEvent.Load e) {
 		JetpackHandler.worldLoad(e);
+		MeteorControlHandler.ensure(e.getWorld());
 	}
 
 	@SubscribeEvent

@@ -19,6 +19,8 @@ public class RenderFluidDuctMk3<T extends TileEntityFFDuctBaseMk2> extends TileE
 	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		if(te.getBlockType() == ModBlocks.fluid_duct_solid || te.getBlockType() == ModBlocks.fluid_duct_solid_sealed || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid || te.getBlockType() == ModBlocks.fluid_duct_mk3_solid_sealed)
 			return;
+		if(RenderPerformance.skipDistant(te, 576.0D))
+			return;
 		GL11.glPushMatrix();
 		GlStateManager.enableLighting();
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);

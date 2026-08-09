@@ -5,6 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
@@ -28,6 +29,7 @@ public class SchistStratum {
 		
 		int cX = event.getChunkPos().x * 16;
 		int cZ = event.getChunkPos().z * 16;
+		MutableBlockPos pos = new MutableBlockPos();
 		
 		double scale = 0.01D;
 		int threshold = 5;
@@ -47,11 +49,11 @@ public class SchistStratum {
 						continue;
 					
 					for(int y = 30 - range; y <= 30 + range; y++) {
-						
-						IBlockState target = world.getBlockState(new BlockPos(x, y, z));
+						pos.setPos(x, y, z);
+						IBlockState target = world.getBlockState(pos);
 						
 						if(target.isNormalCube() && target.getMaterial() == Material.ROCK) {
-							world.setBlockState(new BlockPos(x, y, z), ModBlocks.stone_gneiss.getDefaultState(), 2);
+							world.setBlockState(pos, ModBlocks.stone_gneiss.getDefaultState(), 2);
 						}
 					}
 				}

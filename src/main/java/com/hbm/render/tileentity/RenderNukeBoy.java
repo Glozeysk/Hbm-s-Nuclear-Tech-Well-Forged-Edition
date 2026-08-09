@@ -12,7 +12,7 @@ public class RenderNukeBoy extends TileEntitySpecialRenderer<TileEntityNukeBoy> 
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukeBoy te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

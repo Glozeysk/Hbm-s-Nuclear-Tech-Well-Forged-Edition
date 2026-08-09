@@ -33,6 +33,10 @@ public abstract class ThreadedPacket implements IMessage {
      */
     public abstract void fromBytes(ByteBuf buf);
 
+    public long hbm$getSyncKey() {
+        return 0L;
+    }
+
     public synchronized final void releaseBuffer() {
         if (compiledBuffer != null) {
             compiledBuffer.release();

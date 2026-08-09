@@ -14,7 +14,7 @@ public class RenderRadGen extends TileEntitySpecialRenderer<TileEntityMachineRad
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineRadGen te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

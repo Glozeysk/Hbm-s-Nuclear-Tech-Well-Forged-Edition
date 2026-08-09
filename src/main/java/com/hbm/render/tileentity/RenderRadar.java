@@ -13,7 +13,7 @@ public class RenderRadar extends TileEntitySpecialRenderer<TileEntityMachineRada
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineRadar te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

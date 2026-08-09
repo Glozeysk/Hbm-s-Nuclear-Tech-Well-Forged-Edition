@@ -29,6 +29,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 	public boolean isProgressing;
 	public static final int maxPower = 1000000;
 	public static final int processingSpeed = 200;
+	private int soundSyncTick;
 	
 	public TileEntityMachineCentrifuge() {
 		super(8);
@@ -285,7 +286,13 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 				this.progress = 0;
 			}
 
-			PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
+			if(isProgressing) {
+				soundSyncTick++;
+				if(soundSyncTick >= 10) {
+					soundSyncTick = 0;
+					PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 200));
+				}
+			}
 			detectAndSendChanges();
 		}
 	}

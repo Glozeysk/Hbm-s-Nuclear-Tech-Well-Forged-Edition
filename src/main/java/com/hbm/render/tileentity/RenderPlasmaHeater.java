@@ -13,7 +13,7 @@ public class RenderPlasmaHeater extends TileEntitySpecialRenderer<TileEntityMach
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachinePlasmaHeater te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

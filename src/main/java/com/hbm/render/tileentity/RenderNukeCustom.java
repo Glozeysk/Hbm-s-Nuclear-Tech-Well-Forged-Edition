@@ -12,7 +12,7 @@ public class RenderNukeCustom extends TileEntitySpecialRenderer<TileEntityNukeCu
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukeCustom te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

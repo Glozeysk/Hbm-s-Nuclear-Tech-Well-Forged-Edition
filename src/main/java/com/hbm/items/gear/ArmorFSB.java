@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemGeigerCounter;
 import com.hbm.config.PotionConfig;
@@ -390,7 +391,7 @@ public class ArmorFSB extends ItemArmor {
 			updateClient(stack, fsbarmor, world, e, itemSlot, isSelected);
 		}
 		
-		if(!fsbarmor.geigerSound || !(entity instanceof EntityPlayer))
+		if(!(entity instanceof EntityPlayer) || !(fsbarmor instanceof ArmorFSBPowered) || !ArmorFSBPowered.hasGeigerCounter(entity))
 			return;
 		
 		ItemGeigerCounter.playGeiger(world, (EntityPlayer)entity);

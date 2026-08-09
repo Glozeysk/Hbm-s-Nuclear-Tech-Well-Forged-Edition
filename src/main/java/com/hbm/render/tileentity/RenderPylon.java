@@ -29,7 +29,7 @@ public class RenderPylon extends TileEntitySpecialRenderer<TileEntityPylon> {
 
     @Override
     public boolean isGlobalRenderer(TileEntityPylon te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

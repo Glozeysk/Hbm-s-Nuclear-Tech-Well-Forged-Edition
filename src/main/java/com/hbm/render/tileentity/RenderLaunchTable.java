@@ -20,7 +20,7 @@ public class RenderLaunchTable extends TileEntitySpecialRenderer<TileEntityLaunc
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityLaunchTable te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

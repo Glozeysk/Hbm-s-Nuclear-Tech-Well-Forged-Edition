@@ -20,7 +20,7 @@ public class RenderRBMKControlRod extends TileEntitySpecialRenderer<TileEntityRB
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityRBMKControl te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

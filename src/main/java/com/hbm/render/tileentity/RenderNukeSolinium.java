@@ -12,7 +12,7 @@ public class RenderNukeSolinium extends TileEntitySpecialRenderer<TileEntityNuke
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukeSolinium te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

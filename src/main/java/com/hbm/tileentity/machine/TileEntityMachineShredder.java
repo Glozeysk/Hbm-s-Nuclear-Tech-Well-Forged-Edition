@@ -29,6 +29,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 	public int soundCycle = 0;
 	public static final long maxPower = 10000;
 	public static final int processingSpeed = 60;
+	private int syncTick = 0;
 	
 	private static final int[] slots_top = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8};
 	private static final int[] slots_bottom = new int[] {9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
@@ -117,7 +118,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 		boolean flag1 = false;
 		
 		if(!world.isRemote)
-		{			
+		{
 			this.updateStandardConnections(world, pos);
 			if(hasPower() && canProcess())
 			{
@@ -159,7 +160,11 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 			
 			power = Library.chargeTEFromItems(inventory, 29, power, maxPower);
 			
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
+			syncTick++;
+			if(syncTick >= 5) {
+				syncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
+			}
 		}
 		
 		if(flag1)

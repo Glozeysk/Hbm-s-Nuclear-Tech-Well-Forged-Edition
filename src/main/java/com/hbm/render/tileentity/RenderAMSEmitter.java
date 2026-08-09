@@ -18,7 +18,7 @@ public class RenderAMSEmitter extends TileEntitySpecialRenderer<TileEntityAMSEmi
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityAMSEmitter te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

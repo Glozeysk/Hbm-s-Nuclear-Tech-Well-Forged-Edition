@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderOilburner extends TileEntitySpecialRenderer<TileEntityHeaterOilburner> {
     @Override
     public boolean isGlobalRenderer(TileEntityHeaterOilburner te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

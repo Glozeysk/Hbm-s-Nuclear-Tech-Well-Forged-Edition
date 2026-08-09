@@ -42,7 +42,7 @@ public class RenderObjTester extends TileEntitySpecialRenderer<TileEntityObjTest
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityObjTester te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

@@ -2,6 +2,7 @@ package com.hbm.command;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -92,6 +93,9 @@ public class CommandHbm extends CommandBase {
 				return;
 			} else if("gen".equals(args[0])) {
 				doGenCommand(server, sender, args);
+				return;
+			} else if("tps".equals(args[0])) {
+				doTpsCommand(server, sender);
 				return;
 			} else if("reloadCollada".equals(args[0])){
 				if(FMLCommonHandler.instance().getSide() == Side.CLIENT){
@@ -266,7 +270,21 @@ public class CommandHbm extends CommandBase {
 	}
 
 	protected List<String> getSubCommands() {
-		return Lists.newArrayList("subcommands", "gen", "reloadCollada");
+		return Lists.newArrayList("subcommands", "gen", "tps", "reloadCollada");
+	}
+
+	protected void doTpsCommand(MinecraftServer server, ICommandSender sender) {
+		double meanTickMs = mean(server.tickTimeArray) * 1.0E-6D;
+		double tps = Math.min(20.0D, 1000.0D / Math.max(1.0D, meanTickMs));
+		sender.sendMessage(new TextComponentString(String.format(Locale.ROOT, "Server TPS: %.2f | Avg tick: %.2f ms", tps, meanTickMs)));
+	}
+
+	private double mean(long[] values) {
+		long sum = 0L;
+		for(long value : values) {
+			sum += value;
+		}
+		return values.length == 0 ? 0.0D : (double) sum / (double) values.length;
 	}
 
 	protected void doSubcommandCommand(MinecraftServer server, ICommandSender sender, String[] args) {

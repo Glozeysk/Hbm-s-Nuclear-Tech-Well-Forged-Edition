@@ -22,7 +22,7 @@ public class RenderSpinnyLight extends TileEntitySpecialRenderer<TileEntitySpinn
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntitySpinnyLight te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

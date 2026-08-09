@@ -7,7 +7,7 @@ public class RenderBookCrafting extends TileEntitySpecialRenderer<TileEntityBlac
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityBlackBook te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

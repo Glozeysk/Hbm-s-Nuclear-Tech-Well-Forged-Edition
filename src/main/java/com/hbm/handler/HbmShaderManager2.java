@@ -104,6 +104,7 @@ public class HbmShaderManager2 {
     public static Framebuffer[] bloomBuffers;
     public static Framebuffer bloomData;
     public static Framebuffer distortionBuffer;
+    private static boolean forceHeatDistortionPass = false;
     
     public static int depthFrameBuffer = -1;
     public static int depthTexture = -1;
@@ -173,9 +174,10 @@ public class HbmShaderManager2 {
 		if(GeneralConfig.bloom){
 			bloom();
 		}
-		if(GeneralConfig.heatDistortion){
+		if(GeneralConfig.heatDistortion || forceHeatDistortionPass){
 			heatDistortion();
 		}
+		forceHeatDistortionPass = false;
 		GlStateManager.enableDepth();
 	}
 	
@@ -199,6 +201,14 @@ public class HbmShaderManager2 {
 	}
 	
 	public static void distort(float strength, Runnable render){
+		if(!GeneralConfig.useShaders2 || ResourceManager.heat_distortion_new.getShaderId() == 0 || ResourceManager.heat_distortion_post.getShaderId() == 0)
+			return;
+		if(height != Minecraft.getMinecraft().displayHeight || width != Minecraft.getMinecraft().displayWidth || distortionBuffer == null){
+			height = Minecraft.getMinecraft().displayHeight;
+			width = Minecraft.getMinecraft().displayWidth;
+			recreateDistortionBuffer();
+		}
+		forceHeatDistortionPass = true;
 		distortionBuffer.bindFramebuffer(false);
 		ResourceManager.heat_distortion_new.use();
 		GLCompat.uniform1f(GLCompat.getUniformLocation(ResourceManager.heat_distortion_new.getShaderId(), "amount"), strength);

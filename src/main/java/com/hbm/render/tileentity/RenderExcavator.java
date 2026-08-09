@@ -18,7 +18,7 @@ public class RenderExcavator extends TileEntitySpecialRenderer<TileEntityMachine
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineExcavator te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

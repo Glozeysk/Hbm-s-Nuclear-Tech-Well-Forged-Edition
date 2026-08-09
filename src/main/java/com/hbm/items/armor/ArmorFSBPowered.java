@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -32,6 +33,109 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 		this.consumption = consumption;
 		this.drain = drain;
 		this.setMaxDamage(1);
+	}
+
+	public static boolean hasPoweredArmor(EntityLivingBase entity) {
+		if(entity == null) {
+			return false;
+		}
+
+		ItemStack plate = entity.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+
+		if(plate == null || plate.isEmpty() || !(plate.getItem() instanceof ArmorFSBPowered)) {
+			return false;
+		}
+
+		ArmorFSBPowered chestplate = (ArmorFSBPowered) plate.getItem();
+		boolean noHelmet = chestplate.noHelmet;
+
+		for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+			if(slot == EntityEquipmentSlot.MAINHAND || slot == EntityEquipmentSlot.OFFHAND) {
+				continue;
+			}
+			if(noHelmet && slot == EntityEquipmentSlot.HEAD) {
+				continue;
+			}
+
+			ItemStack armor = entity.getItemStackFromSlot(slot);
+
+			if(armor == null || armor.isEmpty() || !(armor.getItem() instanceof ArmorFSBPowered)) {
+				return false;
+			}
+
+			ArmorFSBPowered piece = (ArmorFSBPowered) armor.getItem();
+
+			if(piece.getArmorMaterial() != chestplate.getArmorMaterial()) {
+				return false;
+			}
+
+			if(!piece.isArmorEnabled(armor)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public static boolean hasPoweredArmorIgnoreCharge(EntityLivingBase entity) {
+		if(entity == null) {
+			return false;
+		}
+
+		ItemStack plate = entity.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+
+		if(plate == null || plate.isEmpty() || !(plate.getItem() instanceof ArmorFSBPowered)) {
+			return false;
+		}
+
+		ArmorFSBPowered chestplate = (ArmorFSBPowered) plate.getItem();
+		boolean noHelmet = chestplate.noHelmet;
+
+		for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+			if(slot == EntityEquipmentSlot.MAINHAND || slot == EntityEquipmentSlot.OFFHAND) {
+				continue;
+			}
+			if(noHelmet && slot == EntityEquipmentSlot.HEAD) {
+				continue;
+			}
+
+			ItemStack armor = entity.getItemStackFromSlot(slot);
+
+			if(armor == null || armor.isEmpty() || !(armor.getItem() instanceof ArmorFSBPowered)) {
+				return false;
+			}
+
+			if(((ArmorFSBPowered) armor.getItem()).getArmorMaterial() != chestplate.getArmorMaterial()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public static boolean hasGeigerCounter(EntityLivingBase entity) {
+		return hasPoweredArmor(entity) && hasLegFlag(entity, true);
+	}
+
+	public static boolean hasCustomGeigerCounter(EntityLivingBase entity) {
+		return hasPoweredArmor(entity) && hasLegFlag(entity, false);
+	}
+
+	private static boolean hasLegFlag(EntityLivingBase entity, boolean soundFlag) {
+		ItemStack legs = entity.getItemStackFromSlot(EntityEquipmentSlot.LEGS);
+
+		if(legs == null || legs.isEmpty()) {
+			return false;
+		}
+
+		Item item = legs.getItem();
+
+		if(!(item instanceof ArmorFSBPowered)) {
+			return false;
+		}
+
+		ArmorFSBPowered leggings = (ArmorFSBPowered) item;
+		return soundFlag ? leggings.geigerSound : leggings.customGeiger;
 	}
 
 	public static String getColor(long a, long b){

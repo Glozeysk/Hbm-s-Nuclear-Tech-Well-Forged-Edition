@@ -12,7 +12,7 @@ public class RenderSpacer extends TileEntitySpecialRenderer<TileEntitySpacer> {
 
 	@Override
 	public boolean isGlobalRenderer(TileEntitySpacer te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

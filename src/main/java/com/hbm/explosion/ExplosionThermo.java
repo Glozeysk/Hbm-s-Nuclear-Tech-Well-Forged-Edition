@@ -45,9 +45,10 @@ public class ExplosionThermo {
 				for (int zz = -r; zz < r; zz++) {
 					int Z = zz + z;
 					int ZZ = YY + zz * zz;
-					if (ZZ < r22 + world.rand.nextInt(r22 / 2))
+					if (ZZ < r22 + world.rand.nextInt(r22 / 2)) {
 						pos.setPos(X, Y, Z);
-					freezeDest(world, pos);
+						freezeDest(world, pos);
+					}
 				}
 			}
 		}
@@ -70,9 +71,10 @@ public class ExplosionThermo {
 				for (int zz = -r; zz < r; zz++) {
 					int Z = zz + z;
 					int ZZ = YY + zz * zz;
-					if (ZZ < r22 + world.rand.nextInt(r22 / 2))
+					if (ZZ < r22 + world.rand.nextInt(r22 / 2)) {
 						pos.setPos(X, Y, Z);
-					scorchDest(world, pos);
+						scorchDest(world, pos);
+					}
 				}
 			}
 		}

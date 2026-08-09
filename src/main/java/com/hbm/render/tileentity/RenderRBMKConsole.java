@@ -23,7 +23,7 @@ public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKC
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityRBMKConsole te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

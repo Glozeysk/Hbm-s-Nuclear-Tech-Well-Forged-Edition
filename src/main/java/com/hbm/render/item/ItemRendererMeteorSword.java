@@ -35,7 +35,18 @@ public class ItemRendererMeteorSword extends TEISRBase {
 		Minecraft mc = Minecraft.getMinecraft();
         GlStateManager.pushMatrix();
         GlStateManager.translate(-0.5F, -0.5F, -0.5F);
-        Minecraft.getMinecraft().getRenderItem().renderModel(itemModel, stack);
+        if(itemModel != null) {
+            BufferBuilder bufferbuilder = Tessellator.getInstance().getBuffer();
+            bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+            int color = 0xFFFFFFFF;
+
+            for (EnumFacing enumfacing : EnumFacing.values()) {
+            	Minecraft.getMinecraft().getRenderItem().renderQuads(bufferbuilder, itemModel.getQuads((IBlockState)null, enumfacing, 0L), color, stack);
+            }
+
+            Minecraft.getMinecraft().getRenderItem().renderQuads(bufferbuilder, itemModel.getQuads((IBlockState)null, (EnumFacing)null, 0L), color, stack);
+            Tessellator.getInstance().draw();
+        }
         GlStateManager.popMatrix();
 
         mc.renderEngine.bindTexture(RenderMiscEffects.glint);

@@ -27,6 +27,7 @@ public class TileEntityMachineShreddermk2 extends TileEntityMachineBase implemen
 	public long power;
 	public int progress;
 	public int soundCycle = 0;
+	private int syncTick = 0;
 	public static final long maxPower = 120000;
 	public static final int processingSpeed = 5;
 	
@@ -152,7 +153,11 @@ public class TileEntityMachineShreddermk2 extends TileEntityMachineBase implemen
 			
 			power = Library.chargeTEFromItems(inventory, 4, power, maxPower);
 			
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
+			syncTick++;
+			if(syncTick >= 5) {
+				syncTick = 0;
+				PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 15));
+			}
 		}
 		
 		if(flag1)

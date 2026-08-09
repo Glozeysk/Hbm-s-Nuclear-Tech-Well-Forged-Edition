@@ -12,7 +12,7 @@ public class RenderNukeTsar extends TileEntitySpecialRenderer<TileEntityNukeTsar
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukeTsar te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

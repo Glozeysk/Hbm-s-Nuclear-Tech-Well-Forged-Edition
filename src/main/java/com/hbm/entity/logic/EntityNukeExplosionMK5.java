@@ -117,13 +117,15 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
 			explosion = new ExplosionNukeRayBatched(world, (int) this.posX, (int) this.posY, (int) this.posZ, this.strength, this.radius);
 		}
 
+		int budget = this.getProcessingBudget();
+
 		//Calculating crater
 		if(!explosion.isAusf3Complete) {
-			explosion.collectTip(BombConfig.mk5);
+			explosion.collectTip(budget);
 
 		//Excecuting destruction
 		} else if(explosion.perChunk.size() > 0) {
-			explosion.processChunk(BombConfig.mk5);
+			explosion.processChunk(budget);
 		
 		} else {
 			boolean craterReady = true;
@@ -157,6 +159,16 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
 			unloadMainChunk();
 			this.setDead();
 		}
+	}
+
+	private int getProcessingBudget() {
+		int budget = BombConfig.mk5;
+		budget += Math.max(0, this.radius * 2);
+		budget += Math.max(0, this.strength / 4);
+		if(this.radius > 64) {
+			budget += (this.radius - 64) * 3;
+		}
+		return Math.min(250, Math.max(40, budget));
 	}
 
 	@Override

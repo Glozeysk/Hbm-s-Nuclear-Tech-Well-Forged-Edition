@@ -46,6 +46,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 	public static final int maxPower = 100000;
 	public static final int processingSpeed = 1200;
 	public boolean needsUpdate = false;
+	private int soundSyncTick;
 
 	public FluidTank tank;
 
@@ -263,7 +264,13 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 				this.progress = 0;
 			}
 
-			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+			if(isProgressing) {
+				soundSyncTick++;
+				if(soundSyncTick >= 10) {
+					soundSyncTick = 0;
+					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+				}
+			}
 			detectAndSendChanges();
 		}
 

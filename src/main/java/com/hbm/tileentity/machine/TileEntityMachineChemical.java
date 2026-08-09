@@ -62,6 +62,8 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	private long detectPower;
 	private boolean detectIsProgressing;
 	private FluidTank[] detectTanks = new FluidTank[]{null, null, null, null};
+	private int syncTick = 0;
+	private int soundSyncTick = 0;
 	public boolean frame = false;
 	public int anim;
 	public int prevAnim;
@@ -836,7 +838,13 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 	}
 
 	private void detectAndSendChanges() {
-		PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+		if(isProgressing) {
+			soundSyncTick++;
+			if(soundSyncTick >= 10) {
+				soundSyncTick = 0;
+				PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+			}
+		}
 
 		boolean mark = false;
 
@@ -844,12 +852,10 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			mark = true;
 			detectIsProgressing = isProgressing;
 		}
-		PacketDispatcher.wrapper.sendToAllAround(new TEChemicalPacket(pos.getX(), pos.getY(), pos.getZ(), isProgressing), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 		if(detectPower != power) {
 			mark = true;
 			detectPower = power;
 		}
-		PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 		if(!FFUtils.areTanksEqual(detectTanks[0], tanks[0])) {
 			detectTanks[0] = FFUtils.copyTank(tanks[0]);
 			mark = true;
@@ -870,7 +876,15 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			mark = true;
 			needsUpdate = true;
 		}
-		PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tanks[0], tanks[1], tanks[2], tanks[3]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+		syncTick++;
+		if(syncTick >= 5) {
+			syncTick = 0;
+			PacketDispatcher.wrapper.sendToAllAround(new TEChemicalPacket(pos.getX(), pos.getY(), pos.getZ(), isProgressing), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tanks[0], tanks[1], tanks[2], tanks[3]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+		}
+		if(mark) {
+			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+		}
 
 		if(mark)
 			markDirty();

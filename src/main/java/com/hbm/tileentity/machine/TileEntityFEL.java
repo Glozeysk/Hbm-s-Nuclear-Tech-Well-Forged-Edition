@@ -52,6 +52,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 	public boolean missingValidSilex = true;
 	public int distance;
 	public List<EntityLivingBase> entities = new ArrayList();
+	private int soundSyncTick;
 	
 	
 	public TileEntityFEL() {
@@ -230,7 +231,13 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 				}
 			}
 			
-			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+			if(this.isOn) {
+				soundSyncTick++;
+				if(soundSyncTick >= 10) {
+					soundSyncTick = 0;
+					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+				}
+			}
 			networkPackNT(250);
 		}
 	}

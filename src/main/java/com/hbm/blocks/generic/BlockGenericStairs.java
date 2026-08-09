@@ -19,8 +19,15 @@ public class BlockGenericStairs extends BlockStairs {
 		super(modelState);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
+		this.setLightOpacity(0);
+		this.useNeighborBrightness = true;
 		
 		ModBlocks.ALL_BLOCKS.add(this);
+	}
+
+	@Override
+	public float getAmbientOcclusionLightValue(IBlockState state) {
+		return 1.0F;
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class RenderSoyuzLauncher extends TileEntitySpecialRenderer<TileEntitySoy
 
 	@Override
 	public boolean isGlobalRenderer(TileEntitySoyuzLauncher te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

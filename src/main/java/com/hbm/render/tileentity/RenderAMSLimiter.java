@@ -15,7 +15,7 @@ public class RenderAMSLimiter extends TileEntitySpecialRenderer<TileEntityAMSLim
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityAMSLimiter te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

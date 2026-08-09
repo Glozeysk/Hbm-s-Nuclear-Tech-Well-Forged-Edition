@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderHeatingOven extends TileEntitySpecialRenderer<TileEntityHeaterOven> {
     @Override
     public boolean isGlobalRenderer(TileEntityHeaterOven te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

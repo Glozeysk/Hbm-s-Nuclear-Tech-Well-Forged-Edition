@@ -7,5 +7,6 @@ varying vec2 texCoord;
 
 void main(){
 	vec4 mask = texture2D(tex_mask, texCoord);
-	gl_FragColor = vec4(amount*smoothstep(0, 1, mask.a), 0, 0, 1);
+	float sampleStrength = max(mask.a, max(mask.r, max(mask.g, mask.b)));
+	gl_FragColor = vec4(amount*smoothstep(0, 1, sampleStrength), 0, 0, 1);
 }

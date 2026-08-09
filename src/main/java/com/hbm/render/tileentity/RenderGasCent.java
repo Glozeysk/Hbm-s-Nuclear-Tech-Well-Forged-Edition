@@ -12,7 +12,7 @@ public class RenderGasCent extends TileEntitySpecialRenderer<TileEntityMachineGa
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineGasCent te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

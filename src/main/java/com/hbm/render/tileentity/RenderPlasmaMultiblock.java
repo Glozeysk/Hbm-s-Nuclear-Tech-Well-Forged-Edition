@@ -15,7 +15,7 @@ public class RenderPlasmaMultiblock extends TileEntitySpecialRenderer<TileEntity
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityPlasmaStruct te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

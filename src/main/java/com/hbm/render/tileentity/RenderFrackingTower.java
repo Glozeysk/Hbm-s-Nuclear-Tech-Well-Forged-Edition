@@ -15,7 +15,7 @@ public class RenderFrackingTower extends TileEntitySpecialRenderer<TileEntityMac
         @Override
     public boolean isGlobalRenderer(TileEntityMachineFrackingTower te)
     {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

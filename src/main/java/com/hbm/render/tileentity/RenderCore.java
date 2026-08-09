@@ -18,7 +18,7 @@ public class RenderCore extends TileEntitySpecialRenderer<TileEntityCore> {
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityCore te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

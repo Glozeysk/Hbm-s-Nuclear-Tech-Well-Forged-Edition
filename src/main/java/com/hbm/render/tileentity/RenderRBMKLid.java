@@ -34,7 +34,7 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityRBMKBase te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

@@ -47,6 +47,7 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 
 	public long power = 0;
 	public static final int maxPower = 100000;
+	private int scanTick;
 	
 	
 	@Override
@@ -63,15 +64,22 @@ public class TileEntityMachineRadar extends TileEntityTickingBase implements ITi
 
 			this.updateConnectionsExcept(world, pos, ForgeDirection.UP);
 			
-			nearbyMissiles.clear();
-
 			if(power > 0) {
-				allocateMissiles();
-
 				power -= 500;
 
 				if(power < 0)
 					power = 0;
+
+				scanTick++;
+				if(scanTick >= 5) {
+					scanTick = 0;
+					allocateMissiles();
+				}
+			} else {
+				scanTick = 0;
+				nearbyMissiles.clear();
+				entList.clear();
+				jammed = false;
 			}
 			
 			if(lastPower != getRedPower())

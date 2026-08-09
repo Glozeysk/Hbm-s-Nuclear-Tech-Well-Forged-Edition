@@ -20,7 +20,7 @@ public class RenderAssembler extends TileEntitySpecialRenderer<TileEntityMachine
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineAssembler te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
     @Override

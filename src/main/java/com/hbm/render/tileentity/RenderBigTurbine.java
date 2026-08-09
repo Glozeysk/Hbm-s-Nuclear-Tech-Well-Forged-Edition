@@ -13,7 +13,7 @@ public class RenderBigTurbine extends TileEntitySpecialRenderer<TileEntityMachin
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineLargeTurbine te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

@@ -18,7 +18,7 @@ public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT> extends
 	
 	@Override
 	public boolean isGlobalRenderer(T te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	protected void renderConnectors(TileEntityTurretBaseNT turret, boolean power, boolean fluid, Fluid type) {

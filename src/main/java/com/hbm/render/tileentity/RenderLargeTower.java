@@ -12,7 +12,7 @@ public class RenderLargeTower extends TileEntitySpecialRenderer<TileEntityTowerL
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityTowerLarge te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

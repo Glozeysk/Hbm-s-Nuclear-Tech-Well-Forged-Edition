@@ -18,7 +18,7 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachinePumpjack te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	public void drawConnection(double x, double y, double z, double a, double b, double c) {

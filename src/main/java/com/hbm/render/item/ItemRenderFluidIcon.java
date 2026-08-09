@@ -48,7 +48,13 @@ public class ItemRenderFluidIcon extends TEISRBase {
 
 			if (!(model instanceof net.minecraftforge.client.model.pipeline.UnpackedBakedQuad)
 					&& !model.isBuiltInRenderer()) {
-				Minecraft.getMinecraft().getRenderItem().renderModel(model, stack);
+				buf.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+				int color = 0xFFFFFFFF;
+				for (net.minecraft.util.EnumFacing face : net.minecraft.util.EnumFacing.values()) {
+					Minecraft.getMinecraft().getRenderItem().renderQuads(buf, model.getQuads(null, face, 0L), color, stack);
+				}
+				Minecraft.getMinecraft().getRenderItem().renderQuads(buf, model.getQuads(null, null, 0L), color, stack);
+				tes.draw();
 			}
 
 			GL11.glPopMatrix();

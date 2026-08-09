@@ -12,7 +12,7 @@ public class RenderFractionTower extends TileEntitySpecialRenderer<TileEntityMac
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineFractionTower te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

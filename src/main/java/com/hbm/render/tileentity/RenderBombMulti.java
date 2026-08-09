@@ -12,7 +12,7 @@ public class RenderBombMulti extends TileEntitySpecialRenderer<TileEntityBombMul
     
     @Override
     public boolean isGlobalRenderer(TileEntityBombMulti te) {
-    	return true;
+    	return RenderPerformance.renderGlobalInLow();
     }
     
     @Override

@@ -16,7 +16,7 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
 
 	@Override
 	public boolean isGlobalRenderer(TileEntitySiloHatch te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

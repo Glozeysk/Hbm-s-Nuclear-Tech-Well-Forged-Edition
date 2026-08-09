@@ -17,7 +17,7 @@ public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMach
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineCrystallizer te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

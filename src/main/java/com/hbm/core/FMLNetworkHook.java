@@ -15,23 +15,50 @@ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.hbm.lib.internal.UnsafeHolder.U;
-import static com.hbm.lib.internal.UnsafeHolder.fieldOffset;
 
 @SuppressWarnings("unused")
 public final class FMLNetworkHook {
     private static final int PART_SIZE = 0x100000 - 0x50; // 1_048_496
     private static final int MAX_PARTS = 255;
-    private static final long SIDE_OFF = fieldOffset(NetworkDispatcher.class, "side");
-    private static final long SP_DATA_OFF = fieldOffset(SPacketCustomPayload.class, "data", "field_149171_b");
-    private static final long SP_CHAN_OFF = fieldOffset(SPacketCustomPayload.class, "channel", "field_149172_a");
-    private static final long CP_DATA_OFF = fieldOffset(CPacketCustomPayload.class, "data", "field_149561_c");
-    private static final long CP_CHAN_OFF = fieldOffset(CPacketCustomPayload.class, "channel", "field_149562_a");
+    private static final long SIDE_OFF = fieldOffset(NetworkDispatcher.class, Side.class, "side");
+    private static final long SP_DATA_OFF = fieldOffset(SPacketCustomPayload.class, ByteBuf.class, "data", "field_149171_b");
+    private static final long SP_CHAN_OFF = fieldOffset(SPacketCustomPayload.class, String.class, "channel", "field_149172_a");
+    private static final long CP_DATA_OFF = fieldOffset(CPacketCustomPayload.class, ByteBuf.class, "data", "field_149561_c");
+    private static final long CP_CHAN_OFF = fieldOffset(CPacketCustomPayload.class, String.class, "channel", "field_149562_a");
 
     private FMLNetworkHook() {
+    }
+
+    private static long fieldOffset(Class<?> clz, Class<?> type, String... names) {
+        try {
+            Field field = findField(clz, type, names);
+            return U.objectFieldOffset(field);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Field findField(Class<?> clz, Class<?> type, String... names) throws NoSuchFieldException {
+        for (Field field : clz.getDeclaredFields()) {
+            if (type.isAssignableFrom(field.getType()) || field.getType().isAssignableFrom(type)) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        for (String name : names) {
+            try {
+                Field field = clz.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException ignored) {
+            }
+        }
+        throw new NoSuchFieldException(clz.getName());
     }
 
     private static void releaseCustomPayloadData(Object pkt) throws Throwable {
@@ -124,7 +151,7 @@ public final class FMLNetworkHook {
                     ChannelPromise pPromise = (i == last) ? promise : ctx.newPromise();
 
                     final ChannelFuture f = ctx.write(p, pPromise);
-                    f.addListener((ChannelFutureListener) _ -> {
+                    f.addListener((ChannelFutureListener) future -> {
                         try {
                             releaseCustomPayloadData(p);
                         } catch (Throwable e) {

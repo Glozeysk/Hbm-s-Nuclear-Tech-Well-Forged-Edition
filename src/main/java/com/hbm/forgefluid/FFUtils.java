@@ -261,22 +261,38 @@ public class FFUtils {
 		}
 		TileEntity te = world.getTileEntity(toFill);
 
-		if(te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) {
-			if(te instanceof TileEntityDummy) {
-				TileEntityDummy ted = (TileEntityDummy)te;
-				if(world.getTileEntity(ted.target) == tileEntity) {
-					return false;
-				}
-			}
-			try{
-				IFluidHandler tef = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
-				if(tef != null && tef.fill(new FluidStack(tank.getFluid(), Math.min(maxDrain, tank.getFluidAmount())), false) > 0) {
-					tank.drain(tef.fill(new FluidStack(tank.getFluid(), Math.min(maxDrain, tank.getFluidAmount())), true), true);
-					return true;
-				}
-			} catch(Throwable t){
+		if(te == null) {
+			return false;
+		}
+
+		if(te instanceof TileEntityDummy) {
+			TileEntityDummy ted = (TileEntityDummy)te;
+			if(world.getTileEntity(ted.target) == tileEntity) {
 				return false;
 			}
+		}
+
+		try {
+			FluidStack attempt = new FluidStack(tank.getFluid(), Math.min(maxDrain, tank.getFluidAmount()));
+			IFluidHandler tef = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
+
+			if(tef != null && tef.fill(attempt, false) > 0) {
+				tank.drain(tef.fill(attempt, true), true);
+				return true;
+			}
+
+			for(EnumFacing facing : EnumFacing.values()) {
+				if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing)) {
+					continue;
+				}
+				tef = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing);
+				if(tef != null && tef.fill(attempt, false) > 0) {
+					tank.drain(tef.fill(attempt, true), true);
+					return true;
+				}
+			}
+		} catch(Throwable t) {
+			return false;
 		}
 		return false;
 	}
@@ -481,6 +497,8 @@ public class FFUtils {
 	public static boolean checkRestrictions(ItemStack stack, Predicate<FluidStack> fluidRestrictor){
 		if(stack.getItem() == ModItems.fluid_barrel_infinite)
 			return true;
+		if(stack.getItem() == ModItems.nugget_mercury)
+			return fluidRestrictor.apply(new FluidStack(ModForgeFluids.mercury, 125));
 		FluidStack fluid = FluidUtil.getFluidContained(stack);
 		if(fluid != null && fluidRestrictor.apply(fluid))
 			return true;
@@ -494,6 +512,67 @@ public class FFUtils {
 
 	public static boolean isEmtpyFluidTank(ItemStack stack){
 		return stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && FluidUtil.getFluidContained(stack) == null;
+	}
+
+	public static boolean canDrainIntoTank(ItemStack stack) {
+		if(stack.isEmpty())
+			return false;
+		if(stack.getItem() == ModItems.fluid_barrel_infinite || stack.getItem() == ModItems.nugget_mercury)
+			return true;
+		if(FluidUtil.getFluidContained(stack) != null)
+			return true;
+		if(FluidContainerRegistry.hasFluid(stack.getItem()))
+			return FluidContainerRegistry.getFluidFromItem(stack.getItem()) != null;
+		if(stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+			IFluidHandlerItem ifhi = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+			return ifhi != null && ifhi.drain(Integer.MAX_VALUE, false) != null;
+		}
+		if(stack.getItem() instanceof IItemFluidHandler)
+			return ((IItemFluidHandler) stack.getItem()).drain(stack, Integer.MAX_VALUE, false) != null;
+		if(ArmorModHandler.hasMods(stack)) {
+			ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.plate_only);
+			if(!mod.isEmpty() && mod.getItem() instanceof JetpackGlider) {
+				FluidTank modTank = ((JetpackGlider) mod.getItem()).getTank(mod);
+				return modTank.getFluid() != null && modTank.getFluidAmount() > 0;
+			}
+		}
+		return false;
+	}
+
+	public static boolean canFillFromTank(ItemStack stack) {
+		if(stack.isEmpty())
+			return false;
+		Item item = stack.getItem();
+		if(item == Items.BUCKET)
+			return true;
+		if(item == ModItems.fluid_tank_full && ItemFluidTank.isEmptyTank(stack.copy()))
+			return true;
+		if(item == ModItems.fluid_barrel_full && ItemFluidTank.isEmptyBarrel(stack.copy()))
+			return true;
+		if(item == ModItems.canister_generic && ItemFluidCanister.isEmptyCanister(stack.copy()))
+			return true;
+		if(item == ModItems.gas_canister && ItemGasCanister.isEmptyCanister(stack.copy()))
+			return true;
+		if(item == ModItems.cell && ItemCell.isEmptyCell(stack.copy()))
+			return true;
+		if(item == ModItems.rod_empty || item == ModItems.rod_dual_empty || item == ModItems.rod_quad_empty)
+			return true;
+		if(stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))
+			return FluidUtil.getFluidContained(stack) == null;
+		if(item instanceof IItemFluidHandler) {
+			FluidStack contained = ((IItemFluidHandler) item).drain(stack, Integer.MAX_VALUE, false);
+			return contained == null;
+		}
+		if(ArmorModHandler.hasMods(stack)) {
+			ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.plate_only);
+			if(!mod.isEmpty() && mod.getItem() instanceof JetpackGlider) {
+				FluidTank modTank = ((JetpackGlider) mod.getItem()).getTank(mod);
+				return modTank.getFluid() == null || modTank.getFluidAmount() < modTank.getCapacity();
+			}
+			if(!mod.isEmpty() && mod.getItem() instanceof JetpackBase)
+				return true;
+		}
+		return false;
 	}
 
 	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) {
@@ -954,6 +1033,8 @@ public class FFUtils {
 	public static boolean containsFluid(ItemStack stack, Fluid fluid){
 		if(stack.getItem() == ModItems.fluid_barrel_infinite)
 			return true;
+		if(stack.getItem() == ModItems.nugget_mercury)
+			return fluid == ModForgeFluids.mercury;
 		FluidStack contained = FluidUtil.getFluidContained(stack);
 		if(contained != null && contained.getFluid() == fluid)
 			return true;

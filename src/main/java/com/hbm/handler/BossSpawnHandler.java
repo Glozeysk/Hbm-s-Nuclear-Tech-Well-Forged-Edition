@@ -10,6 +10,7 @@ import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.config.MobConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.CompatibilityConfig;
+import com.hbm.config.WorldConfig;
 import com.hbm.util.ContaminationUtil;
 
 import net.minecraft.entity.EntityLiving;
@@ -27,6 +28,9 @@ import net.minecraftforge.fml.common.eventhandler.Event.Result;
 public class BossSpawnHandler {
 
 	public static void rollTheDice(World world) {
+		if(world == null || world.isRemote) {
+			return;
+		}
 
 		if(MobConfig.enableMaskman) {
 			if(world.getTotalWorldTime() % MobConfig.maskmanDelay == 0) {
@@ -136,7 +140,11 @@ public class BossSpawnHandler {
 		}
 
 		if(GeneralConfig.enableMeteorStrikes && !world.isRemote) {
-			meteorUpdate(world);
+			if(MeteorControlHandler.isEnabled(world)) {
+				meteorUpdate(world);
+			} else {
+				meteorShower = 0;
+			}
 		}
 	}
 	
@@ -160,13 +168,13 @@ public class BossSpawnHandler {
 	public static int meteorShower = 0;
 	private static void meteorUpdate(World world) {
 		int dimID = world.provider.getDimension();
-		int dimMeteorShowerChance = parseOInt(CompatibilityConfig.meteorShowerChance.get(dimID));
-		int dimMeteorStrikeChance = parseOInt(CompatibilityConfig.meteorStrikeChance.get(dimID));
+		int dimMeteorShowerChance = fallbackInt(CompatibilityConfig.meteorShowerChance.get(dimID), WorldConfig.meteorShowerChance);
+		int dimMeteorStrikeChance = fallbackInt(CompatibilityConfig.meteorStrikeChance.get(dimID), WorldConfig.meteorStrikeChance);
 		if(dimMeteorShowerChance > 0 && dimMeteorStrikeChance > 0){
 			if(world.rand.nextInt(meteorShower > 0 ? dimMeteorShowerChance : dimMeteorStrikeChance) == 0) {
 				if(!world.playerEntities.isEmpty()) {
 					EntityPlayer p = (EntityPlayer) world.playerEntities.get(world.rand.nextInt(world.playerEntities.size()));
-					if(p != null && p.dimension == 0) {
+					if(p != null && p.world != null && p.world.provider.isSurfaceWorld()) {
 						boolean repell = false;
 						boolean strike = true;
 
@@ -196,8 +204,8 @@ public class BossSpawnHandler {
 					MainRegistry.logger.info("Ended meteor shower.");
 			}
 
-			if(world.rand.nextInt(dimMeteorStrikeChance * 100) == 0 && GeneralConfig.enableMeteorShowers) {
-				int dimMeteorShowerDuration = parseOInt(CompatibilityConfig.meteorShowerDuration.get(dimID));
+			if(world.rand.nextInt(Math.max(1, dimMeteorStrikeChance * 20)) == 0 && GeneralConfig.enableMeteorShowers) {
+				int dimMeteorShowerDuration = fallbackInt(CompatibilityConfig.meteorShowerDuration.get(dimID), WorldConfig.meteorShowerDuration);
 				meteorShower = (int) (dimMeteorShowerDuration * (0.75 + 0.25 * world.rand.nextFloat()));
 
 				if(GeneralConfig.enableDebugMode)
@@ -227,5 +235,10 @@ public class BossSpawnHandler {
 		if(o == null)
 			return 0;
 		return (int)o;
+	}
+
+	private static int fallbackInt(Object value, int fallback) {
+		int result = parseOInt(value);
+		return result > 0 ? result : fallback;
 	}
 }

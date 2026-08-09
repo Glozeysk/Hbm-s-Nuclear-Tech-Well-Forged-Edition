@@ -14,7 +14,7 @@ public class RenderHeaterElectric extends TileEntitySpecialRenderer<TileEntityHe
 
 	@Override
     public boolean isGlobalRenderer(TileEntityHeaterElectric te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
 	@Override

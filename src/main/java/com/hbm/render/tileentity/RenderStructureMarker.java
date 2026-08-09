@@ -67,7 +67,7 @@ public class RenderStructureMarker extends TileEntitySpecialRenderer<TileEntityS
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityStructureMarker te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

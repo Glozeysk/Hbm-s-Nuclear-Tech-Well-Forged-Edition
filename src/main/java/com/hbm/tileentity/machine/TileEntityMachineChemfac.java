@@ -54,6 +54,7 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 
 	public TypedFluidTank water;
 	public TypedFluidTank steam;
+	private int soundSyncTick;
 
 	private final UpgradeManager upgradeManager;
 
@@ -141,7 +142,13 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 				this.speed = 1;
 			}
 
-			PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+			if(isProgressing) {
+				soundSyncTick++;
+				if(soundSyncTick >= 10) {
+					soundSyncTick = 0;
+					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+				}
+			}
 			networkPackNT(150);
 		} else {
 			float maxSpeed = 30F;

@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderRadioThermal extends TileEntitySpecialRenderer<TileEntityHeaterRadioThermal> {
     @Override
     public boolean isGlobalRenderer(TileEntityHeaterRadioThermal te) {
-        return true;
+        return RenderPerformance.renderGlobalInLow();
     }
 
     @Override

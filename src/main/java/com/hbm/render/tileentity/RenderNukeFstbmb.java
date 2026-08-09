@@ -17,7 +17,7 @@ public class RenderNukeFstbmb extends TileEntitySpecialRenderer<TileEntityNukeBa
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityNukeBalefire te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

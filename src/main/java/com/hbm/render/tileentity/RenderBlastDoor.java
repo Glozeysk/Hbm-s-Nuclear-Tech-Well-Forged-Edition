@@ -13,7 +13,7 @@ public class RenderBlastDoor extends TileEntitySpecialRenderer<TileEntityBlastDo
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityBlastDoor te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

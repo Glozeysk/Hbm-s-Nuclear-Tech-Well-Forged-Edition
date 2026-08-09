@@ -16,7 +16,7 @@ public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachin
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineMiningLaser te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

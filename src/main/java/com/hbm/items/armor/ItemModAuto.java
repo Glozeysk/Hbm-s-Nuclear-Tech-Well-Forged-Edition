@@ -42,7 +42,7 @@ public class ItemModAuto extends ItemArmorMod {
 				ArmorModHandler.removeMod(armor, ArmorModHandler.extra);
 				entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.syringeUse, SoundCategory.PLAYERS, 1.0F, 1.0F);
 				HbmLivingProps.setDigamma(entity, HbmLivingProps.getDigamma(entity) - 5F);
-				entity.addPotionEffect(new PotionEffect(HbmPotion.stability, 60 * 20, 0));
+				entity.addPotionEffect(new PotionEffect(HbmPotion.stability, 60 * 20, 0, false, false));
 				entity.heal(20F);
 			}
 		}

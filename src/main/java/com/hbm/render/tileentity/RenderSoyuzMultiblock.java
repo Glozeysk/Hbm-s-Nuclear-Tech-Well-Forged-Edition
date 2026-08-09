@@ -19,7 +19,7 @@ public class RenderSoyuzMultiblock extends TileEntitySpecialRenderer<TileEntityS
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntitySoyuzStruct te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

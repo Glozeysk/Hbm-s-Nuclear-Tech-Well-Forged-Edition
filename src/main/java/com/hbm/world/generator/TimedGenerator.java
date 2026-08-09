@@ -1,41 +1,44 @@
 package com.hbm.world.generator;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Deque;
 
 import net.minecraft.world.World;
 
 public class TimedGenerator {
 
-	private static final HashMap<Integer, ArrayList<ITimedJob>> operations = new HashMap<>();
+	private static final HashMap<Integer, Deque<ITimedJob>> operations = new HashMap<>();
 
 	public static void automaton(World world, int amount) {
 
-		ArrayList<ITimedJob> list = operations.get(world.provider.getDimension());
+		Deque<ITimedJob> list = operations.get(world.provider.getDimension());
 
 		if(list == null)
 			return;
 
 		long start = System.currentTimeMillis();
+		int limit = Math.max(1, amount);
+		int processed = 0;
 
-		while(start + 10 > System.currentTimeMillis()) {
+		while(processed < limit && start + 10 > System.currentTimeMillis()) {
 
 			if(list.isEmpty())
 				return;
 
-			ITimedJob entry = list.get(0);
-			list.remove(0);
+			ITimedJob entry = list.pollFirst();
 
 			entry.work();
+			processed++;
 		}
 	}
 
 	public static void addOp(World world, ITimedJob job) {
 
-		ArrayList<ITimedJob> list = operations.get(world.provider.getDimension());
+		Deque<ITimedJob> list = operations.get(world.provider.getDimension());
 
 		if(list == null) {
-			list = new ArrayList<>();
+			list = new ArrayDeque<>();
 			operations.put(world.provider.getDimension(), list);
 		}
 

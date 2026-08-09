@@ -21,7 +21,7 @@ public class RenderEPress extends TileEntitySpecialRenderer<TileEntityMachineEPr
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineEPress te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

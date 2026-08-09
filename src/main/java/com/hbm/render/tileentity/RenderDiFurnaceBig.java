@@ -18,7 +18,7 @@ public class RenderDiFurnaceBig extends TileEntitySpecialRenderer<TileEntityMach
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineDiFurnaceBig te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

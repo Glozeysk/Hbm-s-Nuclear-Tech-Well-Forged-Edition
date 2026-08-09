@@ -9,7 +9,7 @@ import net.minecraft.world.World;
 public class TEISRBase extends TileEntityItemStackRenderer {
 
 	public IBakedModel itemModel;
-	public TransformType type;
+	public TransformType type = TransformType.NONE;
 	/** Can be null. */
 	public EntityLivingBase entity;
 	public World world;

@@ -16,7 +16,7 @@ public class RenderMachineForceField extends TileEntitySpecialRenderer<TileEntit
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityForceField te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

@@ -12,7 +12,7 @@ public class RenderDerrick extends TileEntitySpecialRenderer<TileEntityMachineOi
     
     @Override
     public boolean isGlobalRenderer(TileEntityMachineOilWell te) {
-    	return true;
+    	return RenderPerformance.renderGlobalInLow();
     }
 	
 	@Override

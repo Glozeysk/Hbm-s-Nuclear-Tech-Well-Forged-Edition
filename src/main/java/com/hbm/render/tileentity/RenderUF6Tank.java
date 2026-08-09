@@ -12,7 +12,7 @@ public class RenderUF6Tank extends TileEntitySpecialRenderer<TileEntityMachineUF
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityMachineUF6Tank te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

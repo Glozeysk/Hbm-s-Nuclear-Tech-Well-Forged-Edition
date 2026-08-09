@@ -16,7 +16,7 @@ public class RenderITER extends TileEntitySpecialRenderer<TileEntityITER> {
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityITER te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

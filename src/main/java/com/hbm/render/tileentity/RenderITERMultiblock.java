@@ -18,7 +18,7 @@ public class RenderITERMultiblock extends TileEntitySpecialRenderer<TileEntityIT
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityITERStruct te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 
 	@Override

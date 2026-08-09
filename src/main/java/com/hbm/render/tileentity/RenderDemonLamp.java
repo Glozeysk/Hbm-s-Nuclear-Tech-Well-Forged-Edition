@@ -24,7 +24,7 @@ public class RenderDemonLamp extends TileEntitySpecialRenderer<TileEntityDemonLa
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityDemonLamp te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

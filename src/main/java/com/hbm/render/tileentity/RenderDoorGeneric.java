@@ -34,7 +34,7 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityDoorGeneric te){
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override

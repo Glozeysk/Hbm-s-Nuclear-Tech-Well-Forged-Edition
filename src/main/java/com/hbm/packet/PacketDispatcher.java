@@ -65,7 +65,6 @@ public class PacketDispatcher {
         wrapper.registerMessage(TEPylonDestructorPacket.Handler.class, TEPylonDestructorPacket.class, i++, Side.CLIENT);
         //Sets railgun rotation so it updates on client
         wrapper.registerMessage(RailgunRotationPacket.Handler.class, RailgunRotationPacket.class, i++, Side.CLIENT);
-        // <Insert good comment here>
         wrapper.registerMessage(RailgunCallbackPacket.Handler.class, RailgunCallbackPacket.class, i++, Side.CLIENT);
         // Sets last fire time for railgun
         wrapper.registerMessage(RailgunFirePacket.Handler.class, RailgunFirePacket.class, i++, Side.CLIENT);
@@ -131,6 +130,8 @@ public class PacketDispatcher {
         //Universal keybind packet
         wrapper.registerMessage(KeybindPacket.Handler.class, KeybindPacket.class, i++, Side.SERVER);
         wrapper.registerMessage(KeybindPacket.Handler.class, KeybindPacket.class, i-1, Side.CLIENT);
+        wrapper.registerMessage(MeteorControlPacket.Handler.class, MeteorControlPacket.class, i++, Side.SERVER);
+        wrapper.registerMessage(MeteorControlPacket.Handler.class, MeteorControlPacket.class, i-1, Side.CLIENT);
         //To tell the server to cut a mob for the cutting swords
         wrapper.registerMessage(PacketMobSlicer.Handler.class, PacketMobSlicer.class, i++, Side.SERVER);
         //Sync packet for jetpack data

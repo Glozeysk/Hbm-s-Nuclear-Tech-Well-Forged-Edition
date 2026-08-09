@@ -179,14 +179,15 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		// Basically defines something like the step size, but as indirect proportion. The actual angle used for rotation will always end up at 360° for angle == adjustedMaxAngle
 		// So yea, I mathematically worked out that 20 is a good value for this, with the minimum possible being 18 in order to reach all chunks
 		int adjustedMaxAngle = 20 * outerRange / 32; // step size = 20 * chunks / 2
+		double angleStep = adjustedMaxAngle == 0 ? 0D : (Math.PI * 2D) / adjustedMaxAngle;
 		for (int angle = 0; angle <= adjustedMaxAngle; angle++) {
 			Vec3 vector = Vec3.createVectorHelper(outerRange, 0, 0);
-			vector.rotateAroundY((float) (angle * Math.PI / 180.0 / (adjustedMaxAngle / 360.0))); // Ugh, mutable data classes (also, ugh, radians; it uses degrees in 1.18; took me two hours to debug)
+			vector.rotateAroundY((float) (angle * angleStep));
 			outerChunks.add(ChunkPos.asLong((int) (posX + vector.xCoord) >> 4, (int) (posZ + vector.zCoord) >> 4));
 		}
 		for (int distance = 0; distance <= outerRange; distance += 8) for (int angle = 0; angle <= adjustedMaxAngle; angle++) {
 			Vec3 vector = Vec3.createVectorHelper(distance, 0, 0);
-			vector.rotateAroundY((float) (angle * Math.PI / 180.0 / (adjustedMaxAngle / 360.0)));
+			vector.rotateAroundY((float) (angle * angleStep));
 			long chunkCoord = ChunkPos.asLong((int) (posX + vector.xCoord) >> 4, (int) (posZ + vector.zCoord) >> 4);
 			if (!outerChunks.contains(chunkCoord)) chunks.add(chunkCoord);
 		}
@@ -208,23 +209,27 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	public void stompAround(){
 		if (!chunksToProcess.isEmpty()) {
 			long chunkPos = chunksToProcess.remove(chunksToProcess.size() - 1); // Just so it doesn't shift the whole list every time
-			int chunkPosX = (int) (chunkPos & Integer.MAX_VALUE);
-			int chunkPosZ = (int) (chunkPos >> 32 & Integer.MAX_VALUE);
+			int chunkPosX = (int) chunkPos;
+			int chunkPosZ = (int) (chunkPos >> 32);
+			MutableBlockPos blockPos = new MutableBlockPos();
 			for(int x = chunkPosX << 4; x < (chunkPosX << 4) + 16; x++) {
 				for(int z = chunkPosZ << 4; z < (chunkPosZ << 4) + 16; z++) {
-					stomp(new MutableBlockPos(x, 0, z), Math.hypot(x - posX, z - posZ));
+					blockPos.setPos(x, 0, z);
+					stomp(blockPos, Math.sqrt((double) (x - posX) * (x - posX) + (double) (z - posZ) * (z - posZ)));
 				}
 			}
 			
 		} else if (!outerChunksToProcess.isEmpty()) {
 			long chunkPos = outerChunksToProcess.remove(outerChunksToProcess.size() - 1);
-			int chunkPosX = (int) (chunkPos & Integer.MAX_VALUE);
-			int chunkPosZ = (int) (chunkPos >> 32 & Integer.MAX_VALUE);
+			int chunkPosX = (int) chunkPos;
+			int chunkPosZ = (int) (chunkPos >> 32);
+			MutableBlockPos blockPos = new MutableBlockPos();
 			for(int x = chunkPosX << 4; x < (chunkPosX << 4) + 16; x++) {
 				for(int z = chunkPosZ << 4; z < (chunkPosZ << 4) + 16; z++) {
-					double distance = Math.hypot(x - posX, z - posZ);
+					double distance = Math.sqrt((double) (x - posX) * (x - posX) + (double) (z - posZ) * (z - posZ));
 					if(distance <= getScale()) {
-						stomp(new MutableBlockPos(x, 0, z), distance);
+						blockPos.setPos(x, 0, z);
+						stomp(blockPos, distance);
 					}
 				}
 			}
@@ -747,8 +752,8 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 	private int[] writeChunksToIntArray(List<Long> coords) {
 		int[] data = new int[coords.size() * 2];
 		for (int i = 0; i < coords.size(); i++) {
-			data[i * 2] = (int) (coords.get(i) & Integer.MAX_VALUE);
-			data[i * 2 + 1] = (int) (coords.get(i) >> 32 & Integer.MAX_VALUE);
+			data[i * 2] = (int) (long) coords.get(i);
+			data[i * 2 + 1] = (int) (long) (coords.get(i) >> 32);
 		}
 		return data;
 	}

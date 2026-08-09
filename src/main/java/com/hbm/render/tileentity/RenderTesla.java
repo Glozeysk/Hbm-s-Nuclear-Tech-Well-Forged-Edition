@@ -16,7 +16,7 @@ public class RenderTesla extends TileEntitySpecialRenderer<TileEntityTesla> {
 
 	@Override
 	public boolean isGlobalRenderer(TileEntityTesla te) {
-		return true;
+		return RenderPerformance.renderGlobalInLow();
 	}
 	
 	@Override
