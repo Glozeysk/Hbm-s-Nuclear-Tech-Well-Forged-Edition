@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.interfaces.IHasCustomModel;
@@ -28,97 +29,186 @@ import net.minecraftforge.oredict.OreDictionary;
 public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 
 	public static final ModelResourceLocation chemModel = new ModelResourceLocation(RefStrings.MODID + ":chemistry_template", "inventory");
-	
+
 	public ItemChemistryTemplate(String s){
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setHasSubtypes(true);
 		this.setMaxDamage(0);
 		this.setCreativeTab(null);
-		
+
 		ModItems.ALL_ITEMS.add(this);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
 		String s = ("").trim();
-        String s1 = ("" + I18n.format("chem." + ChemplantRecipes.getName(stack))).trim();
+		String s1 = ("" + I18n.format("chem." + ChemplantRecipes.getName(stack))).trim();
 
-        if (s1 != null) {
-            s = s + "" + s1;
-        }
+		if (s1 != null) {
+			s = s + "" + s1;
+		}
 
-        return s;
+		return s;
 	}
-	
-	// @Override
-	// public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
-	// 	if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
-	// 		for (int i: ChemplantRecipes.recipeNames.keySet()){
-	//             list.add(new ItemStack(this, 1, i));
-	//         }
-	// 	}
-	// }
-	
-	
+
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if(!(stack.getItem() instanceof ItemChemistryTemplate))
-    			return;
+			return;
 
-	    	List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(stack);
-	    	FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(stack);
-	    	ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(stack);
-	    	FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(stack);
-	    	int time = ChemplantRecipes.getProcessTime(stack);
+		List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(stack);
+		FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(stack);
+		ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(stack);
+		FluidStack[] fluidOutputs = ChemplantRecipes.getFluidOutputFromTempate(stack);
+		int time = ChemplantRecipes.getProcessTime(stack);
 
-	    	try {
-	    		list.add("§l" + I18nUtil.resolveKey("info.template_out_p"));
-	    		if(itemOutputs != null){
-	    			for(ItemStack ouputItem : itemOutputs){
-	    				list.add(" §a"+ ouputItem.getCount() + "x " + ouputItem.getDisplayName());
-	    			}
-	    		}
-	    		if(fluidOutputs != null){
-	    			for(FluidStack outputFluid : fluidOutputs){
-	    				list.add(" §b"+ outputFluid.amount + "mB " + outputFluid.getFluid().getLocalizedName(outputFluid));
-	    			}
-	    		}
-	    		list.add("§l" + I18nUtil.resolveKey("info.template_in_p"));
-	    		
-	    		if(itemInputs != null){
-	    			for(AStack o : itemInputs){
-		    			if(o instanceof ComparableStack)  {
-							ItemStack input = ((ComparableStack)o).toStack();
-				    		list.add(" §c"+ input.getCount() + "x " + input.getDisplayName());
-
-						} else if(o instanceof OreDictStack)  {
-							OreDictStack input = (OreDictStack) o;
-							NonNullList<ItemStack> ores = OreDictionary.getOres(input.name);
-
-							if(ores.size() > 0) {
-								ItemStack inStack = ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size()));
-					    		list.add(" §c"+ input.count() + "x " + inStack.getDisplayName());
-							} else {
-					    		list.add("I AM ERROR - No OrdDict match found for "+o.toString());
+		List<ItemStack> currentInputs = new ArrayList<>();
+		List<FluidStack> currentFluids = new ArrayList<>();
+		net.minecraft.client.gui.GuiScreen screen = net.minecraft.client.Minecraft.getMinecraft().currentScreen;
+		if (screen instanceof net.minecraft.client.gui.inventory.GuiContainer) {
+			net.minecraft.inventory.Container container = ((net.minecraft.client.gui.inventory.GuiContainer) screen).inventorySlots;
+			if (container instanceof com.hbm.inventory.container.ContainerMachineChemplant) {
+				for (int k = 13; k <= 16; k++) {
+					currentInputs.add(container.getSlot(k).getStack());
+				}
+				try {
+					java.lang.reflect.Field f = com.hbm.inventory.container.ContainerMachineChemplant.class.getDeclaredField("nukeBoy");
+					f.setAccessible(true);
+					Object te = f.get(container);
+					if (te != null) {
+						java.lang.reflect.Field tanksField = te.getClass().getField("tanks");
+						Object[] tanks = (Object[]) tanksField.get(te);
+						if (tanks != null) {
+							for (Object tank : tanks) {
+								if (tank != null) {
+									java.lang.reflect.Method getFluid = tank.getClass().getMethod("getFluid");
+									FluidStack fs = (FluidStack) getFluid.invoke(tank);
+									if (fs != null) currentFluids.add(fs);
+								}
 							}
 						}
 					}
-	    		}
-	    		
-    			if(fluidInputs != null){
-    				for(FluidStack inputFluid : fluidInputs){
-    					list.add(" §e" + inputFluid.amount + "mB " + inputFluid.getFluid().getLocalizedName(inputFluid));
-    				}
-    			}
-	    		
-	    		list.add("§l" + I18nUtil.resolveKey("info.template_time"));
-	        	list.add(" §3"+ Math.floor((float)(time) / 20 * 100) / 100 + " " + I18nUtil.resolveKey("info.template_seconds"));
-	    	} catch(Exception e) {
-	    		list.add("###INVALID###");
-	    		list.add("0x334077-0x6A298F-0xDF3795-0x334077");
-	    	}
+				} catch (Exception e) {}
+			} else if (container instanceof com.hbm.inventory.container.ContainerMachineChemical) {
+				for (int k = 13; k <= 16; k++) {
+					currentInputs.add(container.getSlot(k).getStack());
+				}
+				try {
+					java.lang.reflect.Field f = com.hbm.inventory.container.ContainerMachineChemical.class.getDeclaredField("nukeBoy");
+					f.setAccessible(true);
+					Object te = f.get(container);
+					if (te != null) {
+						java.lang.reflect.Field tanksField = te.getClass().getField("tanks");
+						Object[] tanks = (Object[]) tanksField.get(te);
+						if (tanks != null) {
+							for (Object tank : tanks) {
+								if (tank != null) {
+									java.lang.reflect.Method getFluid = tank.getClass().getMethod("getFluid");
+									FluidStack fs = (FluidStack) getFluid.invoke(tank);
+									if (fs != null) currentFluids.add(fs);
+								}
+							}
+						}
+					}
+				} catch (Exception e) {}
+			}
+		}
+
+		boolean allMet = true;
+		List<Boolean> itemMetFlags = new ArrayList<>();
+		List<Boolean> fluidMetFlags = new ArrayList<>();
+
+		if (itemInputs != null) {
+			for (AStack req : itemInputs) {
+				int needed = req.count();
+				int have = 0;
+				AStack sing = req.copy();
+				sing.singulize();
+				for (ItemStack slotStack : currentInputs) {
+					if (slotStack != null && !slotStack.isEmpty()) {
+						ItemStack compare = slotStack.copy();
+						compare.setCount(1);
+						if (sing.isApplicable(compare)) {
+							have += slotStack.getCount();
+						}
+					}
+				}
+				boolean met = have >= needed;
+				if (!met) allMet = false;
+				itemMetFlags.add(met);
+			}
+		}
+
+		if (fluidInputs != null) {
+			for (FluidStack req : fluidInputs) {
+				int needed = req.amount;
+				int have = 0;
+				for (FluidStack tankFluid : currentFluids) {
+					if (tankFluid != null && tankFluid.isFluidEqual(req)) {
+						have += tankFluid.amount;
+					}
+				}
+				boolean met = have >= needed;
+				if (!met) allMet = false;
+				fluidMetFlags.add(met);
+			}
+		}
+
+		try {
+			list.add("§l" + I18nUtil.resolveKey("info.template_out_p"));
+			String outColor = allMet ? "§a" : "§c";
+			if(itemOutputs != null){
+				for(ItemStack ouputItem : itemOutputs){
+					list.add(" " + outColor + ouputItem.getCount() + "x " + ouputItem.getDisplayName());
+				}
+			}
+			if(fluidOutputs != null){
+				for(FluidStack outputFluid : fluidOutputs){
+					list.add(" " + outColor + outputFluid.amount + "mB " + outputFluid.getFluid().getLocalizedName(outputFluid));
+				}
+			}
+			list.add("§l" + I18nUtil.resolveKey("info.template_in_p"));
+
+			if(itemInputs != null){
+				int flagIdx = 0;
+				for(AStack o : itemInputs){
+					String color = (flagIdx < itemMetFlags.size() && itemMetFlags.get(flagIdx)) ? "§a" : "§c";
+					flagIdx++;
+					if(o instanceof ComparableStack)  {
+						ItemStack input = ((ComparableStack)o).toStack();
+						list.add(" " + color + input.getCount() + "x " + input.getDisplayName());
+
+					} else if(o instanceof OreDictStack)  {
+						OreDictStack input = (OreDictStack) o;
+						NonNullList<ItemStack> ores = OreDictionary.getOres(input.name);
+
+						if(ores.size() > 0) {
+							ItemStack inStack = ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size()));
+							list.add(" " + color + input.count() + "x " + inStack.getDisplayName());
+						} else {
+							list.add("I AM ERROR - No OrdDict match found for "+o.toString());
+						}
+					}
+				}
+			}
+
+			if(fluidInputs != null){
+				int flagIdx = 0;
+				for(FluidStack inputFluid : fluidInputs){
+					String color = (flagIdx < fluidMetFlags.size() && fluidMetFlags.get(flagIdx)) ? "§a" : "§c";
+					flagIdx++;
+					list.add(" " + color + inputFluid.amount + "mB " + inputFluid.getFluid().getLocalizedName(inputFluid));
+				}
+			}
+
+			list.add("§l" + I18nUtil.resolveKey("info.template_time"));
+			list.add(" §3"+ Math.floor((float)(time) / 20 * 100) / 100 + " " + I18nUtil.resolveKey("info.template_seconds"));
+		} catch(Exception e) {
+			list.add("###INVALID###");
+			list.add("0x334077-0x6A298F-0xDF3795-0x334077");
+		}
 	}
 
 	@Override
