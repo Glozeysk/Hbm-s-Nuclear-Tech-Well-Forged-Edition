@@ -5,16 +5,25 @@ import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import com.hbm.util.I18nUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
+import com.hbm.inventory.AssemblerRecipes;
+import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.items.machine.ItemAssemblyTemplate;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 public class GUIMachineAssembly extends GuiInfoContainer {
@@ -37,7 +46,6 @@ public class GUIMachineAssembly extends GuiInfoContainer {
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 70 - 52, 16, 52, assembly.power, TileEntityMachineAssembly.maxPower);
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
-
             String[] text1 = I18nUtil.resolveKeyArray("desc.guimachassembler");
             this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36, 16, 16, guiLeft - 8, guiTop + 36 + 16, text1);
         }
@@ -54,7 +62,7 @@ public class GUIMachineAssembly extends GuiInfoContainer {
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer( int i, int j) {
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         String name = this.assembly.hasCustomInventoryName() ? this.assembly.getInventoryName() : I18n.format(this.assembly.getInventoryName());
 
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
@@ -75,16 +83,135 @@ public class GUIMachineAssembly extends GuiInfoContainer {
             drawTexturedModalRect(guiLeft + 45, guiTop + 82, 2, 222, j, 32);
         } else {
             drawTexturedModalRect(guiLeft + 45, guiTop + 82, 2, 222, 0, 32);
-
         }
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
-
             this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 6);
         }
 
         this.drawInfoPanel(guiLeft + 141, guiTop + 40, 8, 8, 8);
+
+        ItemStack templateStack = assembly.inventory.getStackInSlot(4);
+        if (!templateStack.isEmpty() && templateStack.getItem() instanceof ItemAssemblyTemplate) {
+            int recipeIdx = ItemAssemblyTemplate.getRecipeIndex(templateStack);
+            if (recipeIdx >= 0 && recipeIdx < AssemblerRecipes.recipeList.size()) {
+                ComparableStack out = AssemblerRecipes.recipeList.get(recipeIdx);
+                Object[] in = AssemblerRecipes.recipes.get(out);
+
+                if (in != null) {
+                    List<IngredientStatus> statuses = new ArrayList<IngredientStatus>();
+                    for (Object o : in) {
+                        if (o instanceof AStack) {
+                            AStack req = (AStack) o;
+                            int needed = req.count();
+                            int have = 0;
+                            AStack sing = req.copy();
+                            sing.singulize();
+                            for (int k = 6; k <= 17; k++) {
+                                ItemStack slotStack = assembly.inventory.getStackInSlot(k);
+                                if (!slotStack.isEmpty()) {
+                                    ItemStack compare = slotStack.copy();
+                                    compare.setCount(1);
+                                    if (sing.isApplicable(compare)) {
+                                        have += slotStack.getCount();
+                                    }
+                                }
+                            }
+                            statuses.add(new IngredientStatus(req, needed, have));
+                        }
+                    }
+
+                    for (int k = 6; k <= 17; k++) {
+                        int col = (k - 6) % 2;
+                        int row = (k - 6) / 2;
+                        int slotX = 8 + col * 18;
+                        int slotY = 18 + row * 18;
+
+                        ItemStack slotStack = assembly.inventory.getStackInSlot(k);
+
+                        if (!slotStack.isEmpty()) {
+                            IngredientStatus matchedStatus = null;
+                            for (IngredientStatus status : statuses) {
+                                AStack s = status.req.copy();
+                                s.singulize();
+                                ItemStack compare = slotStack.copy();
+                                compare.setCount(1);
+                                if (s.isApplicable(compare)) {
+                                    matchedStatus = status;
+                                    break;
+                                }
+                            }
+
+                            if (matchedStatus != null) {
+                                GlStateManager.disableLighting();
+                                GlStateManager.disableDepth();
+                                drawRect(guiLeft + slotX, guiTop + slotY, guiLeft + slotX + 16, guiTop + slotY + 16, matchedStatus.have >= matchedStatus.needed ? 0x7F00FF00 : 0x7FFF0000);
+                                GlStateManager.enableDepth();
+                                GlStateManager.enableLighting();
+                            }
+                        }
+                    }
+
+                    List<Integer> emptySlots = new ArrayList<>();
+                    for (int k = 6; k <= 17; k++) {
+                        if (assembly.inventory.getStackInSlot(k).isEmpty()) {
+                            emptySlots.add(k);
+                        }
+                    }
+
+                    int emptySlotIndex = 0;
+                    for (IngredientStatus status : statuses) {
+                        if (status.have == 0 && emptySlotIndex < emptySlots.size()) {
+                            int k = emptySlots.get(emptySlotIndex);
+                            emptySlotIndex++;
+
+                            int col = (k - 6) % 2;
+                            int row = (k - 6) / 2;
+                            int slotX = 8 + col * 18;
+                            int slotY = 18 + row * 18;
+
+                            ItemStack ghostStack = status.req.getStack();
+                            if (ghostStack != null && !ghostStack.isEmpty()) {
+                                ghostStack = ghostStack.copy();
+                                ghostStack.setCount(1);
+
+                                RenderHelper.enableGUIStandardItemLighting();
+                                GlStateManager.enableDepth();
+                                GlStateManager.enableBlend();
+                                GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+                                GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
+                                Minecraft.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(ghostStack, guiLeft + slotX, guiTop + slotY);
+                                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                                GlStateManager.disableBlend();
+                                RenderHelper.disableStandardItemLighting();
+                            }
+
+                            GlStateManager.disableLighting();
+                            GlStateManager.disableDepth();
+                            drawRect(guiLeft + slotX, guiTop + slotY, guiLeft + slotX + 16, guiTop + slotY + 16, 0x7FFF0000);
+
+                            if (status.needed > 1) {
+                                String countStr = String.valueOf(status.needed);
+                                fontRenderer.drawStringWithShadow(countStr, guiLeft + slotX + 17 - fontRenderer.getStringWidth(countStr), guiTop + slotY + 9, 0xFFFFFF);
+                            }
+                            GlStateManager.enableDepth();
+                            GlStateManager.enableLighting();
+                        }
+                    }
+                }
+            }
+        }
     }
 
+    private static class IngredientStatus {
+        AStack req;
+        int needed;
+        int have;
 
+        public IngredientStatus(AStack req, int needed, int have) {
+            this.req = req;
+            this.needed = needed;
+            this.have = have;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -31,14 +32,6 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 
 	public static final ModelResourceLocation location = new ModelResourceLocation(
 			RefStrings.MODID + ":assembly_template", "inventory");
-	
-	//private static IForgeRegistry<Item> itemRegistry;
-	//private static IForgeRegistry<Block> blockRegistry;
-
-
-	//public static List<AssemblerRecipe> recipes = new ArrayList<AssemblerRecipe>();
-	//public static List<AssemblerRecipe> recipesBackup = null;
-	
 
 	public ItemAssemblyTemplate(String s) {
 		this.setTranslationKey(s);
@@ -70,7 +63,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 		if (tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
 			int count = AssemblerRecipes.recipeList.size();
 
-	    	for(int i = 0; i < count; i++) {
+			for(int i = 0; i < count; i++) {
 				NBTTagCompound tag = new NBTTagCompound();
 				tag.setInteger("type", i);
 				ItemStack stack = new ItemStack(this, 1, 0);
@@ -79,7 +72,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 			}
 		}
 	}
-	
+
 	public static ItemStack getTemplate(int id){
 		NBTTagCompound tag = new NBTTagCompound();
 		tag.setInteger("type", id);
@@ -94,37 +87,80 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 			return;
 
 		int i = getTagWithRecipeNumber(stack).getInteger("type");
-		
+
 		if(i < 0 || i >= AssemblerRecipes.recipeList.size()) {
-    		list.add("I AM ERROR");
-    		return;
-    	}
+			list.add("I AM ERROR");
+			return;
+		}
 
-    	ComparableStack out = AssemblerRecipes.recipeList.get(i);
+		ComparableStack out = AssemblerRecipes.recipeList.get(i);
 
-    	if(out == null) {
-    		list.add("I AM ERROR");
-    		return;
-    	}
+		if(out == null) {
+			list.add("I AM ERROR");
+			return;
+		}
 
-    	Object[] in = AssemblerRecipes.recipes.get(out);
+		Object[] in = AssemblerRecipes.recipes.get(out);
 
-    	if(in == null) {
-    		list.add("I AM ERROR");
-    		return;
-    	}
+		if(in == null) {
+			list.add("I AM ERROR");
+			return;
+		}
 
-    	ItemStack output = out.toStack();
+		ItemStack output = out.toStack();
 
-    	list.add("§l" + I18nUtil.resolveKey("info.template_out"));
-		list.add(" §a"+ output.getCount() + "x " + output.getDisplayName());
-		list.add("§l" + I18nUtil.resolveKey("info.template_in_p"));
+		List<ItemStack> currentInputs = new ArrayList<>();
+		net.minecraft.client.gui.GuiScreen screen = net.minecraft.client.Minecraft.getMinecraft().currentScreen;
+		if (screen instanceof net.minecraft.client.gui.inventory.GuiContainer) {
+			net.minecraft.inventory.Container container = ((net.minecraft.client.gui.inventory.GuiContainer) screen).inventorySlots;
+			if (container instanceof com.hbm.inventory.container.ContainerMachineAssembly ||
+					container instanceof com.hbm.inventory.container.ContainerMachineAssembler) {
+				if (container.inventorySlots.size() > 17) {
+					for (int k = 6; k <= 17; k++) {
+						currentInputs.add(container.getSlot(k).getStack());
+					}
+				}
+			}
+		}
+
+		boolean allMet = true;
+		List<Boolean> metFlags = new ArrayList<>();
 
 		for(Object o : in) {
+			if (!(o instanceof AStack)) continue;
+			AStack req = (AStack) o;
+			int needed = req.count();
+			int have = 0;
+			AStack sing = req.copy();
+			sing.singulize();
+			for (ItemStack slotStack : currentInputs) {
+				if (!slotStack.isEmpty()) {
+					ItemStack compare = slotStack.copy();
+					compare.setCount(1);
+					if (sing.isApplicable(compare)) {
+						have += slotStack.getCount();
+					}
+				}
+			}
+			boolean met = have >= needed;
+			if (!met) allMet = false;
+			metFlags.add(met);
+		}
+
+		list.add("§l" + I18nUtil.resolveKey("info.template_out"));
+		String outColor = allMet ? "§a" : "§c";
+		list.add(" " + outColor + output.getCount() + "x " + output.getDisplayName());
+		list.add("§l" + I18nUtil.resolveKey("info.template_in_p"));
+
+		int flagIdx = 0;
+		for(Object o : in) {
+			if (!(o instanceof AStack)) continue;
+			String color = (flagIdx < metFlags.size() && metFlags.get(flagIdx)) ? "§a" : "§c";
+			flagIdx++;
 
 			if(o instanceof ComparableStack)  {
 				ItemStack input = ((ComparableStack)o).toStack();
-	    		list.add(" §c"+ input.getCount() + "x " + input.getDisplayName());
+				list.add(" " + color + input.getCount() + "x " + input.getDisplayName());
 
 			} else if(o instanceof OreDictStack)  {
 				OreDictStack input = (OreDictStack) o;
@@ -132,33 +168,33 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 
 				if(ores.size() > 0) {
 					ItemStack inStack = ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size()));
-		    		list.add(" §c"+ input.count() + "x " + inStack.getDisplayName());
+					list.add(" " + color + input.count() + "x " + inStack.getDisplayName());
 				} else {
-		    		list.add("I AM ERROR - No OrdDict match found for "+o.toString());
+					list.add("I AM ERROR - No OrdDict match found for "+o.toString());
 				}
 			}
 		}
 
 		list.add("§l" + I18nUtil.resolveKey("info.template_time"));
-    	list.add(" §3" + Math.floor((float)(getProcessTime(stack)) / 20 * 100) / 100 + " " + I18nUtil.resolveKey("info.template_seconds"));
+		list.add(" §3" + Math.floor((float)(getProcessTime(stack)) / 20 * 100) / 100 + " " + I18nUtil.resolveKey("info.template_seconds"));
 	}
 
 	public static int getProcessTime(ItemStack stack) {
 		if (!(stack.getItem() instanceof ItemAssemblyTemplate))
 			return 100;
-		
+
 		int i = getTagWithRecipeNumber(stack).getInteger("type");
 
-    	if(i < 0 || i >= AssemblerRecipes.recipeList.size())
-    		return 100;
+		if(i < 0 || i >= AssemblerRecipes.recipeList.size())
+			return 100;
 
-    	ComparableStack out = AssemblerRecipes.recipeList.get(i);
-    	Integer time = AssemblerRecipes.time.get(out);
+		ComparableStack out = AssemblerRecipes.recipeList.get(i);
+		Integer time = AssemblerRecipes.time.get(out);
 
-    	if(time != null)
-    		return time;
-    	else
-    		return 100;
+		if(time != null)
+			return time;
+		else
+			return 100;
 
 	}
 
@@ -166,7 +202,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 	public ModelResourceLocation getResourceLocation() {
 		return location;
 	}
-	
+
 	public static int getRecipeIndex(ItemStack stack){
 		return getTagWithRecipeNumber(stack).getInteger("type");
 	}
