@@ -1,4 +1,4 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.block.crane;
 
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.items.tool.ItemTooling;

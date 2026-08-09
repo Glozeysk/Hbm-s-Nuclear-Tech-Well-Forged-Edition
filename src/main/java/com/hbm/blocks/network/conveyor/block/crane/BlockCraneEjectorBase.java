@@ -1,4 +1,4 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.block.crane;
 
 import api.hbm.block.IToolable;
 import com.hbm.blocks.ModBlocks;

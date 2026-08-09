@@ -1,6 +1,5 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.crane;
 
-import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IConveyorInput;
 import api.hbm.block.IConveyorItem;
 import api.hbm.block.IConveyorPackage;
@@ -10,7 +9,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.network.TileEntityCraneSorter;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;

@@ -1,7 +1,7 @@
 package com.hbm.blocks.network.conveyor;
 
 import api.hbm.block.IConveyorInput;
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;

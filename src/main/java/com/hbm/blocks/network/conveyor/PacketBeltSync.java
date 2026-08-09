@@ -1,6 +1,6 @@
 package com.hbm.blocks.network.conveyor;
 
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.packet.threading.ThreadedPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;

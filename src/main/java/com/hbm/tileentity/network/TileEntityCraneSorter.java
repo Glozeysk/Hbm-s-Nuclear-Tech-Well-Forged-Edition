@@ -2,7 +2,7 @@ package com.hbm.tileentity.network;
 
 import api.hbm.block.IConveyorInput;
 import api.hbm.block.IConveyorOutput;
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
@@ -146,23 +146,17 @@ public class TileEntityCraneSorter extends TileEntityMachineBase implements IGUI
                     BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
                     EnumFacing fromConveyorToSorter = dir.getOpposite();
 
-                    int targetLane;
+                    int targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
                     int routeType = BeltItemData.ROUTE_FORWARD;
 
-                    if (curve != BlockConveyor.CurveType.NONE) {
-                        targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
-                    } else {
+                    if (curve == BlockConveyor.CurveType.NONE) {
                         EnumFacing left = conveyorFacing.rotateYCCW();
                         EnumFacing right = conveyorFacing.rotateY();
 
                         if (fromConveyorToSorter == left) {
-                            targetLane = 0;
                             routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
                         } else if (fromConveyorToSorter == right) {
-                            targetLane = segment.getLaneCount() - 1;
                             routeType = BeltItemData.ROUTE_LEFT_ENTRY;
-                        } else {
-                            targetLane = 0;
                         }
                     }
 

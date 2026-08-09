@@ -1,21 +1,22 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.crane;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.network.conveyor.block.crane.BlockCraneEjectorBase;
 import com.hbm.tileentity.network.TileEntityCraneBase;
-import com.hbm.tileentity.network.TileEntityCraneEjectorAlt4;
+import com.hbm.tileentity.network.TileEntityCraneEjectorAlt2;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.world.World;
 
-public class CraneEjectorAlt4 extends BlockCraneEjectorBase {
+public class CraneEjectorAlt2 extends BlockCraneEjectorBase {
 
-    public CraneEjectorAlt4(Material materialIn, String s) {
+    public CraneEjectorAlt2(Material materialIn, String s) {
         super(materialIn, s);
     }
 
     @Override
     public TileEntityCraneBase createNewTileEntity(World world, int meta) {
-        return new TileEntityCraneEjectorAlt4();
+        return new TileEntityCraneEjectorAlt2();
     }
 
     @Override

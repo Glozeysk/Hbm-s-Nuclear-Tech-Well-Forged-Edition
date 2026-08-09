@@ -1,12 +1,11 @@
 package com.hbm.tileentity.network;
 
 import api.hbm.block.IConveyorBelt;
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
 import com.hbm.blocks.network.conveyor.BeltSegmentManager;
-import com.hbm.blocks.network.conveyor.ConveyorEntryPoints;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneEjectorCommon;

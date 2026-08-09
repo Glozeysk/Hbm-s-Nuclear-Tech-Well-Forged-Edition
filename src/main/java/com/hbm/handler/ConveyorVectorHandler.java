@@ -1,7 +1,6 @@
 package com.hbm.handler;
 
-import com.hbm.blocks.network.BlockConveyor;
-import com.hbm.blocks.network.conveyor.BeltItemData;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.ClientBeltItem;
 import com.hbm.blocks.network.conveyor.ClientBeltManager;

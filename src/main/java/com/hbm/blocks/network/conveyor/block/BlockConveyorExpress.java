@@ -1,4 +1,4 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.block;
 
 import api.hbm.block.IConveyorVectorProvider;
 import net.minecraft.block.material.Material;

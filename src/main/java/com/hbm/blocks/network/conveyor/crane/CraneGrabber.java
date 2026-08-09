@@ -1,6 +1,7 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.crane;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.network.conveyor.block.crane.BlockCraneBase;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;

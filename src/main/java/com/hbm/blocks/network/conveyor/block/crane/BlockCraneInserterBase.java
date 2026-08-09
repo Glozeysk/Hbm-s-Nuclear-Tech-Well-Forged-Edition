@@ -1,4 +1,4 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.block.crane;
 
 import api.hbm.block.IConveyorItem;
 import api.hbm.block.IConveyorPackage;

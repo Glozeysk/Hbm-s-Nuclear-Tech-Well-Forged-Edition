@@ -2,7 +2,7 @@ package com.hbm.tileentity.network;
 
 import api.hbm.block.IConveyorInput;
 import api.hbm.block.IConveyorOutput;
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.BeltLane;
 import com.hbm.blocks.network.conveyor.BeltSegment;
@@ -79,8 +79,10 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
             List<EnumFacing> outputDirs = getOutputDirections();
             if (outputDirs.isEmpty()) return 0;
 
+            int startIdx = currentOutputDir[sourceLane];
+
             for (int attempt = 0; attempt < outputDirs.size(); attempt++) {
-                int idx = (currentOutputDir[sourceLane] + attempt) % outputDirs.size();
+                int idx = (startIdx + attempt) % outputDirs.size();
                 EnumFacing dir = outputDirs.get(idx);
 
                 int accepted = tryInsertToDirection(dir, stack, sourceLane);
@@ -94,19 +96,6 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         } finally {
             visited.remove(pos);
         }
-    }
-
-    private boolean isInputDirection(EnumFacing dir) {
-        BlockPos neighbor = pos.offset(dir);
-        Block block = world.getBlockState(neighbor).getBlock();
-
-        if (block instanceof BlockConveyor) {
-            BlockConveyor conv = (BlockConveyor) block;
-            EnumFacing convFacing = conv.getLaneFacing(world, neighbor);
-            return convFacing == dir.getOpposite();
-        }
-
-        return false;
     }
 
     private int tryInsertToDirection(EnumFacing dir, ItemStack stack, int sourceLane) {
@@ -131,23 +120,17 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
                     BlockConveyor.CurveType curve = actualState.getValue(BlockConveyor.CURVE);
                     EnumFacing fromConveyorToRouter = dir.getOpposite();
 
-                    int targetLane;
+                    int targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
                     int routeType = BeltItemData.ROUTE_FORWARD;
 
-                    if (curve != BlockConveyor.CurveType.NONE) {
-                        targetLane = sourceLane < segment.getLaneCount() ? sourceLane : 0;
-                    } else {
+                    if (curve == BlockConveyor.CurveType.NONE) {
                         EnumFacing left = conveyorFacing.rotateYCCW();
                         EnumFacing right = conveyorFacing.rotateY();
 
                         if (fromConveyorToRouter == left) {
-                            targetLane = 0;
                             routeType = BeltItemData.ROUTE_RIGHT_ENTRY;
                         } else if (fromConveyorToRouter == right) {
-                            targetLane = segment.getLaneCount() - 1;
                             routeType = BeltItemData.ROUTE_LEFT_ENTRY;
-                        } else {
-                            targetLane = 0;
                         }
                     }
 
@@ -174,6 +157,19 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         }
 
         return 0;
+    }
+
+    private boolean isInputDirection(EnumFacing dir) {
+        BlockPos neighbor = pos.offset(dir);
+        Block block = world.getBlockState(neighbor).getBlock();
+
+        if (block instanceof BlockConveyor) {
+            BlockConveyor conv = (BlockConveyor) block;
+            EnumFacing convFacing = conv.getLaneFacing(world, neighbor);
+            return convFacing == dir.getOpposite();
+        }
+
+        return false;
     }
 
     private boolean canAcceptFromDirection(EnumFacing dir) {

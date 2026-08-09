@@ -1,4 +1,4 @@
-package com.hbm.blocks.network;
+package com.hbm.blocks.network.conveyor.block;
 
 import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IConveyorLaneProvider;
@@ -7,6 +7,9 @@ import api.hbm.block.IConveyorVectorProvider;
 import api.hbm.block.IToolable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.network.conveyor.*;
+import com.hbm.blocks.network.conveyor.block.crane.BlockCraneEjectorBase;
+import com.hbm.blocks.network.conveyor.block.crane.BlockCraneRouter;
+import com.hbm.blocks.network.conveyor.crane.CraneSorter;
 import com.hbm.tileentity.network.TileEntityConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -375,12 +378,12 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 			return sideMoveDir == sideToConveyor;
 		}
 
-		if (sideBlock instanceof com.hbm.blocks.network.BlockCraneEjectorBase) {
+		if (sideBlock instanceof BlockCraneEjectorBase) {
 			EnumFacing ejectorFacing = sideState.getValue(net.minecraft.block.BlockHorizontal.FACING);
 			return ejectorFacing == sideToConveyor.getOpposite();
 		}
 
-		if (sideBlock instanceof com.hbm.blocks.network.CraneSorter) {
+		if (sideBlock instanceof CraneSorter) {
 			net.minecraft.tileentity.TileEntity te = world.getTileEntity(sidePos);
 			if (te instanceof com.hbm.tileentity.network.TileEntityCraneSorter) {
 				com.hbm.tileentity.network.TileEntityCraneSorter sorter = (com.hbm.tileentity.network.TileEntityCraneSorter) te;
@@ -390,7 +393,7 @@ public class BlockConveyor extends Block implements IConveyorBelt, IToolable {
 			}
 		}
 
-		if (sideBlock instanceof com.hbm.blocks.network.BlockCraneRouter) {
+		if (sideBlock instanceof BlockCraneRouter) {
 			net.minecraft.tileentity.TileEntity te = world.getTileEntity(sidePos);
 			if (te instanceof com.hbm.tileentity.network.TileEntityCraneRouter) {
 				com.hbm.tileentity.network.TileEntityCraneRouter router = (com.hbm.tileentity.network.TileEntityCraneRouter) te;

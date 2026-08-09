@@ -2,7 +2,6 @@ package com.hbm.entity.item;
 
 import api.hbm.block.IConveyorItem;
 import api.hbm.block.IEnterableBlock;
-import com.hbm.blocks.network.ConveyorArc;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -14,7 +13,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityMovingItem extends EntityMovingConveyorObject implements IConveyorItem {

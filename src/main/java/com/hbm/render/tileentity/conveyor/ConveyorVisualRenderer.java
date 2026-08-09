@@ -1,6 +1,6 @@
 package com.hbm.render.tileentity.conveyor;
 
-import com.hbm.blocks.network.BlockConveyor;
+import com.hbm.blocks.network.conveyor.block.BlockConveyor;
 import com.hbm.blocks.network.conveyor.BeltItemData;
 import com.hbm.blocks.network.conveyor.ClientBeltItem;
 import com.hbm.blocks.network.conveyor.ClientBeltManager;
