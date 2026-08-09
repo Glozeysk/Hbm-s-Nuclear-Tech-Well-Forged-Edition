@@ -11,6 +11,8 @@ import org.lwjgl.opengl.GL11;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.RecipesCommon.OreDictStack;
 import com.hbm.inventory.container.ContainerMachineChemplant;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemChemistryTemplate;
@@ -24,7 +26,9 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineChemplant extends GuiInfoContainer {
 
@@ -175,9 +179,8 @@ public class GUIMachineChemplant extends GuiInfoContainer {
 						int slotX = 8 + col * 18;
 						int slotY = 90 + row * 18;
 
-						ItemStack ghostStack = status.req.getStack();
-						if (ghostStack != null && !ghostStack.isEmpty()) {
-							ghostStack = ghostStack.copy();
+						ItemStack ghostStack = status.getDisplayStack();
+						if (!ghostStack.isEmpty()) {
 							ghostStack.setCount(1);
 
 							RenderHelper.enableGUIStandardItemLighting();
@@ -216,6 +219,21 @@ public class GUIMachineChemplant extends GuiInfoContainer {
 			this.req = req;
 			this.needed = needed;
 			this.have = have;
+		}
+
+		public ItemStack getDisplayStack() {
+			if (req instanceof OreDictStack) {
+				OreDictStack ods = (OreDictStack) req;
+				NonNullList<ItemStack> ores = OreDictionary.getOres(ods.name);
+				if (!ores.isEmpty()) {
+					return ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size())).copy();
+				}
+				return ItemStack.EMPTY;
+			} else if (req instanceof ComparableStack) {
+				ItemStack stack = ((ComparableStack) req).toStack();
+				return stack != null ? stack : ItemStack.EMPTY;
+			}
+			return ItemStack.EMPTY;
 		}
 	}
 }

@@ -15,6 +15,7 @@ import com.hbm.lib.RefStrings;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.RecipesCommon.OreDictStack;
 import com.hbm.items.machine.ItemAssemblyTemplate;
 
 import net.minecraft.client.Minecraft;
@@ -24,7 +25,9 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineAssembly extends GuiInfoContainer {
 
@@ -57,14 +60,12 @@ public class GUIMachineAssembly extends GuiInfoContainer {
     @Override
     protected void mouseClicked(int x, int y, int button) throws IOException {
         super.mouseClicked(x, y, button);
-
         if(this.checkClick(x, y, 79, 52, 18, 18)) GUIScreenAssemblerTemplate.openSelector(assembly, this, 4);
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         String name = this.assembly.hasCustomInventoryName() ? this.assembly.getInventoryName() : I18n.format(this.assembly.getInventoryName());
-
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
         this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
     }
@@ -170,9 +171,8 @@ public class GUIMachineAssembly extends GuiInfoContainer {
                             int slotX = 8 + col * 18;
                             int slotY = 18 + row * 18;
 
-                            ItemStack ghostStack = status.req.getStack();
-                            if (ghostStack != null && !ghostStack.isEmpty()) {
-                                ghostStack = ghostStack.copy();
+                            ItemStack ghostStack = status.getDisplayStack();
+                            if (!ghostStack.isEmpty()) {
                                 ghostStack.setCount(1);
 
                                 RenderHelper.enableGUIStandardItemLighting();
@@ -212,6 +212,21 @@ public class GUIMachineAssembly extends GuiInfoContainer {
             this.req = req;
             this.needed = needed;
             this.have = have;
+        }
+
+        public ItemStack getDisplayStack() {
+            if (req instanceof OreDictStack) {
+                OreDictStack ods = (OreDictStack) req;
+                NonNullList<ItemStack> ores = OreDictionary.getOres(ods.name);
+                if (!ores.isEmpty()) {
+                    return ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size())).copy();
+                }
+                return ItemStack.EMPTY;
+            } else if (req instanceof ComparableStack) {
+                ItemStack stack = ((ComparableStack) req).toStack();
+                return stack != null ? stack : ItemStack.EMPTY;
+            }
+            return ItemStack.EMPTY;
         }
     }
 }
