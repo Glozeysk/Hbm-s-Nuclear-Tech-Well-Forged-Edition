@@ -176,9 +176,9 @@ public class GUIScreenAssemblerTemplate extends GuiScreen {
         }
 
         if(currentPage != 0)
-        	buttons.add(new FolderButton(guiLeft + 25 - 18, guiTop + 26 + (27 * 3), 1, "Previous"));
+        	buttons.add(new FolderButton(guiLeft + 25 - 18, guiTop + 26 + (27 * 3), 1, "gui.fluid_identifier_previous"));
         if(currentPage != getPageCount())
-        	buttons.add(new FolderButton(guiLeft + 25 + (27 * 4) + 18, guiTop + 26 + (27 * 3), 2, "Next"));
+        	buttons.add(new FolderButton(guiLeft + 25 + (27 * 4) + 18, guiTop + 26 + (27 * 3), 2, "gui.fluid_identifier_next"));
     }
 
     protected void mouseClicked(int i, int j, int k) {

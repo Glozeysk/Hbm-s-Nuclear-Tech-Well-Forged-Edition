@@ -132,9 +132,9 @@ public class GUIScreenFluidIdentifier extends GuiScreen {
         }
 
         if(currentPage != 0)
-        	buttons.add(new FolderButton(guiLeft + 25 - 18, guiTop + 26 + (18 * 3), 1, "Previous"));
+        	buttons.add(new FolderButton(guiLeft + 25 - 18, guiTop + 26 + (18 * 3), 1, I18nUtil.resolveKey("gui.fluid_identifier_previous")));
         if(currentPage != getPageCount())
-        	buttons.add(new FolderButton(guiLeft + 25 + (18 * 4) + 18, guiTop + 26 + (18 * 3), 2, "Next"));
+        	buttons.add(new FolderButton(guiLeft + 25 + (18 * 4) + 18, guiTop + 26 + (18 * 3), 2, I18nUtil.resolveKey("gui.fluid_identifier_next")));
     }
 
     protected void mouseClicked(int i, int j, int k) {

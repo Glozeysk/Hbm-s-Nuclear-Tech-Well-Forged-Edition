@@ -5280,3 +5280,5 @@ desc.throughput=Скорость выкачки
 hbm.button.void_contents=Очистить жидкостный буфер
 tool.ability.title=Умения:
 item.rod_quad_euphemium.desc=С небольшим шансом можно получить при обеднении счетверённого шрабидиевого топливного стержня
+gui.fluid_identifier_previous=Назад
+gui.fluid_identifier_next=Вперёд
