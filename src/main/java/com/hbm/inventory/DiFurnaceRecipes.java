@@ -74,10 +74,10 @@ public class DiFurnaceRecipes {
 		addRecipe(new OreDictStack(STEEL.ingot()), new OreDictStack(W.dust()), new ItemStack(ModItems.ingot_dura_steel, 2));
 		addRecipe(new OreDictStack(STEEL.dust()), new OreDictStack(W.dust()), new ItemStack(ModItems.ingot_dura_steel, 2));
 
-		addRecipe(new OreDictStack(STEEL.ingot()), new OreDictStack(CO.ingot()), new ItemStack(ModItems.ingot_dura_steel, 2));
-		addRecipe(new OreDictStack(STEEL.dust()), new OreDictStack(CO.ingot()), new ItemStack(ModItems.ingot_dura_steel, 2));
-		addRecipe(new OreDictStack(STEEL.ingot()), new OreDictStack(CO.dust()), new ItemStack(ModItems.ingot_dura_steel, 2));
-		addRecipe(new OreDictStack(STEEL.dust()), new OreDictStack(CO.dust()), new ItemStack(ModItems.ingot_dura_steel, 2));
+		addRecipe(new OreDictStack(STEEL.ingot()), new OreDictStack(CO.ingot()), new ItemStack(ModItems.ingot_dura_steel, 3));
+		addRecipe(new OreDictStack(STEEL.dust()), new OreDictStack(CO.ingot()), new ItemStack(ModItems.ingot_dura_steel, 3));
+		addRecipe(new OreDictStack(STEEL.ingot()), new OreDictStack(CO.dust()), new ItemStack(ModItems.ingot_dura_steel, 3));
+		addRecipe(new OreDictStack(STEEL.dust()), new OreDictStack(CO.dust()), new ItemStack(ModItems.ingot_dura_steel, 3));
 
 		addRecipe(new OreDictStack(BIGMT.ingot()), new ComparableStack(ModItems.powder_meteorite), new ItemStack(ModItems.ingot_starmetal, 2));
 

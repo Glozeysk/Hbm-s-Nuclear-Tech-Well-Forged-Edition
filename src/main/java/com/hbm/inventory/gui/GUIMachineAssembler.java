@@ -57,6 +57,12 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 			this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
 			ghostSlots.add(ghostSlot);
 		}
+
+		GhostSlot outputGhost = new GhostSlot(130, 86);
+		outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
+		this.inventorySlots.inventorySlots.add(outputGhost);
+		this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+		ghostSlots.add(outputGhost);
 	}
 
 	@Override
@@ -163,6 +169,8 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 
 				if (in != null) {
 					List<IngredientStatus> statuses = new ArrayList<IngredientStatus>();
+					boolean allIngredientsMet = true;
+
 					for (Object o : in) {
 						if (o instanceof AStack) {
 							AStack req = (AStack) o;
@@ -180,6 +188,7 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 									}
 								}
 							}
+							if (have < needed) allIngredientsMet = false;
 							statuses.add(new IngredientStatus(req, needed, have));
 						}
 					}
@@ -265,6 +274,46 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 							GlStateManager.enableDepth();
 							GlStateManager.enableLighting();
 						}
+					}
+
+					ItemStack outputStack = out.toStack();
+					ItemStack outSlotStack = assembler.inventory.getStackInSlot(5);
+					if (!outputStack.isEmpty() && outSlotStack.isEmpty()) {
+						int outX = 130;
+						int outY = 86;
+						int outW = 24;
+						int outH = 24;
+
+						ItemStack displayOut = outputStack.copy();
+						displayOut.setCount(1);
+						currentGhosts.add(new GhostItem(guiLeft + outX, guiTop + outY, outW, outH, displayOut.copy()));
+
+						int outputGhostIndex = 12;
+						if (outputGhostIndex < ghostSlots.size()) {
+							ghostSlots.get(outputGhostIndex).setGhostStack(displayOut.copy());
+						}
+
+						RenderHelper.enableGUIStandardItemLighting();
+						GlStateManager.enableDepth();
+						GlStateManager.enableBlend();
+						GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+						GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
+						Minecraft.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(displayOut, guiLeft + outX + 4, guiTop + outY + 4);
+						GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+						GlStateManager.disableBlend();
+						RenderHelper.disableStandardItemLighting();
+
+						GlStateManager.disableLighting();
+						GlStateManager.disableDepth();
+						int outputOverlayColor = allIngredientsMet ? 0x7F00FF00 : 0x7FFF0000;
+						drawRect(guiLeft + outX, guiTop + outY, guiLeft + outX + outW, guiTop + outY + outH, outputOverlayColor);
+
+						if (outputStack.getCount() > 1) {
+							String countStr = String.valueOf(outputStack.getCount());
+							fontRenderer.drawStringWithShadow(countStr, guiLeft + outX + 20 - fontRenderer.getStringWidth(countStr), guiTop + outY + 13, 0xFFFFFF);
+						}
+						GlStateManager.enableDepth();
+						GlStateManager.enableLighting();
 					}
 				}
 			}

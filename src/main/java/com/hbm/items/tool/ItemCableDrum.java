@@ -22,6 +22,7 @@ public class ItemCableDrum extends ItemBase {
 
     public ItemCableDrum(String s) {
         super(s);
+        this.setMaxStackSize(1);
         this.setCreativeTab(MainRegistry.consumableTab);
     }
 

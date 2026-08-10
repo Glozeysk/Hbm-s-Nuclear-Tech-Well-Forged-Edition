@@ -32,6 +32,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineChemical extends GuiInfoContainer {
@@ -59,6 +60,12 @@ public class GUIMachineChemical extends GuiInfoContainer {
 			this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
 			ghostSlots.add(ghostSlot);
 		}
+
+		GhostSlot outputGhost = new GhostSlot(134, 90);
+		outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
+		this.inventorySlots.inventorySlots.add(outputGhost);
+		this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+		ghostSlots.add(outputGhost);
 	}
 
 	@Override
@@ -173,6 +180,9 @@ public class GUIMachineChemical extends GuiInfoContainer {
 		ItemStack templateStack = chemplant.getStackInSlot(4);
 		if (templateStack != null && !templateStack.isEmpty() && templateStack.getItem() instanceof ItemChemistryTemplate) {
 			List<AStack> itemInputs = ChemplantRecipes.getChemInputFromTempate(templateStack);
+			FluidStack[] fluidInputs = ChemplantRecipes.getFluidInputFromTempate(templateStack);
+			ItemStack[] itemOutputs = ChemplantRecipes.getChemOutputFromTempate(templateStack);
+			boolean allIngredientsMet = true;
 
 			if (itemInputs != null) {
 				List<IngredientStatus> statuses = new ArrayList<>();
@@ -191,6 +201,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 							}
 						}
 					}
+					if (have < needed) allIngredientsMet = false;
 					statuses.add(new IngredientStatus(req, needed, have));
 				}
 
@@ -274,6 +285,60 @@ public class GUIMachineChemical extends GuiInfoContainer {
 						GlStateManager.enableDepth();
 						GlStateManager.enableLighting();
 					}
+				}
+			}
+
+			if (fluidInputs != null) {
+				for (FluidStack req : fluidInputs) {
+					int needed = req.amount;
+					int have = 0;
+					for (int t = 0; t < 2; t++) {
+						if (chemplant.tanks[t] != null && chemplant.tanks[t].getFluid() != null) {
+							if (chemplant.tanks[t].getFluid().isFluidEqual(req)) {
+								have += chemplant.tanks[t].getFluid().amount;
+							}
+						}
+					}
+					if (have < needed) allIngredientsMet = false;
+				}
+			}
+
+			if (itemOutputs != null && itemOutputs.length > 0) {
+				ItemStack outSlotStack = chemplant.getStackInSlot(5);
+				if (!itemOutputs[0].isEmpty() && (outSlotStack == null || outSlotStack.isEmpty())) {
+					int outX = 134;
+					int outY = 90;
+
+					ItemStack displayOut = itemOutputs[0].copy();
+					displayOut.setCount(1);
+					currentGhosts.add(new GhostItem(guiLeft + outX, guiTop + outY, 16, 16, displayOut.copy()));
+
+					int outputGhostIndex = 4;
+					if (outputGhostIndex < ghostSlots.size()) {
+						ghostSlots.get(outputGhostIndex).setGhostStack(displayOut.copy());
+					}
+
+					RenderHelper.enableGUIStandardItemLighting();
+					GlStateManager.enableDepth();
+					GlStateManager.enableBlend();
+					GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+					GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
+					Minecraft.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(displayOut, guiLeft + outX, guiTop + outY);
+					GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+					GlStateManager.disableBlend();
+					RenderHelper.disableStandardItemLighting();
+
+					GlStateManager.disableLighting();
+					GlStateManager.disableDepth();
+					int outputOverlayColor = allIngredientsMet ? 0x7F00FF00 : 0x7FFF0000;
+					drawRect(guiLeft + outX, guiTop + outY, guiLeft + outX + 16, guiTop + outY + 16, outputOverlayColor);
+
+					if (itemOutputs[0].getCount() > 1) {
+						String countStr = String.valueOf(itemOutputs[0].getCount());
+						fontRenderer.drawStringWithShadow(countStr, guiLeft + outX + 17 - fontRenderer.getStringWidth(countStr), guiTop + outY + 9, 0xFFFFFF);
+					}
+					GlStateManager.enableDepth();
+					GlStateManager.enableLighting();
 				}
 			}
 		}
