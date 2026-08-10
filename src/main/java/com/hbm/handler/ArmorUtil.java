@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.hbm.util.I18nUtil;
 import com.hbm.items.ModItems;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.Library;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ArmorRegistry;
@@ -56,12 +55,10 @@ public class ArmorUtil {
 		ArmorRegistry.registerHazard(ModItems.hazmat_paa_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.paa_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.t45_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
-		ArmorRegistry.registerHazard(ModItems.t45_mur_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.t51_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.ajr_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.ajro_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.ajr_alpha_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
-		ArmorRegistry.registerHazard(ModItems.ajr_mur_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.rpa_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.hev_helmet, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
 		ArmorRegistry.registerHazard(ModItems.fau_helmet, HazardClass.RAD_GAS, HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_CHLORINE, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE, HazardClass.LIGHT, HazardClass.SAND);
@@ -202,8 +199,7 @@ public class ArmorUtil {
 			checkArmor(player, ModItems.hev_helmet, ModItems.hev_plate, ModItems.hev_legs, ModItems.hev_boots) || 
 			checkArmor(player, ModItems.ajr_helmet, ModItems.ajr_plate, ModItems.ajr_legs, ModItems.ajr_boots) || 
 			checkArmor(player, ModItems.ajro_helmet, ModItems.ajro_plate, ModItems.ajro_legs, ModItems.ajro_boots) || 
-			checkArmor(player, ModItems.ajr_alpha_helmet, ModItems.ajr_alpha_plate, ModItems.ajr_alpha_legs, ModItems.ajr_alpha_boots) || 
-			checkArmor(player, ModItems.ajr_mur_helmet, ModItems.ajr_mur_plate, ModItems.ajr_mur_legs, ModItems.ajr_mur_boots) || 
+			checkArmor(player, ModItems.ajr_alpha_helmet, ModItems.ajr_b_plate, ModItems.ajr_b_legs, ModItems.ajr_b_boots) ||
 			checkArmor(player, ModItems.rpa_helmet, ModItems.rpa_plate, ModItems.rpa_legs, ModItems.rpa_boots) || 
 			checkArmor(player, ModItems.fau_helmet, ModItems.fau_plate, ModItems.fau_legs, ModItems.fau_boots) || 
 			checkArmor(player, ModItems.dns_helmet, ModItems.dns_plate, ModItems.dns_legs, ModItems.dns_boots)) {
@@ -229,8 +225,7 @@ public class ArmorUtil {
 		if(ArmorUtil.checkArmor(player, ModItems.hazmat_helmet, ModItems.hazmat_plate, ModItems.hazmat_legs, ModItems.hazmat_boots) || 
 			ArmorUtil.checkArmor(player, ModItems.hazmat_helmet_red, ModItems.hazmat_plate_red, ModItems.hazmat_legs_red, ModItems.hazmat_boots_red) || 
 			ArmorUtil.checkArmor(player, ModItems.hazmat_helmet_grey, ModItems.hazmat_plate_grey, ModItems.hazmat_legs_grey, ModItems.hazmat_boots_grey) || 
-			ArmorUtil.checkArmor(player, ModItems.t45_helmet, ModItems.t45_plate, ModItems.t45_legs, ModItems.t45_boots) || 
-			ArmorUtil.checkArmor(player, ModItems.t45_mur_helmet, ModItems.t45_mur_plate, ModItems.t45_mur_legs, ModItems.t45_mur_boots) || 
+			ArmorUtil.checkArmor(player, ModItems.t45_helmet, ModItems.t45_plate, ModItems.t45_legs, ModItems.t45_boots) ||
 			ArmorUtil.checkArmor(player, ModItems.t51_helmet, ModItems.t51_plate, ModItems.t51_legs, ModItems.t51_boots) || 
 			ArmorUtil.checkArmor(player, ModItems.schrabidium_helmet, ModItems.schrabidium_plate, ModItems.schrabidium_legs, ModItems.schrabidium_boots) || 
 			checkForHaz2(player)) {
@@ -428,19 +423,11 @@ public class ArmorUtil {
 		{
 			return true;
 		}
-		if(checkArmorPiece(player, ModItems.t45_mur_helmet, 3))
-		{
-			return true;
-		}
 		if(checkArmorPiece(player, ModItems.ajr_helmet, 3))
 		{
 			return true;
 		}
 		if(checkArmorPiece(player, ModItems.ajro_helmet, 3))
-		{
-			return true;
-		}
-		if(checkArmorPiece(player, ModItems.ajr_mur_helmet, 3))
 		{
 			return true;
 		}

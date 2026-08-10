@@ -1,12 +1,9 @@
 package com.hbm.main;
 
-import java.util.Map.Entry;
-
 import static com.hbm.inventory.OreDictManager.*;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
-import com.hbm.crafting.RecipeArmorConversion;
 import com.hbm.crafting.handlers.MKUCraftingHandler;
 import com.hbm.crafting.handlers.RBMKFuelCraftingHandler;
 import com.hbm.crafting.handlers.SmallReactorFuelCraftingHandler;
@@ -16,7 +13,6 @@ import com.hbm.inventory.BedrockOreRegistry;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemFluidTank;
-import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.items.machine.ItemFuelRod;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemHot;
@@ -47,11 +43,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.IngredientNBT;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -2067,9 +2061,9 @@ public class CraftingManager {
 		addShapelessAuto(new ItemStack(ModItems.ajro_legs, 1), new Object[] { ModItems.ajr_legs, "dyeRed", "dyeBlack" });
 		addShapelessAuto(new ItemStack(ModItems.ajro_boots, 1), new Object[] { ModItems.ajr_boots, "dyeRed", "dyeBlack" });
 		addShapelessAuto(new ItemStack(ModItems.ajr_alpha_helmet, 1), new Object[] { ModItems.ajr_helmet, "dyeBlue", "dyeBlack" });
-		addShapelessAuto(new ItemStack(ModItems.ajr_alpha_plate, 1), new Object[] { ModItems.ajr_plate, "dyeBlue", "dyeBlack" });
-		addShapelessAuto(new ItemStack(ModItems.ajr_alpha_legs, 1), new Object[] { ModItems.ajr_legs, "dyeBlue", "dyeBlack" });
-		addShapelessAuto(new ItemStack(ModItems.ajr_alpha_boots, 1), new Object[] { ModItems.ajr_boots, "dyeBlue", "dyeBlack" });
+		addShapelessAuto(new ItemStack(ModItems.ajr_b_plate, 1), new Object[] { ModItems.ajr_plate, "dyeBlue", "dyeBlack" });
+		addShapelessAuto(new ItemStack(ModItems.ajr_b_legs, 1), new Object[] { ModItems.ajr_legs, "dyeBlue", "dyeBlack" });
+		addShapelessAuto(new ItemStack(ModItems.ajr_b_boots, 1), new Object[] { ModItems.ajr_boots, "dyeBlue", "dyeBlack" });
 		addRecipeAuto(new ItemStack(ModItems.fau_helmet, 1), new Object[] { "PWP", "PBP", "FSF", 'P', ModItems.plate_armor_fau, 'W', new ItemStack(Blocks.WOOL, 1, 14), 'B', ModItems.schrabidium_helmet, 'F', ModItems.gas_mask_filter, 'S', ModItems.pipes_steel });
 		addRecipeAuto(new ItemStack(ModItems.fau_plate, 1), new Object[] { "MCM", "PBP", "PSP", 'M', ModItems.motor_desh, 'C', ModItems.demon_core_closed, 'P', ModItems.plate_armor_fau, 'B', ModItems.schrabidium_plate, 'S', ModBlocks.ancient_scrap });
 		addRecipeAuto(new ItemStack(ModItems.fau_legs, 1), new Object[] { "MPM", "PBP", "PDP", 'M', ModItems.motor_desh, 'P', ModItems.plate_armor_fau, 'B', ModItems.schrabidium_legs, 'D', PO210.billet() });

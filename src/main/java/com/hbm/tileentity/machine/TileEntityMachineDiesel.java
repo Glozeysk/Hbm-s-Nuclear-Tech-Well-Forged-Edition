@@ -3,10 +3,13 @@ package com.hbm.tileentity.machine;
 import java.util.HashMap;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.EngineRecipes.FuelGrade;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
@@ -26,18 +29,22 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 public class TileEntityMachineDiesel extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
 
 	public long power;
-	public int soundCycle = 0;
 	public static final long maxPower = 50000;
 	public long powerCap = 50000;
 	public int age = 0;
 	public FluidTank tank;
 	public Fluid tankType;
 	public boolean needsUpdate;
+
+	@SideOnly(Side.CLIENT)
+	private AudioWrapper audio;
 
 	private static final int[] slots_top = new int[] { 0 };
 	private static final int[] slots_bottom = new int[] { 1, 2 };
@@ -54,12 +61,12 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 		super(3);
 		tank = new FluidTank(16000);
 	}
-	
+
 	@Override
 	public String getName() {
 		return "container.machineDiesel";
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setLong("powerTime", power);
@@ -67,7 +74,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 		tank.writeToNBT(compound);
 		return super.writeToNBT(compound);
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		this.power = compound.getLong("powerTime");
@@ -75,17 +82,17 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 		tank.readFromNBT(compound);
 		super.readFromNBT(compound);
 	}
-	
+
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
 		int p_94128_1_ = e.ordinal();
 		return p_94128_1_ == 0 ? slots_bottom : (p_94128_1_ == 1 ? slots_top : slots_side);
 	}
-	
+
 	public long getPowerScaled(long i) {
 		return (power * i) / powerCap;
 	}
-	
+
 	@Override
 	public void update() {
 		if(tank.getFluid() != null)
@@ -108,13 +115,29 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 				powerCap = maxPower * 20;
 			else
 				powerCap = maxPower;
-			
+
 			// Battery Item
 			power = Library.chargeItemsFromTE(inventory, 2, power, powerCap);
 
 			generate();
 
 			networkPackNT(50);
+		} else {
+			// Клиентская логика для управления зацикленным звуком
+			boolean isGenerating = hasAcceptableFuel() && tank.getFluidAmount() > 0;
+			float volume = this.getVolume(2);
+
+			if(isGenerating && volume > 0) {
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.dieselOperate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio.startSound();
+				}
+			} else {
+				if(audio != null) {
+					audio.stopSound();
+					audio = null;
+				}
+			}
 		}
 	}
 
@@ -133,37 +156,29 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 		if(tank.getFluid() != null)
 			tankType = tank.getFluid().getFluid();
 	}
-	
+
 	public boolean hasAcceptableFuel() {
 		return getHEFromFuel() > 0;
 	}
-	
+
 	public long getHEFromFuel() {
 		if(tank.getFluid() == null) return 0;
 		return getHEFromFuel(tank.getFluid().getFluid());
 	}
-	
+
 	public static long getHEFromFuel(Fluid type) {
 		if(EngineRecipes.hasFuelRecipe(type)) {
 			FuelGrade grade = EngineRecipes.getFuelGrade(type);
 			double efficiency = fuelEfficiency.containsKey(grade) ? fuelEfficiency.get(grade) : 0;
 			return (long) (EngineRecipes.getEnergy(type) / 1000L * efficiency);
 		}
-		
+
 		return 0;
 	}
 
 	public void generate() {
 		if (hasAcceptableFuel()) {
 			if (tank.getFluidAmount() > 0) {
-				if (soundCycle == 0) {
-					this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.BLOCKS, 0.5F, -100.0F);
-				}
-				soundCycle++;
-
-				if (soundCycle >= 5)
-					soundCycle = 0;
-
 				tank.drain(1, true);
 				needsUpdate = true;
 				if (power + getHEFromFuel() <= powerCap) {
@@ -178,7 +193,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	protected boolean inputValidForTank(int tank, int slot){
 		if(!inventory.getStackInSlot(slot).isEmpty()){
 			if(isValidFluid(FluidUtil.getFluidContained(inventory.getStackInSlot(slot)))){
-				return true;	
+				return true;
 			}
 		}
 		return false;
@@ -212,7 +227,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		return null;
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY){
@@ -223,7 +238,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 			return super.hasCapability(capability, facing);
 		}
 	}
-	
+
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY){
@@ -232,6 +247,23 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
 		} else {
 			return super.getCapability(capability, facing);
+		}
+	}
+
+	@Override
+	public void onChunkUnload() {
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
 		}
 	}
 

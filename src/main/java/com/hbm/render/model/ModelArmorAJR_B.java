@@ -10,9 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 
-public class ModelArmorAJRMUR extends ModelArmorBase {
+public class ModelArmorAJR_B extends ModelArmorBase {
 	
-	public ModelArmorAJRMUR(int type) {
+	public ModelArmorAJR_B(int type) {
 		super(type);
 
 		head = new ModelRendererObj(ResourceManager.armor_ajr, "Head");
@@ -27,7 +27,7 @@ public class ModelArmorAJRMUR extends ModelArmorBase {
 
 	@Override
 	public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
-
+		
 		setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
 
         if (par1Entity instanceof EntityArmorStand stand) {
@@ -43,26 +43,26 @@ public class ModelArmorAJRMUR extends ModelArmorBase {
 			GL11.glTranslatef(0.0F, 16.0F * par7, 0.0F);
 		}
 		if(type == 3) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_mur_helmet);
+			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_helmet);
 			head.render(par7*1.01F);
 		}
 		if(this.isChild) {
 			GL11.glScalef(0.75F, 0.75F, 0.75F);
 		}
 		if(type == 2) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_mur_chest);
+			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_chest);
 			body.render(par7);
-			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_mur_arm);
+			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_arm);
 			leftArm.render(par7);
 			rightArm.render(par7);
 		}
 		if(type == 1) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_mur_leg);
+			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_leg);
 			leftLeg.render(par7);
 			rightLeg.render(par7);
 		}
 		if(type == 0) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_mur_leg);
+			Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajr_alpha_leg);
 			leftFoot.render(par7);
 			rightFoot.render(par7);
 		}

@@ -1,6 +1,6 @@
 package com.hbm.items.armor;
 
-import com.hbm.render.model.ModelArmorAJRAlpha;
+import com.hbm.render.model.ModelArmorAJR_B;
 
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.entity.EntityLivingBase;
@@ -16,16 +16,16 @@ public class ArmorAJRAlpha extends ArmorFSBPowered {
 	}
 
 	@SideOnly(Side.CLIENT)
-	ModelArmorAJRAlpha[] models;
+	ModelArmorAJR_B[] models;
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default){
 		if(models == null) {
-			models = new ModelArmorAJRAlpha[4];
+			models = new ModelArmorAJR_B[4];
 			
 			for(int i = 0; i < 4; i++)
-				models[i] = new ModelArmorAJRAlpha(i);
+				models[i] = new ModelArmorAJR_B(i);
 		}
 		
 		return models[armorSlot.getIndex()];

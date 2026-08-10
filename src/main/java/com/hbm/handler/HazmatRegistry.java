@@ -146,11 +146,6 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.t51_legs, fixRounding(t45 * legs));
 		HazmatRegistry.registerHazmat(ModItems.t51_boots, fixRounding(t45 * boots));
 
-		HazmatRegistry.registerHazmat(ModItems.t45_mur_helmet, fixRounding(t45 * helmet));
-		HazmatRegistry.registerHazmat(ModItems.t45_mur_plate, fixRounding(t45 * chest));
-		HazmatRegistry.registerHazmat(ModItems.t45_mur_legs, fixRounding(t45 * legs));
-		HazmatRegistry.registerHazmat(ModItems.t45_mur_boots, fixRounding(t45 * boots));
-
 		HazmatRegistry.registerHazmat(ModItems.ajr_helmet, fixRounding(ajr * helmet));
 		HazmatRegistry.registerHazmat(ModItems.ajr_plate, fixRounding(ajr * chest));
 		HazmatRegistry.registerHazmat(ModItems.ajr_legs, fixRounding(ajr * legs));
@@ -162,14 +157,9 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.ajro_boots, fixRounding(ajr * boots));
 
 		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_helmet, fixRounding(ajr * helmet));
-		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_plate, fixRounding(ajr * chest));
-		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_legs, fixRounding(ajr * legs));
-		HazmatRegistry.registerHazmat(ModItems.ajr_alpha_boots, fixRounding(ajr * boots));
-
-		HazmatRegistry.registerHazmat(ModItems.ajr_mur_helmet, fixRounding(ajr * helmet));
-		HazmatRegistry.registerHazmat(ModItems.ajr_mur_plate, fixRounding(ajr * chest));
-		HazmatRegistry.registerHazmat(ModItems.ajr_mur_legs, fixRounding(ajr * legs));
-		HazmatRegistry.registerHazmat(ModItems.ajr_mur_boots, fixRounding(ajr * boots));
+		HazmatRegistry.registerHazmat(ModItems.ajr_b_plate, fixRounding(ajr * chest));
+		HazmatRegistry.registerHazmat(ModItems.ajr_b_legs, fixRounding(ajr * legs));
+		HazmatRegistry.registerHazmat(ModItems.ajr_b_boots, fixRounding(ajr * boots));
 
 		HazmatRegistry.registerHazmat(ModItems.rpa_helmet, fixRounding(rpa * helmet));
 		HazmatRegistry.registerHazmat(ModItems.rpa_plate, fixRounding(rpa * chest));
