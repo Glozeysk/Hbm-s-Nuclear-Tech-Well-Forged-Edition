@@ -1,13 +1,15 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.machine.TileEntityAMSLimiter;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
-import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 
+import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,17 +25,21 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockWell extends DummyOldBase {
+public class DummyBlockAMSLimiter extends BlockContainer implements IDummy {
 
 	public static boolean safeBreak = false;
-
-	public DummyBlockWell(Material materialIn, String s, boolean port) {
-		super(materialIn, s, port);
+	
+	public DummyBlockAMSLimiter(Material materialIn, String s) {
+		super(materialIn);
+		this.setTranslationKey(s);
+		this.setRegistryName(s);
+		
+		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		if(this == ModBlocks.dummy_port_well){
+		if(this == ModBlocks.dummy_port_ams_limiter){
 			return new TileEntityDummyFluidPort();
 		} else {
 			return new TileEntityDummy();
@@ -61,12 +67,12 @@ public class DummyBlockWell extends DummyOldBase {
 		{
     		TileEntity te = world.getTileEntity(pos);
     		if(te != null && te instanceof TileEntityDummy) {
-    			BlockPos target = ((TileEntityDummy)te).target;
+    			BlockPos a = ((TileEntityDummy)te).target;
     			
-    			TileEntityMachineOilWell entity = (TileEntityMachineOilWell) world.getTileEntity(target);
+    			TileEntityAMSLimiter entity = (TileEntityAMSLimiter) world.getTileEntity(a);
     			if(entity != null)
     			{
-    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_well, world, target.getX(), target.getY(), target.getZ());
+    				player.openGui(MainRegistry.instance, ModBlocks.guiID_ams_limiter, world, a.getX(), a.getY(), a.getZ());
     			}
     		}
 			return true;
@@ -76,13 +82,18 @@ public class DummyBlockWell extends DummyOldBase {
 	}
 	
 	@Override
-	public boolean isOpaqueCube(IBlockState state) {
-		return false;
-	}
-
-	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.INVISIBLE;
+	}
+	
+	@Override
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+		return Items.AIR;
+	}
+	
+	@Override
+	public boolean isOpaqueCube(IBlockState state) {
+		return false;
 	}
 	
 	@Override
@@ -103,14 +114,10 @@ public class DummyBlockWell extends DummyOldBase {
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
 		return false;
 	}
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Items.AIR;
-	}
 	
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.machine_well);
+		return new ItemStack(ModBlocks.ams_limiter);
 	}
 
 }

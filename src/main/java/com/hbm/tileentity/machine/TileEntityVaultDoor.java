@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.DummyBlockVault;
+import com.hbm.blocks.machine.dummy.DummyBlockVault;
 import com.hbm.blocks.machine.VaultDoor;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.interfaces.IAnimatedDoor;

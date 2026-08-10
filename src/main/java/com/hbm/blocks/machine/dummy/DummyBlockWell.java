@@ -1,12 +1,12 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityDummy;
-import com.hbm.tileentity.machine.TileEntityDummyPort;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
+import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
+import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -23,19 +23,23 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockAssembler extends DummyOldBase {
+public class DummyBlockWell extends DummyOldBase {
 
 	public static boolean safeBreak = false;
-	
-	public DummyBlockAssembler(Material materialIn, String s, boolean port) {
+
+	public DummyBlockWell(Material materialIn, String s, boolean port) {
 		super(materialIn, s, port);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		return this == ModBlocks.dummy_port_assembler ? new TileEntityDummyPort() : new TileEntityDummy();
+		if(this == ModBlocks.dummy_port_well){
+			return new TileEntityDummyFluidPort();
+		} else {
+			return new TileEntityDummy();
+		}
 	}
-
+	
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		if(!safeBreak) {
@@ -47,19 +51,38 @@ public class DummyBlockAssembler extends DummyOldBase {
     	}
     	world.removeTileEntity(pos);
 	}
-	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.INVISIBLE;
-	}
 	
 	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Items.AIR;
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		if(world.isRemote)
+		{
+			return true;
+		} else if(!player.isSneaking())
+		{
+    		TileEntity te = world.getTileEntity(pos);
+    		if(te != null && te instanceof TileEntityDummy) {
+    			BlockPos target = ((TileEntityDummy)te).target;
+    			
+    			TileEntityMachineOilWell entity = (TileEntityMachineOilWell) world.getTileEntity(target);
+    			if(entity != null)
+    			{
+    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_well, world, target.getX(), target.getY(), target.getZ());
+    			}
+    		}
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
+	}
+
+	@Override
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		return EnumBlockRenderType.INVISIBLE;
 	}
 	
 	@Override
@@ -81,27 +104,13 @@ public class DummyBlockAssembler extends DummyOldBase {
 		return false;
 	}
 	@Override
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(Item.getItemFromBlock(ModBlocks.machine_assembler));
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+		return Items.AIR;
 	}
+	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
-		{
-			return true;
-		} else if(!player.isSneaking()) {
-    		TileEntity te = world.getTileEntity(pos);
-    		if(te instanceof TileEntityDummy) {
-    			
-    			TileEntityMachineAssembler entity = (TileEntityMachineAssembler) world.getTileEntity(((TileEntityDummy)te).target);
-    			if(entity != null)
-    			{
-    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_assembler, world, ((TileEntityDummy)te).target.getX(), ((TileEntityDummy)te).target.getY(), ((TileEntityDummy)te).target.getZ());
-    			}
-    		}
-			return true;
-		} else {
-			return false;
-		}
+	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+		return new ItemStack(ModBlocks.machine_well);
 	}
+
 }

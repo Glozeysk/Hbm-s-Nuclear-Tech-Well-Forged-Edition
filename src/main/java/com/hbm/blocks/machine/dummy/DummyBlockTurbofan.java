@@ -1,14 +1,13 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityDummy;
-import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
+import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,23 +23,23 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockCyclotron extends BlockContainer implements IDummy {
+public class DummyBlockTurbofan extends DummyOldBase {
 
 	public static boolean safeBreak = false;
-	
-	public DummyBlockCyclotron(Material materialIn, String s) {
-		super(materialIn);
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
-		
-		ModBlocks.ALL_BLOCKS.add(this);
+
+	public DummyBlockTurbofan(Material materialIn, String s, boolean port) {
+		super(materialIn, s, port);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
+		if(this == ModBlocks.dummy_port_turbofan){
+			return new TileEntityDummyFluidPort();
+		} else {
 		return new TileEntityDummy();
+		}
 	}
-
+	
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		if(!safeBreak) {
@@ -54,18 +53,13 @@ public class DummyBlockCyclotron extends BlockContainer implements IDummy {
 	}
 	
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.INVISIBLE;
-	}
-	
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Items.AIR;
-	}
-	
-	@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
+	}
+
+	@Override
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		return EnumBlockRenderType.INVISIBLE;
 	}
 	
 	@Override
@@ -86,34 +80,37 @@ public class DummyBlockCyclotron extends BlockContainer implements IDummy {
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
 		return false;
 	}
-	
 	@Override
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.machine_cyclotron);
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+		return Items.AIR;
 	}
-	
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
+    
+    @Override
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    	return new ItemStack(Item.getItemFromBlock(ModBlocks.machine_turbofan));
+    }
+    
+    @Override
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    	if(world.isRemote)
 		{
 			return true;
 		} else if(!player.isSneaking())
 		{
     		TileEntity te = world.getTileEntity(pos);
     		if(te != null && te instanceof TileEntityDummy) {
-    			BlockPos target = ((TileEntityDummy)te).target;
-
+    			BlockPos a = ((TileEntityDummy)te).target;
     			
-    			TileEntityMachineCyclotron entity = (TileEntityMachineCyclotron) world.getTileEntity(target);
+    			TileEntityMachineTurbofan entity = (TileEntityMachineTurbofan) world.getTileEntity(a);
     			if(entity != null)
     			{
-    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_cyclotron, world, target.getX(), target.getY(), target.getZ());
+    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_turbofan, world, a.getX(), a.getY(), a.getZ());
     			}
     		}
 			return true;
 		} else {
 			return false;
 		}
-	}
-	
+    }
+
 }

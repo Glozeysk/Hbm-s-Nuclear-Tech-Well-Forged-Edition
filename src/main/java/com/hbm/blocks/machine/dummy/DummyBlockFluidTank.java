@@ -1,13 +1,15 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
-import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 
+import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,17 +25,21 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockRefinery extends DummyOldBase {
+public class DummyBlockFluidTank extends BlockContainer implements IDummy {
 
 	public static boolean safeBreak = false;
-
-	public DummyBlockRefinery(Material materialIn, String s, boolean port) {
-		super(materialIn, s, port);
+	
+	public DummyBlockFluidTank(Material materialIn, String s) {
+		super(materialIn);
+		this.setTranslationKey(s);
+		this.setRegistryName(s);
+		
+		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		if(this == ModBlocks.dummy_port_refinery){
+		if(this == ModBlocks.dummy_port_fluidtank){
 			return new TileEntityDummyFluidPort();
 		} else {
 			return new TileEntityDummy();
@@ -53,18 +59,13 @@ public class DummyBlockRefinery extends DummyOldBase {
 	}
 	
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.INVISIBLE;
-	}
-	
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Items.AIR;
-	}
-	
-	@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
+	}
+
+	@Override
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		return EnumBlockRenderType.INVISIBLE;
 	}
 	
 	@Override
@@ -85,28 +86,30 @@ public class DummyBlockRefinery extends DummyOldBase {
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
 		return false;
 	}
-	
 	@Override
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.machine_refinery);
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+		return Items.AIR;
 	}
 	
 	@Override
+	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+		return new ItemStack(ModBlocks.machine_fluidtank);
+	}
+
+	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
-		{
+		if(world.isRemote) {
 			return true;
 		} else if(!player.isSneaking())
 		{
     		TileEntity te = world.getTileEntity(pos);
     		if(te != null && te instanceof TileEntityDummy) {
-
     			BlockPos target = ((TileEntityDummy)te).target;
     			
-    			TileEntityMachineRefinery entity = (TileEntityMachineRefinery) world.getTileEntity(target);
+    			TileEntityMachineFluidTank entity = (TileEntityMachineFluidTank) world.getTileEntity(target);
     			if(entity != null)
     			{
-    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_refinery, world, target.getX(), target.getY(), target.getZ());
+    				player.openGui(MainRegistry.instance, ModBlocks.guiID_machine_fluidtank, world, target.getX(), target.getY(), target.getZ());
     			}
     		}
 			return true;

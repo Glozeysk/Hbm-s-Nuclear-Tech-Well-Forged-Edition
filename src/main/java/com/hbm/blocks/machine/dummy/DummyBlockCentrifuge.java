@@ -1,13 +1,14 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityDummy;
-import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
-import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
+import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
 
+import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,25 +20,24 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockFlare extends DummyOldBase {
+public class DummyBlockCentrifuge extends BlockContainer implements IDummy {
 
 	public static boolean safeBreak = false;
-
-	public DummyBlockFlare(Material materialIn, String s, boolean port) {
-		super(materialIn, s, port);
+	
+	public DummyBlockCentrifuge(Material materialIn, String s) {
+		super(materialIn);
+		this.setTranslationKey(s);
+		this.setRegistryName(s);
+		
+		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		if(this == ModBlocks.dummy_port_flare){
-			return new TileEntityDummyFluidPort();
-		} else {
-			return new TileEntityDummy();
-		}
+		return new TileEntityDummy();
 	}
 	
 	@Override
@@ -51,15 +51,20 @@ public class DummyBlockFlare extends DummyOldBase {
     	}
     	world.removeTileEntity(pos);
 	}
-	
-	@Override
-	public boolean isOpaqueCube(IBlockState state) {
-		return false;
-	}
 
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.INVISIBLE;
+	}
+	
+	@Override
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+		return Items.AIR;
+	}
+	
+	@Override
+	public boolean isOpaqueCube(IBlockState state) {
+		return false;
 	}
 	
 	@Override
@@ -80,31 +85,29 @@ public class DummyBlockFlare extends DummyOldBase {
 	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
 		return false;
 	}
+	
 	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Items.AIR;
+	public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state) {
+		return new ItemStack(ModBlocks.machine_centrifuge);
 	}
 	
 	@Override
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.machine_flare);
-	}
-	
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote)
+	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		if(worldIn.isRemote)
 		{
 			return true;
-		} else if(!player.isSneaking())
+		} else if(!playerIn.isSneaking())
 		{
-    		TileEntity te = world.getTileEntity(pos);
+    		TileEntity te = worldIn.getTileEntity(pos);
     		if(te != null && te instanceof TileEntityDummy) {
-    			BlockPos a = ((TileEntityDummy)te).target;
+    			int a = ((TileEntityDummy)te).target.getX();
+    			int b = ((TileEntityDummy)te).target.getY();
+    			int c = ((TileEntityDummy)te).target.getZ();
     			
-    			TileEntityMachineGasFlare entity = (TileEntityMachineGasFlare) world.getTileEntity(a);
+    			TileEntityMachineCentrifuge entity = (TileEntityMachineCentrifuge) worldIn.getTileEntity(((TileEntityDummy)te).target);
     			if(entity != null)
     			{
-    				player.openGui(MainRegistry.instance, 0, world, a.getX(), a.getY(), a.getZ());
+    				playerIn.openGui(MainRegistry.instance, ModBlocks.guiID_centrifuge, worldIn, a, b, c);
     			}
     		}
 			return true;
@@ -112,5 +115,4 @@ public class DummyBlockFlare extends DummyOldBase {
 			return false;
 		}
 	}
-
 }

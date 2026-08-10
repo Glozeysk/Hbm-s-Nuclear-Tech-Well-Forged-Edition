@@ -1,11 +1,11 @@
-package com.hbm.blocks.machine;
+package com.hbm.blocks.machine.dummy;
 
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IDummy;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityAMSEmitter;
+import com.hbm.tileentity.machine.TileEntityAMSBase;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityDummyFluidPort;
 
@@ -25,11 +25,11 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class DummyBlockAMSEmitter extends BlockContainer implements IDummy {
+public class DummyBlockAMSBase extends BlockContainer implements IDummy {
 
 	public static boolean safeBreak = false;
 	
-	public DummyBlockAMSEmitter(Material materialIn, String s) {
+	public DummyBlockAMSBase(Material materialIn, String s) {
 		super(materialIn);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
@@ -39,10 +39,10 @@ public class DummyBlockAMSEmitter extends BlockContainer implements IDummy {
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		if(this == ModBlocks.dummy_port_ams_emitter){
+		if(this == ModBlocks.dummy_port_ams_base){
 			return new TileEntityDummyFluidPort();
 		} else {
-			return new TileEntityDummy();
+		return new TileEntityDummy();
 		}
 	}
 	
@@ -69,10 +69,10 @@ public class DummyBlockAMSEmitter extends BlockContainer implements IDummy {
     		if(te != null && te instanceof TileEntityDummy) {
     			BlockPos a = ((TileEntityDummy)te).target;
     			
-    			TileEntityAMSEmitter entity = (TileEntityAMSEmitter) world.getTileEntity(a);
+    			TileEntityAMSBase entity = (TileEntityAMSBase) world.getTileEntity(a);
     			if(entity != null)
     			{
-    				player.openGui(MainRegistry.instance, ModBlocks.guiID_ams_emitter, world, a.getX(), a.getY(), a.getZ());
+    				player.openGui(MainRegistry.instance, ModBlocks.guiID_ams_base, world, a.getX(), a.getY(), a.getZ());
     			}
     		}
 			return true;
@@ -117,7 +117,7 @@ public class DummyBlockAMSEmitter extends BlockContainer implements IDummy {
 	
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.ams_emitter);
+		return new ItemStack(ModBlocks.ams_base);
 	}
 
 }
