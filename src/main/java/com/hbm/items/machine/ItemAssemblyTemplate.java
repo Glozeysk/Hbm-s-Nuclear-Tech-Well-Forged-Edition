@@ -81,6 +81,12 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 		return stack;
 	}
 
+	private static String getColorForAmount(int have, int needed) {
+		if (have >= needed) return "§a";
+		if (have >= Math.ceil(needed * 0.5)) return "§e";
+		return "§c";
+	}
+
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if (!(stack.getItem() instanceof ItemAssemblyTemplate))
@@ -125,6 +131,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 
 		boolean allMet = true;
 		List<Boolean> metFlags = new ArrayList<>();
+		List<Integer> haveAmounts = new ArrayList<>();
 
 		for(Object o : in) {
 			if (!(o instanceof AStack)) continue;
@@ -145,6 +152,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 			boolean met = have >= needed;
 			if (!met) allMet = false;
 			metFlags.add(met);
+			haveAmounts.add(have);
 		}
 
 		list.add("§l" + I18nUtil.resolveKey("info.template_out"));
@@ -155,12 +163,15 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 		int flagIdx = 0;
 		for(Object o : in) {
 			if (!(o instanceof AStack)) continue;
-			String color = (flagIdx < metFlags.size() && metFlags.get(flagIdx)) ? "§a" : "§c";
+			int have = haveAmounts.get(flagIdx);
+			AStack req = (AStack) o;
+			int needed = req.count();
+			String color = getColorForAmount(have, needed);
 			flagIdx++;
 
 			if(o instanceof ComparableStack)  {
 				ItemStack input = ((ComparableStack)o).toStack();
-				list.add(" " + color + input.getCount() + "x " + input.getDisplayName());
+				list.add(" " + color + input.getCount() + "x " + input.getDisplayName() + " §7(" + have + "/" + needed + ")");
 
 			} else if(o instanceof OreDictStack)  {
 				OreDictStack input = (OreDictStack) o;
@@ -168,7 +179,7 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 
 				if(ores.size() > 0) {
 					ItemStack inStack = ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size()));
-					list.add(" " + color + input.count() + "x " + inStack.getDisplayName());
+					list.add(" " + color + input.count() + "x " + inStack.getDisplayName() + " §7(" + have + "/" + needed + ")");
 				} else {
 					list.add("I AM ERROR - No OrdDict match found for "+o.toString());
 				}

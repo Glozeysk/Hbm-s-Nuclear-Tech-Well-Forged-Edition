@@ -225,6 +225,8 @@ public class AssemblerRecipes {
 				new OreDictStack(GH336.ingot(), 24),
 				new ComparableStack(ModItems.ingot_chainsteel, 8),
 			}, 2000);
+
+		makeRecipe(new ComparableStack(ModItems.wiring_red_copper, 1), new AStack[]{new ComparableStack(ModItems.wire_red_copper, 20), new ComparableStack(ModItems.cable_drum, 1)}, 60);
 		makeRecipe(new ComparableStack(ModItems.telepad, 1), new AStack[] { new OreDictStack(ANY_PLASTIC.ingot(), 12), new OreDictStack(SA326.plate(), 2), new OreDictStack(CMB.plate(), 4), new OreDictStack(STEEL.plate(), 2), new ComparableStack(ModItems.wire_gold, 6), new ComparableStack(ModItems.circuit_schrabidium, 1), }, 300);
 		makeRecipe(new ComparableStack(ModItems.entanglement_kit, 1), new AStack[] { new ComparableStack(ModItems.coil_magnetized_tungsten, 6), new OreDictStack(PB.plate(), 16), new OreDictStack(OreDictManager.getReflector(), 4), new ComparableStack(ModItems.singularity_counter_resonant, 1), new ComparableStack(ModItems.singularity_super_heated, 1), new ComparableStack(ModItems.powder_power, 4), }, 200);
 		makeRecipe(new ComparableStack(ModItems.dysfunctional_reactor, 1), new AStack[] { new OreDictStack(STEEL.plate(), 15), new OreDictStack(PB.ingot(), 5), new ComparableStack(ModItems.rod_quad_empty, 10), new OreDictStack(KEY_BROWN, 3), }, 200);
@@ -1060,7 +1062,6 @@ public class AssemblerRecipes {
 		
 		makeRecipe(new ComparableStack(ModBlocks.control_panel_custom, 1), new AStack[]{new ComparableStack(ModItems.circuit_targeting_tier5), new OreDictStack(STEEL.block(), 1), new ComparableStack(ModItems.wire_copper, 24), new ComparableStack(ModBlocks.pole_top)}, 100);
 		makeRecipe(new ComparableStack(ModBlocks.railgun_plasma, 1), new AStack[]{new OreDictStack(STEEL.plate(), 24), new ComparableStack(ModItems.hull_big_steel, 2), new ComparableStack(ModItems.hull_small_steel, 6), new ComparableStack(ModItems.pipes_steel, 2), new ComparableStack(ModBlocks.machine_desh_battery, 4), new ComparableStack(ModItems.coil_copper, 16), new ComparableStack(ModItems.coil_copper_torus, 8), new ComparableStack(ModItems.plate_desh, 4), new ComparableStack(ModItems.circuit_targeting_tier4, 4), new ComparableStack(ModItems.circuit_targeting_tier3, 2), new OreDictStack(ANY_PLASTIC.ingot(), 4)}, 500);
-		makeRecipe(new ComparableStack(ModItems.wiring_red_copper, 1), new AStack[]{new ComparableStack(ModItems.wire_red_copper, 20), new ComparableStack(ModItems.cable_drum, 1)}, 60);
 
 
 		/// HIDDEN ///

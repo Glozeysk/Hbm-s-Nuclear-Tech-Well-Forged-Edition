@@ -53,6 +53,18 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 		return s;
 	}
 
+	private static String getColorForAmount(int have, int needed) {
+		if (have >= needed) return "§a";
+		if (have >= Math.ceil(needed * 0.5)) return "§e";
+		return "§c";
+	}
+
+	private static String getColorForFluidAmount(int have, int needed) {
+		if (have >= needed) return "§a";
+		if (have >= Math.ceil(needed * 0.5)) return "§e";
+		return "§c";
+	}
+
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if(!(stack.getItem() instanceof ItemChemistryTemplate))
@@ -118,7 +130,9 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 
 		boolean allMet = true;
 		List<Boolean> itemMetFlags = new ArrayList<>();
+		List<Integer> itemHaveAmounts = new ArrayList<>();
 		List<Boolean> fluidMetFlags = new ArrayList<>();
+		List<Integer> fluidHaveAmounts = new ArrayList<>();
 
 		if (itemInputs != null) {
 			for (AStack req : itemInputs) {
@@ -138,6 +152,7 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 				boolean met = have >= needed;
 				if (!met) allMet = false;
 				itemMetFlags.add(met);
+				itemHaveAmounts.add(have);
 			}
 		}
 
@@ -153,6 +168,7 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 				boolean met = have >= needed;
 				if (!met) allMet = false;
 				fluidMetFlags.add(met);
+				fluidHaveAmounts.add(have);
 			}
 		}
 
@@ -174,11 +190,13 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 			if(itemInputs != null){
 				int flagIdx = 0;
 				for(AStack o : itemInputs){
-					String color = (flagIdx < itemMetFlags.size() && itemMetFlags.get(flagIdx)) ? "§a" : "§c";
+					int have = itemHaveAmounts.get(flagIdx);
+					int needed = o.count();
+					String color = getColorForAmount(have, needed);
 					flagIdx++;
 					if(o instanceof ComparableStack)  {
 						ItemStack input = ((ComparableStack)o).toStack();
-						list.add(" " + color + input.getCount() + "x " + input.getDisplayName());
+						list.add(" " + color + input.getCount() + "x " + input.getDisplayName() + " §7(" + have + "/" + needed + ")");
 
 					} else if(o instanceof OreDictStack)  {
 						OreDictStack input = (OreDictStack) o;
@@ -186,7 +204,7 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 
 						if(ores.size() > 0) {
 							ItemStack inStack = ores.get((int) (Math.abs(System.currentTimeMillis() / 1000) % ores.size()));
-							list.add(" " + color + input.count() + "x " + inStack.getDisplayName());
+							list.add(" " + color + input.count() + "x " + inStack.getDisplayName() + " §7(" + have + "/" + needed + ")");
 						} else {
 							list.add("I AM ERROR - No OrdDict match found for "+o.toString());
 						}
@@ -197,9 +215,11 @@ public class ItemChemistryTemplate extends Item implements IHasCustomModel {
 			if(fluidInputs != null){
 				int flagIdx = 0;
 				for(FluidStack inputFluid : fluidInputs){
-					String color = (flagIdx < fluidMetFlags.size() && fluidMetFlags.get(flagIdx)) ? "§a" : "§c";
+					int have = fluidHaveAmounts.get(flagIdx);
+					int needed = inputFluid.amount;
+					String color = getColorForFluidAmount(have, needed);
 					flagIdx++;
-					list.add(" " + color + inputFluid.amount + "mB " + inputFluid.getFluid().getLocalizedName(inputFluid));
+					list.add(" " + color + inputFluid.amount + "mB " + inputFluid.getFluid().getLocalizedName(inputFluid) + " §7(" + have + "/" + needed + ")");
 				}
 			}
 
