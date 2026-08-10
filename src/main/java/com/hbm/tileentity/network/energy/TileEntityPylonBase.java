@@ -34,6 +34,9 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
         if(first == second)
             return false;
 
+        if(first.connected.contains(second.getPos()) || second.connected.contains(first.getPos()))
+            return false;
+
         double len = Math.min(first.getMaxWireLength(), second.getMaxWireLength());
 
         BlockPos firstPos = first.getConnectionPoint();
@@ -213,7 +216,6 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
     public static enum ConnectionType {
         SINGLE,
         QUAD
-        //more to follow
     }
 
     @Override

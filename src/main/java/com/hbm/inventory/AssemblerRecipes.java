@@ -1060,7 +1060,9 @@ public class AssemblerRecipes {
 		
 		makeRecipe(new ComparableStack(ModBlocks.control_panel_custom, 1), new AStack[]{new ComparableStack(ModItems.circuit_targeting_tier5), new OreDictStack(STEEL.block(), 1), new ComparableStack(ModItems.wire_copper, 24), new ComparableStack(ModBlocks.pole_top)}, 100);
 		makeRecipe(new ComparableStack(ModBlocks.railgun_plasma, 1), new AStack[]{new OreDictStack(STEEL.plate(), 24), new ComparableStack(ModItems.hull_big_steel, 2), new ComparableStack(ModItems.hull_small_steel, 6), new ComparableStack(ModItems.pipes_steel, 2), new ComparableStack(ModBlocks.machine_desh_battery, 4), new ComparableStack(ModItems.coil_copper, 16), new ComparableStack(ModItems.coil_copper_torus, 8), new ComparableStack(ModItems.plate_desh, 4), new ComparableStack(ModItems.circuit_targeting_tier4, 4), new ComparableStack(ModItems.circuit_targeting_tier3, 2), new OreDictStack(ANY_PLASTIC.ingot(), 4)}, 500);
-		
+		makeRecipe(new ComparableStack(ModItems.wiring_red_copper, 1), new AStack[]{new ComparableStack(ModItems.wire_red_copper, 20), new ComparableStack(ModItems.cable_drum, 1)}, 60);
+
+
 		/// HIDDEN ///
 		hidden.add(new ComparableStack(ModBlocks.machine_radgen, 1));
 	}

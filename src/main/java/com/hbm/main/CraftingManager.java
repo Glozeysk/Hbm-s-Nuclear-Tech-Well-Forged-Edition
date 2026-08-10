@@ -1516,7 +1516,7 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.chainsaw, 1), new Object[] { "  H", "BBP", "  C", 'H', ModItems.hull_small_steel, 'B', ModItems.blades_steel, 'P', ModItems.piston_selenium, 'C', new IngredientContainsTag(ItemFluidCanister.getFullCanister(ModForgeFluids.petroil)) });
 		addRecipeAuto(new ItemStack(ModItems.chainsaw, 1), new Object[] { "  H", "BBP", "  C", 'H', ModItems.hull_small_steel, 'B', ModItems.blades_steel, 'P', ModItems.piston_selenium, 'C', new IngredientContainsTag(ItemFluidCanister.getFullCanister(ModForgeFluids.biofuel)) });
 
-		addRecipeAuto(new ItemStack(ModItems.wiring_red_copper, 1), new Object[] { "PIP", "PIP", "PIP", 'P', IRON.plate(), 'I', ModItems.wire_red_copper});
+		addRecipeAuto(new ItemStack(ModItems.cable_drum, 1), new Object[] { "P P", "PIP", "P P", 'P', IRON.plate(), 'I', IRON.ingot()});
 
 		addShapelessAuto(new ItemStack(ModItems.gadget_kit, 1), new Object[] { ModBlocks.nuke_gadget, ModItems.gadget_explosive8, ModItems.gadget_explosive8, ModItems.gadget_explosive8, ModItems.gadget_explosive8, ModItems.gadget_wireing, ModItems.gadget_core, ModItems.hazmat_kit });
 		addShapelessAuto(new ItemStack(ModItems.boy_kit, 1), new Object[] { ModBlocks.nuke_boy, ModItems.boy_shielding, ModItems.boy_target, ModItems.boy_bullet, ModItems.boy_propellant, ModItems.boy_igniter, ModItems.hazmat_kit });
