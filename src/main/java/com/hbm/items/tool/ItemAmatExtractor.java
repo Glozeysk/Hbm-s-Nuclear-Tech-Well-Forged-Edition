@@ -29,9 +29,9 @@ public class ItemAmatExtractor extends ItemCustomLore {
 				
 				float chance = world.rand.nextFloat();
 				
-				if(chance < 0.01) {
+				if(chance < 0.05) {
 					((BlockCrashedBomb) world.getBlockState(pos).getBlock()).explode(world, pos);
-				} else if(chance <= 0.3) {
+				} else if(chance <= 0.6) {
 					ItemCell.consumeEmptyCell(player);
 	
 					if(!player.inventory.addItemStackToInventory(ItemCell.getFullCell(ModForgeFluids.balefire))) {

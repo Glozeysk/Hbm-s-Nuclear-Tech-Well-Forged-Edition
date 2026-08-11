@@ -680,7 +680,6 @@ public class ModEventHandler {
 
 		if(e instanceof EntityPlayer && ArmorUtil.checkArmor((EntityPlayer) e, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
 			if(event.getSource() != ModDamageSource.digamma){
-				e.world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 5F, 1.0F + e.getRNG().nextFloat() * 0.5F);
 				event.setCanceled(true);
 			}
 		}

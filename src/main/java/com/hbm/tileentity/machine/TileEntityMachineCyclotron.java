@@ -229,17 +229,20 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			return amount;
 		} else if(foundCount > 0){
 
-			container.extractItem(containerSlot, foundCount, false);
-
-			if(inventory.getStackInSlot(inventorySlot) == null || inventory.getStackInSlot(inventorySlot).isEmpty()){
-
-				stack.setCount(foundCount);
-				inventory.setStackInSlot(inventorySlot, stack);
-
-			}else{
-				inventory.getStackInSlot(inventorySlot).grow(foundCount);
+			ItemStack extracted = container.extractItem(containerSlot, foundCount, false);
+			
+			if(extracted.isEmpty()){
+				return amount;
 			}
-			amount -= foundCount;
+			
+			int actualCount = extracted.getCount();
+
+			if(inventory.getStackInSlot(inventorySlot).isEmpty()){
+				inventory.setStackInSlot(inventorySlot, extracted);
+			}else{
+				inventory.getStackInSlot(inventorySlot).grow(actualCount);
+			}
+			amount -= actualCount;
 		}
 		return amount;
 	}

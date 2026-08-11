@@ -380,9 +380,9 @@ public class HardLandingClientFXHandler {
 
     private boolean hasHardLanding(EntityPlayerSP player) {
         return hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.HEAD))
-                || hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.CHEST))
-                || hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.LEGS))
-                || hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.FEET));
+                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.CHEST))
+                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.LEGS))
+                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.FEET));
     }
 
     private boolean hasHardLanding(ItemStack stack) {

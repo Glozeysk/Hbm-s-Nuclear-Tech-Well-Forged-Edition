@@ -19,6 +19,7 @@ import com.hbm.animloader.AnimationWrapper.EndResult;
 import com.hbm.animloader.AnimationWrapper.EndType;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.handler.JetpackHandler.JetpackInfo;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.JetpackGlider;
 import com.hbm.lib.HBMSoundHandler;
@@ -230,30 +231,41 @@ public class JetpackHandler {
 		// }
 		if(jetpackActive(player) && !player.onGround && info.failureTicks <= 0 && fuelTank.getFluidAmount() > 0){
 			float speed = getSpeed(fuelTank.getFluid().getFluid());
-			player.capabilities.isFlying = false;
 			boolean inert = false;
 			MovementInput m = e.getMovementInput();
 			boolean sprint = Minecraft.getMinecraft().gameSettings.keyBindSprint.isKeyDown();
 			if(player.isSprinting())
 				player.setSprinting(sprint);
 			if(isHovering(player)){
-				if(m.forwardKeyDown || m.backKeyDown || m.leftKeyDown || m.rightKeyDown || m.jump || m.sneak) {
-					inert = false;
-				} else {
-					inert = true;
-				}
 				m.moveForward *= (player.isSprinting() ? 0.17 : 0.1)*speed;
 				m.moveStrafe *= 0.1F*speed;
-				if(inert) {
-				player.motionX *= 0.5;
-				player.motionZ *= 0.5;
-				player.motionY *= 0.5;
-				} else {
+
+				float yaw = (float) Math.toRadians(player.rotationYawHead);
+				float forwardX = -MathHelper.sin(yaw);
+				float forwardZ = MathHelper.cos(yaw);
+				float strafeX = -MathHelper.sin((float)(yaw - Math.PI * 0.5));
+				float strafeZ = MathHelper.cos((float)(yaw - Math.PI * 0.5));
+
+				boolean hasForward = m.forwardKeyDown || m.backKeyDown;
+				boolean hasStrafe = m.leftKeyDown || m.rightKeyDown;
+				boolean hasVertical = m.jump || m.sneak;
+
+				if(!hasForward) {
+					double dotForward = player.motionX * forwardX + player.motionZ * forwardZ;
+					player.motionX -= dotForward * forwardX * 0.5;
+					player.motionZ -= dotForward * forwardZ * 0.5;
+				}
+				if(!hasStrafe) {
+					double dotStrafe = player.motionX * strafeX + player.motionZ * strafeZ;
+					player.motionX -= dotStrafe * strafeX * 0.5;
+					player.motionZ -= dotStrafe * strafeZ * 0.5;
+				}
+
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
-				}
+
 				if(player.motionY < -1)
 					player.motionY += 0.2D;
 				else if(player.motionY < -0.1)
@@ -262,12 +274,27 @@ public class JetpackHandler {
 					player.motionY = 0;
 				float extraMY = 0;
 				if(m.jump){
-					m.jump = false;
-					extraMY += 0.3*speed;
+					if(m.sneak) {
+						player.motionY = 0;
+						m.moveForward *= 0.5F;
+						m.moveStrafe *= 0.5F;
+					} else {
+						m.jump = false;
+						extraMY += 0.3*speed;
+					}
 				}
 				if(m.sneak){
-					m.sneak = false;
-					extraMY -= Math.min(0.3, 0.3*speed);
+					if(m.jump) {
+						player.motionY = 0;
+						m.moveForward *= 0.5F;
+						m.moveStrafe *= 0.5F;
+					} else {
+						m.sneak = false;
+						extraMY -= Math.min(0.3, 0.3*speed);
+					}
+				}
+				if(!hasVertical) {
+					player.motionY *= 0.5;
 				}
 				player.motionY += extraMY;
 				float diff = (Math.abs(m.moveForward)+Math.abs(m.moveStrafe)+extraMY+0.4F) - thrust;
@@ -321,6 +348,7 @@ public class JetpackHandler {
 			if(!player.world.isRemote){
 				JetpackInfo info = e.getValue();
 				if(jetpackActive(player)){
+					player.fallDistance = 0;
 					FluidTank tank = getTank(player);
 					int drain = (int) Math.ceil(getDrain(tank.getFluid() == null ? null : tank.getFluid().getFluid())*info.thrust*0.3F);
 					if(info.thrust < 0.0001)
@@ -329,7 +357,6 @@ public class JetpackHandler {
 					tank.drain(drain, true);
 					setTank(player, tank);
 				}
-				if(player.motionY > -0.5) player.fallDistance = 0;
 				PacketDispatcher.wrapper.sendToAllTracking(new JetpackSyncPacket(player), player);
 			}
 		}

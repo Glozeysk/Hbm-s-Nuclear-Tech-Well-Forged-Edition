@@ -451,16 +451,18 @@ public abstract class TileEntityMachineChemplantBase extends TileEntityMachineBa
 						if(te != null && !te.canExtractItem(slot, stack, foundCount))
 							continue;
 						if(foundCount > 0) {
-							possibleAmount -= foundCount;
-							container.extractItem(slot, foundCount, false);
-							inventory.getStackInSlot(ingredientSlot);
+							ItemStack extracted = container.extractItem(slot, foundCount, false);
+							
+							if(extracted.isEmpty())
+								continue;
+							
+							int actualCount = extracted.getCount();
+							possibleAmount -= actualCount;
+							
 							if(inventory.getStackInSlot(ingredientSlot).isEmpty()) {
-
-								stack.setCount(foundCount);
-								inventory.setStackInSlot(ingredientSlot, stack);
-
+								inventory.setStackInSlot(ingredientSlot, extracted);
 							} else {
-								inventory.getStackInSlot(ingredientSlot).grow(foundCount); // transfer complete
+								inventory.getStackInSlot(ingredientSlot).grow(actualCount); // transfer complete
 							}
 						} else {
 							break; // ingredientSlot filled

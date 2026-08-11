@@ -581,16 +581,18 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                         if(te != null && !te.canExtractItem(slot, stack, foundCount))
                             continue;
                         if(foundCount > 0){
-                            possibleAmount -= foundCount;
-                            container.extractItem(slot, foundCount, false);
-                            inventory.getStackInSlot(ingredientSlot);
+                            ItemStack extracted = container.extractItem(slot, foundCount, false);
+                            
+                            if(extracted.isEmpty())
+                                continue;
+                            
+                            int actualCount = extracted.getCount();
+                            possibleAmount -= actualCount;
+                            
                             if(inventory.getStackInSlot(ingredientSlot).isEmpty()){
-
-                                stack.setCount(foundCount);
-                                inventory.setStackInSlot(ingredientSlot, stack);
-
+                                inventory.setStackInSlot(ingredientSlot, extracted);
                             }else{
-                                inventory.getStackInSlot(ingredientSlot).grow(foundCount);
+                                inventory.getStackInSlot(ingredientSlot).grow(actualCount);
                             }
                             needsProcess = true;
                         }if(inventory.getStackInSlot(ingredientSlot).getCount() == inventory.getStackInSlot(ingredientSlot).getMaxStackSize()){

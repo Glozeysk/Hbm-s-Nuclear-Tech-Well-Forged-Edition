@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.handler.ArmorUtil;
+import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.HBMSoundHandler;
@@ -29,6 +30,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -86,39 +88,77 @@ public class ArmorDNT extends ArmorFSBPowered {
 			
 			ArmorUtil.resetFlightTime(player);
 
-			if(props.isJetpackActive()) {
+			if(!player.onGround && props.getEnableBackpack()) {
 
-				if(player.motionY < 0.6D)
-					player.motionY += 0.2D;
+				float yaw = (float) Math.toRadians(player.rotationYawHead);
+				float forwardX = -MathHelper.sin(yaw);
+				float forwardZ = MathHelper.cos(yaw);
+				float strafeX = -MathHelper.sin((float)(yaw - Math.PI * 0.5));
+				float strafeZ = MathHelper.cos((float)(yaw - Math.PI * 0.5));
 
-				player.fallDistance = 0;
+				boolean hasForward = player.moveForward != 0;
+				boolean hasStrafe = player.moveStrafing != 0;
+				boolean isJumping = props.getKeyPressed(EnumKeybind.JETPACK);
+				boolean isSneaking = player.isSneaking();
 
-				if(world.getTotalWorldTime() % 4 == 0)
-					world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.immolatorShoot, SoundCategory.PLAYERS, 0.125F, 1.5F);
-
-			} else if(!player.isSneaking() && !player.onGround && props.getEnableBackpack()) {
-				player.fallDistance = 0;
-				
-				if(player.motionY < -1)
-					player.motionY += 0.4D;
-				else if(player.motionY < -0.1)
-					player.motionY += 0.2D;
-				else if(player.motionY < 0)
-					player.motionY = 0;
-
-				player.motionX *= 1.05D;
-				player.motionZ *= 1.05D;
-				
-				if(player.moveForward != 0) {
-					player.motionX += player.getLookVec().x * 0.25 * player.moveForward;
-					player.motionZ += player.getLookVec().z * 0.25 * player.moveForward;
+				if(!hasForward) {
+					double dotForward = player.motionX * forwardX + player.motionZ * forwardZ;
+					player.motionX -= dotForward * forwardX * 0.5;
+					player.motionZ -= dotForward * forwardZ * 0.5;
 				}
+				if(!hasStrafe) {
+					double dotStrafe = player.motionX * strafeX + player.motionZ * strafeZ;
+					player.motionX -= dotStrafe * strafeX * 0.5;
+					player.motionZ -= dotStrafe * strafeZ * 0.5;
+				}
+
+				if(player.moveForward != 0) {
+					float forwardSpeed = player.isSprinting() ? 0.34F : 0.2F;
+					player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead)) * player.moveForward * forwardSpeed;
+					player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead)) * player.moveForward * forwardSpeed;
+				}
+				if(player.moveStrafing != 0) {
+					player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead - 90)) * player.moveStrafing * 0.2F;
+					player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead - 90)) * player.moveStrafing * 0.2F;
+				}
+
+				player.motionX *= 1.025D;
+				player.motionZ *= 1.025D;
+
+				if(!isSneaking) {
+					if(player.motionY < -1)
+						player.motionY += 0.2D;
+					else if(player.motionY < -0.1)
+						player.motionY += 0.1D;
+					else if(player.motionY < 0)
+						player.motionY = 0;
+				}
+
+				if(isJumping) {
+					if(isSneaking) {
+						player.motionY = 0;
+					} else {
+						player.motionY += 0.6D;
+					}
+				} else if(!isSneaking) {
+					player.motionY *= 0.5;
+				}
+
+				player.fallDistance = 0;
+
 				if(world.getTotalWorldTime() % 4 == 0)
 					world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.immolatorShoot, SoundCategory.PLAYERS, 0.125F, 1.5F);
 			}
-			
-			if(player.isSneaking() && !player.onGround) {
-				player.motionY -= 0.1D;
+		}
+
+		if(player.isSneaking() && !player.onGround) {
+			if(props.getEnableBackpack()) {
+				boolean isJumping2 = props.getKeyPressed(EnumKeybind.JETPACK);
+				if(!isJumping2) {
+					player.motionY -= 0.45D;
+				}
+			} else {
+				player.motionY -= 0.15D;
 			}
 		}
 	}
