@@ -87,14 +87,31 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 		compound.setTag("inventory", inventory.serializeNBT());
 		return super.writeToNBT(compound);
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		progress = compound.getInteger("progress");
-		power = compound.getInteger("power");
+		power = compound.getLong("power");
 		isRetracting = compound.getBoolean("ret");
-		if(compound.hasKey("inventory"))
-			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+
+		if(compound.hasKey("inventory")) {
+			NBTTagCompound invTag = compound.getCompoundTag("inventory");
+			int savedSize = invTag.getInteger("Size");
+
+			inventory.deserializeNBT(invTag);
+			if (savedSize < 6) {
+				java.util.List<ItemStack> oldItems = new java.util.ArrayList<>();
+				for (int i = 0; i < savedSize; i++) {
+					oldItems.add(inventory.getStackInSlot(i).copy());
+				}
+
+				inventory.setSize(6);
+
+				for (int i = 0; i < savedSize; i++) {
+					inventory.setStackInSlot(i, oldItems.get(i));
+				}
+			}
+		}
 		super.readFromNBT(compound);
 	}
 	

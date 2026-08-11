@@ -76,6 +76,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class JeiRecipes {
 
+	private static List<AssemblerRecipeWrapper> assemblerRecipes = null;
 	private static List<ChemRecipe> chemRecipes = null;
 	private static List<MixerRecipe> mixerRecipes = null;
 	private static List<CyclotronRecipe> cyclotronRecipes = null;
@@ -152,6 +153,48 @@ public class JeiRecipes {
 		public int getInputSize(){
 			return inputs.size();
 		}
+	}
+
+	public static List<AssemblerRecipeWrapper> getAssemblerRecipes() {
+		if(assemblerRecipes != null)
+			return assemblerRecipes;
+		assemblerRecipes = new ArrayList<>();
+
+		for(Object recipeObj : AssemblerRecipes.recipeList) {
+			try {
+				ItemStack output = null;
+				AStack[] inputs = null;
+				int time = 0;
+
+				Class<?> clazz = recipeObj.getClass();
+				while(clazz != null) {
+					for(java.lang.reflect.Field f : clazz.getDeclaredFields()) {
+						f.setAccessible(true);
+						if(f.getType() == ItemStack.class && output == null) {
+							output = (ItemStack) f.get(recipeObj);
+						} else if(f.getType().isArray() && AStack.class.isAssignableFrom(f.getType().getComponentType()) && inputs == null) {
+							Object[] objArray = (Object[]) f.get(recipeObj);
+							if(objArray != null) {
+								inputs = new AStack[objArray.length];
+								for(int i = 0; i < objArray.length; i++) {
+									inputs[i] = (AStack) objArray[i];
+								}
+							}
+						} else if((f.getType() == int.class || f.getType() == Integer.class) && time == 0) {
+							time = f.getInt(recipeObj);
+						}
+					}
+					clazz = clazz.getSuperclass();
+				}
+
+				if(output != null && inputs != null) {
+					assemblerRecipes.add(new AssemblerRecipeWrapper(output, inputs, time));
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return assemblerRecipes;
 	}
 
 	public static class CyclotronRecipe implements IRecipeWrapper {

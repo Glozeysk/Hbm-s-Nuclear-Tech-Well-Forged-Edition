@@ -36,7 +36,7 @@ public class HbmJeiRegistryPlugin implements IRecipeRegistryPlugin {
 			stack.setCount(1);
 			if(JEIConfig.ASSEMBLY.equals(recipeCategory.getUid())) {
 				if(focus.getMode() == Mode.INPUT) {
-					if(stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_assembler)){
+					if(stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_assembler) || stack.getItem() == Item.getItemFromBlock(ModBlocks.machine_assembly)){
 						return getRecipeWrappers(recipeCategory);
 					}
 					List<T> list = (List<T>) AssemblerRecipes.recipes.entrySet().stream().filter(recipe -> {
