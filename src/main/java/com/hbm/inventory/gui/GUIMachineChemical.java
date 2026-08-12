@@ -37,7 +37,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineChemical extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_chemplant.png");
+	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_chemical.png");
 	private TileEntityMachineChemical chemplant;
 	private List<GhostItem> currentGhosts = new ArrayList<>();
 	private List<GhostSlot> ghostSlots = new ArrayList<>();
@@ -47,7 +47,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 		chemplant = tedf;
 
 		this.xSize = 176;
-		this.ySize = 222;
+		this.ySize = 237;
 
 		for (int i = 0; i < 4; i++) {
 			int col = i % 2;
@@ -61,7 +61,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 			ghostSlots.add(ghostSlot);
 		}
 
-		GhostSlot outputGhost = new GhostSlot(134, 90);
+		GhostSlot outputGhost = new GhostSlot(100, 90);
 		outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
 		this.inventorySlots.inventorySlots.add(outputGhost);
 		this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
@@ -75,18 +75,15 @@ public class GUIMachineChemical extends GuiInfoContainer {
 
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 52 - 34, 16, 34, chemplant.tanks[0], chemplant.tankTypes[0]);
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 26, guiTop + 52 - 34, 16, 34, chemplant.tanks[1], chemplant.tankTypes[1]);
-		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 52 - 34, 16, 34, chemplant.tanks[2], chemplant.tankTypes[2]);
-		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 52 - 34, 16, 34, chemplant.tanks[3], chemplant.tankTypes[3]);
+		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 100, guiTop + 52 - 34, 16, 34, chemplant.tanks[2], chemplant.tankTypes[2]);
+		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 118, guiTop + 52 - 34, 16, 34, chemplant.tanks[3], chemplant.tankTypes[3]);
 
-		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 44, guiTop + 70 - 52, 16, 52, chemplant.power, TileEntityMachineChemical.maxPower);
+		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 88 - 70, 16, 70, chemplant.power, TileEntityMachineChemical.maxPower);
 
 		if(chemplant.getStackInSlot(4) == null || chemplant.getStackInSlot(4).isEmpty() || chemplant.getStackInSlot(4).getItem()!= ModItems.chemistry_template) {
 			String[] text = new String[] { "Error: This machine requires a chemistry template!" };
 			this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36, 16, 16, guiLeft - 8, guiTop + 36 + 16, text);
 		}
-
-		String[] text = I18nUtil.resolveKeyArray("desc.guiacceptupgrades1");
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 105, guiTop + 40, 8, 8, guiLeft + 105, guiTop + 40 + 16, text);
 
 		for (int i = 0; i < currentGhosts.size(); i++) {
 			GhostItem ghost = currentGhosts.get(i);
@@ -111,7 +108,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 			}
 		}
 		super.mouseClicked(x, y, button);
-		if(this.checkClick(x, y, 79, 53, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemplant, this, 4);
+		if(this.checkClick(x, y, 62, 43, 18, 18)) GUIScreenAssemblerTemplate.openSelector(chemplant, this, 4);
 	}
 
 	private void openJeiRecipe(ItemStack stack) {
@@ -138,7 +135,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 	@Override
 	protected void drawGuiContainerForegroundLayer( int i, int j) {
 		String name = this.chemplant.hasCustomInventoryName() ? this.chemplant.getInventoryName() : I18n.format(this.chemplant.getInventoryName());
-		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
+		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2 - 11, 6, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 
@@ -149,17 +146,19 @@ public class GUIMachineChemical extends GuiInfoContainer {
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
-		int i = (int)chemplant.getPowerScaled(52);
-		drawTexturedModalRect(guiLeft + 44, guiTop + 70 - i, 176, 52 - i, 16, i);
+		int i = (int)chemplant.getPowerScaled(70);
+		drawTexturedModalRect(guiLeft + 152, guiTop + 88 - i, 176, 70 - i, 16, i);
 
-		if(chemplant.isProgressing){
-			int j = chemplant.getProgressScaled(90);
-			drawTexturedModalRect(guiLeft + 43, guiTop + 89, 0, 222, j, 18);
-		} else {
-			drawTexturedModalRect(guiLeft + 43, guiTop + 89, 0, 222, 0, 18);
+		if(chemplant.power >= 100) {
+			drawTexturedModalRect(guiLeft + 156, guiTop + 4, 176, 70, 9, 12);
 		}
 
-		this.drawInfoPanel(guiLeft + 105, guiTop + 40, 8, 8, 8);
+		if(chemplant.isProgressing){
+			int j = chemplant.getProgressScaled(53);
+			drawTexturedModalRect(guiLeft + 45, guiTop + 71, 176, 82, j, 36);
+		} else {
+			drawTexturedModalRect(guiLeft + 45, guiTop + 71, 176, 82, 0, 36);
+		}
 
 		if(chemplant.getStackInSlot(4) == null || chemplant.getStackInSlot(4).getItem()!= ModItems.chemistry_template) {
 			this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 6);
@@ -169,8 +168,8 @@ public class GUIMachineChemical extends GuiInfoContainer {
 
 		FFUtils.drawLiquid(chemplant.tanks[0], guiLeft, guiTop, zLevel, 16, 34, 8, 80);
 		FFUtils.drawLiquid(chemplant.tanks[1], guiLeft, guiTop, zLevel, 16, 34, 26, 80);
-		FFUtils.drawLiquid(chemplant.tanks[2], guiLeft, guiTop, zLevel, 16, 34, 134, 80);
-		FFUtils.drawLiquid(chemplant.tanks[3], guiLeft, guiTop, zLevel, 16, 34, 152, 80);
+		FFUtils.drawLiquid(chemplant.tanks[2], guiLeft, guiTop, zLevel, 16, 34, 100, 80);
+		FFUtils.drawLiquid(chemplant.tanks[3], guiLeft, guiTop, zLevel, 16, 34, 118, 80);
 
 		for (GhostSlot gs : ghostSlots) {
 			gs.setGhostStack(ItemStack.EMPTY);
@@ -306,7 +305,7 @@ public class GUIMachineChemical extends GuiInfoContainer {
 			if (itemOutputs != null && itemOutputs.length > 0) {
 				ItemStack outSlotStack = chemplant.getStackInSlot(5);
 				if (!itemOutputs[0].isEmpty() && (outSlotStack == null || outSlotStack.isEmpty())) {
-					int outX = 134;
+					int outX = 100;
 					int outY = 90;
 
 					ItemStack displayOut = itemOutputs[0].copy();

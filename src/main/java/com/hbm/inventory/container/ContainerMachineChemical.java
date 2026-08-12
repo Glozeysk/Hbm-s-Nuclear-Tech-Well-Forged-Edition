@@ -23,24 +23,24 @@ public class ContainerMachineChemical extends Container {
 		nukeBoy = tedf;
 
 		//Battery
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 80, 18));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 152, 90));
 		//Upgrades
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 116, 18));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 116, 36));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 116, 54));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 45, 18));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 63, 18));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 81, 18));
 		//Schematic
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 80, 54));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 63, 45));
 		//Outputs
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 134, 90));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 152, 90));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 134, 108));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 8, 152, 108));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 5, 100, 90));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 6, 118, 90));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 7, 100, 108));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 8, 118, 108));
 		//Fluid Output In
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 134, 54));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 10, 152, 54));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 100, 54));
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 10, 118, 54));
 		//Fluid Outputs Out
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 11, 134, 72));
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 12, 152, 72));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 11, 100, 72));
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 12, 118, 72));
 		//Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 13, 8, 90));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 14, 26, 90));
@@ -57,13 +57,13 @@ public class ContainerMachineChemical extends Container {
 		{
 			for(int j = 0; j < 9; j++)
 			{
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
+				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 71));
 			}
 		}
 		
 		for(int i = 0; i < 9; i++)
 		{
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
+			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 71));
 		}
 	}
 	

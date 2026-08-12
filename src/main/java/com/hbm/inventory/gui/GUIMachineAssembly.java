@@ -143,10 +143,10 @@ public class GUIMachineAssembly extends GuiInfoContainer {
 			drawTexturedModalRect(guiLeft + 156, guiTop + 4, 176, 72, 9, 12);
 		}
         if(assembly.isProgressing){
-            int j = assembly.getProgressScaled(93);
-            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, j, 34);
+            int j = assembly.getProgressScaled(92);
+            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, j, 33);
         } else {
-            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, 0, 34);
+            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, 0, 33);
         }
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
