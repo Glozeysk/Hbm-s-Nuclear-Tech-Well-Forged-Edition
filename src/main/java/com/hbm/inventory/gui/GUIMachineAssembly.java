@@ -1,7 +1,5 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.inventory.container.ContainerMachineAssembly;
-import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import com.hbm.util.I18nUtil;
 
 import java.io.IOException;
@@ -10,13 +8,15 @@ import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
-import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.OreDictStack;
+import com.hbm.inventory.container.ContainerMachineAssembly;
+import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemAssemblyTemplate;
+import com.hbm.lib.RefStrings;
+import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -34,7 +34,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineAssembly extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_assembler.png");
+    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_assembly.png");
     private TileEntityMachineAssembly assembly;
     private List<GhostItem> currentGhosts = new ArrayList<>();
     private List<GhostSlot> ghostSlots = new ArrayList<>();
@@ -43,41 +43,38 @@ public class GUIMachineAssembly extends GuiInfoContainer {
         super(new ContainerMachineAssembly(invPlayer, tedf));
         assembly = tedf;
 
-        this.xSize = 176;
-        this.ySize = 222;
+		this.xSize = 176;
+		this.ySize = 221;
 
-        for (int i = 0; i < 12; i++) {
-            int col = i % 2;
-            int row = i / 2;
-            int slotX = 8 + col * 18;
-            int slotY = 18 + row * 18;
-            GhostSlot ghostSlot = new GhostSlot(slotX, slotY);
-            ghostSlot.slotNumber = this.inventorySlots.inventorySlots.size();
-            this.inventorySlots.inventorySlots.add(ghostSlot);
-            this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
-            ghostSlots.add(ghostSlot);
-        }
+		for (int i = 0; i < 12; i++) {
+			int col = i % 6;
+			int row = i / 6;
+			int slotX = 8 + col * 18;
+			int slotY = 18 + row * 18;
+			GhostSlot ghostSlot = new GhostSlot(slotX, slotY);
+			ghostSlot.slotNumber = this.inventorySlots.inventorySlots.size();
+			this.inventorySlots.inventorySlots.add(ghostSlot);
+			this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+			ghostSlots.add(ghostSlot);
+		}
 
-        GhostSlot outputGhost = new GhostSlot(130, 86);
-        outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
-        this.inventorySlots.inventorySlots.add(outputGhost);
-        this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
-        ghostSlots.add(outputGhost);
+		GhostSlot outputGhost = new GhostSlot(109, 80);
+		outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
+		this.inventorySlots.inventorySlots.add(outputGhost);
+		this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+		ghostSlots.add(outputGhost);
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float f) {
         super.drawScreen(mouseX, mouseY, f);
         this.renderHoveredToolTip(mouseX, mouseY);
-        this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 70 - 52, 16, 52, assembly.power, TileEntityMachineAssembly.maxPower);
+        this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 90 - 72, 16, 72, assembly.power, TileEntityMachineAssembly.maxPower);
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
             String[] text1 = I18nUtil.resolveKeyArray("desc.guimachassembler");
             this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36, 16, 16, guiLeft - 8, guiTop + 36 + 16, text1);
         }
-
-        String[] text = I18nUtil.resolveKeyArray("desc.guiacceptupgrades1");
-        this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 141, guiTop + 40, 8, 8, guiLeft + 141, guiTop + 40 + 16, text);
 
         for (int i = 0; i < currentGhosts.size(); i++) {
             GhostItem ghost = currentGhosts.get(i);
@@ -102,7 +99,7 @@ public class GUIMachineAssembly extends GuiInfoContainer {
             }
         }
         super.mouseClicked(x, y, button);
-        if(this.checkClick(x, y, 79, 52, 18, 18)) GUIScreenAssemblerTemplate.openSelector(assembly, this, 4);
+        if(this.checkClick(x, y, 79, 54, 18, 18)) GUIScreenAssemblerTemplate.openSelector(assembly, this, 4);
     }
 
     private void openJeiRecipe(ItemStack stack) {
@@ -129,8 +126,8 @@ public class GUIMachineAssembly extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         String name = this.assembly.hasCustomInventoryName() ? this.assembly.getInventoryName() : I18n.format(this.assembly.getInventoryName());
-        this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
-        this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
+        this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2 - 10, 6, 4210752);
+		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
     }
 
     @Override
@@ -140,20 +137,21 @@ public class GUIMachineAssembly extends GuiInfoContainer {
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
-        int i = (int) assembly.getPowerScaled(52);
-        drawTexturedModalRect(guiLeft + 116, guiTop + 70 - i, 176, 52 - i, 16, i);
+        int i = (int) assembly.getPowerScaled(72);
+        drawTexturedModalRect(guiLeft + 152, guiTop + 90 - i, 176, 72 - i, 16, i);
+		if(assembly.power >= 100) {
+			drawTexturedModalRect(guiLeft + 156, guiTop + 4, 176, 72, 9, 12);
+		}
         if(assembly.isProgressing){
-            int j = assembly.getProgressScaled(83);
-            drawTexturedModalRect(guiLeft + 45, guiTop + 82, 2, 222, j, 32);
+            int j = assembly.getProgressScaled(93);
+            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, j, 34);
         } else {
-            drawTexturedModalRect(guiLeft + 45, guiTop + 82, 2, 222, 0, 32);
+            drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, 0, 34);
         }
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
             this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 6);
         }
-
-        this.drawInfoPanel(guiLeft + 141, guiTop + 40, 8, 8, 8);
 
         for (GhostSlot gs : ghostSlots) {
             gs.setGhostStack(ItemStack.EMPTY);
@@ -194,8 +192,8 @@ public class GUIMachineAssembly extends GuiInfoContainer {
                     }
 
                     for (int k = 6; k <= 17; k++) {
-                        int col = (k - 6) % 2;
-                        int row = (k - 6) / 2;
+                        int col = (k - 6) % 6;
+                        int row = (k - 6) / 6;
                         int slotX = 8 + col * 18;
                         int slotY = 18 + row * 18;
 
@@ -237,8 +235,8 @@ public class GUIMachineAssembly extends GuiInfoContainer {
                             int k = emptySlots.get(emptySlotIndex);
                             emptySlotIndex++;
 
-                            int col = (k - 6) % 2;
-                            int row = (k - 6) / 2;
+                            int col = (k - 6) % 6;
+                            int row = (k - 6) / 6;
                             int slotX = 8 + col * 18;
                             int slotY = 18 + row * 18;
 
@@ -279,8 +277,8 @@ public class GUIMachineAssembly extends GuiInfoContainer {
                     ItemStack outputStack = out.toStack();
                     ItemStack outSlotStack = assembly.inventory.getStackInSlot(5);
                     if (!outputStack.isEmpty() && outSlotStack.isEmpty()) {
-                        int outX = 130;
-                        int outY = 86;
+                        int outX = 109;
+                        int outY = 80;
                         int outW = 24;
                         int outH = 24;
 

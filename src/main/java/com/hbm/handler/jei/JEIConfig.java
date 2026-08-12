@@ -179,7 +179,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(DFCRecipes.getDFCRecipes(), DFC);
 
 		registry.addRecipeClickArea(GUIAutocrafter.class, 97, 39, 17, 17, VanillaRecipeCategoryUid.CRAFTING);
-		registry.addRecipeClickArea(GUIMachineAssembly.class, 45, 83, 82, 30, ASSEMBLY);
+		registry.addRecipeClickArea(GUIMachineAssembly.class, 15, 75, 91, 33, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineAssembler.class, 45, 83, 82, 30, ASSEMBLY);
 		registry.addRecipeClickArea(GUIMachineChemplant.class, 45, 90, 85, 15, CHEMPLANT);
 		registry.addRecipeClickArea(GUIMachineChemical.class, 45, 90, 85, 15, CHEMPLANT);

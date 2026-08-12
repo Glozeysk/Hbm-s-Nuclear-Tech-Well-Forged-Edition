@@ -18,47 +18,47 @@ public class ContainerMachineAssembly extends Container {
     public ContainerMachineAssembly(InventoryPlayer invPlayer, TileEntityMachineAssembly te) {
         assembler = te;
 
-        //Battery
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 80, 18));
-        //Upgrades
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 1, 152, 18));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 152, 36));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 152, 54));
-        //Schematic
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 4, 80, 54){
-            @Override
-            public boolean isItemValid(ItemStack stack) {
-                return stack != null && stack.getItem() instanceof ItemAssemblyTemplate;
-            };
-        });
-        //Output
-        this.addSlotToContainer(new SlotMachineOutput(te.inventory, 5, 134, 90));
-        //Input
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 6, 8, 18));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 7, 26, 18));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 8, 8, 36));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 9, 26, 36));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 10, 8, 54));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 11, 26, 54));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 12, 8, 72));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 13, 26, 72));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 14, 8, 90));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 15, 26, 90));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 16, 8, 108));
-        this.addSlotToContainer(new SlotItemHandler(te.inventory, 17, 26, 108));
-
-        for(int i = 0; i < 3; i++)
-        {
-            for(int j = 0; j < 9; j++)
-            {
-                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
-            }
-        }
-
-        for(int i = 0; i < 9; i++)
-        {
-            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
-        }
+		//Battery
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 152, 92));
+		//Upgrades
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 1, 120, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 120, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 120, 54));
+		//Schematic
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 4, 80, 56){
+			@Override
+			public boolean isItemValid(ItemStack stack) {
+				return stack != null && stack.getItem() instanceof ItemAssemblyTemplate;
+			};
+		});
+		//Output
+		this.addSlotToContainer(new SlotMachineOutput(te.inventory, 5, 113, 84));
+		//Input
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 6, 8, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 7, 26, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 8, 44, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 9, 62, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 10, 80, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 11, 98, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 12, 8, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 13, 26, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 14, 44, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 15, 62, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 16, 80, 36));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 17, 98, 36));
+		
+		for(int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 9; j++)
+			{
+				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 55));
+			}
+		}
+		
+		for(int i = 0; i < 9; i++)
+		{
+			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 55));
+		}
     }
 
     @Override
