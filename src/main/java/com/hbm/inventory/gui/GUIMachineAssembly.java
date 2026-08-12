@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.util.I18nUtil;
+import com.hbm.forgefluid.FFUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAssembly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -30,6 +32,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineAssembly extends GuiInfoContainer {
@@ -43,26 +47,26 @@ public class GUIMachineAssembly extends GuiInfoContainer {
         super(new ContainerMachineAssembly(invPlayer, tedf));
         assembly = tedf;
 
-		this.xSize = 176;
-		this.ySize = 221;
+        this.xSize = 176;
+        this.ySize = 221;
 
-		for (int i = 0; i < 12; i++) {
-			int col = i % 6;
-			int row = i / 6;
-			int slotX = 8 + col * 18;
-			int slotY = 18 + row * 18;
-			GhostSlot ghostSlot = new GhostSlot(slotX, slotY);
-			ghostSlot.slotNumber = this.inventorySlots.inventorySlots.size();
-			this.inventorySlots.inventorySlots.add(ghostSlot);
-			this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
-			ghostSlots.add(ghostSlot);
-		}
+        for (int i = 0; i < 12; i++) {
+            int col = i % 6;
+            int row = i / 6;
+            int slotX = 8 + col * 18;
+            int slotY = 18 + row * 18;
+            GhostSlot ghostSlot = new GhostSlot(slotX, slotY);
+            ghostSlot.slotNumber = this.inventorySlots.inventorySlots.size();
+            this.inventorySlots.inventorySlots.add(ghostSlot);
+            this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+            ghostSlots.add(ghostSlot);
+        }
 
-		GhostSlot outputGhost = new GhostSlot(109, 80);
-		outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
-		this.inventorySlots.inventorySlots.add(outputGhost);
-		this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
-		ghostSlots.add(outputGhost);
+        GhostSlot outputGhost = new GhostSlot(109, 80);
+        outputGhost.slotNumber = this.inventorySlots.inventorySlots.size();
+        this.inventorySlots.inventorySlots.add(outputGhost);
+        this.inventorySlots.inventoryItemStacks.add(ItemStack.EMPTY);
+        ghostSlots.add(outputGhost);
     }
 
     @Override
@@ -70,6 +74,11 @@ public class GUIMachineAssembly extends GuiInfoContainer {
         super.drawScreen(mouseX, mouseY, f);
         this.renderHoveredToolTip(mouseX, mouseY);
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 90 - 72, 16, 72, assembly.power, TileEntityMachineAssembly.maxPower);
+
+        if(assembly.tank != null) {
+            Fluid fluidType = assembly.tank.getFluid() != null ? assembly.tank.getFluid().getFluid() : null;
+            FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 7, guiTop + 55, 53, 17, assembly.tank, fluidType);
+        }
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
             String[] text1 = I18nUtil.resolveKeyArray("desc.guimachassembler");
@@ -127,7 +136,7 @@ public class GUIMachineAssembly extends GuiInfoContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         String name = this.assembly.hasCustomInventoryName() ? this.assembly.getInventoryName() : I18n.format(this.assembly.getInventoryName());
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2 - 10, 6, 4210752);
-		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
+        this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
     }
 
     @Override
@@ -139,15 +148,33 @@ public class GUIMachineAssembly extends GuiInfoContainer {
 
         int i = (int) assembly.getPowerScaled(72);
         drawTexturedModalRect(guiLeft + 152, guiTop + 90 - i, 176, 72 - i, 16, i);
-		if(assembly.power >= 100) {
-			drawTexturedModalRect(guiLeft + 156, guiTop + 4, 176, 72, 9, 12);
-		}
+        if(assembly.power >= 100) {
+            drawTexturedModalRect(guiLeft + 156, guiTop + 4, 176, 72, 9, 12);
+        }
         if(assembly.isProgressing){
             int j = assembly.getProgressScaled(93);
             drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, j, 34);
         } else {
             drawTexturedModalRect(guiLeft + 15, guiTop + 75, 2, 222, 0, 34);
         }
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+
+        GlStateManager.translate(guiLeft - 20, guiTop + 56, 0);
+        GlStateManager.rotate(90, 0, 0, 1);
+
+        FFUtils.drawLiquid(assembly.tank, 0, 0, zLevel, 16, 52, 0, 0);
+
+        GlStateManager.disableBlend();
+        GlStateManager.enableLighting();
+        GlStateManager.popMatrix();
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 
         if(assembly.inventory.getStackInSlot(4).getItem() == Items.AIR || assembly.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
             this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 6);
@@ -188,6 +215,20 @@ public class GUIMachineAssembly extends GuiInfoContainer {
                             }
                             if (have < needed) allIngredientsMet = false;
                             statuses.add(new IngredientStatus(req, needed, have));
+                        }
+                    }
+
+                    FluidStack[] fluidInputs = AssemblerRecipes.getFluidInputFromTempate(templateStack);
+                    if (fluidInputs != null) {
+                        for (FluidStack req : fluidInputs) {
+                            int needed = req.amount;
+                            int have = 0;
+                            if (assembly.tank != null && assembly.tank.getFluid() != null) {
+                                if (assembly.tank.getFluid().isFluidEqual(req)) {
+                                    have += assembly.tank.getFluid().amount;
+                                }
+                            }
+                            if (have < needed) allIngredientsMet = false;
                         }
                     }
 

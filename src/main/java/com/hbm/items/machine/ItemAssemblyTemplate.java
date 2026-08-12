@@ -24,6 +24,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -87,6 +88,12 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 		return "§c";
 	}
 
+	private static String getColorForFluidAmount(int have, int needed) {
+		if (have >= needed) return "§a";
+		if (have >= Math.ceil(needed * 0.5)) return "§e";
+		return "§c";
+	}
+
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if (!(stack.getItem() instanceof ItemAssemblyTemplate))
@@ -114,8 +121,10 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 		}
 
 		ItemStack output = out.toStack();
+		FluidStack[] fluidInputs = AssemblerRecipes.getFluidInputFromTempate(stack);
 
 		List<ItemStack> currentInputs = new ArrayList<>();
+		List<FluidStack> currentFluids = new ArrayList<>();
 		net.minecraft.client.gui.GuiScreen screen = net.minecraft.client.Minecraft.getMinecraft().currentScreen;
 		if (screen instanceof net.minecraft.client.gui.inventory.GuiContainer) {
 			net.minecraft.inventory.Container container = ((net.minecraft.client.gui.inventory.GuiContainer) screen).inventorySlots;
@@ -126,12 +135,31 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 						currentInputs.add(container.getSlot(k).getStack());
 					}
 				}
+				try {
+					for(java.lang.reflect.Field field : container.getClass().getDeclaredFields()) {
+						if(com.hbm.tileentity.machine.TileEntityMachineAssembly.class.isAssignableFrom(field.getType())) {
+							field.setAccessible(true);
+							Object te = field.get(container);
+							if(te != null) {
+								java.lang.reflect.Field tankField = te.getClass().getField("tank");
+								Object tankObj = tankField.get(te);
+								if(tankObj != null) {
+									java.lang.reflect.Method getFluid = tankObj.getClass().getMethod("getFluid");
+									FluidStack fs = (FluidStack) getFluid.invoke(tankObj);
+									if(fs != null) currentFluids.add(fs);
+								}
+							}
+						}
+					}
+				} catch (Exception e) {}
 			}
 		}
 
 		boolean allMet = true;
 		List<Boolean> metFlags = new ArrayList<>();
 		List<Integer> haveAmounts = new ArrayList<>();
+		List<Boolean> fluidMetFlags = new ArrayList<>();
+		List<Integer> fluidHaveAmounts = new ArrayList<>();
 
 		for(Object o : in) {
 			if (!(o instanceof AStack)) continue;
@@ -153,6 +181,23 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 			if (!met) allMet = false;
 			metFlags.add(met);
 			haveAmounts.add(have);
+		}
+
+		if (fluidInputs != null) {
+			for (FluidStack req : fluidInputs) {
+				if(req == null) continue;
+				int needed = req.amount;
+				int have = 0;
+				for (FluidStack tankFluid : currentFluids) {
+					if (tankFluid != null && tankFluid.isFluidEqual(req)) {
+						have += tankFluid.amount;
+					}
+				}
+				boolean met = have >= needed;
+				if (!met) allMet = false;
+				fluidMetFlags.add(met);
+				fluidHaveAmounts.add(have);
+			}
 		}
 
 		list.add("§l" + I18nUtil.resolveKey("info.template_out"));
@@ -183,6 +228,18 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 				} else {
 					list.add("I AM ERROR - No OrdDict match found for "+o.toString());
 				}
+			}
+		}
+
+		if(fluidInputs != null){
+			int fluidFlagIdx = 0;
+			for(FluidStack inputFluid : fluidInputs){
+				if(inputFluid == null) continue;
+				int have = fluidHaveAmounts.get(fluidFlagIdx);
+				int needed = inputFluid.amount;
+				String color = getColorForFluidAmount(have, needed);
+				fluidFlagIdx++;
+				list.add(" " + color + inputFluid.amount + "mB " + inputFluid.getFluid().getLocalizedName(inputFluid) + " §7(" + have + "/" + needed + ")");
 			}
 		}
 

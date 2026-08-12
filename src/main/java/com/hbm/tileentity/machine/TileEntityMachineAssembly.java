@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.forgefluid.FFUtils;
+import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.items.ModItems;
@@ -11,6 +13,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.packet.FluidTankPacket;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -20,11 +24,20 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -35,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TileEntityMachineAssembly extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
+public class TileEntityMachineAssembly extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver, ITankPacketAcceptor {
 
 	public long power;
 	public static final long maxPower = 2000000;
@@ -54,6 +67,9 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public double ringSpeed;
 	public double ringTarget;
 	public int ringDelay;
+	public FluidTank tank;
+	private FluidTank detectTank;
+	private int tankSyncTick = 0;
 
 	@SideOnly(Side.CLIENT)
 	public int recipe;
@@ -63,6 +79,9 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 	public TileEntityMachineAssembly() {
 
 		super(18);
+
+		tank = new FluidTank(16000);
+
 		inventory = new ItemStackHandler(18){
 			@Override
 			protected void onContentsChanged(int slot){
@@ -239,6 +258,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		this.power = nbt.getLong("powerTime");
 		this.isProgressing = nbt.getBoolean("progressing");
 		this.progress = nbt.getInteger("progress");
+		this.tank.readFromNBT(nbt.getCompoundTag("tank"));
 	}
 
 	@Override
@@ -247,6 +267,11 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		nbt.setBoolean("progressing", this.isProgressing);
 		nbt.setLong("powerTime", power);
 		nbt.setInteger("progress", progress);
+
+		NBTTagCompound tankTag = new NBTTagCompound();
+		this.tank.writeToNBT(tankTag);
+		nbt.setTag("tank", tankTag);
+
 		return nbt;
 	}
 
@@ -311,7 +336,19 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 			if(needsProcess && (AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) != ItemStack.EMPTY && AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) != null)) {
 				this.maxProgress = (ItemAssemblyTemplate.getProcessTime(inventory.getStackInSlot(4)) * speed) / 100;
-				if(removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), cloneItemStackProper(inventory))) {
+
+				FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(inventory.getStackInSlot(4));
+				boolean hasFluids = true;
+				if(fluidReqs != null) {
+					for(FluidStack fs : fluidReqs) {
+						if(fs != null && (tank.getFluid() == null || !tank.getFluid().isFluidEqual(fs) || tank.getFluidAmount() < fs.amount)) {
+							hasFluids = false;
+							break;
+						}
+					}
+				}
+
+				if(removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), cloneItemStackProper(inventory)) && hasFluids) {
 					if(power >= consumption ){
 						if(inventory.getStackInSlot(5).isEmpty() || (!inventory.getStackInSlot(5).isEmpty() && inventory.getStackInSlot(5).getItem() == AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getItem()) && inventory.getStackInSlot(5).getCount() + AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount() <= inventory.getStackInSlot(5).getMaxStackSize()) {
 							progress++;
@@ -326,6 +363,15 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 								}
 
 								removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), inventory);
+
+								if(fluidReqs != null) {
+									for(FluidStack fs : fluidReqs) {
+										if(fs != null) {
+											tank.drain(fs.amount, true);
+										}
+									}
+								}
+
 								if(inventory.getStackInSlot(0).getItem() == ModItems.meteorite_sword_alloyed)
 									inventory.setStackInSlot(0, new ItemStack(ModItems.meteorite_sword_machined));
 							}
@@ -338,6 +384,16 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 				}
 			} else{
 				progress = 0;
+			}			tankSyncTick++;
+			if(tankSyncTick >= 5) {
+				tankSyncTick = 0;
+
+				if(!FFUtils.areTanksEqual(detectTank, tank)) {
+					detectTank = FFUtils.copyTank(tank);
+					this.needsProcess = true;
+					this.markDirty();
+					PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tank}), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+				}
 			}
 
 			networkPackNT(150);
@@ -764,6 +820,95 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 					BobMathUtil.interp(this.prevAngles[2], this.angles[2], interp),
 					BobMathUtil.interp(this.prevAngles[3], this.angles[3], interp)
 			};
+		}
+	}
+
+	@Override
+	public NBTTagCompound getUpdateTag() {
+		return this.writeToNBT(new NBTTagCompound());
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound tag = new NBTTagCompound();
+		this.writeToNBT(tag);
+		return new SPacketUpdateTileEntity(this.pos, 0, tag);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		this.readFromNBT(pkt.getNbtCompound());
+	}
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+			return true;
+
+		return super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new AssemblyFluidHandler(this.tank));
+
+		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public void recievePacket(NBTTagCompound[] tags) {
+		if(tags.length != 1) {
+			return;
+		}
+
+		this.tank.readFromNBT(tags[0]);
+	}
+
+	private class AssemblyFluidHandler implements IFluidHandler {
+		private FluidTank tank;
+
+		public AssemblyFluidHandler(FluidTank tank) {
+			this.tank = tank;
+		}
+
+		@Override
+		public IFluidTankProperties[] getTankProperties() {
+			return tank.getTankProperties();
+		}
+
+		@Override
+		public int fill(FluidStack resource, boolean doFill) {
+			if (resource == null) return 0;
+
+			ItemStack template = inventory.getStackInSlot(4);
+			if (template.isEmpty() || !(template.getItem() instanceof ItemAssemblyTemplate)) {
+				return 0;
+			}
+
+			FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(template);
+			if (fluidReqs == null || fluidReqs.length == 0) {
+				return 0;
+			}
+
+			for (FluidStack req : fluidReqs) {
+				if (req != null && req.getFluid() == resource.getFluid()) {
+					needsProcess = true;
+					return tank.fill(resource, doFill);
+				}
+			}
+
+			return 0;
+		}
+
+		@Override
+		public FluidStack drain(FluidStack resource, boolean doDrain) {
+			return tank.drain(resource, doDrain);
+		}
+
+		@Override
+		public FluidStack drain(int maxDrain, boolean doDrain) {
+			return tank.drain(maxDrain, doDrain);
 		}
 	}
 }

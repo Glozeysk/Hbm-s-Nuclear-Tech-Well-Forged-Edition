@@ -45,7 +45,8 @@ public class AssemblerRecipes {
 	public static HashMap<ComparableStack, Integer> time = new HashMap<>();
 	public static List<ComparableStack> recipeList = new ArrayList<>();
 	public static HashSet<ComparableStack> hidden = new HashSet<>();
-	
+	public static HashMap<ComparableStack, FluidStack[]> fluidInputs = new HashMap<>();
+
 	//Backup client recipes
 	public static LinkedHashMap<ComparableStack, AStack[]> backupRecipes;
 	public static HashMap<ComparableStack, Integer> backupTime;
@@ -355,7 +356,7 @@ public class AssemblerRecipes {
 				new ComparableStack(ModItems.circuit_targeting_tier6, 2)
 			}, 900);
 		makeRecipe(new ComparableStack(ModBlocks.machine_radgen, 1), new AStack[] { new OreDictStack(STEEL.ingot(), 8), new OreDictStack(STEEL.plate(), 32), new ComparableStack(ModItems.coil_magnetized_tungsten, 6), new ComparableStack(ModItems.wire_magnetized_tungsten, 24), new ComparableStack(ModItems.circuit_gold, 4), new ComparableStack(ModItems.reactor_core, 3), new OreDictStack(STAR.ingot(), 1), new OreDictStack(KEY_RED, 1), }, 400);
-		makeRecipe(new ComparableStack(ModBlocks.machine_diesel, 1), new AStack[] { new ComparableStack(ModItems.hull_small_steel, 4), new ComparableStack(Blocks.PISTON, 4), new OreDictStack(STEEL.ingot(), 6), new OreDictStack(MINGRADE.ingot(), 2), new OreDictStack(CU.plate(), 4), new ComparableStack(ModItems.wire_red_copper, 6), }, 200);
+		makeRecipe(new ComparableStack(ModBlocks.machine_diesel, 1), new AStack[] { new ComparableStack(ModItems.hull_small_steel, 4), new ComparableStack(Blocks.PISTON, 4), new OreDictStack(STEEL.ingot(), 6), new OreDictStack(MINGRADE.ingot(), 2), new OreDictStack(CU.plate(), 4), new ComparableStack(ModItems.wire_red_copper, 6), },new FluidStack[]{ new FluidStack(ModForgeFluids.lubricant, 500)}, 200);
 		makeRecipe(new ComparableStack(ModBlocks.machine_selenium, 1), new AStack[] { new OreDictStack(STEEL.ingot(), 4), new OreDictStack(TI.plate(), 6), new OreDictStack(CU.plate(), 8), new ComparableStack(ModItems.hull_big_steel, 1), new ComparableStack(ModItems.hull_small_steel, 9), new ComparableStack(ModItems.pedestal_steel, 1), new ComparableStack(ModItems.coil_copper, 4), }, 250);
 		makeRecipe(new ComparableStack(ModBlocks.machine_reactor_small, 1), new AStack[] {
 				new ComparableStack(ModItems.hull_big_steel, 4),
@@ -450,7 +451,7 @@ public class AssemblerRecipes {
 			}, 600);
 		makeRecipe(new ComparableStack(ModBlocks.machine_flare, 1), new AStack[] { new ComparableStack(ModBlocks.steel_scaffold, 28), new ComparableStack(ModItems.tank_steel, 2), new ComparableStack(ModItems.pipes_steel, 2), new ComparableStack(ModItems.hull_small_steel, 1), new ComparableStack(ModItems.thermo_element, 3), }, 200);
 		makeRecipe(new ComparableStack(ModBlocks.machine_refinery, 1), new AStack[] {new OreDictStack(STEEL.ingot(), 16), new OreDictStack(STEEL.plate(), 20), new OreDictStack(CU.plate(), 16), new ComparableStack(ModItems.hull_big_steel, 6), new ComparableStack(ModItems.pipes_steel, 2), new ComparableStack(ModItems.coil_tungsten, 8), new ComparableStack(ModItems.wire_red_copper, 8), new ComparableStack(ModItems.circuit_copper, 2), new ComparableStack(ModItems.circuit_red_copper, 1), new ComparableStack(ModItems.plate_polymer, 8), },350);
-		makeRecipe(new ComparableStack(ModBlocks.machine_epress, 1), new AStack[] { new OreDictStack(STEEL.plate(), 8), new OreDictStack(ANY_RUBBER.ingot(), 4), new ComparableStack(ModItems.pipes_steel, 1), new ComparableStack(ModItems.bolt_tungsten, 4), new ComparableStack(ModItems.coil_copper, 2), new ComparableStack(ModItems.motor, 1), new ComparableStack(ModItems.circuit_copper, 1), new NbtComparableStack(ItemFluidCanister.getFullCanister(ModForgeFluids.lubricant)), }, 160);
+		makeRecipe(new ComparableStack(ModBlocks.machine_epress, 1), new AStack[] { new OreDictStack(STEEL.plate(), 8), new OreDictStack(ANY_RUBBER.ingot(), 4), new ComparableStack(ModItems.pipes_steel, 1), new ComparableStack(ModItems.bolt_tungsten, 4), new ComparableStack(ModItems.coil_copper, 2), new ComparableStack(ModItems.motor, 1), new ComparableStack(ModItems.circuit_copper, 1)}, new FluidStack[]{ new FluidStack(ModForgeFluids.lubricant, 1000) }, 160);
 		makeRecipe(new ComparableStack(ModBlocks.machine_chemical, 1), new AStack[] { new OreDictStack(STEEL.ingot(), 8), new OreDictStack(CU.plate(), 6), new ComparableStack(ModItems.hull_small_steel, 2), new ComparableStack(ModItems.tank_steel, 4), new ComparableStack(ModItems.hull_big_steel, 1), new ComparableStack(ModItems.wire_red_copper, 16), new ComparableStack(ModItems.wire_tungsten, 3), new ComparableStack(ModItems.circuit_copper, 4), new ComparableStack(ModItems.circuit_red_copper, 2), new ComparableStack(ModItems.plate_polymer, 8), }, 200);
 		makeRecipe(new ComparableStack(ModBlocks.machine_chemfac, 1), new AStack[]{new OreDictStack(STEEL.ingot(), 48), new OreDictStack(ANY_RESISTANTALLOY.dust(), 8), new OreDictStack(NB.ingot(), 4), new OreDictStack(RUBBER.ingot(), 16), new ComparableStack(ModItems.hull_big_steel, 12), new ComparableStack(ModItems.tank_steel, 8), new ComparableStack(ModItems.motor_desh, 4), new ComparableStack(ModItems.coil_tungsten, 24), new ComparableStack(ModItems.pipes_steel, 1), new ComparableStack(ModItems.circuit_gold, 3)}, 400);
 		makeRecipe(new ComparableStack(ModBlocks.machine_crystallizer, 1), new AStack[] { new ComparableStack(ModItems.hull_big_steel, 4), new ComparableStack(ModItems.pipes_steel, 4), new OreDictStack(DESH.ingot(), 4), new ComparableStack(ModItems.motor, 2), new ComparableStack(ModItems.blades_advanced_alloy, 2), new OreDictStack(STEEL.ingot(), 16), new OreDictStack(TI.plate(), 16), new ComparableStack(Blocks.GLASS, 4), new ComparableStack(ModItems.circuit_gold, 1), }, 400);
@@ -1084,16 +1085,35 @@ public class AssemblerRecipes {
 			recipes.put(out, news);
 		}
 	}
-	
-	public static void makeRecipe(ComparableStack out, AStack[] in, int duration) {
 
+	public static void makeRecipe(ComparableStack out, AStack[] in, int duration) {
+		makeRecipe(out, in, null, duration);
+	}
+
+	public static void makeRecipe(ComparableStack out, AStack[] in, FluidStack[] fluidIn, int duration) {
 		if(out == null || Item.REGISTRY.getNameForObject(out.item) == null) {
 			MainRegistry.logger.error("Canceling assembler registration, item was null!");
 			return;
 		}
-
 		recipes.put(out, in);
 		time.put(out, duration);
+		if(fluidIn != null && fluidIn.length > 0) {
+			fluidInputs.put(out, fluidIn);
+		}
+	}
+
+	public static FluidStack[] getFluidInputFromTempate(ItemStack stack) {
+		if(stack != null && stack.getItem() instanceof ItemAssemblyTemplate) {
+			int i = ItemAssemblyTemplate.getRecipeIndex(stack);
+			if(i >= 0 && i < recipeList.size()) {
+				ItemStack out = recipeList.get(i).toStack();
+				if(out != null) {
+					ComparableStack comp = new ComparableStack(out);
+					return fluidInputs.get(comp);
+				}
+			}
+		}
+		return null;
 	}
 
 	public static void removeRecipe(ComparableStack out){
@@ -1103,6 +1123,7 @@ public class AssemblerRecipes {
 		}
 		recipes.remove(out);
 		time.remove(out);
+		fluidInputs.remove(out);
 		recipeList.remove(out);
 	}
 

@@ -29,7 +29,7 @@ public class MachineAssembly extends BlockDummyable {
 			return new TileEntityMachineAssembly();
 
 		if(meta >= 8 && meta <= 11)
-			return new TileEntityProxyCombo(true, true, false);
+			return new TileEntityProxyCombo(true, true, true);
 
 		return null;
 	}
