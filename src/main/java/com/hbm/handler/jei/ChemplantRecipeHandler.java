@@ -72,16 +72,14 @@ public class ChemplantRecipeHandler implements IRecipeCategory<ChemRecipe> {
 		guiItemStacks.init(3, true, 46, 19);
 		guiItemStacks.init(4, true, 28, 37);
 		guiItemStacks.init(5, true, 46, 37);
-		//Template
-		guiItemStacks.init(6, true, 82, 1);
 		//Output fluids
-		guiItemStacks.init(7, false, 118, 1);
-		guiItemStacks.init(8, false, 136, 1);
+		guiItemStacks.init(6, false, 118, 1);
+		guiItemStacks.init(7, false, 136, 1);
 		//Output items
-		guiItemStacks.init(9, false, 118, 19);
-		guiItemStacks.init(10, false, 136, 19);
-		guiItemStacks.init(11, false, 118, 37);
-		guiItemStacks.init(12, false, 136, 37);
+		guiItemStacks.init(8, false, 118, 19);
+		guiItemStacks.init(9, false, 136, 19);
+		guiItemStacks.init(10, false, 118, 37);
+		guiItemStacks.init(11, false, 136, 37);
 		
 		guiItemStacks.set(ingredients);
 	}

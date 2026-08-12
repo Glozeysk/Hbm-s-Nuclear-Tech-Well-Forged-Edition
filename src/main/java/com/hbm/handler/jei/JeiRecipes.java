@@ -113,20 +113,42 @@ public class JeiRecipes {
 
 		private final List<List<ItemStack>> inputs;
 		private final List<ItemStack> outputs;
+		private final ItemStack template;
 
-		public ChemRecipe(List<AStack> inputs, List<ItemStack> outputs) {
+		public ChemRecipe(List<AStack> inputs, List<ItemStack> outputs, ItemStack template) {
 			List<List<ItemStack>> list = new ArrayList<>(inputs.size());
 			for(AStack s : inputs)
 				list.add(s.getStackList());
 			this.inputs = list;
 			this.outputs = outputs;
+			this.template = template;
 		}
 
 		@Override
 		public void getIngredients(IIngredients ingredients) {
-			List<List<ItemStack>> in = Library.copyItemStackListList(inputs); // list of inputs and their list of possible items
+			List<List<ItemStack>> in = Library.copyItemStackListList(inputs);
 			ingredients.setInputLists(VanillaTypes.ITEM, in);
 			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
+		}
+
+		@Override
+		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
+			if(!template.isEmpty()) {
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(0, 0, 200);
+				minecraft.getRenderItem().renderItemAndEffectIntoGUI(template, 82, 1);
+				GlStateManager.popMatrix();
+			}
+		}
+
+		@Override
+		public List<String> getTooltipStrings(int mouseX, int mouseY) {
+			if(mouseX >= 82 && mouseX < 98 && mouseY >= 1 && mouseY < 17) {
+				if(!template.isEmpty()) {
+					return template.getTooltip(Minecraft.getMinecraft().player, Minecraft.getMinecraft().gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
+				}
+			}
+			return java.util.Collections.emptyList();
 		}
 	}
 
@@ -153,48 +175,6 @@ public class JeiRecipes {
 		public int getInputSize(){
 			return inputs.size();
 		}
-	}
-
-	public static List<AssemblerRecipeWrapper> getAssemblerRecipes() {
-		if(assemblerRecipes != null)
-			return assemblerRecipes;
-		assemblerRecipes = new ArrayList<>();
-
-		for(Object recipeObj : AssemblerRecipes.recipeList) {
-			try {
-				ItemStack output = null;
-				AStack[] inputs = null;
-				int time = 0;
-
-				Class<?> clazz = recipeObj.getClass();
-				while(clazz != null) {
-					for(java.lang.reflect.Field f : clazz.getDeclaredFields()) {
-						f.setAccessible(true);
-						if(f.getType() == ItemStack.class && output == null) {
-							output = (ItemStack) f.get(recipeObj);
-						} else if(f.getType().isArray() && AStack.class.isAssignableFrom(f.getType().getComponentType()) && inputs == null) {
-							Object[] objArray = (Object[]) f.get(recipeObj);
-							if(objArray != null) {
-								inputs = new AStack[objArray.length];
-								for(int i = 0; i < objArray.length; i++) {
-									inputs[i] = (AStack) objArray[i];
-								}
-							}
-						} else if((f.getType() == int.class || f.getType() == Integer.class) && time == 0) {
-							time = f.getInt(recipeObj);
-						}
-					}
-					clazz = clazz.getSuperclass();
-				}
-
-				if(output != null && inputs != null) {
-					assemblerRecipes.add(new AssemblerRecipeWrapper(output, inputs, time));
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return assemblerRecipes;
 	}
 
 	public static class CyclotronRecipe implements IRecipeWrapper {
@@ -516,19 +496,7 @@ public class JeiRecipes {
 		public void getIngredients(IIngredients ingredients) {
 			List<List<ItemStack>> in = Library.copyItemStackListList(inputs);
 			while(in.size() < 12)
-				in.add(Arrays.asList(new ItemStack(ModItems.nothing)));
-			int index = -1;
-			for(int i = 0; i < AssemblerRecipes.recipeList.size(); i++){ // finding the template item
-				if(AssemblerRecipes.recipeList.get(i).isApplicable(output)){
-					index = i;
-					break;
-				}
-			}
-			if(index >= 0) // adding the template item
-				in.add(Arrays.asList(ItemAssemblyTemplate.getTemplate(index)));
-			else {
-				in.add(Arrays.asList(new ItemStack(ModItems.nothing)));
-			}
+				in.add(Arrays.asList(ItemStack.EMPTY));
 			ingredients.setInputLists(VanillaTypes.ITEM, in);
 			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
@@ -545,7 +513,7 @@ public class JeiRecipes {
 			for(int i = 0; i < recipe.in.size(); i ++)
 				inputs.add(recipe.in.get(i).getStack());
 			while(inputs.size() < 4)
-				inputs.add(new ItemStack(ModItems.nothing));
+				inputs.add(ItemStack.EMPTY);
 			output = recipe.getResult();
 		}
 
@@ -722,48 +690,46 @@ public class JeiRecipes {
 			return chemRecipes;
 		chemRecipes = new ArrayList<ChemRecipe>();
 
-       for(int i: ChemplantRecipes.recipeNames.keySet()){
+	for(int i: ChemplantRecipes.recipeNames.keySet()){
 
-        	List<AStack> inputs = new ArrayList<AStack>(7);
-        	for(int j = 0; j < 7; j ++)
-        		inputs.add(j, new ComparableStack(ModItems.nothing));
+			List<AStack> inputs = new ArrayList<AStack>(6);
+			for(int j = 0; j < 6; j ++)
+				inputs.add(j, new ComparableStack(ItemStack.EMPTY));
 
-        	List<ItemStack> outputs = new ArrayList<ItemStack>(6);
-        	for(int j = 0; j < 6; j ++)
-        		outputs.add(j, new ItemStack(ModItems.nothing));
+			List<ItemStack> outputs = new ArrayList<ItemStack>(6);
+			for(int j = 0; j < 6; j ++)
+				outputs.add(j, ItemStack.EMPTY);
 
-        	//Adding template item
-        	ItemStack template = new ItemStack(ModItems.chemistry_template, 1, i);
+			//Template item (only for display, not an ingredient)
+			ItemStack template = new ItemStack(ModItems.chemistry_template, 1, i);
 
-        	List<AStack> listIn = ChemplantRecipes.getChemInputFromTempate(template);
-        	FluidStack[] fluidIn = ChemplantRecipes.getFluidInputFromTempate(template);
-        	ItemStack[] listOut = ChemplantRecipes.getChemOutputFromTempate(template);
-        	FluidStack[] fluidOut = ChemplantRecipes.getFluidOutputFromTempate(template);
+			List<AStack> listIn = ChemplantRecipes.getChemInputFromTempate(template);
+			FluidStack[] fluidIn = ChemplantRecipes.getFluidInputFromTempate(template);
+			ItemStack[] listOut = ChemplantRecipes.getChemOutputFromTempate(template);
+			FluidStack[] fluidOut = ChemplantRecipes.getFluidOutputFromTempate(template);
 
-        	inputs.set(6, new ComparableStack(template));
+			if(listIn != null)
+				for(int j = 0; j < listIn.size(); j++)
+					if(listIn.get(j) != null)
+						inputs.set(j + 2, listIn.get(j).copy());
 
-        	if(listIn != null)
-        		for(int j = 0; j < listIn.size(); j++)
-        			if(listIn.get(j) != null)
-        				inputs.set(j + 2, listIn.get(j).copy());
+			if(fluidIn != null)
+				for(int j = 0; j < fluidIn.length; j++)
+					if(fluidIn[j] != null)
+						inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j].getFluid(), fluidIn[j].amount)));
 
-        	if(fluidIn != null)
-	        	for(int j = 0; j < fluidIn.length; j++)
-	        		if(fluidIn[j] != null)
-	        			inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j].getFluid(), fluidIn[j].amount)));
+			if(listOut != null)
+				for(int j = 0; j < listOut.length; j++)
+					if(listOut[j] != null)
+						outputs.set(j + 2, listOut[j].copy());
 
-        	if(listOut != null)
-	        	for(int j = 0; j < listOut.length; j++)
-	        		if(listOut[j] != null)
-	        			outputs.set(j + 2, listOut[j].copy());
+			if(fluidOut != null)
+				for(int j = 0; j < fluidOut.length; j++)
+					if(fluidOut[j] != null)
+						outputs.set(j, ItemFluidIcon.getStackWithQuantity(fluidOut[j].getFluid(), fluidOut[j].amount));
 
-        	if(fluidOut != null)
-	        	for(int j = 0; j < fluidOut.length; j++)
-	        		if(fluidOut[j] != null)
-	        			outputs.set(j, ItemFluidIcon.getStackWithQuantity(fluidOut[j].getFluid(), fluidOut[j].amount));
-
-        	chemRecipes.add(new ChemRecipe(inputs, outputs));
-        }
+			chemRecipes.add(new ChemRecipe(inputs, outputs, template));
+		}
 
 		return chemRecipes;
 	}

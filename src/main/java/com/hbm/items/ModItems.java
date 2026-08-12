@@ -3663,8 +3663,6 @@ public class ModItems {
 	public static final Item spill7 = new ItemBase("spill7").setCreativeTab(null);
 	public static final Item spill8 = new ItemBase("spill8").setCreativeTab(null);
 	
-	public static final Item nothing = new ItemBase("nothing").setCreativeTab(null);
-	
 	public static final Item ducc = new ItemBase("ducc").setCreativeTab(MainRegistry.controlTab);
 	
 	public static final Item discharge = new ItemBase("discharge").setCreativeTab(null);
