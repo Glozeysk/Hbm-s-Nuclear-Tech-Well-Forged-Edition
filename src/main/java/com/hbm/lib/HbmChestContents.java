@@ -119,15 +119,11 @@ public class HbmChestContents {
 			new WeightedRandomChestContentFrom1710(ModItems.gas_mask_filter, 0, 1, 1, 4) };
 
 	private static WeightedRandomChestContentFrom1710[] nukeTrash = new WeightedRandomChestContentFrom1710[] {
-			new WeightedRandomChestContentFrom1710(ModItems.nugget_u238, 0, 3, 12, 5),
 			new WeightedRandomChestContentFrom1710(ModItems.nugget_pu240, 0, 3, 8, 5),
 			new WeightedRandomChestContentFrom1710(ModItems.nugget_neptunium, 0, 1, 4, 3),
-			new WeightedRandomChestContentFrom1710(ModItems.rod_u238, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_neptunium, 0, 1, 1, 4),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_pu240, 0, 1, 1, 3),
-			new WeightedRandomChestContentFrom1710(ModItems.rod_dual_u238, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_dual_pu240, 0, 1, 1, 3),
-			new WeightedRandomChestContentFrom1710(ModItems.rod_quad_u238, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_quad_pu240, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.bottle_quantum, 0, 1, 1, 1),
 			new WeightedRandomChestContentFrom1710(ModItems.gas_mask_m65, 60, 1, 1, 5),
@@ -137,7 +133,6 @@ public class HbmChestContents {
 
 	private static WeightedRandomChestContentFrom1710[] nuclear = new WeightedRandomChestContentFrom1710[] {
 			new WeightedRandomChestContentFrom1710(ModItems.nugget_u235, 0, 3, 12, 5),
-			new WeightedRandomChestContentFrom1710(ModItems.nugget_pu238, 0, 3, 12, 5),
 			new WeightedRandomChestContentFrom1710(ModItems.nugget_pu239, 0, 3, 12, 5),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_u235, 0, 1, 1, 3),
 			new WeightedRandomChestContentFrom1710(ModItems.rod_pu239, 0, 1, 1, 3),
@@ -234,18 +229,7 @@ public class HbmChestContents {
 			new WeightedRandomChestContentFrom1710(Item.getItemFromBlock(ModBlocks.red_cable), 0, 8, 16, 5)};
 
 	private static WeightedRandomChestContentFrom1710[] powder = new WeightedRandomChestContentFrom1710[] {
-			new WeightedRandomChestContentFrom1710(ModItems.powder_neptunium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_iodine, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_thorium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_astatine, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_neodymium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_caesium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_strontium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_cobalt, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_bromine, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_niobium, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_tennessine, 0, 1, 32, 1),
-			new WeightedRandomChestContentFrom1710(ModItems.powder_cerium, 0, 1, 32, 1) };
+			new WeightedRandomChestContentFrom1710(ModItems.powder_cerium, 0, 1, 2, 1) };
 
 	private static WeightedRandomChestContentFrom1710[] vault1 = new WeightedRandomChestContentFrom1710[] {
 			new WeightedRandomChestContentFrom1710(Items.GOLD_INGOT, 0, 3, 14, 1),

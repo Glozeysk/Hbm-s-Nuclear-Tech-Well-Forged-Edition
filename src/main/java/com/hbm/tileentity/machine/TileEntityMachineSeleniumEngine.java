@@ -52,9 +52,9 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.LOW,		0.75D);
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.5D);
-		fuelEfficiency.put(FuelGrade.HIGH,		0.25D);
+		fuelEfficiency.put(FuelGrade.LOW,		1.0D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.6D);
+		fuelEfficiency.put(FuelGrade.HIGH,		0.3D);
 		fuelEfficiency.put(FuelGrade.AERO,		0.00D);
 	}
 

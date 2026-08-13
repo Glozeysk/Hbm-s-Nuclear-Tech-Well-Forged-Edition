@@ -876,10 +876,7 @@ public class AssemblerRecipes {
 				new ComparableStack(ModItems.mp_warhead_15_balefire, 1),
 				new ComparableStack(ModBlocks.det_nuke, 16),
 				new OreDictStack(STAR.ingot(), 32),
-				new ComparableStack(ModItems.coin_creeper, 1),
-				new ComparableStack(ModItems.coin_radiation, 1),
-				new ComparableStack(ModItems.coin_maskman, 1),
-				new ComparableStack(ModItems.coin_worm, 1),
+				new ComparableStack(ModItems.coin_ufo, 1)
 			}, 1200);
 		
 		makeRecipe(new ComparableStack(ModBlocks.machine_chungus, 1), new AStack[] {

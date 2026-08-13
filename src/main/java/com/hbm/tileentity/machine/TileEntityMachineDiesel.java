@@ -52,9 +52,9 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.5D);
-		fuelEfficiency.put(FuelGrade.HIGH,		0.75D);
-		fuelEfficiency.put(FuelGrade.AERO,		0.1D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.75D);
+		fuelEfficiency.put(FuelGrade.HIGH,		1.0D);
+		fuelEfficiency.put(FuelGrade.AERO,		0.25D);
 	}
 
 	public TileEntityMachineDiesel() {

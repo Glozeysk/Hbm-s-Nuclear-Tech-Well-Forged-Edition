@@ -69,8 +69,8 @@ public class GunDefabricator extends Item {
 				|| EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0;
 		if ((flag || Library.hasInventoryItem(player.inventory, ModItems.gun_defabricator_ammo))
 				&& count % 2 == 0) {
-			EntityBullet entitybullet = new EntityBullet(world, player, 3.0F, 40, 120, false, "tauDay", player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND);
-			entitybullet.setDamage(40 + rand.nextInt(120 - 40));
+			EntityBullet entitybullet = new EntityBullet(world, player, 3.0F, 10, 30, false, "tauDay", player.getHeldItemMainhand() == stack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND);
+			entitybullet.setDamage(10 + rand.nextInt(30 - 10));
 
 			//world.playSoundAtEntity(player, "random.explode", 1.0F, 1.5F + (rand.nextFloat() / 4));
 			world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.defabShoot, SoundCategory.PLAYERS, 1.0F, 0.9F + (rand.nextFloat() * 0.2F));
@@ -94,7 +94,7 @@ public class GunDefabricator extends Item {
 			list.add("§4§lBAD WOLF");
 		list.add("");
 		list.add("Ammo: §cDefabricator Energy Cell");
-		list.add("Damage: 40 - 120");
+		list.add("Damage: 10 - 30");
 		list.add("");
 		list.add(I18nUtil.resolveKey("trait.legendaryweap"));
 	}

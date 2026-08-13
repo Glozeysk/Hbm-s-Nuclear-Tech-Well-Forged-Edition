@@ -228,10 +228,6 @@ public class ChemplantRecipes {
 		makeRecipe(890, "SPARKFUEL", new AStack[] {new ComparableStack(ModItems.powder_spark_mix, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.balefire, 3000) }, new AStack[] { new ComparableStack(ModItems.powder_power, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.sparkfuel, 4000) }, 100);
 		// makeRecipe(0, "FP_SMEAR, new AStack[] { new ComparableStack() }, new FluidStack[]{ new FluidStack() }, null, null, 100);
 		makeRecipe(900, "LITCRYST", new AStack[] {new ComparableStack(ModBlocks.block_lithium, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.schrabidic, 2000) }, new AStack[] { new ComparableStack(ModItems.crystal_lithium, 1) }, null, 1200);
-
-		makeRecipe(910, "COMPDAFF", new AStack[] {new ComparableStack(ModBlocks.block_daffergon, 16) }, new FluidStack[]{ new FluidStack(ModForgeFluids.corium_fluid, 2000) }, new AStack[] { new ComparableStack(ModBlocks.block_compressed_daffergon, 1) }, null, 2400);
-
-		makeRecipe(920, "PINKWOOD", new AStack[] {new ComparableStack(ModBlocks.block_compressed_daffergon, 64), new ComparableStack(Blocks.LOG, 64), new ComparableStack(ModItems.powder_magic, 64) }, new FluidStack[]{ new FluidStack(ModForgeFluids.volcanic_lava_fluid, 16000) }, new AStack[] { new ComparableStack(ModBlocks.pink_log, 1) }, null, 4800);
 		
 	}
 

@@ -204,14 +204,14 @@ public class EntityRADBeast extends EntityMob implements IRadiationImmune {
     
     @Override
     protected Item getDropItem() {
-    	return ModItems.rod_uranium_fuel_depleted;
+    	return ModItems.rod_uranium;
     }
 
     @Override
     protected void dropLoot(boolean wasRecentlyHit, int looting, DamageSource source) {
         super.dropLoot(wasRecentlyHit, looting, source);
         if(looting > 0) {
-                this.dropItem(ModItems.nugget_polonium, looting);
+                this.dropItem(ModItems.nugget_plutonium, looting);
             }
             
         int count = this.rand.nextInt(3) + 1;
@@ -221,13 +221,13 @@ public class EntityRADBeast extends EntityMob implements IRadiationImmune {
             int r = this.rand.nextInt(3);
             
             if(r == 0) {
-                this.dropItem(this.isWet() ? ModItems.waste_uranium : ModItems.rod_uranium_fuel_depleted, 1);
+                this.dropItem(this.isWet() ? ModItems.billet_uranium : ModItems.rod_uranium, 1);
                 
             } else if(r == 1) {
-                this.dropItem(this.isWet() ? ModItems.waste_mox : ModItems.rod_mox_fuel_depleted, 1);
+                this.dropItem(this.isWet() ? ModItems.billet_uranium : ModItems.rod_uranium, 1);
                 
             } else if(r == 2) {
-                this.dropItem(this.isWet() ? ModItems.waste_plutonium : ModItems.rod_plutonium_fuel_depleted, 1);
+                this.dropItem(this.isWet() ? ModItems.billet_uranium : ModItems.rod_uranium, 1);
                 
             }
         }

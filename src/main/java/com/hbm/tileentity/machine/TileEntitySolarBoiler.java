@@ -31,9 +31,9 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IBufP
     public Fluid[] types = new Fluid[2];
     public int heat;
     public int heatInput;
-    public static int maxHeat = 32_000_000;
+    public static int maxHeat = 320_000;
     public static final double diffusion = 0.1D;
-    public static final int cap = 10_000_000;
+    public static final int cap = 16_000;
 
     public TileEntitySolarBoiler() {
         super();

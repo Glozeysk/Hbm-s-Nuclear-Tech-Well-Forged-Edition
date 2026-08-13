@@ -864,7 +864,6 @@ public class JeiRecipes {
 		batteries.add(new ItemStack(ModItems.battery_spark_cell_10000));
 		batteries.add(new ItemStack(ModItems.battery_spark_cell_power));
 		batteries.add(new ItemStack(ModItems.fusion_core));
-		batteries.add(new ItemStack(ModItems.energy_core));
 		return batteries;
 	}
 

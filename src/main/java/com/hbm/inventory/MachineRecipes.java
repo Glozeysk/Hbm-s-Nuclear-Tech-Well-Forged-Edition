@@ -65,8 +65,8 @@ public class MachineRecipes {
 			return list;
 		} else if(fluid == ModForgeFluids.watz){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_solinium), 1));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_uranium), 2));
-			list.add(new GasCentOutput(2, new ItemStack(ModItems.powder_lead), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_iron), 2));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_lead), 3));
 			list.add(new GasCentOutput(4, new ItemStack(ModItems.dust), 4));
 			return list;
 		} else if(fluid == ModForgeFluids.sas3){
@@ -81,17 +81,11 @@ public class MachineRecipes {
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 3));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 4));
 			return list;
-		} else if(fluid == ModForgeFluids.cryogel){
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_ice), 1));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_ice), 2));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 3));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 4));
-			return list;
 		} else if(fluid == ModForgeFluids.nitan){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 1));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 2));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 3));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 4));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_mercury), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_mercury), 4));
 			return list;
 		} else if(fluid == ModForgeFluids.sparkfuel){
 				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_spark_mix), 1));
@@ -138,8 +132,6 @@ public class MachineRecipes {
 			return 1000;
 		else if(fluid == ModForgeFluids.coolant)
 			return 8000;
-		else if(fluid == ModForgeFluids.cryogel)
-			return 4000;
 		else if(fluid == ModForgeFluids.nitan)
 			return 2000;
 		else if(fluid == ModForgeFluids.sparkfuel)

@@ -163,7 +163,7 @@ public class CentrifugeRecipes {
 		recipes.put(PU.ore(), new ItemStack[] {
 				new ItemStack(ModItems.powder_plutonium, 1),
 				new ItemStack(ModItems.powder_plutonium, 1),
-				new ItemStack(ModItems.nugget_polonium, 3),
+				new ItemStack(ModItems.powder_plutonium, 1),
 				new ItemStack(Blocks.GRAVEL, 1) });
 		
 		recipes.put(U.ore(), new ItemStack[] {
@@ -239,7 +239,7 @@ public class CentrifugeRecipes {
 		recipes.put(DIAMOND.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1), new ItemStack(ModItems.powder_diamond, 1) });
 		recipes.put(U.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_uranium, 2), new ItemStack(ModItems.powder_uranium, 2), new ItemStack(ModItems.nugget_ra226, 2), new ItemStack(ModItems.powder_lithium_tiny, 1) });
 		recipes.put(TH232.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_thorium, 2), new ItemStack(ModItems.powder_thorium, 2), new ItemStack(ModItems.powder_uranium, 1), new ItemStack(ModItems.nugget_ra226, 1) });
-		recipes.put(PU.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_plutonium, 2), new ItemStack(ModItems.powder_plutonium, 2), new ItemStack(ModItems.powder_polonium, 1), new ItemStack(ModItems.powder_lithium_tiny, 1) });
+		recipes.put(PU.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_plutonium, 2), new ItemStack(ModItems.powder_plutonium, 2), new ItemStack(ModItems.powder_plutonium, 1), new ItemStack(ModItems.powder_lithium_tiny, 1) });
 		recipes.put(TI.crystal(), new ItemStack[] { new ItemStack(ModItems.powder_titanium, 2), new ItemStack(ModItems.powder_titanium, 2), new ItemStack(ModItems.powder_iron, 1), new ItemStack(ModItems.powder_lithium_tiny, 1) });
 		recipes.put(S.crystal(), new ItemStack[] { new ItemStack(ModItems.sulfur, 4), new ItemStack(ModItems.sulfur, 4), new ItemStack(ModItems.powder_iron, 1), new ItemStack(ModItems.nugget_mercury, 1) });
 		recipes.put(KNO.crystal(), new ItemStack[] { new ItemStack(ModItems.niter, 3), new ItemStack(ModItems.niter, 3), new ItemStack(ModItems.niter, 3), new ItemStack(ModItems.powder_lithium_tiny, 1) });
