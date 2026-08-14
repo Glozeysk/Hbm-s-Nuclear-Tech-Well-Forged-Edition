@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.BlockSiloHatch;
-import com.hbm.blocks.machine.dummy.DummyBlockSiloHatch;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.interfaces.IAnimatedDoor;
@@ -143,9 +143,9 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 	
 	public void removeDummy(BlockPos pos) {
 		if(world.getBlockState(pos).getBlock() == ModBlocks.dummy_block_silo_hatch) {
-			DummyBlockSiloHatch.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos, Blocks.AIR.getDefaultState());
-			DummyBlockSiloHatch.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 		}
 	}
 	

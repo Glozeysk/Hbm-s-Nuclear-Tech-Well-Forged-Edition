@@ -1570,67 +1570,68 @@ public class ModBlocks {
 	public static final Block statue_elb_g = new DecoBlockAlt(Material.IRON, "void").setCreativeTab(null).setHardness(Float.POSITIVE_INFINITY).setResistance(Float.POSITIVE_INFINITY);
 	public static final Block statue_elb_w = new DecoBlockAlt(Material.IRON, "ngtv").setCreativeTab(null).setHardness(Float.POSITIVE_INFINITY).setResistance(Float.POSITIVE_INFINITY);
 	public static final Block statue_elb_f = new DecoBlockAlt(Material.IRON, "undef").setCreativeTab(null).setHardness(Float.POSITIVE_INFINITY).setLightLevel(1.0F).setResistance(Float.POSITIVE_INFINITY);
-	
-	//Dummy blocks
-	public static final Block dummy_block_assembler = new DummyBlockAssembler(Material.IRON, "dummy_block_assembler", false).setCreativeTab(null).setHardness(5.0F).setResistance(10.0F);
-	public static final Block dummy_port_assembler = new DummyBlockAssembler(Material.IRON, "dummy_port_assembler", true).setCreativeTab(null).setHardness(5.0F).setResistance(10.0F);
 
-    public static final Block dummy_block_chemplant = new DummyBlockChemplant(Material.IRON, "dummy_block_chemplant", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_chemplant = new DummyBlockChemplant(Material.IRON, "dummy_port_chemplant", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_reactor_small = new DummyBlockMachine(Material.IRON, "dummy_block_reactor_small", false, guiID_reactor_small, machine_reactor_small).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_reactor_small = new DummyBlockMachine(Material.IRON, "dummy_port_reactor_small", true, guiID_reactor_small, machine_reactor_small).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_centrifuge = new DummyBlockCentrifuge(Material.IRON, "dummy_block_centrifuge").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_gascent = new DummyBlockMachine(Material.IRON, "dummy_block_gascent", false, guiID_gascent, machine_gascent).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_uf6 = new DummyBlockMachine(Material.IRON, "dummy_block_uf6", false, guiID_uf6_tank, machine_uf6_tank).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_block_puf6 = new DummyBlockMachine(Material.IRON, "dummy_block_puf6", false, guiID_puf6_tank, machine_puf6_tank).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_fluidtank = new DummyBlockFluidTank(Material.IRON, "dummy_block_fluidtank").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_fluidtank = new DummyBlockFluidTank(Material.IRON, "dummy_port_fluidtank").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_refinery = new DummyBlockRefinery(Material.IRON, "dummy_block_refinery", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_refinery = new DummyBlockRefinery(Material.IRON, "dummy_port_refinery", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	//Unused
-	public static final Block dummy_block_cyclotron = new DummyBlockCyclotron(Material.IRON, "dummy_block_cyclotron").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_cyclotron = new DummyBlockCyclotron(Material.IRON, "dummy_port_cyclotron").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_vault = new DummyBlockVault(Material.IRON, "dummy_block_vault").setHardness(1000.0F).setResistance(10000.0F).setCreativeTab(null);
-	public static final Block dummy_block_blast = new DummyBlockBlast(Material.IRON, "dummy_block_blast").setHardness(500.0F).setResistance(10000.0F).setCreativeTab(null);
-	public static final Block dummy_block_silo_hatch = new DummyBlockSiloHatch(Material.IRON, "dummy_block_silo_hatch").setHardness(100.0F).setResistance(5000.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_radgen = new DummyBlockRadGen(Material.IRON, "dummy_block_radgen", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_radgen = new DummyBlockRadGen(Material.IRON, "dummy_port_radgen", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_well = new DummyBlockWell(Material.IRON, "dummy_block_well", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_well = new DummyBlockWell(Material.IRON, "dummy_port_well", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_pumpjack = new DummyBlockPumpjack(Material.IRON, "dummy_block_pumpjack", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_pumpjack = new DummyBlockPumpjack(Material.IRON, "dummy_port_pumpjack", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_flare = new DummyBlockFlare(Material.IRON, "dummy_block_flare", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_flare = new DummyBlockFlare(Material.IRON, "dummy_port_flare", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_turbofan = new DummyBlockTurbofan(Material.IRON, "dummy_block_turbofan", false).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_turbofan = new DummyBlockTurbofan(Material.IRON, "dummy_port_turbofan", true).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_plate_compact_launcher = new DummyBlockMachine(Material.IRON, "dummy_plate_compact_launcher", false, guiID_compact_launcher, compact_launcher).setBounds(0, 16, 0, 16, 16, 16).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_compact_launcher = new DummyBlockMachine(Material.IRON, "dummy_port_compact_launcher", true, guiID_compact_launcher, compact_launcher).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_plate_launch_table = new DummyBlockMachine(Material.IRON, "dummy_plate_launch_table", false, guiID_launch_table, launch_table).setBounds(0, 16, 0, 16, 16, 16).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_launch_table = new DummyBlockMachine(Material.IRON, "dummy_port_launch_table", true, guiID_launch_table, launch_table).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_block_ams_limiter = new DummyBlockAMSLimiter(Material.IRON, "dummy_block_ams_limiter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_ams_limiter = new DummyBlockAMSLimiter(Material.IRON, "dummy_port_ams_limiter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_block_ams_emitter = new DummyBlockAMSEmitter(Material.IRON, "dummy_block_ams_emitter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_ams_emitter = new DummyBlockAMSEmitter(Material.IRON, "dummy_port_ams_emitter").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_block_ams_base = new DummyBlockAMSBase(Material.IRON, "dummy_block_ams_base").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	public static final Block dummy_port_ams_base = new DummyBlockAMSBase(Material.IRON, "dummy_port_ams_base").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
-	public static final Block dummy_plate_cargo = new DummyBlockMachine(Material.IRON, "dummy_plate_cargo", false, guiID_dock, sat_dock).setBounds(0, 0, 0, 16, 8, 16).setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
-	
+	// Dummy blocks
+	public static final Block dummy_block_assembler = new DummyBlockBase(new DummyProperties("assembler", machine_assembler).setGui(guiID_machine_assembler).setPort(DummyProperties.PortType.ITEM_ENERGY), false);
+	public static final Block dummy_port_assembler = new DummyBlockBase(new DummyProperties("assembler", machine_assembler).setGui(guiID_machine_assembler).setPort(DummyProperties.PortType.ITEM_ENERGY), true);
+
+	public static final Block dummy_block_chemplant = new DummyBlockBase(new DummyProperties("chemplant", machine_chemplant).setGui(guiID_machine_chemplant).setPort(DummyProperties.PortType.ITEM_ENERGY), false);
+	public static final Block dummy_port_chemplant = new DummyBlockBase(new DummyProperties("chemplant", machine_chemplant).setGui(guiID_machine_chemplant).setPort(DummyProperties.PortType.ITEM_ENERGY), true);
+
+	public static final Block dummy_block_reactor_small = new DummyBlockBase(new DummyProperties("reactor_small", machine_reactor_small).setGui(guiID_reactor_small).setPort(DummyProperties.PortType.PORT_NEW), false);
+	public static final Block dummy_port_reactor_small = new DummyBlockBase(new DummyProperties("reactor_small", machine_reactor_small).setGui(guiID_reactor_small).setPort(DummyProperties.PortType.PORT_NEW), true);
+
+	public static final Block dummy_block_centrifuge = new DummyBlockBase(new DummyProperties("centrifuge", machine_centrifuge).setGui(guiID_centrifuge), false);
+
+	public static final Block dummy_block_gascent = new DummyBlockBase(new DummyProperties("gascent", machine_gascent).setGui(guiID_gascent).setPort(DummyProperties.PortType.PORT_NEW), false);
+
+	public static final Block dummy_block_uf6 = new DummyBlockBase(new DummyProperties("uf6", machine_uf6_tank).setGui(guiID_uf6_tank).setPort(DummyProperties.PortType.PORT_NEW), false);
+	public static final Block dummy_block_puf6 = new DummyBlockBase(new DummyProperties("puf6", machine_puf6_tank).setGui(guiID_puf6_tank).setPort(DummyProperties.PortType.PORT_NEW), false);
+
+	public static final Block dummy_block_fluidtank = new DummyBlockBase(new DummyProperties("fluidtank", machine_fluidtank).setGui(guiID_machine_fluidtank).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_fluidtank = new DummyBlockBase(new DummyProperties("fluidtank", machine_fluidtank).setGui(guiID_machine_fluidtank).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_refinery = new DummyBlockBase(new DummyProperties("refinery", machine_refinery).setGui(guiID_machine_refinery).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_refinery = new DummyBlockBase(new DummyProperties("refinery", machine_refinery).setGui(guiID_machine_refinery).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_cyclotron = new DummyBlockBase(new DummyProperties("cyclotron", machine_cyclotron).setGui(guiID_machine_cyclotron), false);
+	public static final Block dummy_port_cyclotron = new DummyBlockBase(new DummyProperties("cyclotron", machine_cyclotron).setGui(guiID_machine_cyclotron), true);
+
+	public static final Block dummy_block_vault = new DummyBlockBase(new DummyProperties("vault", vault_door, 1000.0F, 10000.0F).setRegistryNames("dummy_block_vault", "dummy_block_vault").asDoor().asRadResistant().withVariantToggle(), false);
+	public static final Block dummy_block_blast = new DummyBlockBase(new DummyProperties("blast", blast_door, 500.0F, 10000.0F).setRegistryNames("dummy_block_blast", "dummy_block_blast").asDoor().asRadResistant(), false);
+	public static final Block dummy_block_silo_hatch = new DummyBlockBase(new DummyProperties("silo_hatch", silo_hatch, 100.0F, 5000.0F).setRegistryNames("dummy_block_silo_hatch", "dummy_block_silo_hatch").asDoor().asRadResistant(), false);
+
+	public static final Block dummy_block_radgen = new DummyBlockBase(new DummyProperties("radgen", machine_radgen).setGui(guiID_radgen).setPort(DummyProperties.PortType.ITEM_ENERGY), false);
+	public static final Block dummy_port_radgen = new DummyBlockBase(new DummyProperties("radgen", machine_radgen).setGui(guiID_radgen).setPort(DummyProperties.PortType.ITEM_ENERGY), true);
+
+	public static final Block dummy_block_well = new DummyBlockBase(new DummyProperties("well", machine_well).setGui(guiID_machine_well).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_well = new DummyBlockBase(new DummyProperties("well", machine_well).setGui(guiID_machine_well).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_pumpjack = new DummyBlockBase(new DummyProperties("pumpjack", machine_pumpjack).setGui(guiID_machine_pumpjack).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_pumpjack = new DummyBlockBase(new DummyProperties("pumpjack", machine_pumpjack).setGui(guiID_machine_pumpjack).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_flare = new DummyBlockBase(new DummyProperties("flare", machine_flare).setGui(0).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_flare = new DummyBlockBase(new DummyProperties("flare", machine_flare).setGui(0).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_turbofan = new DummyBlockBase(new DummyProperties("turbofan", machine_turbofan).setGui(guiID_machine_turbofan).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_turbofan = new DummyBlockBase(new DummyProperties("turbofan", machine_turbofan).setGui(guiID_machine_turbofan).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_plate_compact_launcher = new DummyBlockBase(new DummyProperties("plate_compact_launcher", compact_launcher).setRegistryNames("dummy_plate_compact_launcher", "dummy_port_compact_launcher").setGui(guiID_compact_launcher).setPort(DummyProperties.PortType.PORT_NEW).setBounds(0, 16, 0, 16, 16, 16), false);
+	public static final Block dummy_port_compact_launcher = new DummyBlockBase(new DummyProperties("plate_compact_launcher", compact_launcher).setRegistryNames("dummy_plate_compact_launcher", "dummy_port_compact_launcher").setGui(guiID_compact_launcher).setPort(DummyProperties.PortType.PORT_NEW), true);
+
+	public static final Block dummy_plate_launch_table = new DummyBlockBase(new DummyProperties("plate_launch_table", launch_table).setRegistryNames("dummy_plate_launch_table", "dummy_port_launch_table").setGui(guiID_launch_table).setPort(DummyProperties.PortType.PORT_NEW).setBounds(0, 16, 0, 16, 16, 16), false);
+	public static final Block dummy_port_launch_table = new DummyBlockBase(new DummyProperties("plate_launch_table", launch_table).setRegistryNames("dummy_plate_launch_table", "dummy_port_launch_table").setGui(guiID_launch_table).setPort(DummyProperties.PortType.PORT_NEW), true);
+
+	public static final Block dummy_plate_cargo = new DummyBlockBase(new DummyProperties("plate_cargo", sat_dock).setRegistryNames("dummy_plate_cargo", "dummy_plate_cargo").setGui(guiID_dock).setBounds(0, 0, 0, 16, 8, 16), false);
+
+	public static final Block dummy_block_ams_limiter = new DummyBlockBase(new DummyProperties("ams_limiter", ams_limiter).setRegistryNames("dummy_block_ams_limiter", "dummy_port_ams_limiter").setGui(guiID_ams_limiter).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_ams_limiter = new DummyBlockBase(new DummyProperties("ams_limiter", ams_limiter).setRegistryNames("dummy_block_ams_limiter", "dummy_port_ams_limiter").setGui(guiID_ams_limiter).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_ams_emitter = new DummyBlockBase(new DummyProperties("ams_emitter", ams_emitter).setRegistryNames("dummy_block_ams_emitter", "dummy_port_ams_emitter").setGui(guiID_ams_emitter).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_ams_emitter = new DummyBlockBase(new DummyProperties("ams_emitter", ams_emitter).setRegistryNames("dummy_block_ams_emitter", "dummy_port_ams_emitter").setGui(guiID_ams_emitter).setPort(DummyProperties.PortType.FLUID), true);
+
+	public static final Block dummy_block_ams_base = new DummyBlockBase(new DummyProperties("ams_base", ams_base).setRegistryNames("dummy_block_ams_base", "dummy_port_ams_base").setGui(guiID_ams_base).setPort(DummyProperties.PortType.FLUID), false);
+	public static final Block dummy_port_ams_base = new DummyBlockBase(new DummyProperties("ams_base", ams_base).setRegistryNames("dummy_block_ams_base", "dummy_port_ams_base").setGui(guiID_ams_base).setPort(DummyProperties.PortType.FLUID), true);
 	public static final Block ntm_dirt = new BlockNTMDirt("ntm_dirt").setSoundType(SoundType.GROUND).setHardness(0.5F).setCreativeTab(null);
 	
 	public static final Block pink_log = new BlockPinkLog("pink_log").setSoundType(SoundType.WOOD).setHardness(0.5F).setCreativeTab(null);

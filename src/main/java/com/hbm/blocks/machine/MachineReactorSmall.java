@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockMachine;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -94,7 +94,7 @@ public class MachineReactorSmall extends BlockContainer implements IMultiBlock {
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.reactorSmallDimension)) {
 
-			DummyBlockMachine.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.up(1), ModBlocks.dummy_block_reactor_small.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.up(1));
 			if(te instanceof TileEntityDummy) {
@@ -107,7 +107,7 @@ public class MachineReactorSmall extends BlockContainer implements IMultiBlock {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
 				dummy.target = pos;
 			}
-			DummyBlockMachine.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 			//
 			
 		} else

@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockWell;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -111,7 +111,7 @@ public class MachineOilWell extends BlockContainer implements IMultiBlock {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.wellDimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.wellDimension, ModBlocks.dummy_block_well);
 
-			DummyBlockWell.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.add(0, 0, 1), ModBlocks.dummy_port_well.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(0, 0, 1));
 			if(te instanceof TileEntityDummy) {
@@ -136,7 +136,7 @@ public class MachineOilWell extends BlockContainer implements IMultiBlock {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
 				dummy.target = pos;
 			}
-			DummyBlockWell.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 			
 		} else
 			world.destroyBlock(pos, true);

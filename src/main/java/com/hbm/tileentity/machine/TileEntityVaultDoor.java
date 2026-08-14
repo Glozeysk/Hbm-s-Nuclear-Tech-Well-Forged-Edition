@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockVault;
 import com.hbm.blocks.machine.VaultDoor;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.lib.HBMSoundHandler;
@@ -197,9 +197,9 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 	
 	public void removeDummy(BlockPos dummyPos) {
 		if(world.getBlockState(dummyPos).getBlock() == ModBlocks.dummy_block_vault) {
-			DummyBlockVault.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(dummyPos, Blocks.AIR.getDefaultState());
-			DummyBlockVault.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 		}
 	}
 	

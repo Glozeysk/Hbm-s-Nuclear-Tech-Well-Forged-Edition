@@ -30,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BlockDummyable extends BlockContainer {
@@ -204,6 +205,7 @@ public abstract class BlockDummyable extends BlockContainer {
 
     	super.onBlockPlacedBy(world, pos, state, player, itemStack);
     }
+
     protected boolean standardOpenBehavior(World world, int x, int y, int z, EntityPlayer player, int id) {
 		
 		if(world.isRemote) {
@@ -249,6 +251,7 @@ public abstract class BlockDummyable extends BlockContainer {
 		world.setBlockState(pos, this.getDefaultState().withProperty(META, meta + extra), 3);
 		safeRem = false;
 	}
+
 	
 	//Drillgon200: Removes the extra. I could have sworn there was already a method for this, but I can't find it.
 	public void removeExtra(World world, int x, int y, int z) {
@@ -271,31 +274,25 @@ public abstract class BlockDummyable extends BlockContainer {
 	public boolean hasExtra(int meta) {
 		return meta > 5 && meta < 12;
 	}
-	
+
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
 		if(i >= 12) {
-			//ForgeDirection d = ForgeDirection.getOrientation(world.getBlockMetadata(x, y, z) - offset);
-			//MultiblockHandler.emptySpace(world, x, y, z, getDimensions(), this, d);
 		} else if(!safeRem) {
-			
-	    	if(i >= extra)
-	    		i -= extra;
+			if(i >= extra)
+				i -= extra;
 
-	    	ForgeDirection dir = ForgeDirection.getOrientation(i).getOpposite();
+			ForgeDirection dir = ForgeDirection.getOrientation(i).getOpposite();
 			int[] pos1 = findCore(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
-			
-			if(pos1 != null) {
 
-				//ForgeDirection d = ForgeDirection.getOrientation(world.getBlockMetadata(pos[0], pos[1], pos[2]) - offset);
+			if(pos1 != null) {
 				world.setBlockToAir(new BlockPos(pos1[0], pos1[1], pos1[2]));
 			}
 		}
 		InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
 		super.breakBlock(world, pos, state);
 	}
-	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.INVISIBLE;

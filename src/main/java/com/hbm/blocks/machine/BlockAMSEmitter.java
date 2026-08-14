@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockAMSEmitter;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
@@ -60,7 +60,7 @@ public class BlockAMSEmitter extends BlockContainer implements IMultiBlock {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.AMSEmitterDimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSEmitterDimension, ModBlocks.dummy_block_ams_emitter);
 
-			DummyBlockAMSEmitter.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.add(0, 5, 0), ModBlocks.dummy_port_ams_emitter.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(0, 5, 0));
 			if(te instanceof TileEntityDummy) {
@@ -91,7 +91,7 @@ public class BlockAMSEmitter extends BlockContainer implements IMultiBlock {
 				TileEntityDummy dummy = (TileEntityDummy)te5;
 				dummy.target = pos;
 			}
-			DummyBlockAMSEmitter.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 			
 		} else
 			world.destroyBlock(pos, true);

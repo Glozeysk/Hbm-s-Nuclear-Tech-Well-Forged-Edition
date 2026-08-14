@@ -4,7 +4,7 @@
     "name": "HBM's Nuclear Tech - Well-forged Edition",
     "description": "The Extended Edition you love — now smoother and richer. We port and add many QoL features and ideas from the community and other forks, optimize performance, and layer our own custom content on top.",
     "version": "1.3.2",
-    "credits": "\n\nHBMMods: creator\nDrillgon200: original 1.12.2 port\nTheOriginalGolem: 1.12.2 bug fixing\nAlcater: Custom 1.12.2 version, updating and texturing\nGlozeysk:fork author, a lot of changes\nStefanParmezan:fork developer\n",
+    "credits": "\n\nHBMMods: creator\nDrillgon200: original 1.12.2 port\nTheOriginalGolem: 1.12.2 bug fixing\nAlcater: Custom 1.12.2 version, updating and texturing\nGlozeysk:fork author, a lot of changes\nStefanParmezan:fork developer\nYar1k: texture painter, ideas generator",
     "logoFile": "assets/hbm/textures/logo.png",
     "mcversion": "${mcversion}",
     "url": "https://www.curseforge.com/minecraft/mc-mods/ntm-well-forged-edition",
