@@ -495,12 +495,35 @@ public class JeiRecipes {
 		@Override
 		public void getIngredients(IIngredients ingredients) {
 			List<List<ItemStack>> in = Library.copyItemStackListList(inputs);
-			while(in.size() < 12)
+
+			while(in.size() < 14)
 				in.add(Arrays.asList(ItemStack.EMPTY));
+
+			ComparableStack comp = new ComparableStack(output);
+			FluidStack[] fluids = AssemblerRecipes.fluidInputs.get(comp);
+
+			if(fluids != null && fluids.length > 0 && fluids[0] != null) {
+				in.set(13, Arrays.asList(ItemFluidIcon.getStackWithQuantity(fluids[0].getFluid(), fluids[0].amount)));
+			}
+
 			ingredients.setInputLists(VanillaTypes.ITEM, in);
 			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
 
+		@Override
+		public List<String> getTooltipStrings(int mouseX, int mouseY) {
+			if(mouseX >= 102 && mouseX < 118 && mouseY >= 37 && mouseY < 53) {
+				ComparableStack comp = new ComparableStack(output);
+				FluidStack[] fluids = AssemblerRecipes.fluidInputs.get(comp);
+				if(fluids != null && fluids.length > 0 && fluids[0] != null) {
+					ItemStack fluidStack = ItemFluidIcon.getStackWithQuantity(fluids[0].getFluid(), fluids[0].amount);
+					if(!fluidStack.isEmpty()) {
+						return fluidStack.getTooltip(Minecraft.getMinecraft().player, Minecraft.getMinecraft().gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
+					}
+				}
+			}
+			return java.util.Collections.emptyList();
+		}
 	}
 
 	public static class BookRecipe implements IRecipeWrapper {
