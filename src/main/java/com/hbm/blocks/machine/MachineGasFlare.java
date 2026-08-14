@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockFlare;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -111,7 +111,7 @@ public class MachineGasFlare extends BlockContainer implements IMultiBlock {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.flareDimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.flareDimension, ModBlocks.dummy_block_flare);
 
-			DummyBlockFlare.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.add(0, 0, 1), ModBlocks.dummy_port_flare.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(0, 0, 1));
 			if(te instanceof TileEntityDummy) {
@@ -136,7 +136,7 @@ public class MachineGasFlare extends BlockContainer implements IMultiBlock {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
 				dummy.target = pos;
 			}
-			DummyBlockFlare.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 			
 		} else
 			world.destroyBlock(pos, true);

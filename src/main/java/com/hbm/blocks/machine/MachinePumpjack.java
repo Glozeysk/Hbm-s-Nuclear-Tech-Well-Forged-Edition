@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockPumpjack;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -122,7 +122,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionEast, ModBlocks.dummy_block_pumpjack);
 
 				//
-				DummyBlockPumpjack.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(-2, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(-2, 0, 1));
 				if(te instanceof TileEntityDummy) {
@@ -147,8 +147,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
 					dummy.target = pos;
 				}
-				DummyBlockPumpjack.safeBreak = false;
-				//
+				DummyBlockBase.safeBreak = false;
 
 			} else
 				world.destroyBlock(pos, true);
@@ -157,8 +156,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 			if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.pumpjackDimensionSouth)) {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionSouth, ModBlocks.dummy_block_pumpjack);
 
-				//
-				DummyBlockPumpjack.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(1, 0, -2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(1, 0, -2));
 				if(te instanceof TileEntityDummy) {
@@ -183,7 +181,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
 					dummy.target = pos;
 				}
-				DummyBlockPumpjack.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 
 			} else
@@ -194,7 +192,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionWest, ModBlocks.dummy_block_pumpjack);
 
 				//
-				DummyBlockPumpjack.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(2, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(2, 0, 1));
 				if(te instanceof TileEntityDummy) {
@@ -219,7 +217,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
 					dummy.target = pos;
 				}
-				DummyBlockPumpjack.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 
 			} else
@@ -229,8 +227,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 			if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.pumpjackDimensionNorth)) {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionNorth, ModBlocks.dummy_block_pumpjack);
 
-				//
-				DummyBlockPumpjack.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(1, 0, 2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(1, 0, 2));
 				if(te instanceof TileEntityDummy) {
@@ -255,7 +252,7 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
 					dummy.target = pos;
 				}
-				DummyBlockPumpjack.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 
 			} else

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBlast;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.interfaces.IDoor;
@@ -308,9 +308,9 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 	public void removeDummy(BlockPos pos) {
 		
 		if(world.getBlockState(pos).getBlock() == ModBlocks.dummy_block_blast) {
-			DummyBlockBlast.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos, Blocks.AIR.getDefaultState());
-			DummyBlockBlast.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 		}
 	}
 	

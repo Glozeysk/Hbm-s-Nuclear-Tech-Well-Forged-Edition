@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockChemplant;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -113,7 +113,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.chemplantDimensionEast, ModBlocks.dummy_block_chemplant);
 
 				mbp.setPos(pos.getX()-1, pos.getY(), pos.getZ());
-				DummyBlockChemplant.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(mbp, ModBlocks.dummy_port_chemplant.getDefaultState());
 				TileEntity te = world.getTileEntity(mbp);
 				if(te instanceof TileEntityDummy) {
@@ -141,7 +141,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy)te4;
 					dummy.target = pos;
 				}
-				DummyBlockChemplant.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -153,7 +153,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.chemplantDimensionSouth, ModBlocks.dummy_block_chemplant);
 
 				//
-				DummyBlockChemplant.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				mbp.setPos(pos.getX(), pos.getY(), pos.getZ()-1);
 				world.setBlockState(mbp, ModBlocks.dummy_port_chemplant.getDefaultState());
 				TileEntity te = world.getTileEntity(mbp);
@@ -182,7 +182,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy)te4;
 					dummy.target = pos;
 				}
-				DummyBlockChemplant.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -194,7 +194,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.chemplantDimensionWest, ModBlocks.dummy_block_chemplant);
 
 				//
-				DummyBlockChemplant.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				mbp.setPos(pos.getX()+1, pos.getY(), pos.getZ());
 				world.setBlockState(mbp, ModBlocks.dummy_port_chemplant.getDefaultState());
 				TileEntity te = world.getTileEntity(mbp);
@@ -223,7 +223,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy)te4;
 					dummy.target = pos;
 				}
-				DummyBlockChemplant.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -235,7 +235,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.chemplantDimensionNorth, ModBlocks.dummy_block_chemplant);
 
 				//
-				DummyBlockChemplant.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				mbp.setPos(pos.getX(), pos.getY(), pos.getZ()+1);
 				world.setBlockState(mbp, ModBlocks.dummy_port_chemplant.getDefaultState());
 				TileEntity te = world.getTileEntity(mbp);
@@ -264,7 +264,7 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 					TileEntityDummy dummy = (TileEntityDummy)te4;
 					dummy.target = pos;
 				}
-				DummyBlockChemplant.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else

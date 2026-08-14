@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockRefinery;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -111,7 +111,7 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.refineryDimensions, ModBlocks.dummy_block_refinery);
 				
 			//
-			DummyBlockRefinery.safeBreak = true;
+			DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.add(1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(1, 0, 1));
 			if(te instanceof TileEntityDummy) {
@@ -136,7 +136,7 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
 				dummy.target = pos;
 			}
-			DummyBlockRefinery.safeBreak = false;
+			DummyBlockBase.safeBreak = false;
 			//
 				
 		} else {

@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockRadGen;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
@@ -93,14 +93,14 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.radGenDimensionEast, ModBlocks.dummy_block_radgen);
 				
 				//
-				DummyBlockRadGen.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(0, 0, 4), ModBlocks.dummy_port_radgen.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(0, 0, 4));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
 					dummy.target = pos;
 				}
-				DummyBlockRadGen.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -111,14 +111,14 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.radGenDimensionSouth, ModBlocks.dummy_block_radgen);
 				
 				//
-				DummyBlockRadGen.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(-4, 0, 0), ModBlocks.dummy_port_radgen.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(-4, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
 					dummy.target = pos;
 				}
-				DummyBlockRadGen.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -129,14 +129,14 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.radGenDimensionWest, ModBlocks.dummy_block_radgen);
 				
 				//
-				DummyBlockRadGen.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(0, 0, -4), ModBlocks.dummy_port_radgen.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(0, 0, -4));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
 					dummy.target = pos;
 				}
-				DummyBlockRadGen.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
@@ -147,14 +147,14 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.radGenDimensionNorth, ModBlocks.dummy_block_radgen);
 				
 				//
-				DummyBlockRadGen.safeBreak = true;
+				DummyBlockBase.safeBreak = true;
 				world.setBlockState(pos.add(4, 0, 0), ModBlocks.dummy_port_radgen.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(4, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
 					dummy.target = pos;
 				}
-				DummyBlockRadGen.safeBreak = false;
+				DummyBlockBase.safeBreak = false;
 				//
 				
 			} else
