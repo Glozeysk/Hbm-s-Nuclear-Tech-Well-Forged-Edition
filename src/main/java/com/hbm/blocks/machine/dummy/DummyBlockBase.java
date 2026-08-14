@@ -58,12 +58,7 @@ public class DummyBlockBase extends BlockContainer
         ModBlocks.ALL_BLOCKS.add(this);
     }
     public static void destroyQuietly(World world, BlockPos pos, boolean dropItems) {
-        if (world.isRemote) {
-            batchRemovalMode = true;
-            world.setBlockToAir(pos);
-            batchRemovalMode = false;
-            return;
-        }
+        if (world.isRemote) return;
 
         safeBreak = true;
         batchRemovalMode = true;
@@ -81,6 +76,9 @@ public class DummyBlockBase extends BlockContainer
             if (block instanceof DummyBlockBase && ((DummyBlockBase) block).props.isRadResistant) {
                 RadiationSystemNT.markChunkForRebuild(world, pos);
             }
+
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+
         } finally {
             safeBreak = false;
             batchRemovalMode = false;
@@ -151,9 +149,11 @@ public class DummyBlockBase extends BlockContainer
         if (te != null) onBreakBlock(world, pos, te);
 
         if (!safeBreak && te instanceof TileEntityDummy && ((TileEntityDummy) te).target != null) {
-            safeBreak = true;
-            world.destroyBlock(((TileEntityDummy) te).target, true);
-            safeBreak = false;
+            BlockPos corePos = ((TileEntityDummy) te).target;
+            if (!world.isRemote) {
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                        new com.hbm.event.DummyBlockEvent.DummyBroken(world, pos, corePos));
+            }
         }
         world.removeTileEntity(pos);
 

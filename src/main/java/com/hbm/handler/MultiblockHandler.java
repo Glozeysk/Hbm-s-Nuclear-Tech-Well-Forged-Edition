@@ -126,28 +126,36 @@ public class MultiblockHandler {
 		
 		return placable;
 	}
-	
+
 	public static boolean fillUp(World world, BlockPos pos, int[] i, Block block) {
 		boolean placable = true;
 		MutableBlockPos replace = new BlockPos.MutableBlockPos();
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
+
+		TileEntity coreTE = world.getTileEntity(pos);
+
 		for(int a = x - i[1]; a <= x + i[0]; a++) {
 			for(int b = y - i[3]; b <= y + i[2]; b++) {
 				for(int c = z - i[5]; c <= z + i[4]; c++) {
 					if(!(a == x && b == y && c == z)) {
-						world.setBlockState(replace.setPos(a, b, c), block.getDefaultState());
-						TileEntity te = world.getTileEntity(replace.setPos(a, b, c));
+						BlockPos dummyPos = new BlockPos(a, b, c);
+						world.setBlockState(dummyPos, block.getDefaultState());
+						TileEntity te = world.getTileEntity(dummyPos);
 						if(te instanceof TileEntityDummy) {
 							TileEntityDummy dummy = (TileEntityDummy)te;
 							dummy.target = pos;
+
+							if (coreTE instanceof com.hbm.tileentity.TileEntityMachineBase) {
+								((com.hbm.tileentity.TileEntityMachineBase) coreTE).dummyBlocks.add(dummyPos);
+							}
 						}
 					}
 				}
 			}
 		}
-		
+
 		return placable;
 	}
 	

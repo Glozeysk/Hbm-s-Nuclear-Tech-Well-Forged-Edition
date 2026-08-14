@@ -1,26 +1,35 @@
 package com.hbm.tileentity;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.lib.ItemStackHandlerWrapper;
 import com.hbm.packet.PacketDispatcher;
 
+import com.hbm.tileentity.machine.TileEntityDummy;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Spaghetti("Not spaghetti in itself, but for the love of god please use this base class for all machines")
 public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 
 	public ItemStackHandler inventory;
-
+	public Set<BlockPos> dummyBlocks = new HashSet<>();
 	private String customName;
 
 	public TileEntityMachineBase(int scount) {
@@ -78,19 +87,6 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 	}
 
 	public void handleButtonPacket(int value, int meta) { }
-	
-	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setTag("inventory", inventory.serializeNBT());
-		return super.writeToNBT(compound);
-	}
-	
-	@Override
-	public void readFromNBT(NBTTagCompound compound) {
-		if(compound.hasKey("inventory"))
-			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
-		super.readFromNBT(compound);
-	}
 	
 	public boolean isItemValidForSlot(int i, ItemStack stack) {
 		return true;
@@ -157,5 +153,74 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) || super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		compound.setTag("inventory", inventory.serializeNBT());
+
+		net.minecraft.nbt.NBTTagList dummyList = new net.minecraft.nbt.NBTTagList();
+		for (BlockPos p : dummyBlocks) {
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setInteger("dx", p.getX());
+			tag.setInteger("dy", p.getY());
+			tag.setInteger("dz", p.getZ());
+			dummyList.appendTag(tag);
+		}
+		compound.setTag("dummyBlocks", dummyList);
+
+		return super.writeToNBT(compound);
+	}
+
+	@Override
+	public void readFromNBT(NBTTagCompound compound) {
+		if (compound.hasKey("inventory"))
+			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+
+		dummyBlocks.clear();
+		net.minecraft.nbt.NBTTagList dummyList = compound.getTagList("dummyBlocks", 10);
+		for (int i = 0; i < dummyList.tagCount(); i++) {
+			NBTTagCompound tag = dummyList.getCompoundTagAt(i);
+			dummyBlocks.add(new BlockPos(tag.getInteger("dx"), tag.getInteger("dy"), tag.getInteger("dz")));
+		}
+
+		super.readFromNBT(compound);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		if (!world.isRemote && dummyBlocks.isEmpty()) {
+			for (TileEntity te : world.loadedTileEntityList) {
+				if (te instanceof TileEntityDummy) {
+					TileEntityDummy dummy = (TileEntityDummy) te;
+					if (pos.equals(dummy.target)) {
+						dummyBlocks.add(dummy.getPos());
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		if (!world.isRemote && !dummyBlocks.isEmpty()) {
+			List<BlockPos> toRemove = new ArrayList<>(dummyBlocks);
+			dummyBlocks.clear();
+
+			DummyBlockBase.safeBreak = true;
+			DummyBlockBase.batchRemovalMode = true;
+			try {
+				for (BlockPos dummyPos : toRemove) {
+					if (!world.isAirBlock(dummyPos)) {
+						DummyBlockBase.destroyQuietly(world, dummyPos, false);
+					}
+				}
+			} finally {
+				DummyBlockBase.safeBreak = false;
+				DummyBlockBase.batchRemovalMode = false;
+			}
+		}
+		super.invalidate();
 	}
 }
