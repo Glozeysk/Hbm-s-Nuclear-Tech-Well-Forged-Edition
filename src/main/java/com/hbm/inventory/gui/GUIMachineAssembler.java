@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.util.I18nUtil;
+import com.hbm.forgefluid.FFUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -30,6 +32,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class GUIMachineAssembler extends GuiInfoContainer {
@@ -70,6 +74,11 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 		super.drawScreen(mouseX, mouseY, f);
 		this.renderHoveredToolTip(mouseX, mouseY);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 70 - 52, 16, 52, assembler.power, TileEntityMachineAssembler.maxPower);
+
+		if(assembler.tank != null) {
+			Fluid fluidType = assembler.tank.getFluid() != null ? assembler.tank.getFluid().getFluid() : null;
+			FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 46, guiTop + 16, 15, 53, assembler.tank, fluidType);
+		}
 
 		if(assembler.inventory.getStackInSlot(4).getItem() == Items.AIR || assembler.inventory.getStackInSlot(4).getItem()!= ModItems.assembly_template) {
 			String[] text1 = I18nUtil.resolveKeyArray("desc.guimachassembler");
@@ -155,6 +164,25 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 
 		this.drawInfoPanel(guiLeft + 141, guiTop + 40, 8, 8, 8);
 
+		if (assembler.tank != null && assembler.tank.getFluid() != null) {
+			Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+
+			GlStateManager.pushMatrix();
+			GlStateManager.disableLighting();
+			GlStateManager.disableDepth();
+			GlStateManager.enableBlend();
+			GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+
+			FFUtils.drawLiquid(assembler.tank, guiLeft, guiTop, zLevel, 16, 52, 46, 98);
+
+			GlStateManager.disableBlend();
+			GlStateManager.enableDepth();
+			GlStateManager.enableLighting();
+			GlStateManager.popMatrix();
+
+			Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+		}
+
 		for (GhostSlot gs : ghostSlots) {
 			gs.setGhostStack(ItemStack.EMPTY);
 		}
@@ -190,6 +218,20 @@ public class GUIMachineAssembler extends GuiInfoContainer {
 							}
 							if (have < needed) allIngredientsMet = false;
 							statuses.add(new IngredientStatus(req, needed, have));
+						}
+					}
+
+					FluidStack[] fluidInputs = AssemblerRecipes.getFluidInputFromTempate(templateStack);
+					if (fluidInputs != null) {
+						for (FluidStack req : fluidInputs) {
+							int needed = req.amount;
+							int have = 0;
+							if (assembler.tank != null && assembler.tank.getFluid() != null) {
+								if (assembler.tank.getFluid().isFluidEqual(req)) {
+									have += assembler.tank.getFluid().amount;
+								}
+							}
+							if (have < needed) allIngredientsMet = false;
 						}
 					}
 

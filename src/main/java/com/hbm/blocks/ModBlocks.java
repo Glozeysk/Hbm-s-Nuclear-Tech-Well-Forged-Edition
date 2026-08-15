@@ -1572,7 +1572,7 @@ public class ModBlocks {
 
 	// Dummy blocks
 	public static final Block dummy_block_assembler = new DummyBlockBase(new DummyProperties("assembler", machine_assembler).setGui(guiID_machine_assembler).setPort(DummyProperties.PortType.ITEM_ENERGY), false);
-	public static final Block dummy_port_assembler = new DummyBlockBase(new DummyProperties("assembler", machine_assembler).setGui(guiID_machine_assembler).setPort(DummyProperties.PortType.ITEM_ENERGY), true);
+	public static final Block dummy_port_assembler = new DummyBlockBase(new DummyProperties("assembler", machine_assembler).setGui(guiID_machine_assembler).setPort(DummyProperties.PortType.FLUID), true);
 
 	public static final Block dummy_block_chemplant = new DummyBlockBase(new DummyProperties("chemplant", machine_chemplant).setGui(guiID_machine_chemplant).setPort(DummyProperties.PortType.ITEM_ENERGY), false);
 	public static final Block dummy_port_chemplant = new DummyBlockBase(new DummyProperties("chemplant", machine_chemplant).setGui(guiID_machine_chemplant).setPort(DummyProperties.PortType.ITEM_ENERGY), true);
@@ -1631,6 +1631,7 @@ public class ModBlocks {
 
 	public static final Block dummy_block_ams_base = new DummyBlockBase(new DummyProperties("ams_base", ams_base).setRegistryNames("dummy_block_ams_base", "dummy_port_ams_base").setGui(guiID_ams_base).setPort(DummyProperties.PortType.FLUID), false);
 	public static final Block dummy_port_ams_base = new DummyBlockBase(new DummyProperties("ams_base", ams_base).setRegistryNames("dummy_block_ams_base", "dummy_port_ams_base").setGui(guiID_ams_base).setPort(DummyProperties.PortType.FLUID), true);
+
 	public static final Block ntm_dirt = new BlockNTMDirt("ntm_dirt").setSoundType(SoundType.GROUND).setHardness(0.5F).setCreativeTab(null);
 	
 	public static final Block pink_log = new BlockPinkLog("pink_log").setSoundType(SoundType.WOOD).setHardness(0.5F).setCreativeTab(null);

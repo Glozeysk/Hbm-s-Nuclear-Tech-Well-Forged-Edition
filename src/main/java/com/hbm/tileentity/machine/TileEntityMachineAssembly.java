@@ -105,8 +105,45 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		};
 	}
 
+
 	public void OnContentsChanged(int slot){
 		this.needsProcess = true;
+		if (slot == 4) {
+			validateTankContents();
+		}
+	}
+
+	private void validateTankContents() {
+		if (this.tank == null) return;
+		if (this.tank.getFluid() == null || this.tank.getFluidAmount() == 0) return;
+
+		ItemStack template = inventory.getStackInSlot(4);
+		if (template.isEmpty() || !(template.getItem() instanceof ItemAssemblyTemplate)) {
+			this.tank.drain(this.tank.getCapacity(), true);
+			this.markDirty();
+			return;
+		}
+
+		FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(template);
+		if (fluidReqs == null || fluidReqs.length == 0) {
+			this.tank.drain(this.tank.getCapacity(), true);
+			this.markDirty();
+			return;
+		}
+
+		FluidStack currentFluid = this.tank.getFluid();
+		boolean isRequired = false;
+		for (FluidStack req : fluidReqs) {
+			if (req != null && req.isFluidEqual(currentFluid)) {
+				isRequired = true;
+				break;
+			}
+		}
+
+		if (!isRequired) {
+			this.tank.drain(this.tank.getCapacity(), true);
+			this.markDirty();
+		}
 	}
 
 	@Override
@@ -259,6 +296,7 @@ public class TileEntityMachineAssembly extends TileEntityMachineBase implements 
 		this.isProgressing = nbt.getBoolean("progressing");
 		this.progress = nbt.getInteger("progress");
 		this.tank.readFromNBT(nbt.getCompoundTag("tank"));
+		validateTankContents();
 	}
 
 	@Override

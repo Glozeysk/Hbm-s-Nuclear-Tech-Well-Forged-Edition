@@ -128,7 +128,6 @@ public class DummyBlockBase extends BlockContainer
     protected void onBreakBlock(World world, BlockPos pos, TileEntity te) {
     }
 
-    /** Дополнительная логика при установке. */
     protected void onBlockPlaced(World world, BlockPos pos) {
     }
 

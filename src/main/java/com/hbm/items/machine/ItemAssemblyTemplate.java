@@ -137,7 +137,8 @@ public class ItemAssemblyTemplate extends Item implements IHasCustomModel {
 				}
 				try {
 					for(java.lang.reflect.Field field : container.getClass().getDeclaredFields()) {
-						if(com.hbm.tileentity.machine.TileEntityMachineAssembly.class.isAssignableFrom(field.getType())) {
+						if(com.hbm.tileentity.machine.TileEntityMachineAssembly.class.isAssignableFrom(field.getType()) ||
+								com.hbm.tileentity.machine.TileEntityMachineAssembler.class.isAssignableFrom(field.getType())) {
 							field.setAccessible(true);
 							Object te = field.get(container);
 							if(te != null) {

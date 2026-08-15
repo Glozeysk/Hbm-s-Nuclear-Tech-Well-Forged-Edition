@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.forgefluid.FFUtils;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.AssemblerRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -15,6 +17,8 @@ import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.packet.FluidTankPacket;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -25,6 +29,8 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -33,6 +39,12 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -41,7 +53,7 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
-public class TileEntityMachineAssembler extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver {
+public class TileEntityMachineAssembler extends TileEntityMachineBase implements ITickable, IEnergyUser, IBufPacketReceiver, ITankPacketAcceptor {
 
     public long power;
     public static final long maxPower = 2000000;
@@ -53,6 +65,10 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
     int consumption = 100;
     int speed = 100;
 
+    public FluidTank tank;
+    private FluidTank detectTank;
+    private int tankSyncTick = 0;
+
     @SideOnly(Side.CLIENT)
     public int recipe;
 
@@ -61,6 +77,7 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
     public TileEntityMachineAssembler() {
 
         super(18);
+        tank = new FluidTank(16000);
         inventory = new ItemStackHandler(18){
             @Override
             protected void onContentsChanged(int slot){
@@ -86,6 +103,9 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
 
     public void OnContentsChanged(int slot){
         this.needsProcess = true;
+        if (slot == 4) {
+            validateTankContents();
+        }
     }
 
     @Override
@@ -104,10 +124,42 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
         return true;
     }
 
-
     @Override
     public String getName() {
         return "container.assembler";
+    }
+
+    private void validateTankContents() {
+        if (this.tank == null) return;
+        if (this.tank.getFluid() == null || this.tank.getFluidAmount() == 0) return;
+
+        ItemStack template = inventory.getStackInSlot(4);
+        if (template.isEmpty() || !(template.getItem() instanceof ItemAssemblyTemplate)) {
+            this.tank.drain(this.tank.getCapacity(), true);
+            this.markDirty();
+            return;
+        }
+
+        FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(template);
+        if (fluidReqs == null || fluidReqs.length == 0) {
+            this.tank.drain(this.tank.getCapacity(), true);
+            this.markDirty();
+            return;
+        }
+
+        FluidStack currentFluid = this.tank.getFluid();
+        boolean isRequired = false;
+        for (FluidStack req : fluidReqs) {
+            if (req != null && req.isFluidEqual(currentFluid)) {
+                isRequired = true;
+                break;
+            }
+        }
+
+        if (!isRequired) {
+            this.tank.drain(this.tank.getCapacity(), true);
+            this.markDirty();
+        }
     }
 
     @Override
@@ -116,6 +168,10 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
         this.power = nbt.getLong("powerTime");
         this.isProgressing = nbt.getBoolean("progressing");
         this.progress = nbt.getInteger("progress");
+        if(nbt.hasKey("tank")) {
+            this.tank.readFromNBT(nbt.getCompoundTag("tank"));
+        }
+        validateTankContents();
     }
 
     @Override
@@ -124,6 +180,11 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
         nbt.setBoolean("progressing", this.isProgressing);
         nbt.setLong("powerTime", power);
         nbt.setInteger("progress", progress);
+
+        NBTTagCompound tankTag = new NBTTagCompound();
+        this.tank.writeToNBT(tankTag);
+        nbt.setTag("tank", tankTag);
+
         return nbt;
     }
 
@@ -188,7 +249,19 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
             power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
             if(needsProcess && (AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)) != ItemStack.EMPTY && AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)) != null)) {
                 this.maxProgress = (ItemAssemblyTemplate.getProcessTime(inventory.getStackInSlot(4)) * speed) / 100;
-                if(removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), cloneItemStackProper(inventory))) {
+
+                FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(inventory.getStackInSlot(4));
+                boolean hasFluids = true;
+                if(fluidReqs != null) {
+                    for(FluidStack fs : fluidReqs) {
+                        if(fs != null && (tank.getFluid() == null || !tank.getFluid().isFluidEqual(fs) || tank.getFluidAmount() < fs.amount)) {
+                            hasFluids = false;
+                            break;
+                        }
+                    }
+                }
+
+                if(removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), cloneItemStackProper(inventory)) && hasFluids) {
                     if(power >= consumption ){
                         if(inventory.getStackInSlot(5).isEmpty() || (!inventory.getStackInSlot(5).isEmpty() && inventory.getStackInSlot(5).getItem() == AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getItem()) && inventory.getStackInSlot(5).getCount() + AssemblerRecipes.getOutputFromTempate(inventory.getStackInSlot(4)).copy().getCount() <= inventory.getStackInSlot(5).getMaxStackSize()) {
                             progress++;
@@ -203,12 +276,22 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                                 }
 
                                 removeItems(AssemblerRecipes.getRecipeFromTempate(inventory.getStackInSlot(4)), inventory);
+
+                                if(fluidReqs != null) {
+                                    for(FluidStack fs : fluidReqs) {
+                                        if(fs != null) {
+                                            tank.drain(fs.amount, true);
+                                        }
+                                    }
+                                }
+
                                 if(inventory.getStackInSlot(0).getItem() == ModItems.meteorite_sword_alloyed)
                                     inventory.setStackInSlot(0, new ItemStack(ModItems.meteorite_sword_machined));
                             }
 
                             power -= consumption;
-                        }}
+                        }
+                    }
                 } else{
                     progress = 0;
                     needsProcess = false;
@@ -216,7 +299,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
             } else{
                 progress = 0;
             }
-
 
             int meta = this.getBlockMetadata();
             TileEntity te = null;
@@ -267,7 +349,18 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                             slots[i] = i;
                         tryFillAssemblerCap(cap, slots, null);
                     }
+                }
+            }
 
+            tankSyncTick++;
+            if(tankSyncTick >= 5) {
+                tankSyncTick = 0;
+
+                if(!FFUtils.areTanksEqual(detectTank, tank)) {
+                    detectTank = FFUtils.copyTank(tank);
+                    this.needsProcess = true;
+                    this.markDirty();
+                    PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tank}), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
                 }
             }
 
@@ -564,7 +657,6 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                 int possibleAmount = inventory.getStackInSlot(ingredientSlot).getMaxStackSize() - inventory.getStackInSlot(ingredientSlot).getCount();
 
                 if(possibleAmount == 0){
-                    System.out.println("This should never happen method getValidSlot broke");
                     continue;
                 }
 
@@ -582,13 +674,13 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                             continue;
                         if(foundCount > 0){
                             ItemStack extracted = container.extractItem(slot, foundCount, false);
-                            
+
                             if(extracted.isEmpty())
                                 continue;
-                            
+
                             int actualCount = extracted.getCount();
                             possibleAmount -= actualCount;
-                            
+
                             if(inventory.getStackInSlot(ingredientSlot).isEmpty()){
                                 inventory.setStackInSlot(ingredientSlot, extracted);
                             }else{
@@ -711,5 +803,91 @@ public class TileEntityMachineAssembler extends TileEntityMachineBase implements
                     count++;
 
         return count;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+            return true;
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new AssemblerFluidHandler(this.tank));
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public void recievePacket(NBTTagCompound[] tags) {
+        if(tags.length != 1) {
+            return;
+        }
+        this.tank.readFromNBT(tags[0]);
+    }
+
+    private class AssemblerFluidHandler implements IFluidHandler {
+        private FluidTank tank;
+
+        public AssemblerFluidHandler(FluidTank tank) {
+            this.tank = tank;
+        }
+
+        @Override
+        public IFluidTankProperties[] getTankProperties() {
+            return tank.getTankProperties();
+        }
+
+        @Override
+        public int fill(FluidStack resource, boolean doFill) {
+            if (resource == null) return 0;
+
+            ItemStack template = inventory.getStackInSlot(4);
+            if (template.isEmpty() || !(template.getItem() instanceof ItemAssemblyTemplate)) {
+                return 0;
+            }
+
+            FluidStack[] fluidReqs = AssemblerRecipes.getFluidInputFromTempate(template);
+            if (fluidReqs == null || fluidReqs.length == 0) {
+                return 0;
+            }
+
+            for (FluidStack req : fluidReqs) {
+                if (req != null && req.getFluid() == resource.getFluid()) {
+                    needsProcess = true;
+                    return tank.fill(resource, doFill);
+                }
+            }
+
+            return 0;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, boolean doDrain) {
+            return tank.drain(resource, doDrain);
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, boolean doDrain) {
+            return tank.drain(maxDrain, doDrain);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        NBTTagCompound tag = new NBTTagCompound();
+        this.writeToNBT(tag);
+        return new SPacketUpdateTileEntity(this.pos, 0, tag);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.readFromNBT(pkt.getNbtCompound());
     }
 }
