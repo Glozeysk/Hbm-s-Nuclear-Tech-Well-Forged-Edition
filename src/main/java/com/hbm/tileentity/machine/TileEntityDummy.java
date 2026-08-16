@@ -1,20 +1,24 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.handler.DummyBlockRegistry;
+import com.hbm.interfaces.IMultiBlock;
+import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 
-public class TileEntityDummy extends TileEntity {
+public class TileEntityDummy extends TileEntity implements ITickable {
 
 	public BlockPos target;
+	private boolean isRegistered = false;
 
 	@Override
 	public void onLoad() {
 		super.onLoad();
-		if (!world.isRemote && target != null) {
-			DummyBlockRegistry.register(world, target, pos);
+		if (!world.isRemote && this.target != null) {
+			DummyBlockRegistry.register(world, this.target, this.pos);
 		}
 	}
 
@@ -66,5 +70,13 @@ public class TileEntityDummy extends TileEntity {
 	@Override
 	public NBTTagCompound getUpdateTag() {
 		return this.writeToNBT(new NBTTagCompound());
+	}
+
+	@Override
+	public void update() {
+		if (!world.isRemote && !isRegistered && this.target != null) {
+			DummyBlockRegistry.register(world, this.target, this.pos);
+			isRegistered = true;
+		}
 	}
 }

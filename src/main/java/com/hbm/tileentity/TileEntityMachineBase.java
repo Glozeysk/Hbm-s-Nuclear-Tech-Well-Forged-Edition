@@ -186,41 +186,5 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase {
 
 		super.readFromNBT(compound);
 	}
-
-	@Override
-	public void onLoad() {
-		super.onLoad();
-		if (!world.isRemote && dummyBlocks.isEmpty()) {
-			for (TileEntity te : world.loadedTileEntityList) {
-				if (te instanceof TileEntityDummy) {
-					TileEntityDummy dummy = (TileEntityDummy) te;
-					if (pos.equals(dummy.target)) {
-						dummyBlocks.add(dummy.getPos());
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public void invalidate() {
-		if (!world.isRemote && !dummyBlocks.isEmpty()) {
-			List<BlockPos> toRemove = new ArrayList<>(dummyBlocks);
-			dummyBlocks.clear();
-
-			DummyBlockBase.safeBreak = true;
-			DummyBlockBase.batchRemovalMode = true;
-			try {
-				for (BlockPos dummyPos : toRemove) {
-					if (!world.isAirBlock(dummyPos)) {
-						DummyBlockBase.destroyQuietly(world, dummyPos, false);
-					}
-				}
-			} finally {
-				DummyBlockBase.safeBreak = false;
-				DummyBlockBase.batchRemovalMode = false;
-			}
-		}
-		super.invalidate();
-	}
 }
+

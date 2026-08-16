@@ -55,8 +55,7 @@ public class DummyBlockEventHandler {
 
         if (block instanceof DummyBlockBase) {
             TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntityDummy) {
-                TileEntityDummy dummy = (TileEntityDummy) te;
+            if (te instanceof TileEntityDummy dummy) {
                 if (dummy.target != null) {
                     processingEvent.set(true);
                     try {
@@ -78,8 +77,7 @@ public class DummyBlockEventHandler {
         if (world.isRemote) return;
 
         for (TileEntity te : event.getChunk().getTileEntityMap().values()) {
-            if (te instanceof TileEntityDummy) {
-                TileEntityDummy dummy = (TileEntityDummy) te;
+            if (te instanceof TileEntityDummy dummy) {
                 if (dummy.target != null) {
                     DummyBlockRegistry.register(world, dummy.target, dummy.getPos());
                 }
@@ -98,31 +96,9 @@ public class DummyBlockEventHandler {
         try {
             Set<BlockPos> toRemoveSet = new HashSet<>();
 
-            TileEntity coreTE = world.getTileEntity(corePos);
-            if (coreTE instanceof TileEntityMachineBase) {
-                TileEntityMachineBase machine = (TileEntityMachineBase) coreTE;
-                if (!machine.dummyBlocks.isEmpty()) {
-                    toRemoveSet.addAll(machine.dummyBlocks);
-                    machine.dummyBlocks.clear();
-                }
-            }
-
-            if (toRemoveSet.isEmpty()) {
-                Set<BlockPos> fromRegistry = DummyBlockRegistry.getDummiesFor(world, corePos);
-                if (fromRegistry != null && !fromRegistry.isEmpty()) {
-                    toRemoveSet.addAll(fromRegistry);
-                }
-            }
-
-            if (toRemoveSet.isEmpty()) {
-                for (TileEntity te : world.loadedTileEntityList) {
-                    if (te instanceof TileEntityDummy) {
-                        TileEntityDummy dummy = (TileEntityDummy) te;
-                        if (corePos.equals(dummy.target) && !dummy.getPos().equals(corePos)) {
-                            toRemoveSet.add(dummy.getPos());
-                        }
-                    }
-                }
+            Set<BlockPos> fromRegistry = DummyBlockRegistry.getDummiesFor(world, corePos);
+            if (fromRegistry != null && !fromRegistry.isEmpty()) {
+                toRemoveSet.addAll(fromRegistry);
             }
 
             for (BlockPos dummyPos : toRemoveSet) {
@@ -132,7 +108,6 @@ public class DummyBlockEventHandler {
             }
 
             DummyBlockRegistry.removeCore(world, corePos);
-
         } finally {
             DummyBlockBase.safeBreak = false;
             DummyBlockBase.batchRemovalMode = false;

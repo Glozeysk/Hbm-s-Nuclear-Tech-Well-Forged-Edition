@@ -1,6 +1,8 @@
 package com.hbm.tileentity;
 
 import api.hbm.energy.ILoadedTile;
+import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.handler.DummyBlockRegistry;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.BufPacket;
@@ -8,8 +10,12 @@ import com.hbm.sound.AudioWrapper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBufPacketReceiver{
 	
@@ -104,5 +110,28 @@ public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBu
         }
         lastPackedBufHash = preHash;
         PacketThreading.createAllAroundThreadedPacket(packet, new NetworkRegistry.TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        if (!world.isRemote) {
+            Set<BlockPos> dummies = DummyBlockRegistry.getDummiesFor(world, pos);
+            if (dummies != null && !dummies.isEmpty()) {
+                DummyBlockBase.safeBreak = true;
+                DummyBlockBase.batchRemovalMode = true;
+                try {
+                    for (BlockPos dummyPos : new HashSet<>(dummies)) {
+                        if (!world.isAirBlock(dummyPos)) {
+                            DummyBlockBase.destroyQuietly(world, dummyPos, false);
+                        }
+                    }
+                    DummyBlockRegistry.removeCore(world, pos);
+                } finally {
+                    DummyBlockBase.safeBreak = false;
+                    DummyBlockBase.batchRemovalMode = false;
+                }
+            }
+        }
     }
 }
