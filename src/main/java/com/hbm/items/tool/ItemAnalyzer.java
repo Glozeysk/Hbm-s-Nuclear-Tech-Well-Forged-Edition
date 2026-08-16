@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.hbm.interfaces.IFluidPipe;
 import com.hbm.items.ModItems;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.network.energy.TileEntityPylonBase;
 
@@ -56,9 +56,9 @@ public class ItemAnalyzer extends Item {
 				if(te instanceof TileEntityDummy) {
 
 					player.sendMessage(new TextComponentString(
-							"Dummy Block, references TE at " + ((TileEntityDummy)te).target.getX() + " / " + ((TileEntityDummy)te).target.getY() + " / " + ((TileEntityDummy)te).target.getZ()));
+							"Dummy Block, references TE at " + ((TileEntityDummy)te).getTarget().getX() + " / " + ((TileEntityDummy)te).getTarget().getY() + " / " + ((TileEntityDummy)te).getTarget().getZ()));
 					
-					te = world.getTileEntity(((TileEntityDummy)te).target);
+					te = world.getTileEntity(((TileEntityDummy)te).getTarget());
 				}
 				
 				String[] parts = te.toString().split("\\.");

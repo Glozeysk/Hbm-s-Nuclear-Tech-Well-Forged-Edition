@@ -8,7 +8,7 @@ import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -144,7 +144,7 @@ public class CompactLauncher extends BlockContainer implements IMultiBlock, IBom
 		
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.target = target;
+			dummy.setTarget(target);
 		}
 	}
 	

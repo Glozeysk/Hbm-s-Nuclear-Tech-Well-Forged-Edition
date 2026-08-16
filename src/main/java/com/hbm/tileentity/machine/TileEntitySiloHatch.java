@@ -3,12 +3,14 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.BlockSiloHatch;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.handler.DummyBlockEventHandler;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.TEDoorAnimationPacket;
 
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,7 +30,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 	public int timer = -1;
 	public EnumFacing facing = null;
 	public AxisAlignedBB renderBox = null;
-	
+
 	@Override
 	public void update() {
 		if(!world.isRemote){
@@ -42,7 +44,6 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 			}
 			DoorState oldState = state;
 			if(timer < 0) {
-				//oldState = -1; // what
 				oldState = null;
 			}
 
@@ -70,8 +71,6 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 
 						if (state != oldState)
 						{
-							// With door finally closed, mark chunk for rad update since door is now rad resistant
-							// No need to update when open as well, as opening door should update
 							RadiationSystemNT.markChunkForRebuild(world, pos);
 						}
 					}
@@ -124,43 +123,43 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 		}
 	}
 
-	public boolean placeDummy(BlockPos pos) {
-		
-		if(!world.getBlockState(pos).getBlock().isReplaceable(world, pos))
+	public boolean placeDummy(BlockPos dummyPos) {
+
+		if(!world.getBlockState(dummyPos).getBlock().isReplaceable(world, dummyPos))
 			return false;
-		
-		world.setBlockState(pos, ModBlocks.dummy_block_silo_hatch.getDefaultState());
-		
-		TileEntity te = world.getTileEntity(pos);
-		
+
+		world.setBlockState(dummyPos, ModBlocks.dummy_block_silo_hatch.getDefaultState());
+
+		TileEntity te = world.getTileEntity(dummyPos);
+
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.target = this.pos;
+			dummy.setTarget(this.pos);  // ИСПРАВЛЕНО
 		}
-		
+
 		return true;
 	}
-	
-	public void removeDummy(BlockPos pos) {
-		if(world.getBlockState(pos).getBlock() == ModBlocks.dummy_block_silo_hatch) {
+
+	public void removeDummy(BlockPos dummyPos) {
+		if(world.getBlockState(dummyPos).getBlock() == ModBlocks.dummy_block_silo_hatch) {
 			DummyBlockBase.safeBreak = true;
-			world.setBlockState(pos, Blocks.AIR.getDefaultState());
+			world.setBlockState(dummyPos, Blocks.AIR.getDefaultState());
 			DummyBlockBase.safeBreak = false;
 		}
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		state = DoorState.values()[compound.getByte("state")];
 		super.readFromNBT(compound);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setByte("state", (byte) state.ordinal());
 		return super.writeToNBT(compound);
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		if(facing == null)
@@ -169,12 +168,21 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 			renderBox = new AxisAlignedBB(-3.3, 0, -3.3, 4.3, 2, 4.3).offset(pos.offset(facing, 3));
 		return renderBox;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
 	{
 		return 65536.0D;
+	}
+
+	@Override
+	public void invalidate(){
+		super.invalidate();
+
+		if (!world.isRemote && !DummyBlockEventHandler.isProcessing()) {
+			DummyBlockEventHandler.destroyLinkedDummiesSafe(world, pos);
+		}
 	}
 
 	@Override
@@ -198,11 +206,9 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 	public void toggle(){
 		if(state == DoorState.CLOSED) {
 			state = DoorState.OPENING;
-			// With door opening, mark chunk for rad update
 			RadiationSystemNT.markChunkForRebuild(world, pos);
 		} else if(state == DoorState.OPEN) {
 			state = DoorState.CLOSING;
-			// With door closing, mark chunk for rad update
 			RadiationSystemNT.markChunkForRebuild(world, pos);
 		}
 	}
@@ -216,5 +222,5 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 			this.state = newState;
 		}
 	}
-	
+
 }

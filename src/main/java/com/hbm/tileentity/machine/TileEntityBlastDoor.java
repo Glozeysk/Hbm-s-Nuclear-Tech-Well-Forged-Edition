@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.handler.DummyBlockEventHandler;
 import com.hbm.handler.RadiationSystemNT;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.interfaces.IDoor;
@@ -16,6 +17,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.TEVaultPacket;
 
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -34,12 +36,12 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 	public long sysTime;
 	private int timer = 0;
 	public boolean redstoned = false;
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return new AxisAlignedBB(pos, pos.up(6).add(1, 1, 1)).grow(0.25F);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
@@ -50,58 +52,58 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 	@Override
 	public void update() {
 		if(!world.isRemote) {
-			
+
 			if(!isLocked() && world.getRedstonePowerFromNeighbors(pos) > 0 || world.getRedstonePowerFromNeighbors(pos.up(6)) > 0) {
-				
+
 				if(!redstoned) {
 					this.tryToggle();
 				}
 				redstoned = true;
-				
+
 			} else {
 				redstoned = false;
 			}
-	    			
-	    	if(state.isStationaryState()) {
-	    		timer = 0;
-	    	} else {
-	    		timer++;
-    			
-    			if(state == DoorState.OPENING) {
-    				if(timer >= 0) {
-    					removeDummy(pos.up(1));
-    				}
-    				if(timer >= 20) {
-    					removeDummy(pos.up(2));
-    				}
-    				if(timer >= 40) {
-    					removeDummy(pos.up(3));
-    				}
-    				if(timer >= 60) {
-    					removeDummy(pos.up(4));
-    				}
-    				if(timer >= 80) {
-    					removeDummy(pos.up(5));
-    				}
-    			} else {
-    				if(timer >= 20) {
-    					placeDummy(pos.up(5));
-    				}
-    				if(timer >= 40) {
-    					placeDummy(pos.up(4));
-    				}
-    				if(timer >= 60) {
-    					placeDummy(pos.up(3));
-    				}
-    				if(timer >= 80) {
-    					placeDummy(pos.up(2));
-    				}
-    				if(timer >= 100) {
-    					placeDummy(pos.up(1));
-    				}
-    			}
-	    		
-	    		if(timer >= 100) {
+
+			if(state.isStationaryState()) {
+				timer = 0;
+			} else {
+				timer++;
+
+				if(state == DoorState.OPENING) {
+					if(timer >= 0) {
+						removeDummy(pos.up(1));
+					}
+					if(timer >= 20) {
+						removeDummy(pos.up(2));
+					}
+					if(timer >= 40) {
+						removeDummy(pos.up(3));
+					}
+					if(timer >= 60) {
+						removeDummy(pos.up(4));
+					}
+					if(timer >= 80) {
+						removeDummy(pos.up(5));
+					}
+				} else {
+					if(timer >= 20) {
+						placeDummy(pos.up(5));
+					}
+					if(timer >= 40) {
+						placeDummy(pos.up(4));
+					}
+					if(timer >= 60) {
+						placeDummy(pos.up(3));
+					}
+					if(timer >= 80) {
+						placeDummy(pos.up(2));
+					}
+					if(timer >= 100) {
+						placeDummy(pos.up(1));
+					}
+				}
+
+				if(timer >= 100) {
 
 					if(state == DoorState.OPENING) {
 						state = DoorState.OPEN;
@@ -112,123 +114,121 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 						broadcastControlEvt();
 						this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStop, SoundCategory.BLOCKS, 0.5F, 1.0F);
 
-						// With door finally closed, mark chunk for rad update since door is now rad resistant
-						// No need to update when open as well, as opening door should update
 						RadiationSystemNT.markChunkForRebuild(world, pos);
 					}
-	    		}
-	    	}
-	    	
-	    	PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 0, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+				}
+			}
+
+			PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 0, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
 		}
 	}
-	
+
 	public void broadcastControlEvt(){
 		ControlEventSystem.get(world).broadcastToSubscribed(this, ControlEvent.newEvent("door_open_state").setVar("state", new DataValueFloat(state.ordinal())));
 	}
-	
+
 	public void openNeigh() {
 
 		TileEntity te0 = world.getTileEntity(pos.add(1, 0, 0));
 		TileEntity te1 = world.getTileEntity(pos.add(-1, 0, 0));
 		TileEntity te2 = world.getTileEntity(pos.add(0, 0, 1));
 		TileEntity te3 = world.getTileEntity(pos.add(0, 0, -1));
-		
+
 		if(te0 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te0).state == DoorState.CLOSED && (!((TileEntityBlastDoor)te0).isLocked() || ((TileEntityBlastDoor)te0).lock == lock)) {
 				((TileEntityBlastDoor)te0).open();
 				((TileEntityBlastDoor)te0).openNeigh();
 			}
 		}
-		
+
 		if(te1 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te1).state == DoorState.CLOSED && (!((TileEntityBlastDoor)te1).isLocked() || ((TileEntityBlastDoor)te1).lock == lock)) {
 				((TileEntityBlastDoor)te1).open();
 				((TileEntityBlastDoor)te1).openNeigh();
 			}
 		}
-		
+
 		if(te2 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te2).state == DoorState.CLOSED && (!((TileEntityBlastDoor)te2).isLocked() || ((TileEntityBlastDoor)te2).lock == lock)) {
 				((TileEntityBlastDoor)te2).open();
 				((TileEntityBlastDoor)te2).openNeigh();
 			}
 		}
-		
+
 		if(te3 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te3).state == DoorState.CLOSED && (!((TileEntityBlastDoor)te3).isLocked() || ((TileEntityBlastDoor)te3).lock == lock)) {
 				((TileEntityBlastDoor)te3).open();
 				((TileEntityBlastDoor)te3).openNeigh();
 			}
 		}
 	}
-	
+
 	@Override
 	public void lock() {
 		super.lock();
 		lockNeigh();
 	}
-	
+
 	public void closeNeigh() {
 
 		TileEntity te0 = world.getTileEntity(pos.add(1, 0, 0));
 		TileEntity te1 = world.getTileEntity(pos.add(-1, 0, 0));
 		TileEntity te2 = world.getTileEntity(pos.add(0, 0, 1));
 		TileEntity te3 = world.getTileEntity(pos.add(0, 0, -1));
-		
+
 		if(te0 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te0).state == DoorState.OPEN && (!((TileEntityBlastDoor)te0).isLocked() || ((TileEntityBlastDoor)te0).lock == lock)) {
 				((TileEntityBlastDoor)te0).close();
 				((TileEntityBlastDoor)te0).closeNeigh();
 			}
 		}
-		
+
 		if(te1 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te1).state == DoorState.OPEN && (!((TileEntityBlastDoor)te1).isLocked() || ((TileEntityBlastDoor)te1).lock == lock)) {
 				((TileEntityBlastDoor)te1).close();
 				((TileEntityBlastDoor)te1).closeNeigh();
 			}
 		}
-		
+
 		if(te2 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te2).state == DoorState.OPEN && (!((TileEntityBlastDoor)te2).isLocked() || ((TileEntityBlastDoor)te2).lock == lock)) {
 				((TileEntityBlastDoor)te2).close();
 				((TileEntityBlastDoor)te2).closeNeigh();
 			}
 		}
-		
+
 		if(te3 instanceof TileEntityBlastDoor) {
-			
+
 			if(((TileEntityBlastDoor)te3).state == DoorState.OPEN && (!((TileEntityBlastDoor)te3).isLocked() || ((TileEntityBlastDoor)te3).lock == lock)) {
 				((TileEntityBlastDoor)te3).close();
 				((TileEntityBlastDoor)te3).closeNeigh();
 			}
 		}
 	}
-	
+
 	public void lockNeigh() {
 
 		TileEntity te0 = world.getTileEntity(pos.add(1, 0, 0));
 		TileEntity te1 = world.getTileEntity(pos.add(-1, 0, 0));
 		TileEntity te2 = world.getTileEntity(pos.add(0, 0, 1));
 		TileEntity te3 = world.getTileEntity(pos.add(0, 0, -1));
-		
+
 		if(te0 instanceof TileEntityBlastDoor) {
-			
+
 			if(!((TileEntityBlastDoor)te0).isLocked()) {
 				((TileEntityBlastDoor)te0).setPins(this.lock);
 				((TileEntityBlastDoor)te0).lock();
 				((TileEntityBlastDoor)te0).setMod(lockMod);
 			}
 		}
-		
+
 		if(te1 instanceof TileEntityBlastDoor) {
 
 			if(!((TileEntityBlastDoor)te1).isLocked()) {
@@ -237,7 +237,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 				((TileEntityBlastDoor)te1).setMod(lockMod);
 			}
 		}
-		
+
 		if(te2 instanceof TileEntityBlastDoor) {
 
 			if(!((TileEntityBlastDoor)te2).isLocked()) {
@@ -246,7 +246,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 				((TileEntityBlastDoor)te2).setMod(lockMod);
 			}
 		}
-		
+
 		if(te3 instanceof TileEntityBlastDoor) {
 
 			if(!((TileEntityBlastDoor)te3).isLocked()) {
@@ -288,32 +288,32 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 		return false;
 	}
 
-	public boolean placeDummy(BlockPos pos) {
-		
-		if(!world.getBlockState(pos).getBlock().isReplaceable(world, pos))
+	public boolean placeDummy(BlockPos dummyPos) {
+
+		if(!world.getBlockState(dummyPos).getBlock().isReplaceable(world, dummyPos))
 			return false;
-		
-		world.setBlockState(pos, ModBlocks.dummy_block_blast.getDefaultState());
-		
-		TileEntity te = world.getTileEntity(pos);
-		
+
+		world.setBlockState(dummyPos, ModBlocks.dummy_block_blast.getDefaultState());
+
+		TileEntity te = world.getTileEntity(dummyPos);
+
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.target = this.pos;
+			dummy.setTarget(this.pos);  // ИСПРАВЛЕНО: передаём позицию корблока
 		}
-		
+
 		return true;
 	}
-	
-	public void removeDummy(BlockPos pos) {
-		
-		if(world.getBlockState(pos).getBlock() == ModBlocks.dummy_block_blast) {
+
+	public void removeDummy(BlockPos dummyPos) {
+
+		if(world.getBlockState(dummyPos).getBlock() == ModBlocks.dummy_block_blast) {
 			DummyBlockBase.safeBreak = true;
-			world.setBlockState(pos, Blocks.AIR.getDefaultState());
+			world.setBlockState(dummyPos, Blocks.AIR.getDefaultState());
 			DummyBlockBase.safeBreak = false;
 		}
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		state = DoorState.values()[compound.getInteger("state")];
@@ -322,7 +322,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 		redstoned = compound.getBoolean("redstoned");
 		super.readFromNBT(compound);
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setInteger("state", state.ordinal());
@@ -338,27 +338,31 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 			tryToggle();
 		}
 	}
-	
+
 	@Override
 	public List<String> getInEvents(){
 		return Arrays.asList("door_toggle");
 	}
-	
+
 	@Override
 	public List<String> getOutEvents(){
 		return Arrays.asList("door_open_state");
 	}
-	
+
 	@Override
 	public void validate(){
 		super.validate();
 		ControlEventSystem.get(world).addControllable(this);
 	}
-	
+
 	@Override
 	public void invalidate(){
 		super.invalidate();
 		ControlEventSystem.get(world).removeControllable(this);
+
+		if (!world.isRemote && !DummyBlockEventHandler.isProcessing()) {
+			DummyBlockEventHandler.destroyLinkedDummiesSafe(world, pos);
+		}
 	}
 
 	@Override
@@ -397,7 +401,6 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 			broadcastControlEvt();
 			this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F);
 
-			// With door opening, mark chunk for rad update
 			RadiationSystemNT.markChunkForRebuild(world, pos);
 		} else if(state == DoorState.OPEN) {
 			state = DoorState.CLOSING;
@@ -406,8 +409,6 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 			broadcastControlEvt();
 			this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F);
 
-
-			// With door closing, mark chunk for rad update
 			RadiationSystemNT.markChunkForRebuild(world, pos);
 		}
 	}

@@ -6,7 +6,7 @@ import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityAMSBase;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -65,25 +65,25 @@ public class BlockAMSBase extends BlockContainer implements IMultiBlock {
 			TileEntity te = world.getTileEntity(pos.add(1, 0, 0));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			world.setBlockState(pos.add(0, 0, -1), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.add(0, 0, -1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			world.setBlockState(pos.add(-1, 0, 0), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te3 = world.getTileEntity(pos.add(-1, 0, 0));
 			if(te3 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te3;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			world.setBlockState(pos.add(0, 0, 1), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te4 = world.getTileEntity(pos.add(0, 0, 1));
 			if(te4 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			DummyBlockBase.safeBreak = false;
 			

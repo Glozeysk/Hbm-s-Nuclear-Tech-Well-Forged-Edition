@@ -4,7 +4,7 @@ import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.event.DummyBlockEvent;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.state.IBlockState;
@@ -56,12 +56,12 @@ public class DummyBlockEventHandler {
         if (block instanceof DummyBlockBase) {
             TileEntity te = world.getTileEntity(pos);
             if (te instanceof TileEntityDummy dummy) {
-                if (dummy.target != null) {
+                if (dummy.getTarget() != null) {
                     processingEvent.set(true);
                     try {
-                        destroyLinkedDummies(world, dummy.target);
+                        destroyLinkedDummies(world, dummy.getTarget());
 
-                        world.destroyBlock(dummy.target, !isCreative);
+                        world.destroyBlock(dummy.getTarget(), !isCreative);
                         event.setCanceled(true);
                     } finally {
                         processingEvent.set(false);
@@ -78,8 +78,8 @@ public class DummyBlockEventHandler {
 
         for (TileEntity te : event.getChunk().getTileEntityMap().values()) {
             if (te instanceof TileEntityDummy dummy) {
-                if (dummy.target != null) {
-                    DummyBlockRegistry.register(world, dummy.target, dummy.getPos());
+                if (dummy.getTarget() != null) {
+                    DummyBlockRegistry.register(world, dummy.getTarget(), dummy.getPos());
                 }
             }
         }
@@ -137,4 +137,25 @@ public class DummyBlockEventHandler {
             processingEvent.set(false);
         }
     }
+
+    public static void destroyLinkedDummiesSafe(World world, BlockPos corePos) {
+        if (world == null || corePos == null || world.isRemote) {
+            return;
+        }
+        if (processingEvent.get()) {
+            return;
+        }
+
+        processingEvent.set(true);
+        try {
+            destroyLinkedDummies(world, corePos);
+        } finally {
+            processingEvent.set(false);
+        }
+    }
+
+    public static boolean isProcessing() {
+        return processingEvent.get();
+    }
+
 }

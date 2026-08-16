@@ -2,7 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,8 +41,8 @@ public class ItemLock extends ItemKeyPin {
 				thing = world.getTileEntity(pos);
 			}
 			
-			if(thing != null && thing instanceof TileEntityDummy && ((TileEntityDummy)thing).target != null){
-				thing = world.getTileEntity(((TileEntityDummy)thing).target);
+			if(thing != null && thing instanceof TileEntityDummy && ((TileEntityDummy)thing).getTarget() != null){
+				thing = world.getTileEntity(((TileEntityDummy)thing).getTarget());
 			}
 
 

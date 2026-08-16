@@ -8,7 +8,7 @@ import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 
 import net.minecraft.block.BlockContainer;
@@ -98,7 +98,7 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				TileEntity te = world.getTileEntity(pos.add(0, 0, 4));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.target = pos;
+					dummy.setTarget(pos);
 				}
 				DummyBlockBase.safeBreak = false;
 				//
@@ -116,7 +116,7 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				TileEntity te = world.getTileEntity(pos.add(-4, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.target = pos;
+					dummy.setTarget(pos);
 				}
 				DummyBlockBase.safeBreak = false;
 				//
@@ -134,7 +134,7 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				TileEntity te = world.getTileEntity(pos.add(0, 0, -4));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.target = pos;
+					dummy.setTarget(pos);
 				}
 				DummyBlockBase.safeBreak = false;
 				//
@@ -152,7 +152,7 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 				TileEntity te = world.getTileEntity(pos.add(4, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.target = pos;
+					dummy.setTarget(pos);
 				}
 				DummyBlockBase.safeBreak = false;
 				//

@@ -8,7 +8,7 @@ import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityMachineReactorSmall;
 
 import net.minecraft.block.BlockContainer;
@@ -99,13 +99,13 @@ public class MachineReactorSmall extends BlockContainer implements IMultiBlock {
 			TileEntity te = world.getTileEntity(pos.up(1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			world.setBlockState(pos.up(2), ModBlocks.dummy_port_reactor_small.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.up(2));
 			if(te2 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.target = pos;
+				dummy.setTarget(pos);
 			}
 			DummyBlockBase.safeBreak = false;
 			//

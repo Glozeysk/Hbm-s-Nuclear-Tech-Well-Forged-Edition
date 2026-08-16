@@ -1,25 +1,20 @@
-package com.hbm.tileentity.machine;
+package com.hbm.tileentity.machine.dummy;
 
 import com.hbm.handler.DummyBlockRegistry;
-import com.hbm.interfaces.IMultiBlock;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 
-public class TileEntityDummy extends TileEntity implements ITickable {
+public class TileEntityDummy extends TileEntity {
 
-	public BlockPos target;
-	private boolean isRegistered = false;
+	private BlockPos target;
 
 	@Override
 	public void onLoad() {
 		super.onLoad();
-		if (!world.isRemote && this.target != null) {
-			DummyBlockRegistry.register(world, this.target, this.pos);
-		}
+		registerDummy();
 	}
 
 	@Override
@@ -72,11 +67,25 @@ public class TileEntityDummy extends TileEntity implements ITickable {
 		return this.writeToNBT(new NBTTagCompound());
 	}
 
-	@Override
-	public void update() {
-		if (!world.isRemote && !isRegistered && this.target != null) {
-			DummyBlockRegistry.register(world, this.target, this.pos);
-			isRegistered = true;
+	public final void setTarget(BlockPos corePos) {
+		this.target = corePos;
+		registerDummy();
+	}
+
+	public final BlockPos getTarget() {
+		return target;
+	}
+
+	private void registerDummy() {
+		if (world == null || world.isRemote || target == null) {
+			return;
+		}
+
+		DummyBlockRegistry.register(world, target, pos);
+
+		TileEntity coreTE = world.getTileEntity(target);
+		if (coreTE instanceof TileEntityMachineBase) {
+			((TileEntityMachineBase) coreTE).dummyBlocks.add(pos);
 		}
 	}
 }

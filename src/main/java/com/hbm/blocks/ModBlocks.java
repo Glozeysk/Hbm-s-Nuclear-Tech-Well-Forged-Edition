@@ -1633,7 +1633,6 @@ public class ModBlocks {
 	public static final Block dummy_port_ams_base = new DummyBlockBase(new DummyProperties("ams_base", ams_base).setRegistryNames("dummy_block_ams_base", "dummy_port_ams_base").setGui(guiID_ams_base).setPort(DummyProperties.PortType.FLUID), true);
 
 	public static final Block ntm_dirt = new BlockNTMDirt("ntm_dirt").setSoundType(SoundType.GROUND).setHardness(0.5F).setCreativeTab(null);
-	
 	public static final Block pink_log = new BlockPinkLog("pink_log").setSoundType(SoundType.WOOD).setHardness(0.5F).setCreativeTab(null);
 	public static final Block pink_planks = new BlockBase(Material.WOOD, "pink_planks").setSoundType(SoundType.WOOD).setCreativeTab(null);
 	public static final Block pink_slab = new BlockGenericSlab(Material.WOOD, false, "pink_slab").setSoundType(SoundType.WOOD).setCreativeTab(null);

@@ -2,7 +2,7 @@ package com.hbm.blocks.network;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IDummy;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -41,7 +41,7 @@ public class DummyBlockCraneSplitter extends BlockContainer implements IDummy {
                 TileEntity te = world.getTileEntity(pos);
                 if(te != null && te instanceof TileEntityDummy) {
                     if(!world.isRemote)
-                        world.destroyBlock(((TileEntityDummy)te).target, true);
+                        world.destroyBlock(((TileEntityDummy)te).getTarget(), true);
                 }
             }
             world.removeTileEntity(pos);

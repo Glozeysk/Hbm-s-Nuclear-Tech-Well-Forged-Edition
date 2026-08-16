@@ -7,6 +7,10 @@ import com.hbm.interfaces.*;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.*;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummyFluidPort;
+import com.hbm.tileentity.machine.dummy.TileEntityDummyPort;
+import com.hbm.tileentity.machine.dummy.TileEntityDummyPortNew;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -21,7 +25,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -57,8 +60,12 @@ public class DummyBlockBase extends BlockContainer
 
         ModBlocks.ALL_BLOCKS.add(this);
     }
+
     public static void destroyQuietly(World world, BlockPos pos, boolean dropItems) {
         if (world.isRemote) return;
+
+        boolean wasSafeBreak = safeBreak;
+        boolean wasBatchRemoval = batchRemovalMode;
 
         safeBreak = true;
         batchRemovalMode = true;
@@ -80,8 +87,8 @@ public class DummyBlockBase extends BlockContainer
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
 
         } finally {
-            safeBreak = false;
-            batchRemovalMode = false;
+            safeBreak = wasSafeBreak;
+            batchRemovalMode = wasBatchRemoval;
         }
     }
 
@@ -147,8 +154,8 @@ public class DummyBlockBase extends BlockContainer
 
         if (te != null) onBreakBlock(world, pos, te);
 
-        if (!safeBreak && te instanceof TileEntityDummy && ((TileEntityDummy) te).target != null) {
-            BlockPos corePos = ((TileEntityDummy) te).target;
+        if (!safeBreak && te instanceof TileEntityDummy && ((TileEntityDummy) te).getTarget() != null) {
+            BlockPos corePos = ((TileEntityDummy) te).getTarget();
             if (!world.isRemote) {
                 net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
                         new com.hbm.event.DummyBlockEvent.DummyBroken(world, pos, corePos));
@@ -174,9 +181,9 @@ public class DummyBlockBase extends BlockContainer
         if (world.isRemote) return true;
 
         TileEntity te = world.getTileEntity(pos);
-        if (!(te instanceof TileEntityDummy) || ((TileEntityDummy) te).target == null) return false;
+        if (!(te instanceof TileEntityDummy) || ((TileEntityDummy) te).getTarget() == null) return false;
 
-        BlockPos targetPos = ((TileEntityDummy) te).target;
+        BlockPos targetPos = ((TileEntityDummy) te).getTarget();
         TileEntity targetTE = world.getTileEntity(targetPos);
 
         return onActivated(world, pos, player, hand, targetPos, targetTE);
@@ -211,7 +218,7 @@ public class DummyBlockBase extends BlockContainer
         if (!props.isDoor) return;
         TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityDummy)) return;
-        TileEntity target = world.getTileEntity(((TileEntityDummy) te).target);
+        TileEntity target = world.getTileEntity(((TileEntityDummy) te).getTarget());
         if (target == null) return;
 
         if (target instanceof TileEntityVaultDoor && !((TileEntityVaultDoor)target).isLocked()) ((TileEntityVaultDoor)target).tryToggle();
@@ -234,8 +241,8 @@ public class DummyBlockBase extends BlockContainer
 
     private IDoor.DoorState getDoorState(World worldIn, BlockPos pos) {
         TileEntity te = worldIn.getTileEntity(pos);
-        if (te instanceof TileEntityDummy && ((TileEntityDummy) te).target != null) {
-            TileEntity t = worldIn.getTileEntity(((TileEntityDummy) te).target);
+        if (te instanceof TileEntityDummy && ((TileEntityDummy) te).getTarget() != null) {
+            TileEntity t = worldIn.getTileEntity(((TileEntityDummy) te).getTarget());
             if (t instanceof IDoor) return ((IDoor) t).getState();
         }
         return IDoor.DoorState.OPEN;

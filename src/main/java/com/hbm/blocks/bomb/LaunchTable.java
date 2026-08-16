@@ -8,7 +8,7 @@ import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.bomb.TileEntityLaunchTable;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -222,7 +222,7 @@ public class LaunchTable extends BlockContainer implements IMultiBlock, IBomb {
 		
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.target = target;
+			dummy.setTarget(target);;
 		}
 	}
 

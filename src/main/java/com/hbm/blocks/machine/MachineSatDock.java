@@ -4,7 +4,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityDummy;
+import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
 
 import net.minecraft.block.Block;
@@ -93,7 +93,7 @@ public class MachineSatDock extends BlockContainer implements IMultiBlock {
 		
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.target = target;
+			dummy.setTarget(target);;
 		}
 	}
 	
