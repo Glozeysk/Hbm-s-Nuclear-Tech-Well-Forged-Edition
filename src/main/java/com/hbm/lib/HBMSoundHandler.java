@@ -13,7 +13,8 @@ public final class HBMSoundHandler {
 	
 	public static List<SoundEvent> ALL_SOUNDS = new ArrayList<SoundEvent>();
 
-	public static SoundEvent dieselOperate;
+	public static SoundEvent flare_operate;
+	public static SoundEvent diesel_operate;
 	public static SoundEvent turretFocus;
 	public static SoundEvent chungusOperate;
 	public static SoundEvent crystallizer_loop;
@@ -290,8 +291,8 @@ public final class HBMSoundHandler {
 	
 	
 	public static void init() {
-
-		dieselOperate = register("block.dieselOperate");
+		flare_operate = register("block.flare_operate");
+		diesel_operate = register("block.diesel_operate");
 		turretFocus = register("block.turret_focus");
 		chungusOperate = register("block.chungusTurbineRunning");
 		assemblerOperate = register("block.assembleroperate");

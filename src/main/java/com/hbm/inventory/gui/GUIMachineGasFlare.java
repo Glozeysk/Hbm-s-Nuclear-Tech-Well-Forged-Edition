@@ -42,7 +42,7 @@ public class GUIMachineGasFlare extends GuiInfoContainer {
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 79, guiTop + 16, 35, 10, mouseX, mouseY, I18nUtil.resolveKeyArray("flare.valve"));
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 79, guiTop + 50, 35, 14, mouseX, mouseY, I18nUtil.resolveKeyArray("flare.ignition"));
 
-		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 35, guiTop + 69 - 52, 16, 52, flare.tank, flare.tankType);
+		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 35, guiTop + 69 - 52, 16, 70, flare.tank);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 143, guiTop + 69 - 52, 16, 52, flare.power, TileEntityMachineGasFlare.maxPower);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
@@ -87,9 +87,9 @@ public class GUIMachineGasFlare extends GuiInfoContainer {
 			drawTexturedModalRect(guiLeft + 79, guiTop + 49, 176, 10, 35, 14);
 		}
 
-		if(flare.isOn && flare.doesBurn && flare.tank.getFluidAmount() > 0 && FluidCombustionRecipes.hasFuelRecipe(flare.tankType))
+		if(flare.isOn && flare.doesBurn && flare.tank.getFluidAmount() > 0)
 			drawTexturedModalRect(guiLeft + 88, guiTop + 29, 176, 24, 18, 18);
 
-		FFUtils.drawLiquid(flare.tank, guiLeft, guiTop, zLevel, 16, 52, 35, 97);
+		FFUtils.drawLiquid(flare.tank, guiLeft, guiTop, zLevel, 16, 70, 35, 115);
 	}
 }

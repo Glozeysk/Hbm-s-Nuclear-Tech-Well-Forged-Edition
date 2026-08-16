@@ -25,14 +25,12 @@ public class ContainerMachineGasFlare extends Container {
 		//Fluid in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 17, 17));
 		//Fluid out
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 17, 53) {
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 17, 71) {
 			@Override
 			public boolean isItemValid(@Nonnull ItemStack stack) {
 				return false;
 			}
 		});
-		//Fluid ID
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 35, 71));
 		//Upgrades
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 80, 71));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 98, 71));

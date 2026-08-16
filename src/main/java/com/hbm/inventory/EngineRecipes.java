@@ -1,17 +1,10 @@
 package com.hbm.inventory;
 
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.BlockBaseVisualFluidConnectable;
 import com.hbm.forgefluid.ModForgeFluids;
-
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidRegistry;
+
+import java.util.HashMap;
 
 public class EngineRecipes {
 	
@@ -40,6 +33,7 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.ethanol, FuelGrade.HIGH, 200_000);
 		addFuel(ModForgeFluids.fishoil, FuelGrade.LOW, 50_000);
 		addFuel(ModForgeFluids.sunfloweroil, FuelGrade.LOW, 80_000);
+
 		addFuel(ModForgeFluids.gas, FuelGrade.GAS, 100_000);
 		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
 		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);

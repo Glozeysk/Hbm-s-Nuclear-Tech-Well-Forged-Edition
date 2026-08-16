@@ -15,7 +15,6 @@ import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyGenerator;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -123,13 +122,12 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 			networkPackNT(50);
 		} else {
-			// Клиентская логика для управления зацикленным звуком
 			boolean isGenerating = hasAcceptableFuel() && tank.getFluidAmount() > 0;
 			float volume = this.getVolume(2);
 
 			if(isGenerating && volume > 0) {
 				if(audio == null) {
-					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.dieselOperate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.diesel_operate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
 					audio.startSound();
 				}
 			} else {
