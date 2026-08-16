@@ -18,19 +18,23 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.ParticleRBMKFlame;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -49,6 +53,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashMap;
+import java.util.Random;
 
 public class TileEntityMachineGasFlare extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IGUIProvider, IControlReceiver, IBufPacketReceiver {
 	public long power;
@@ -58,10 +63,16 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	public boolean doesBurn = false;
 	public boolean needsUpdate;
 
+	private boolean prevDoesBurn = false;
+	private final Random rand = new Random();
+
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
 	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
+
+	@SideOnly(Side.CLIENT)
+	private ParticleRBMKFlame flameParticle;
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
@@ -113,6 +124,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 		tank.readFromNBT(compound);
 		isOn = compound.getBoolean("isOn");
 		doesBurn = compound.getBoolean("doesBurn");
+		prevDoesBurn = doesBurn;
 		super.readFromNBT(compound);
 	}
 
@@ -151,6 +163,18 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 			int maxVent = 50;
 			int maxBurn = 10;
+
+			if(doesBurn && !prevDoesBurn) {
+				world.playSound(null, pos.getX(), pos.getY() + 12, pos.getZ(), SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 0.6F, 1.0F);
+			}
+			if(!doesBurn && prevDoesBurn) {
+				world.playSound(null, pos.getX(), pos.getY() + 12, pos.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.09F, 1.0F);
+			}
+			prevDoesBurn = doesBurn;
+
+			if(doesBurn && this.world.getTotalWorldTime() % 90 == 0) {
+				this.world.playSound(null, pos.getX(), pos.getY() + 12, pos.getZ(), SoundEvents.BLOCK_FIRE_AMBIENT, SoundCategory.BLOCKS, 0.5F, 1F);
+			}
 
 			if(isOn && tank.getFluidAmount() >= 10) {
 				upgradeManager.eval(inventory, 4, 5);
@@ -192,19 +216,40 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 				markDirty();
 			}
 		} else {
-			boolean isRunning = isOn && doesBurn && hasAcceptableFuel() && tank.getFluidAmount() >= 10;
+			boolean isRunning = isOn && tank.getFluidAmount() >= 10;
 			float volume = this.getVolume(2);
 
 			if(isRunning && volume > 0) {
 				if(audio == null) {
 					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.flare_operate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
-					audio.updateRange(32.0F);
 					audio.startSound();
+				}
+				if(doesBurn) {
+					audio.updateVolume(volume);
+					audio.updatePitch(1.0F);
+					audio.updateRange(37.0F);
+				} else {
+					audio.updateVolume(Math.max(0.0F, volume * 0.3F - 0.1F));
+					audio.updatePitch(0.6F);
+					audio.updateRange(15.0F);
 				}
 			} else {
 				if(audio != null) {
 					audio.stopSound();
 					audio = null;
+				}
+			}
+
+			if(doesBurn) {
+				if(flameParticle == null || flameParticle.isDead()) {
+					flameParticle = new ParticleRBMKFlame(world, pos.getX() + 1.5, pos.getY() + 10.8, pos.getZ() + 1.5, 200);
+					flameParticle.setParticleScale(0.4F);
+					Minecraft.getMinecraft().effectRenderer.addEffect(flameParticle);
+				}
+			} else {
+				if(flameParticle != null && !flameParticle.isDead()) {
+					flameParticle.kill();
+					flameParticle = null;
 				}
 			}
 		}
