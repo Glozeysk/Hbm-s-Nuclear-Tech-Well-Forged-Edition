@@ -7,7 +7,6 @@ import com.hbm.util.Tuple.Pair;
 
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.util.Tuple.Quartet;
 
 import net.minecraft.item.ItemStack;
@@ -58,10 +57,10 @@ public class RefineryRecipes {
 		return null;
 	}
 	
-	public static void registerFractions() {
+	public static void registerFractionRecipes() {
 		fractions.put(ModForgeFluids.heavyoil, new Quartet<>(ModForgeFluids.bitumen, ModForgeFluids.smear, heavy_frac_bitu, heavy_frac_smear));
 		fractions.put(ModForgeFluids.smear, new Quartet<>(ModForgeFluids.heatingoil, ModForgeFluids.lubricant, smear_frac_heat, smear_frac_lube));
-		fractions.put(ModForgeFluids.naphtha, new Quartet<>(ModForgeFluids.heatingoil, ModForgeFluids.diesel, napht_frac_heat, napht_frac_diesel));
+		fractions.put(ModForgeFluids.naphtha, new Quartet<>(ModForgeFluids.heatingoil, ModForgeFluids.petroil, napht_frac_heat, napht_frac_diesel));
 		fractions.put(ModForgeFluids.lightoil, new Quartet<>(ModForgeFluids.diesel, ModForgeFluids.kerosene, light_frac_diesel, light_frac_kero));
 	}
 	

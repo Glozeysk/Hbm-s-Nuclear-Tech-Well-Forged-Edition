@@ -14,6 +14,7 @@
     "block.chemplantOperate": {"category": "block", "sounds": [{"name": "hbm:block/chemplantOperate", "stream": false}]},
     "block.diesel_operate": {"category": "block", "sounds": [{"name": "hbm:block/diesel_operate", "stream": false}]},
     "block.flare_operate": {"category": "block", "sounds": [{"name": "hbm:block/flare_operate", "stream": false}]},
+    "block.turbofan_operate2": {"category": "block", "sounds": [{"name": "hbm:block/turbofan_operate2", "stream": false}]},
     "block.igeneratorOperate": {"category": "block", "sounds": [{"name": "hbm:block/igeneratorOperate", "stream": false}]},
     "block.turbofanOperate": {"category": "block", "sounds": [{"name": "hbm:block/turbofanOperate", "stream": false}]},
     "block.pressoperate": {"category": "block", "sounds": [{"name": "hbm:block/pressoperate", "stream": false}]},

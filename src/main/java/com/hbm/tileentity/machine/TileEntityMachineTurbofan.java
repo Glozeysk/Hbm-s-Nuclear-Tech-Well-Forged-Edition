@@ -339,7 +339,7 @@ public class TileEntityMachineTurbofan extends TileEntityLoadedBase implements I
 	}
 
 	public AudioWrapper createAudioLoop() {
-		return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.turbofanOperate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1.0F, 1.0F);
+		return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.turbofan_operate2, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 4.0F, 1.0F);
 	}
 
 	@Override

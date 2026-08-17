@@ -1141,7 +1141,7 @@ public class MainRegistry {
 		SILEXRecipes.register();
 		AnvilRecipes.register();
 		WasteDrumRecipes.registerRecipes();
-		RefineryRecipes.registerFractions();
+		RefineryRecipes.registerFractionRecipes();
 		RefineryRecipes.registerRefineryRecipes();
 		TileEntityNukeCustom.registerBombItems();
 		ArmorUtil.register();

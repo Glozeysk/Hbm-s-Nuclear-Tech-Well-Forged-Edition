@@ -5,7 +5,6 @@ import api.hbm.energy.IEnergyGenerator;
 import com.hbm.entity.particle.EntityGasFlameFX;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.EngineRecipes.FuelGrade;
@@ -23,7 +22,6 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -34,11 +32,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -68,7 +64,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
-	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	@SideOnly(Side.CLIENT)
@@ -229,7 +224,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 					audio.updatePitch(1.0F);
 					audio.updateRange(37.0F);
 				} else {
-					audio.updateVolume(Math.max(0.0F, volume * 0.3F - 0.1F));
+					audio.updateVolume(0.8F);
 					audio.updatePitch(0.6F);
 					audio.updateRange(15.0F);
 				}

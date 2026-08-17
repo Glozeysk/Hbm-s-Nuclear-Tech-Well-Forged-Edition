@@ -80,7 +80,7 @@ public class MachineDiesel extends BlockContainer {
 			if (efficiency != null) {
 				FuelGrade grade = entry.getKey();
 				int eff = (int) (efficiency * 100);
-				list.add(I18n.format("trait.fuelefficiency.desc", I18n.format(grade.getGrade()), eff));
+				list.add(" "+I18n.format("trait.fuelefficiency.desc", I18n.format(grade.getGrade()), eff));
 			}
 		}
 

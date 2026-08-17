@@ -42,7 +42,6 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	public Fluid tankType;
 	public boolean needsUpdate;
 
-	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	private static final int[] slots_top = new int[] { 0 };
@@ -51,8 +50,9 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.75D);
+		;
 		fuelEfficiency.put(FuelGrade.HIGH,		1.0D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.75D);
 		fuelEfficiency.put(FuelGrade.AERO,		0.25D);
 	}
 

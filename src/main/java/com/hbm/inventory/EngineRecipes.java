@@ -34,10 +34,10 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.fishoil, FuelGrade.LOW, 50_000);
 		addFuel(ModForgeFluids.sunfloweroil, FuelGrade.LOW, 80_000);
 
-		addFuel(ModForgeFluids.gas, FuelGrade.GAS, 100_000);
+		addFuel(ModForgeFluids.gas, FuelGrade.GAS, 350_000);
 		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
-		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);
 		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 250_000);
+		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);
 
 		//Compat
 		addFuel("biofuel", FuelGrade.HIGH, 400_000); //galacticraft & industrialforegoing

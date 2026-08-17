@@ -59,8 +59,6 @@ public class ChemplantRecipes {
 		
 		makeRecipe(70, "FC_I_NAPHTHA", null, new FluidStack[]{ new FluidStack(ModForgeFluids.smear, 1400), new FluidStack(FluidRegistry.WATER, 800) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.naphtha, 800) }, 150);
 		
-		makeRecipe(80, "FC_GAS_PETROLEUM", null, new FluidStack[]{ new FluidStack(ModForgeFluids.gas, 1800), new FluidStack(FluidRegistry.WATER, 1200) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 800) }, 100);
-		
 		makeRecipe(90, "FC_DIESEL_KEROSENE", null, new FluidStack[]{ new FluidStack(ModForgeFluids.diesel, 1200), new FluidStack(ModForgeFluids.steam, 2000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene, 400) }, 150);
 		
 		makeRecipe(100, "FC_KEROSENE_PETROLEUM", null, new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene, 1400), new FluidStack(ModForgeFluids.steam, 2000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 800) }, 150);
@@ -113,7 +111,7 @@ public class ChemplantRecipes {
 		
 		makeRecipe(340, "ASPHALT", new AStack[] { new OreDictStack(KEY_GRAVEL, 2), new OreDictStack(KEY_SAND, 6) }, new FluidStack[]{ new FluidStack(ModForgeFluids.bitumen, 8000) }, new AStack[] { new ComparableStack(ModBlocks.asphalt, 16) }, null, 100);
 		
-		makeRecipe(350, "GNEISS_GAS", new AStack[] { new ComparableStack(ModBlocks.ore_gneiss_gas, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.superhotsteam, 1000) }, new AStack[]{ new ComparableStack(ModBlocks.stone_gneiss, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.gas, 1000), new FluidStack(ModForgeFluids.spentsteam, 1000) }, 100);
+		makeRecipe(350, "GNEISS_GAS", new AStack[] { new ComparableStack(ModBlocks.ore_gneiss_gas, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.hotsteam, 1000) }, new AStack[]{ new ComparableStack(ModBlocks.stone_gneiss, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.gas, 1000), new FluidStack(ModForgeFluids.spentsteam, 1000) }, 100);
 		
 		makeRecipe(360, "COOLANT", new AStack[] { new OreDictStack(KNO.dust(), 1) }, new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 1800) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.coolant, 2000) }, 50);
 		
