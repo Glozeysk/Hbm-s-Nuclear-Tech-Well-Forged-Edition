@@ -21,11 +21,9 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.reclaimed, FuelGrade.LOW, 200_000);
 		addFuel(ModForgeFluids.petroil, FuelGrade.MEDIUM, 300_000);
 		addFuel(ModForgeFluids.naphtha, FuelGrade.MEDIUM, 200_000);
+
 		addFuel(ModForgeFluids.diesel, FuelGrade.HIGH, 500_000);
 		addFuel(ModForgeFluids.lightoil, FuelGrade.MEDIUM, 500_000);
-		addFuel(ModForgeFluids.kerosene, FuelGrade.AERO, 1_250_000);
-		addFuel(ModForgeFluids.biogas, FuelGrade.AERO, 500_000);
-		addFuel(ModForgeFluids.biofuel, FuelGrade.HIGH, 400_000);
 		addFuel(ModForgeFluids.nitan, FuelGrade.HIGH, 5_000_000);
 		addFuel(ModForgeFluids.sparkfuel, FuelGrade.HIGH, 10_000_000);
 		addFuel(ModForgeFluids.balefire, FuelGrade.HIGH, 2_500_000);
@@ -38,9 +36,12 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
 		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 250_000);
 		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);
+		addFuel(ModForgeFluids.biogas, FuelGrade.GAS, 500_000);
+
+		addFuel(ModForgeFluids.kerosene, FuelGrade.AERO, 1_250_000);
+		addFuel(ModForgeFluids.biofuel, FuelGrade.AERO, 1_250_000);
 
 		//Compat
-		addFuel("biofuel", FuelGrade.HIGH, 400_000); //galacticraft & industrialforegoing
 		addFuel("petroil", FuelGrade.MEDIUM, 300_000); //galacticraft
 		addFuel("refined_fuel", FuelGrade.HIGH, 1_000_000); //thermalfoundation
 		addFuel("refined_biofuel", FuelGrade.HIGH, 400_000); //thermalfoundation
