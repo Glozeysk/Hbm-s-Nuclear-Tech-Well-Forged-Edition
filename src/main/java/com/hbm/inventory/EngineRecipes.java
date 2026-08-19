@@ -16,19 +16,20 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.hydrogen, FuelGrade.HIGH, 10_000);
 		addFuel(ModForgeFluids.deuterium, FuelGrade.HIGH, 10_000);
 		addFuel(ModForgeFluids.tritium, FuelGrade.HIGH, 10_000);
-		addFuel(ModForgeFluids.heavyoil, FuelGrade.LOW, 25_000);
-		addFuel(ModForgeFluids.heatingoil, FuelGrade.LOW, 100_000);
-		addFuel(ModForgeFluids.reclaimed, FuelGrade.LOW, 200_000);
-		addFuel(ModForgeFluids.petroil, FuelGrade.MEDIUM, 300_000);
-		addFuel(ModForgeFluids.naphtha, FuelGrade.MEDIUM, 200_000);
-
 		addFuel(ModForgeFluids.diesel, FuelGrade.HIGH, 500_000);
-		addFuel(ModForgeFluids.lightoil, FuelGrade.MEDIUM, 500_000);
 		addFuel(ModForgeFluids.nitan, FuelGrade.HIGH, 5_000_000);
 		addFuel(ModForgeFluids.sparkfuel, FuelGrade.HIGH, 10_000_000);
 		addFuel(ModForgeFluids.balefire, FuelGrade.HIGH, 2_500_000);
-		addFuel(ModForgeFluids.gasoline, FuelGrade.HIGH, 1_000_000);
 		addFuel(ModForgeFluids.ethanol, FuelGrade.HIGH, 200_000);
+
+		addFuel(ModForgeFluids.lightoil, FuelGrade.MEDIUM, 500_000);
+		addFuel(ModForgeFluids.gasoline, FuelGrade.MEDIUM, 800_000);
+		addFuel(ModForgeFluids.petroil, FuelGrade.MEDIUM, 300_000);
+		addFuel(ModForgeFluids.naphtha, FuelGrade.MEDIUM, 200_000);
+
+		addFuel(ModForgeFluids.heavyoil, FuelGrade.LOW, 25_000);
+		addFuel(ModForgeFluids.heatingoil, FuelGrade.LOW, 100_000);
+		addFuel(ModForgeFluids.reclaimed, FuelGrade.LOW, 200_000);
 		addFuel(ModForgeFluids.fishoil, FuelGrade.LOW, 50_000);
 		addFuel(ModForgeFluids.sunfloweroil, FuelGrade.LOW, 80_000);
 

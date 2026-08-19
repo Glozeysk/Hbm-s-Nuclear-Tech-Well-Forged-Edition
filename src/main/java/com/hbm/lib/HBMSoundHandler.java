@@ -13,6 +13,7 @@ public final class HBMSoundHandler {
 	
 	public static List<SoundEvent> ALL_SOUNDS = new ArrayList<SoundEvent>();
 
+	public static SoundEvent selenium_engine_operate;
 	public static SoundEvent flare_operate;
 	public static SoundEvent turbofan_operate2;
 	public static SoundEvent diesel_operate;
@@ -292,6 +293,7 @@ public final class HBMSoundHandler {
 	
 	
 	public static void init() {
+		selenium_engine_operate = register("block.selenium_engine_operate");
 		turbofan_operate2 = register("block.turbofan_operate2");
 		flare_operate = register("block.flare_operate");
 		diesel_operate = register("block.diesel_operate");

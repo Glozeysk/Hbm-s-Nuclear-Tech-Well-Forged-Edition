@@ -180,7 +180,7 @@ public class GeneralConfig {
 		
 		bloodFX = CommonConfig.createConfigBool(config, CATEGORY_GENERAL, "1.32_enable_blood_effects", "Enables the over-the-top blood visual effects for some weapons", false);
 	
-		if((instancedParticles || depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!GLCompat.error.isEmpty() || !useShaders2)){
+		if((instancedParticles || depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!GLCompat.error.isEmpty() && !useShaders2)){
 			MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling 3.3 effects...");
 			if(!useShaders2){
 				MainRegistry.logger.error("Shader effects manually disabled");

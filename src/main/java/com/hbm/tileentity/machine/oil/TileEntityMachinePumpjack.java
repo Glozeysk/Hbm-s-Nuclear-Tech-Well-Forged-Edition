@@ -1,7 +1,5 @@
 package com.hbm.tileentity.machine.oil;
 
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachinePumpjack;
 import com.hbm.config.MachineConfig;
 import com.hbm.entity.particle.EntityGasFX;
@@ -14,13 +12,12 @@ import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.TEPumpjackPacket;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.main.MainRegistry;
 
-import net.minecraft.init.Blocks;
-
+import com.hbm.blocks.ModBlocks;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -36,9 +33,8 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 	public boolean isProgressing;
 	public float rotation;
 	public float prevRotation;
-	private int soundTimer = 0;
 	private int syncTick = 0;
-	public static int soundInterval = 40;
+	private AudioWrapper audio;
 
 	public TileEntityMachinePumpjack() {
 		super();
@@ -83,6 +79,17 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 		if(world.isRemote) {
 			if(isProgressing) {
 				rotation += 5;
+			}
+			if(isProgressing) {
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.pumpjack_loop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1.5F, 1.0F);
+					audio.startSound();
+				}
+			} else {
+				if(audio != null) {
+					audio.stopSound();
+					audio = null;
+				}
 			}
 			return;
 		}
@@ -167,16 +174,6 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 		}
 		isProgressing = warning == 0;
 
-		if(isProgressing) {
-			if(soundTimer <= 0) {
-				world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.pumpjack_loop, SoundCategory.BLOCKS, 1.5F, 1.0F);
-				soundTimer = soundInterval;
-			}
-			soundTimer--;
-		} else {
-			soundTimer = 0;
-		}
-
 		syncTick++;
 		if(syncTick >= 5) {
 			syncTick = 0;
@@ -214,7 +211,6 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 	}
 
 	public void fillFluidInit(FluidTank tank) {
-
 		EnumFacing e = world.getBlockState(pos).getValue(MachinePumpjack.FACING);
 		e = e.rotateY();
 		if(e == EnumFacing.EAST) {
@@ -229,17 +225,22 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(2, 0, -4), 2000) || needsUpdate;
 			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(-2, 0, -4), 2000) || needsUpdate;
 		}
-		if(e == EnumFacing.WEST) {
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(2, 0, 2), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(2, 0, -2), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(4, 0, 2), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(4, 0, -2), 2000) || needsUpdate;
+	}
+
+	@Override
+	public void onChunkUnload() {
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
 		}
-		if(e == EnumFacing.NORTH) {
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(2, 0, 2), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(-2, 0, 2), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(2, 0, 4), 2000) || needsUpdate;
-			needsUpdate = FFUtils.fillFluid(this, tank, world, pos.add(-2, 0, 4), 2000) || needsUpdate;
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
 		}
 	}
 

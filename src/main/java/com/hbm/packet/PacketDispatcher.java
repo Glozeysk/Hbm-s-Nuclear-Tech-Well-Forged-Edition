@@ -144,7 +144,7 @@ public class PacketDispatcher {
         wrapper.registerMessage(BufPacket.Handler.class, BufPacket.class, i++, Side.CLIENT);
 // 		wrapper.registerMessage(ControlPanelLinkerServerPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.SERVER);
 //		wrapper.registerMessage(ControlPanelLinkerClientPacket.Handler.class, ControlPanelUpdatePacket.class, i++, Side.CLIENT);
-        wrapper.registerMessage(NBTItemControlPacket.Handler.class, NBTItemControlPacket.class, 15, Side.SERVER);
+        wrapper.registerMessage(NBTItemControlPacket.Handler.class, NBTItemControlPacket.class, i++, Side.SERVER);
         for (IPacketRegisterListener listener : LISTENERS) {
             i = listener.registerPackets(i);
         }
