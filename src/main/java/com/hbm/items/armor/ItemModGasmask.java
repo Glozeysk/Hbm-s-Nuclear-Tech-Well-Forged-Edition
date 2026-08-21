@@ -4,27 +4,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.lwjgl.opengl.GL11;
-
-import com.hbm.main.MainRegistry;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.items.ModItems;
-import com.hbm.render.model.ModelM65;
 import com.hbm.util.ArmorRegistry.HazardClass;
 
 import api.hbm.item.IGasMask;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
@@ -33,12 +24,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 
-	@SideOnly(Side.CLIENT)
-	private ModelM65 modelM65;
-	
-	private ResourceLocation tex = new ResourceLocation("hbm:textures/armor/ModelM65.png");
-	private ResourceLocation tex_mono = new ResourceLocation("hbm:textures/armor/ModelM65Mono.png");
-	
 	public ItemModGasmask(String s) {
 		super(ArmorModHandler.helmet_only, true, false, false, false, s);
 	}
@@ -75,35 +60,7 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void modRender(Pre event, ItemStack armor){
-		if(this.modelM65 == null) {
-			this.modelM65 = new ModelM65();
-		}
-		RenderPlayer renderer = event.getRenderer();
-		ModelBiped model = renderer.getMainModel();
-		EntityPlayer player = event.getEntityPlayer();
-
-		copyRot(modelM65, model);
-
-		float interp = event.getPartialRenderTick();
-		float yawWrapped = MathHelper.wrapDegrees(player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * interp + 180);
-		float pitch = player.rotationPitch;
-
-		if(this == ModItems.attachment_mask)
-			Minecraft.getMinecraft().renderEngine.bindTexture(tex);
-		if(this == ModItems.attachment_mask_mono)
-			Minecraft.getMinecraft().renderEngine.bindTexture(tex_mono);
-		
-		EntityPlayer me = MainRegistry.proxy.me();
-		boolean isMe = player == me;
-		if(!isMe){
-			GL11.glPushMatrix();
-			offset(player, me, interp);
-		}
-		if(model.isSneak) GL11.glTranslatef(0, -0.1875F, 0);
-		modelM65.render(player, 0F, 0F, 0, yawWrapped, pitch, 0.0625F);
-		if(!isMe){
-			GL11.glPopMatrix();
-		}
+		// Рендер перенесён в LayerGasMaskMod (см. GasMaskLayerRegistration).
 	}
 
 	@Override

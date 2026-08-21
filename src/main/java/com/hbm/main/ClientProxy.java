@@ -2333,6 +2333,7 @@ public class ClientProxy extends ServerProxy {
 	@Override
 	public void init(FMLInitializationEvent event) {
 		JetpackLayerRegistration.init();
+		GasMaskLayerRegistration.init();
 	}
 	
 	public static int boxcarCalllist;
