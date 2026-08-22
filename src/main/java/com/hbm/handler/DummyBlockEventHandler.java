@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -19,7 +20,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Mod.EventBusSubscriber
@@ -31,41 +34,21 @@ public class DummyBlockEventHandler {
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         World world = event.getWorld();
         BlockPos pos = event.getPos();
-        EntityPlayer player = event.getPlayer();
 
         if (world.isRemote) return;
         if (processingEvent.get()) return;
 
         IBlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
-        boolean isCreative = player != null && player.isCreative();
 
         if (block instanceof BlockContainer) {
             TileEntity te = world.getTileEntity(pos);
-
             if (te instanceof TileEntityMachineBase || block instanceof IMultiBlock) {
                 processingEvent.set(true);
                 try {
-                    destroyLinkedDummies(world, pos);
+                    destroyLinkedDummies(world, pos, null);
                 } finally {
                     processingEvent.set(false);
-                }
-            }
-        }
-
-        if (block instanceof DummyBlockBase) {
-            TileEntity te = world.getTileEntity(pos);
-            if (te instanceof TileEntityDummy dummy) {
-                if (dummy.getTarget() != null) {
-                    processingEvent.set(true);
-                    try {
-                        destroyLinkedDummies(world, dummy.getTarget());
-
-                        world.destroyBlock(dummy.getTarget(), !isCreative);
-                        event.setCanceled(true);
-                    } finally {
-                        processingEvent.set(false);
-                    }
                 }
             }
         }
@@ -75,8 +58,8 @@ public class DummyBlockEventHandler {
     public static void onChunkLoad(ChunkEvent.Load event) {
         World world = event.getWorld();
         if (world.isRemote) return;
-
-        for (TileEntity te : event.getChunk().getTileEntityMap().values()) {
+        List<TileEntity> tes = new ArrayList<>(event.getChunk().getTileEntityMap().values());
+        for (TileEntity te : tes) {
             if (te instanceof TileEntityDummy dummy) {
                 if (dummy.getTarget() != null) {
                     DummyBlockRegistry.register(world, dummy.getTarget(), dummy.getPos());
@@ -86,24 +69,44 @@ public class DummyBlockEventHandler {
     }
 
     @SubscribeEvent
+    public static void onChunkUnload(ChunkEvent.Unload event) {
+        World world = event.getWorld();
+        if (world.isRemote) return;
+
+        Chunk chunk = event.getChunk();
+        List<TileEntity> tes = new ArrayList<>(chunk.getTileEntityMap().values());
+        for (TileEntity te : tes) {
+            if (te instanceof TileEntityDummy dummy) {
+                if (dummy.getTarget() != null) {
+                    DummyBlockRegistry.unregister(world, dummy.getTarget(), dummy.getPos());
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
     public static void onWorldUnload(WorldEvent.Unload event) {
         DummyBlockRegistry.onWorldUnload(event.getWorld());
     }
-    private static void destroyLinkedDummies(World world, BlockPos corePos) {
+
+    private static void destroyLinkedDummies(World world, BlockPos corePos, BlockPos excludePos) {
         DummyBlockBase.safeBreak = true;
         DummyBlockBase.batchRemovalMode = true;
 
         try {
-            Set<BlockPos> toRemoveSet = new HashSet<>();
+            Set<BlockPos> toRemoveSet = new HashSet<>(DummyBlockRegistry.getDummiesFor(world, corePos));
 
-            Set<BlockPos> fromRegistry = DummyBlockRegistry.getDummiesFor(world, corePos);
-            if (fromRegistry != null && !fromRegistry.isEmpty()) {
-                toRemoveSet.addAll(fromRegistry);
+            TileEntity coreTE = world.getTileEntity(corePos);
+            if (coreTE instanceof TileEntityMachineBase) {
+                toRemoveSet.addAll(((TileEntityMachineBase) coreTE).dummyBlocks);
             }
 
-            for (BlockPos dummyPos : toRemoveSet) {
-                if (!world.isAirBlock(dummyPos)) {
-                    DummyBlockBase.destroyQuietly(world, dummyPos, false);
+            if (!toRemoveSet.isEmpty()) {
+                for (BlockPos dummyPos : toRemoveSet) {
+                    if (dummyPos.equals(excludePos)) continue;
+                    if (world.isBlockLoaded(dummyPos) && !world.isAirBlock(dummyPos)) {
+                        DummyBlockBase.destroyQuietly(world, dummyPos, false);
+                    }
                 }
             }
 
@@ -122,7 +125,7 @@ public class DummyBlockEventHandler {
 
         processingEvent.set(true);
         try {
-            destroyLinkedDummies(event.world, event.corePos);
+            destroyLinkedDummies(event.world, event.corePos, event.pos);
 
             boolean isCreative = false;
             for (EntityPlayer p : event.world.playerEntities) {
@@ -131,7 +134,6 @@ public class DummyBlockEventHandler {
                     break;
                 }
             }
-
             event.world.destroyBlock(event.corePos, !isCreative);
         } finally {
             processingEvent.set(false);
@@ -139,16 +141,12 @@ public class DummyBlockEventHandler {
     }
 
     public static void destroyLinkedDummiesSafe(World world, BlockPos corePos) {
-        if (world == null || corePos == null || world.isRemote) {
+        if (world == null || corePos == null || world.isRemote || processingEvent.get()) {
             return;
         }
-        if (processingEvent.get()) {
-            return;
-        }
-
         processingEvent.set(true);
         try {
-            destroyLinkedDummies(world, corePos);
+            destroyLinkedDummies(world, corePos, null);
         } finally {
             processingEvent.set(false);
         }
@@ -157,5 +155,4 @@ public class DummyBlockEventHandler {
     public static boolean isProcessing() {
         return processingEvent.get();
     }
-
 }

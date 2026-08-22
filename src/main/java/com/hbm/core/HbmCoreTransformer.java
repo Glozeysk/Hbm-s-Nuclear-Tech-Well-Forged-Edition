@@ -9,10 +9,10 @@ public final class HbmCoreTransformer implements IClassTransformer {
 
         // a class is transformed at most once
         return switch (transformedName) {
-            case FMLNetworkTransformer.TARGET_DISPATCHER ->
-                    FMLNetworkTransformer.transformNetworkDispatcher(name, transformedName, basicClass);
-            case FMLNetworkTransformer.TARGET_PACKET ->
-                    FMLNetworkTransformer.transformFMLProxyPacket(name, transformedName, basicClass);
+//            case FMLNetworkTransformer.TARGET_DISPATCHER ->
+//                    FMLNetworkTransformer.transformNetworkDispatcher(name, transformedName, basicClass);
+//            case FMLNetworkTransformer.TARGET_PACKET ->
+//                    FMLNetworkTransformer.transformFMLProxyPacket(name, transformedName, basicClass);
             default -> basicClass;
         };
     }

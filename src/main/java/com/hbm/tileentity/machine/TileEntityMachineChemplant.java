@@ -999,7 +999,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 		return "container.chemplant";
 	}
 
-	private void detectAndSendChanges() {
+	protected void detectAndSendChanges() {
 
 		if(isProgressing) {
 			soundSyncTick++;

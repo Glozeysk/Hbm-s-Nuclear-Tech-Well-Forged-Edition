@@ -35,9 +35,9 @@ public class EngineRecipes {
 
 		addFuel(ModForgeFluids.gas, FuelGrade.GAS, 350_000);
 		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
-		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 250_000);
-		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);
-		addFuel(ModForgeFluids.biogas, FuelGrade.GAS, 500_000);
+		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 100_000);
+		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 75_000);
+		addFuel(ModForgeFluids.biogas, FuelGrade.GAS, 200_000);
 
 		addFuel(ModForgeFluids.kerosene, FuelGrade.AERO, 1_250_000);
 		addFuel(ModForgeFluids.biofuel, FuelGrade.AERO, 1_250_000);

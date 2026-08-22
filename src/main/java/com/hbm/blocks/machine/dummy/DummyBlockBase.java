@@ -41,7 +41,6 @@ public class DummyBlockBase extends BlockContainer
         implements IDummy, IEnergyConnectorBlock, IBomb, IRadResistantBlock, IPartialSealableBlock {
 
     public static boolean safeBreak = false;
-
     public static boolean batchRemovalMode = false;
 
     protected final DummyProperties props;
@@ -75,7 +74,6 @@ public class DummyBlockBase extends BlockContainer
             Block block = state.getBlock();
 
             TileEntity te = world.getTileEntity(pos);
-
             if (te != null) {
                 world.removeTileEntity(pos);
             }
@@ -84,7 +82,7 @@ public class DummyBlockBase extends BlockContainer
                 RadiationSystemNT.markChunkForRebuild(world, pos);
             }
 
-            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
 
         } finally {
             safeBreak = wasSafeBreak;

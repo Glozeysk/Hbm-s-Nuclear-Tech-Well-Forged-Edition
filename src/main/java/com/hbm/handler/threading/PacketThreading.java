@@ -159,6 +159,8 @@ public class PacketThreading {
                 for (PacketTask task : batchBuffer) {
                     failSequencedTask(task);
                 }
+                flushReadyPackets();
+                break;
             } finally {
                 batchBuffer.clear();
             }
@@ -229,7 +231,6 @@ public class PacketThreading {
             return;
         }
         task.failed = true;
-        releaseTask(task);
         readyPackets.put(task.sequence, task);
         flushReadyPackets();
     }
@@ -267,7 +268,11 @@ public class PacketThreading {
         U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, 1);
         try {
             if (!enabled || !GeneralConfig.enablePacketThreading) {
-                runSynchronously(packet, op, target, dimension);
+                try {
+                    runSynchronously(packet, op, target, dimension);
+                } finally {
+                    completeSequencedGap(new PacketTask(packet, op, target, dimension, sequenceCounter.getAndIncrement()));
+                }
                 return;
             }
 
@@ -287,8 +292,11 @@ public class PacketThreading {
 
             LinkedBlockingQueue<PacketTask> q = dispatchQueue;
             if (q == null) {
-                runSynchronously(packet, op, target, dimension);
-                completeSequencedGap(task);
+                try {
+                    runSynchronously(packet, op, target, dimension);
+                } finally {
+                    completeSequencedGap(task);
+                }
                 return;
             }
 
@@ -306,8 +314,11 @@ public class PacketThreading {
                     return;
                 }
                 maybeLogQueueFull(q.size());
-                runSynchronously(packet, op, target, dimension);
-                completeSequencedGap(task);
+                try {
+                    runSynchronously(packet, op, target, dimension);
+                } finally {
+                    completeSequencedGap(task);
+                }
             }
         } finally {
             U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, -1);
@@ -334,7 +345,6 @@ public class PacketThreading {
             MainRegistry.logger.error("Error sending packet synchronously", t);
             throw t;
         } finally {
-            packet.releaseBuffer();
             nanosWaited.add(System.nanoTime() - start);
         }
     }

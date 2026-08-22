@@ -23,7 +23,7 @@ import static com.hbm.lib.internal.UnsafeHolder.U;
 
 @SuppressWarnings("unused")
 public final class FMLNetworkHook {
-    private static final int PART_SIZE = 0x100000 - 0x50; // 1_048_496
+    private static final int PART_SIZE = 0x100000 - 0x50;
     private static final int MAX_PARTS = 255;
     private static final long SIDE_OFF = fieldOffset(NetworkDispatcher.class, Side.class, "side");
     private static final long SP_DATA_OFF = fieldOffset(SPacketCustomPayload.class, ByteBuf.class, "data", "field_149171_b");
@@ -31,8 +31,7 @@ public final class FMLNetworkHook {
     private static final long CP_DATA_OFF = fieldOffset(CPacketCustomPayload.class, ByteBuf.class, "data", "field_149561_c");
     private static final long CP_CHAN_OFF = fieldOffset(CPacketCustomPayload.class, String.class, "channel", "field_149562_a");
 
-    private FMLNetworkHook() {
-    }
+    private FMLNetworkHook() {}
 
     private static long fieldOffset(Class<?> clz, Class<?> type, String... names) {
         try {
@@ -55,42 +54,27 @@ public final class FMLNetworkHook {
                 Field field = clz.getDeclaredField(name);
                 field.setAccessible(true);
                 return field;
-            } catch (NoSuchFieldException ignored) {
-            }
+            } catch (NoSuchFieldException ignored) {}
         }
         throw new NoSuchFieldException(clz.getName());
     }
 
-    private static void releaseCustomPayloadData(Object pkt) throws Throwable {
-        if (pkt instanceof SPacketCustomPayload sp) {
-            Object o = U.getReference(sp, SP_DATA_OFF);
-            if (o != null) {
-                U.putReference(sp, SP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+    private static void releaseCustomPayloadData(Object pkt) {
+        try {
+            if (pkt instanceof SPacketCustomPayload sp) {
+                Object o = U.getReference(sp, SP_DATA_OFF);
+                if (o != null) {
+                    U.putReference(sp, SP_DATA_OFF, null);
+                    ((ByteBuf) o).release();
+                }
+            } else if (pkt instanceof CPacketCustomPayload cp) {
+                Object o = U.getReference(cp, CP_DATA_OFF);
+                if (o != null) {
+                    U.putReference(cp, CP_DATA_OFF, null);
+                    ((ByteBuf) o).release();
+                }
             }
-        } else if (pkt instanceof CPacketCustomPayload cp) {
-            Object o = U.getReference(cp, CP_DATA_OFF);
-            if (o != null) {
-                U.putReference(cp, CP_DATA_OFF, null);
-                ((ByteBuf) o).release();
-            }
-        }
-    }
-
-    private static SPacketCustomPayload createUncheckedSPacket(String channel, PacketBuffer buf) throws Throwable {
-        SPacketCustomPayload pkt = new SPacketCustomPayload();
-        // skip 1048576B size check in ctor
-        U.putReference(pkt, SP_CHAN_OFF, channel);
-        U.putReference(pkt, SP_DATA_OFF, buf);
-        return pkt;
-    }
-
-    private static CPacketCustomPayload createUncheckedCPacket(String channel, PacketBuffer buf) throws Throwable {
-        CPacketCustomPayload pkt = new CPacketCustomPayload();
-        // skip 32767B size check in ctor
-        U.putReference(pkt, CP_CHAN_OFF, channel);
-        U.putReference(pkt, CP_DATA_OFF, buf);
-        return pkt;
+        } catch (Throwable ignored) {}
     }
 
     @SuppressWarnings("unused")
@@ -100,73 +84,22 @@ public final class FMLNetworkHook {
             return;
         }
 
-        final ByteBuf payload = pkt.payload();
-        final boolean local = self.manager.isLocalChannel();
-
         try {
             final Side side = (Side) U.getReference(self, SIDE_OFF);
-
-            if (side == Side.CLIENT) { // Client -> Server
-                PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
-                CPacketCustomPayload out;
-
-                if (local) {
-                    out = createUncheckedCPacket(pkt.channel(), pb);
-                } else {
-                    out = new CPacketCustomPayload(pkt.channel(), pb);
+            if (side == Side.CLIENT) {
+                ctx.write(pkt.toC17Packet(), promise);
+            } else {
+                List<Packet<INetHandlerPlayClient>> parts = pkt.toS3FPackets();
+                int sizeMinusOne = parts.size() - 1;
+                for (int i = 0; i < sizeMinusOne; i++) {
+                    ctx.write(parts.get(i), ctx.voidPromise());
                 }
-
-                final ChannelFuture f = ctx.write(out, promise);
-                f.addListener((ChannelFutureListener) future -> {
-                    if (!local || !future.isSuccess()) {
-                        try {
-                            releaseCustomPayloadData(out);
-                        } catch (Throwable e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
-
-            } else { // Server -> Client
-                if (local) {
-                    PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
-                    SPacketCustomPayload out = createUncheckedSPacket(pkt.channel(), pb);
-                    final ChannelFuture f = ctx.write(out, promise);
-                    f.addListener((ChannelFutureListener) future -> {
-                        if (!future.isSuccess()) {
-                            try {
-                                releaseCustomPayloadData(out);
-                            } catch (Throwable e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    });
-                    return;
-                }
-                List<Packet<INetHandlerPlayClient>> parts = fmlProxyPacketToS3FPackets(pkt);
-                int last = parts.size() - 1;
-
-                for (int i = 0; i <= last; i++) {
-                    Packet<INetHandlerPlayClient> p = parts.get(i);
-                    ChannelPromise pPromise = (i == last) ? promise : ctx.newPromise();
-
-                    final ChannelFuture f = ctx.write(p, pPromise);
-                    f.addListener((ChannelFutureListener) future -> {
-                        try {
-                            releaseCustomPayloadData(p);
-                        } catch (Throwable e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                }
+                ctx.write(parts.get(sizeMinusOne), promise);
             }
         } finally {
-            // We retained slices for the packets, so we release the original reference from the FMLProxyPacket
-            // This may throw IllegalReferenceCountException iff some other mod a) reused packets without properly
-            // retaining them, or b) routed their packets through vanilla that reuses packet instances, or c) performed
-            // incorrect reference counting. This is a bug on their side. Known mods:
-            // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
-            payload.release();
+            if (pkt.payload() != null && pkt.payload().refCnt() > 0) {
+                pkt.payload().release();
+            }
         }
     }
 
@@ -185,8 +118,7 @@ public final class FMLNetworkHook {
             }
 
             int parts = (int) Math.ceil(len / (double) (PART_SIZE - 1));
-            if (parts > MAX_PARTS)
-                throw new IllegalArgumentException("Payload too large (parts=" + parts + ", max=" + MAX_PARTS + ")");
+            if (parts > MAX_PARTS) throw new IllegalArgumentException("Payload too large");
 
             PacketBuffer preamble = new PacketBuffer(Unpooled.buffer());
             preamble.writeString(self.channel());
@@ -197,7 +129,6 @@ public final class FMLNetworkHook {
             int offset = 0;
             for (int x = 0; x < parts; x++) {
                 int dataLen = Math.min(PART_SIZE - 1, len - offset);
-
                 ByteBuf slice = buf.retainedSlice(ri + offset, dataLen);
                 ByteBuf header = Unpooled.buffer(1, 1).writeByte(x & 0xFF);
                 ByteBuf combined = Unpooled.wrappedBuffer(header, slice);
@@ -211,7 +142,6 @@ public final class FMLNetworkHook {
                 }
                 offset += dataLen;
             }
-
             return ret;
         } catch (Throwable t) {
             for (Packet<INetHandlerPlayClient> p : ret) releaseCustomPayloadData(p);
