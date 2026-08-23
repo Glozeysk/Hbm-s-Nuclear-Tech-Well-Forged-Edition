@@ -442,6 +442,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
         this.recipes = getMatchingRecipes(this.getTemplateGrid());
         this.recipeCount = recipes.size();
         this.recipeIndex = nbt.getInteger("rec");
+        if(this.recipeIndex < 0 || this.recipeIndex >= this.recipes.size()) this.recipeIndex = 0; // recipe set may have shrunk since save
 
         if(!this.recipes.isEmpty()) {
             this.inventory.setStackInSlot(9, this.recipes.get(this.recipeIndex).getCraftingResult(getTemplateGrid()));

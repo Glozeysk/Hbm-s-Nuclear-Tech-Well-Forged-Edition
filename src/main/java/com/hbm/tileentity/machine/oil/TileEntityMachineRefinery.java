@@ -193,6 +193,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
 	private void refine(){
 		Pair<FluidStack[], ItemStack> recipe = RefineryRecipes.getRecipe(tankTypes[0]);
+		if(recipe == null || recipe.getKey() == null) return; // no recipe for current input fluid
 		FluidStack[] outputFluids = recipe.getKey();
 		ItemStack outputItem = recipe.getValue();
 		setupTanks(outputFluids);

@@ -906,7 +906,7 @@ public class ModEventHandler {
 								MainRegistry.logger.log(Level.INFO, "[DET] Tried to detonate block at " + x + " / " + y + " / " + z + " by dead man's switch from " + player.getDisplayName() + "!");
 						}
 						
-						player.inventory.setInventorySlotContents(i, null);
+						player.inventory.setInventorySlotContents(i, ItemStack.EMPTY);
 					}
 				}
 			}
