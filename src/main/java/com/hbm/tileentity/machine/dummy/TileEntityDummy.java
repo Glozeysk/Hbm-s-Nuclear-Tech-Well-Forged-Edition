@@ -5,41 +5,81 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 
-public class TileEntityDummy extends TileEntity {
+public class TileEntityDummy extends TileEntity implements ITickable {
 
 	private BlockPos target;
+	private boolean isRegistered = false;
 
 	@Override
 	public void onLoad() {
 		super.onLoad();
-		registerDummy();
+	}
+
+	@Override
+	public void update() {
+		if (isRegistered || world.isRemote || target == null) {
+			return;
+		}
+		tryRegisterDummy();
 	}
 
 	@Override
 	public void invalidate() {
 		super.invalidate();
-		if (!world.isRemote && target != null) {
-			DummyBlockRegistry.unregister(world, target, pos);
-		}
+		unregisterDummy();
 	}
 
 	@Override
 	public void onChunkUnload() {
 		super.onChunkUnload();
-		if (!world.isRemote && target != null) {
-			DummyBlockRegistry.unregister(world, target, pos);
+		unregisterDummy();
+	}
+	private void tryRegisterDummy() {
+		if (this.world == null || this.world.isRemote || this.target == null || this.isRegistered) {
+			return;
+		}
+
+		if (!this.world.isBlockLoaded(this.target)) {
+			return;
+		}
+
+		if (this.world.isAirBlock(this.target)) {
+			this.world.setBlockState(this.pos, net.minecraft.init.Blocks.AIR.getDefaultState(), 2);
+			return;
+		}
+
+		TileEntity coreTE = this.world.getTileEntity(this.target);
+		if (coreTE instanceof TileEntityMachineBase) {
+			DummyBlockRegistry.register(this.world, this.target, this.pos);
+			((TileEntityMachineBase) coreTE).dummyBlocks.add(this.pos);
+			this.isRegistered = true;
+		}
+	}
+
+	private void unregisterDummy() {
+		if (this.world != null && !this.world.isRemote && this.target != null && this.isRegistered) {
+			DummyBlockRegistry.unregister(this.world, this.target, this.pos);
+
+			if (this.world.isBlockLoaded(this.target)) {
+				TileEntity coreTE = this.world.getTileEntity(this.target);
+				if (coreTE instanceof TileEntityMachineBase) {
+					((TileEntityMachineBase) coreTE).dummyBlocks.remove(this.pos);
+				}
+			}
+			this.isRegistered = false;
 		}
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		super.writeToNBT(compound);
-		if (target != null) {
-			compound.setInteger("tx", target.getX());
-			compound.setInteger("ty", target.getY());
-			compound.setInteger("tz", target.getZ());
+		if (this.target != null) {
+			compound.setInteger("tx", this.target.getX());
+			compound.setInteger("ty", this.target.getY());
+			compound.setInteger("tz", this.target.getZ());
 		}
 		return compound;
 	}
@@ -59,7 +99,7 @@ public class TileEntityDummy extends TileEntity {
 
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
-		return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
+		return new SPacketUpdateTileEntity(this.pos, 0, getUpdateTag());
 	}
 
 	@Override
@@ -69,23 +109,11 @@ public class TileEntityDummy extends TileEntity {
 
 	public final void setTarget(BlockPos corePos) {
 		this.target = corePos;
-		registerDummy();
+		this.isRegistered = false;
+		tryRegisterDummy();
 	}
 
 	public final BlockPos getTarget() {
-		return target;
-	}
-
-	private void registerDummy() {
-		if (world == null || world.isRemote || target == null) {
-			return;
-		}
-
-		DummyBlockRegistry.register(world, target, pos);
-
-		TileEntity coreTE = world.getTileEntity(target);
-		if (coreTE instanceof TileEntityMachineBase) {
-			((TileEntityMachineBase) coreTE).dummyBlocks.add(pos);
-		}
+		return this.target;
 	}
 }

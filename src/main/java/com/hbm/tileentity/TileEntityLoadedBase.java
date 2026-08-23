@@ -116,13 +116,17 @@ public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBu
     public void invalidate() {
         super.invalidate();
         if (!world.isRemote) {
-            Set<BlockPos> dummies = DummyBlockRegistry.getDummiesFor(world, pos);
-            if (dummies != null && !dummies.isEmpty()) {
+            Set<BlockPos> dummies = new HashSet<>(DummyBlockRegistry.getDummiesFor(world, pos));
+            if (this instanceof TileEntityMachineBase) {
+                dummies.addAll(((TileEntityMachineBase) this).dummyBlocks);
+            }
+
+            if (!dummies.isEmpty()) {
                 DummyBlockBase.safeBreak = true;
                 DummyBlockBase.batchRemovalMode = true;
                 try {
-                    for (BlockPos dummyPos : new HashSet<>(dummies)) {
-                        if (!world.isAirBlock(dummyPos)) {
+                    for (BlockPos dummyPos : dummies) {
+                        if (world.isBlockLoaded(dummyPos) && !world.isAirBlock(dummyPos)) {
                             DummyBlockBase.destroyQuietly(world, dummyPos, false);
                         }
                     }
