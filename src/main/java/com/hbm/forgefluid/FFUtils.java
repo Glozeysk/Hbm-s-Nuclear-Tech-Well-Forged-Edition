@@ -483,6 +483,7 @@ public class FFUtils {
 				} else {
 					out.grow(1);
 				}
+				return true;
 			}
 		}
 
