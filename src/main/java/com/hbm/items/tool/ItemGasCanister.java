@@ -85,7 +85,7 @@ public class ItemGasCanister extends Item implements IHasCustomModel {
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		FluidStack f = FluidUtil.getFluidContained(stack);
-		tooltip.add((f == null ? "0" : f.amount) + "/" + cap + " mb");
+		tooltip.add((f == null ? "0" : f.amount) + "/" + cap + " mB");
 	}
 	
 	@Override

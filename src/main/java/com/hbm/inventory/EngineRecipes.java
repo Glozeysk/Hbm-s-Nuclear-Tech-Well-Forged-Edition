@@ -37,7 +37,8 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
 		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 100_000);
 		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 75_000);
-		addFuel(ModForgeFluids.biogas, FuelGrade.GAS, 200_000);
+		addFuel(ModForgeFluids.biogas, FuelGrade.GAS, 150_000);
+		addFuel(ModForgeFluids.heavy_syngas, FuelGrade.GAS, 120_000);
 
 		addFuel(ModForgeFluids.kerosene, FuelGrade.AERO, 1_250_000);
 		addFuel(ModForgeFluids.biofuel, FuelGrade.AERO, 1_250_000);
@@ -54,7 +55,7 @@ public class EngineRecipes {
 		MEDIUM("trait.fuelgrade.medium"),	//petroil									< diesel generator
 		HIGH("trait.fuelgrade.high"),		//diesel, gasoline							< HP engine
 		AERO("trait.fuelgrade.aero"),	//kerosene and other light aviation fuels	< turbofan
-		GAS("trait.fuelgrade.gas");		//fuel gasses like NG, PG and syngas		< gas turbine
+		GAS("trait.fuelgrade.gas");		//fuel gasses like NG, PG and heavy_syngas		< gas turbine
 		
 		private String grade;
 		

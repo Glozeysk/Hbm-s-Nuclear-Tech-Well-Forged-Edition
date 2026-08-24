@@ -23,6 +23,7 @@ public class FluidCombustionRecipes {
 		addBurnableFluid(ModForgeFluids.hotcrackoil, 10);
 
 		addBurnableFluid(ModForgeFluids.gas, 10);
+		addBurnableFluid(ModForgeFluids.heavy_syngas, 8);
 		addBurnableFluid(ModForgeFluids.fishoil, 15);
 		addBurnableFluid(ModForgeFluids.lubricant, 20);
 		addBurnableFluid(ModForgeFluids.aromatics, 25);

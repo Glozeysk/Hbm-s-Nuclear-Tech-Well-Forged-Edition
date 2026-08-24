@@ -123,7 +123,8 @@ public class ModForgeFluids {
 	public static Fluid wastegas = new Fluid("wastegas", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/wastegas_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/wastegas_flowing"), null, Color.WHITE);
 	public static Fluid gasoline = new Fluid("gasoline", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/gasoline_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/gasoline_flowing"), null, Color.WHITE);
 	public static Fluid experience = new Fluid("experience", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/experience_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/experience_flowing"), null, Color.WHITE);
-	
+	public static Fluid heavy_syngas = new Fluid("heavy_syngas", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavy_syngas_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavy_syngas_flowing"), null, Color.WHITE);
+
 	//Block fluids
 	public static Fluid toxic_fluid = new ToxicFluid("toxic_fluid").setDensity(2500).setViscosity(2000).setTemperature(70+273);
 	public static Fluid radwater_fluid = new RadWaterFluid("radwater_fluid").setDensity(1000);
@@ -206,6 +207,8 @@ public class ModForgeFluids {
 
 		if(!FluidRegistry.registerFluid(biogas))
 			biogas = FluidRegistry.getFluid("biogas");
+		if(!FluidRegistry.registerFluid(heavy_syngas))
+			biogas = FluidRegistry.getFluid("heavy_syngas");
 		if(!FluidRegistry.registerFluid(biofuel))
 			biofuel = FluidRegistry.getFluid("biofuel");
 
@@ -372,6 +375,8 @@ public class ModForgeFluids {
 
 		biogas = FluidRegistry.getFluid("biogas");
 		biofuel = FluidRegistry.getFluid("biofuel");
+
+		heavy_syngas = FluidRegistry.getFluid("heavy_syngas");
 
 		ethanol = FluidRegistry.getFluid("ethanol");
 		fishoil = FluidRegistry.getFluid("fishoil");

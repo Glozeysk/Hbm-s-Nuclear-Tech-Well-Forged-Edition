@@ -148,6 +148,7 @@ public class FluidTypeHandler {
 		
 		fluidProperties.put(ModForgeFluids.biogas.getName(), new FluidProperties(1, 4, 1, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.biofuel.getName(), new FluidProperties(1, 2, 0, EnumSymbol.NONE));
+		fluidProperties.put(ModForgeFluids.heavy_syngas.getName(), new FluidProperties(1, 2, 0, EnumSymbol.NONE));
 
 		fluidProperties.put(ModForgeFluids.ethanol.getName(), new FluidProperties(2, 3, 1, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.fishoil.getName(), new FluidProperties(0, 1, 0, EnumSymbol.NONE));

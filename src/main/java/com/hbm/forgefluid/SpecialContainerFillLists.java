@@ -154,8 +154,9 @@ public class SpecialContainerFillLists {
 		HYDROGEN(ModForgeFluids.hydrogen, new ModelResourceLocation(RefStrings.MODID + ":gas_hydrogen", "inventory")),
 		DEUTERIUM(ModForgeFluids.deuterium, new ModelResourceLocation(RefStrings.MODID + ":gas_deuterium", "inventory")),
 		TRITIUM(ModForgeFluids.tritium, new ModelResourceLocation(RefStrings.MODID + ":gas_tritium", "inventory")),
-		OXYGEN(ModForgeFluids.oxygen, new ModelResourceLocation(RefStrings.MODID + ":gas_oxygen", "inventory"));
-		
+		OXYGEN(ModForgeFluids.oxygen, new ModelResourceLocation(RefStrings.MODID + ":gas_oxygen", "inventory")),
+		HEAVY_SYNGAS(ModForgeFluids.heavy_syngas, new ModelResourceLocation(RefStrings.MODID + ":gas_heavy_syngas", "inventory"));
+
 		private Fluid fluid;
 		private Pair<ModelResourceLocation, IBakedModel> renderPair;
 		private String translateKey;
