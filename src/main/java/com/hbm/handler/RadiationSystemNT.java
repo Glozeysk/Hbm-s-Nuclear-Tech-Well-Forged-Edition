@@ -1217,9 +1217,9 @@ public class RadiationSystemNT {
 	
 	//for a whole 16*256*16 chunk
 	public static class ChunkRadiationStorage {
-		//Half a megabyte is good enough isn't it? Right?
-		//This is going to come back to bite me later, isn't it.
-		private ByteBuffer buf = ByteBuffer.allocate(524288);
+		// Shared per-thread scratch buffer, used only transiently in writeToNBT (not persistent per-chunk).
+		private static final ThreadLocal<ByteBuffer> SCRATCH =
+				ThreadLocal.withInitial(() -> ByteBuffer.allocate(524288));
 		
 		public WorldRadiationData parent;
 		private Chunk chunk;
@@ -1294,6 +1294,7 @@ public class RadiationSystemNT {
 		 * @return the tag written to
 		 */
 		public NBTTagCompound writeToNBT(NBTTagCompound tag){
+			ByteBuffer buf = SCRATCH.get();
 			buf.clear();
 			try {
 				for(SubChunkRadiationStorage st : chunks){
