@@ -50,7 +50,7 @@ public abstract class EntityMissileBaseAdvanced extends Entity implements IChunk
 	double decelY;
 	double accelXZ;
 	boolean isCluster = false;
-	public static double acceleration = 1; 
+	public double acceleration = 1;
 	private Ticket loaderTicket;
 	public int health = 50;
 
