@@ -205,6 +205,9 @@ public class EntityFalloutUnderGround extends Entity implements IConstantRendere
 
 			if(pos.getY() < 0 || pos.getY() > 255) return;
 
+			// Stop the ray once it leaves loaded chunks; never force worldgen inside an entity tick.
+			if(!world.isBlockLoaded(pos)) return;
+
 			if(world.isAirBlock(pos))
 				continue;
 
