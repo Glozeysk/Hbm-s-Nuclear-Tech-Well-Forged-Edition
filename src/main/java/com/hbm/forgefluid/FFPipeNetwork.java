@@ -110,8 +110,11 @@ public class FFPipeNetwork implements IFluidHandler {
 		
 		List<IFluidHandler> consumers = new ArrayList<IFluidHandler>();
 		for(ICapabilityProvider handle : this.fillables){
-			if(handle != null && handle.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && handle.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null).fill(new FluidStack(this.type, 1), false) > 0 && !consumers.contains(handle));
-				consumers.add(handle.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null));
+			if(handle == null || !handle.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))
+				continue;
+			IFluidHandler cap = handle.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
+			if(cap != null && cap.fill(new FluidStack(this.type, 1), false) > 0 && !consumers.contains(cap))
+				consumers.add(cap);
 		}
 		int size = consumers.size();
 		if(size <= 0)
