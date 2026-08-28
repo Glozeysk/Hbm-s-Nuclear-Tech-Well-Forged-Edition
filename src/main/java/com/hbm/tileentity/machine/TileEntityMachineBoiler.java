@@ -117,7 +117,8 @@ public class TileEntityMachineBoiler extends TileEntityMachineBase implements IT
 			if (needsUpdate) {
 				needsUpdate = false;
 			}
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
+			if(age % 5 == 0)
+				PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] { tanks[0], tanks[1] }), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 			if (age == 9 || age == 19)
 				fillFluidInit(tanks[1]);
 

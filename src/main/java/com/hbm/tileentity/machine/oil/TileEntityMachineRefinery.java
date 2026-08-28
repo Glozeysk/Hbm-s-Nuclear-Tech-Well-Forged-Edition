@@ -101,7 +101,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 				needsUpdate = false;
 			}
 			this.updateConnections();
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] {tanks[0], tanks[1], tanks[2], tanks[3], tanks[4]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 
 			age++;
