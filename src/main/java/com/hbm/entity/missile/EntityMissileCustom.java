@@ -333,7 +333,7 @@ public class EntityMissileCustom extends Entity implements IChunkLoader, IRadarD
 			this.setDead();
 			return;
 		}
-		PacketDispatcher.wrapper.sendToAll(new LoopedEntitySoundPacket(this.getEntityId()));
+		PacketDispatcher.wrapper.sendToAllTracking(new LoopedEntitySoundPacket(this.getEntityId()), this);
 		if((int) (posX / 16) != chunkX || (int) (posZ / 16) != chunkZ){
 			chunkX = (int) (posX / 16);
 			chunkZ = (int) (posZ / 16);

@@ -842,7 +842,7 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 			soundSyncTick++;
 			if(soundSyncTick >= 10) {
 				soundSyncTick = 0;
-				PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+				PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16));
 			}
 		}
 

@@ -13,6 +13,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.TileEntityMachineChemplantBase.TypedFluidTank;
@@ -146,7 +147,7 @@ public class TileEntityMachineChemfac extends TileEntityMachineChemplantBase imp
 				soundSyncTick++;
 				if(soundSyncTick >= 10) {
 					soundSyncTick = 0;
-					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+					PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16));
 				}
 			}
 			networkPackNT(150);

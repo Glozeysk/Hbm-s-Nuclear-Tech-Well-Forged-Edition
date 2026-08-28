@@ -18,6 +18,7 @@ import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import com.hbm.packet.LoopedSoundPacket;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
@@ -235,7 +236,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 				soundSyncTick++;
 				if(soundSyncTick >= 10) {
 					soundSyncTick = 0;
-					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
+					PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16));
 				}
 			}
 			networkPackNT(250);

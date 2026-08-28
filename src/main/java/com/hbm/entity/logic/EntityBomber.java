@@ -110,7 +110,7 @@ public class EntityBomber extends Entity implements IChunkLoader, IConstantRende
 			this.getDataManager().set(HEALTH, health);
 			
 			if(health > 0)
-				PacketDispatcher.wrapper.sendToAll(new LoopedEntitySoundPacket(this.getEntityId()));
+				PacketDispatcher.wrapper.sendToAllTracking(new LoopedEntitySoundPacket(this.getEntityId()), this);
 		} else {
 			health = this.getDataManager().get(HEALTH);
 		}

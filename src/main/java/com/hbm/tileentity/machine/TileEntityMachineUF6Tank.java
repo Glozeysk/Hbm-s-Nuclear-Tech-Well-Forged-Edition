@@ -5,6 +5,7 @@ import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -93,7 +94,7 @@ public class TileEntityMachineUF6Tank extends TileEntity implements ITickable, I
 				FFUtils.fillFromFluidContainer(inventory, tank, 0, 1);
 			FFUtils.fillFluidContainer(inventory, tank, 2, 3);
 			
-			PacketDispatcher.wrapper.sendToAll(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tank}));
+			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[]{tank}), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16));
 		}
 	}
 	

@@ -89,7 +89,7 @@ public class EntityMissileAntiBallistic extends EntityMissileBaseAdvanced {
 			return;
 		}
 
-		PacketDispatcher.wrapper.sendToAll(new LoopedEntitySoundPacket(this.getEntityId()));
+		PacketDispatcher.wrapper.sendToAllTracking(new LoopedEntitySoundPacket(this.getEntityId()), this);
 		if((int) (posX / 16) != this.chunkX || (int) (posZ / 16) != this.chunkZ){
 			this.chunkX = (int) (posX / 16);
 			this.chunkZ = (int) (posZ / 16);
