@@ -234,6 +234,46 @@ public abstract class BlockDummyable extends BlockContainer {
 
 		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), this, dir);
 	}
+
+	// Rebuilds this multiblock's dummy/port shell in place around an existing core, keeping the core TE (and its
+	// NBT) untouched. Lets old-world structures with a different footprint/port layout be brought up to the current
+	// one without losing contents. corePos must hold this block's core (meta >= 12).
+	public void migrateStructureInPlace(World world, BlockPos corePos) {
+		if(world.isRemote)
+			return;
+
+		IBlockState coreState = world.getBlockState(corePos);
+		if(coreState.getBlock() != this || coreState.getValue(META) < 12)
+			return;
+
+		ForgeDirection dir = ForgeDirection.getOrientation(coreState.getValue(META) - offset);
+		int o = getOffset();
+
+		// collect this core's existing shell parts (same block, meta < 12) within a generous box, then remove them
+		// (collect first so findCore stays valid while we still have the old blocks in place)
+		List<BlockPos> shell = new ArrayList<BlockPos>();
+		for(int dx = -3; dx <= 3; dx++) {
+			for(int dy = -1; dy <= 8; dy++) {
+				for(int dz = -3; dz <= 3; dz++) {
+					BlockPos p = corePos.add(dx, dy, dz);
+					if(p.equals(corePos))
+						continue;
+					IBlockState s = world.getBlockState(p);
+					if(s.getBlock() != this || s.getValue(META) >= 12)
+						continue;
+					int[] c = findCore(world, p.getX(), p.getY(), p.getZ());
+					if(c != null && c[0] == corePos.getX() && c[1] == corePos.getY() && c[2] == corePos.getZ())
+						shell.add(p);
+				}
+			}
+		}
+
+		safeRem = true;
+		for(BlockPos p : shell)
+			world.setBlockToAir(p);
+		fillSpace(world, corePos.getX() - dir.offsetX * o, corePos.getY() - dir.offsetY * o, corePos.getZ() - dir.offsetZ * o, dir, o);
+		safeRem = false;
+	}
 	
 	//"upgrades" regular dummy blocks to ones with the extra flag
 	public void makeExtra(World world, int x, int y, int z) {

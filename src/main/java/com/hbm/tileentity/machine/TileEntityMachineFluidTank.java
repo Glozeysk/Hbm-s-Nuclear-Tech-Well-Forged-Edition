@@ -20,6 +20,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -30,6 +31,7 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 	private EnumFacing ladderFacing = EnumFacing.NORTH;
 	private boolean pendingLadderRestore = false;
 	private int ladderRestoreCooldown = 0;
+	private boolean migrationChecked = false;
 
 	public TileEntityMachineFluidTank() {
 		super(256000);
@@ -72,6 +74,11 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 			return;
 		}
 
+		if(!migrationChecked) {
+			migrationChecked = true;
+			tryMigrateLegacyCistern();
+		}
+
 		if(pendingLadderRestore) {
 			if(ladderRestoreCooldown > 0) {
 				ladderRestoreCooldown--;
@@ -84,6 +91,41 @@ public class TileEntityMachineFluidTank extends TileEntityBarrel {
 					ladderRestoreCooldown = 20;
 				}
 			}
+		}
+	}
+
+	// Migrates a 2.0.2 cistern (old BlockContainer core saved with a FACING meta of 0-5) to the current
+	// BlockDummyable multiblock in place, preserving the stored fluid. Without this the old core is read as
+	// a dummy (meta < 6), gets no core role and self-destructs on the next random tick.
+	private void tryMigrateLegacyCistern() {
+		IBlockState state = world.getBlockState(pos);
+		if(!(state.getBlock() instanceof MachineFluidTank))
+			return;
+		if(state.getValue(BlockDummyable.META) >= 12)
+			return;
+
+		MachineFluidTank block = (MachineFluidTank) state.getBlock();
+		// 2.0.2 stored the FACING index (2=N,3=S,4=W,5=E). The new fillSpace orients the footprint by dir:
+		// SOUTH/NORTH -> X-extended (old EW=E/W), EAST/WEST -> Z-extended (old NS=N/S). Pick the dir whose
+		// footprint axis matches the legacy tank, otherwise the structure lands rotated 90 degrees.
+		int oldMeta = state.getValue(BlockDummyable.META);
+		ForgeDirection dir = (oldMeta == EnumFacing.NORTH.getIndex() || oldMeta == EnumFacing.SOUTH.getIndex())
+				? ForgeDirection.EAST
+				: ForgeDirection.SOUTH;
+		int o = block.getOffset();
+
+		FluidStack saved = tank.getFluid() != null ? tank.getFluid().copy() : null;
+
+		BlockDummyable.safeRem = true;
+		world.setBlockState(pos, block.getDefaultState().withProperty(BlockDummyable.META, dir.ordinal() + BlockDummyable.offset), 3);
+		BlockDummyable.safeRem = false;
+
+		block.fillSpace(world, pos.getX() - dir.offsetX * o, pos.getY() - dir.offsetY * o, pos.getZ() - dir.offsetZ * o, dir, o);
+
+		TileEntity te = world.getTileEntity(pos);
+		if(te instanceof TileEntityMachineFluidTank) {
+			((TileEntityMachineFluidTank) te).tank.setFluid(saved);
+			te.markDirty();
 		}
 	}
 

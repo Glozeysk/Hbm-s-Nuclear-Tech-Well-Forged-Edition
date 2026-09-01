@@ -66,6 +66,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	private EnumFacing ladderFacing = EnumFacing.NORTH;
 	private boolean pendingLadderRestore = false;
 	private int ladderRestoreCooldown = 0;
+	private boolean structureMigrated = true;
 
 	public TileEntityMachineCrystallizer() {
 		super(0);
@@ -107,6 +108,14 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public void update() {
 
 		if(!world.isRemote) {
+
+			if(!structureMigrated) {
+				structureMigrated = true;
+				IBlockState mstate = world.getBlockState(pos);
+				if(mstate.getBlock() instanceof BlockDummyable && mstate.getValue(BlockDummyable.META) >= 12)
+					((BlockDummyable) mstate.getBlock()).migrateStructureInPlace(world, pos);
+				markDirty();
+			}
 
 			if(pendingLadderRestore) {
 				if(ladderRestoreCooldown > 0) {
@@ -503,6 +512,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public void readFromNBT(NBTTagCompound compound) {
 		power = compound.getLong("power");
 		tank.readFromNBT(compound.getCompoundTag("tank"));
+		structureMigrated = compound.getBoolean("structMigrated");
 
 		ladderPositions.clear();
 		if(compound.hasKey("ladderPositions")) {
@@ -523,6 +533,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setLong("power", power);
 		compound.setTag("tank", tank.writeToNBT(new NBTTagCompound()));
+		compound.setBoolean("structMigrated", structureMigrated);
 
 		NBTTagList list = new NBTTagList();
 		for(BlockPos lpos : ladderPositions) {
