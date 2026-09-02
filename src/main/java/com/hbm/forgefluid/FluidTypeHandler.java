@@ -96,7 +96,23 @@ public class FluidTypeHandler {
 		FluidProperties p = fluidProperties.get(f.getName());
 		if(p == null)
 			return false;
-		return p.traits.contains(t);
+		return p.traits.contains(t) || p.traitValues.containsKey(t);
+	}
+
+	//Reads a valued trait (combustion/rtg/etc.); absent trait returns def. Zero is never stored, so 0 == not present.
+	public static double getTraitValue(Fluid f, FluidTrait t, double def){
+		if(f == null)
+			return def;
+		FluidProperties p = fluidProperties.get(f.getName());
+		if(p == null)
+			return def;
+		Double v = p.traitValues.get(t);
+		return v != null ? v : def;
+	}
+
+	//Lets the declarative HbmFluid builder feed properties into the central map at registration time.
+	public static void registerProperties(String name, FluidProperties p){
+		fluidProperties.put(name, p);
 	}
 	
 	//Using strings so it's possible to specify properties for fluids from other mods
@@ -112,7 +128,6 @@ public class FluidTypeHandler {
 		
 		fluidProperties.put(FluidRegistry.LAVA.getName(), new FluidProperties(4, 0, 0, EnumSymbol.NOWATER));
 		
-		fluidProperties.put(ModForgeFluids.heavywater.getName(), new FluidProperties(1, 0, 0, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.hydrogen.getName(), new FluidProperties(1, 4, 0, 1F, EnumSymbol.CROYGENIC));
 		fluidProperties.put(ModForgeFluids.deuterium.getName(), new FluidProperties(2, 4, 0, 1.2F, EnumSymbol.CROYGENIC));
 		fluidProperties.put(ModForgeFluids.tritium.getName(), new FluidProperties(3, 4, 0, 1.3F, EnumSymbol.RADIATION));
@@ -125,7 +140,6 @@ public class FluidTypeHandler {
 		fluidProperties.put(ModForgeFluids.heavyoil.getName(), new FluidProperties(2, 1, 0, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.bitumen.getName(), new FluidProperties(2, 0, 0, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.smear.getName(), new FluidProperties(2, 1, 0, EnumSymbol.NONE));
-		fluidProperties.put(ModForgeFluids.heatingoil.getName(), new FluidProperties(2, 2, 0, EnumSymbol.NONE));
 		
 		fluidProperties.put(ModForgeFluids.reclaimed.getName(), new FluidProperties(2, 2, 0, EnumSymbol.NONE));
 		fluidProperties.put(ModForgeFluids.petroil.getName(), new FluidProperties(1, 3, 0, EnumSymbol.NONE));
@@ -202,7 +216,8 @@ public class FluidTypeHandler {
 		fluidProperties.put(ModForgeFluids.mud_fluid.getName(), new FluidProperties(4, 0, 1, EnumSymbol.ACID, FluidTrait.CORROSIVE_2));
 		fluidProperties.put(ModForgeFluids.corium_fluid.getName(), new FluidProperties(4, 0, 2, EnumSymbol.RADIATION, FluidTrait.CORROSIVE_2));
 		fluidProperties.put(ModForgeFluids.volcanic_lava_fluid.getName(), new FluidProperties(4, 1, 1, EnumSymbol.NOWATER));
-	
+
+		HbmFluid.applyAllProperties();
 	}
 	
 	public static class FluidProperties {
@@ -213,6 +228,7 @@ public class FluidTypeHandler {
 		public final float dfcFuel;
 		public final EnumSymbol symbol;
 		public final List<FluidTrait> traits = new ArrayList<>();
+		public final Map<FluidTrait, Double> traitValues = new HashMap<>();
 
 		public FluidProperties(int p, int f, int r, EnumSymbol symbol, FluidTrait... traits) {
 			this(p, f, r, 0, symbol, traits);
@@ -230,10 +246,15 @@ public class FluidTypeHandler {
 	}
 	
 	public static enum FluidTrait {
+		//flag traits
 		AMAT,
 		CORROSIVE,
 		CORROSIVE_2,
 		NO_CONTAINER,
-		NO_ID;
+		NO_ID,
+		//valued traits: stored with a number in FluidProperties.traitValues; absent or zero means "not present"
+		COMBUSTION_TU,
+		COMBUSTION_HEAT,
+		RTG_EFFICIENCY;
 	}
 }

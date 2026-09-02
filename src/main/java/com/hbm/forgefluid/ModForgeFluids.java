@@ -16,8 +16,11 @@ import com.hbm.blocks.fluid.RadWaterBlock;
 import com.hbm.blocks.fluid.RadWaterFluid;
 import com.hbm.blocks.fluid.VolcanicBlock;
 import com.hbm.blocks.fluid.VolcanicFluid;
+import com.hbm.forgefluid.FluidTypeHandler.FluidTrait;
+import com.hbm.inventory.EngineRecipes.FuelGrade;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.lib.RefStrings;
+import com.hbm.render.misc.EnumSymbol;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.world.WorldEvent;
@@ -39,7 +42,9 @@ public class ModForgeFluids {
 	public static Fluid coolant = new Fluid("coolant", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/coolant_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/coolant_flowing"), null, Color.WHITE).setTemperature(203);
 	public static Fluid hotcoolant = new Fluid("hotcoolant", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/hotcoolant_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/hotcoolant_flowing"), null, Color.WHITE).setTemperature(400 + 273);
 
-	public static Fluid heavywater = new Fluid("heavywater", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavywater_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavywater_flowing"), null, Color.WHITE);
+	public static Fluid heavywater = HbmFluid.builder("heavywater")
+			.props(1, 0, 0, EnumSymbol.NONE)
+			.build();
 	public static Fluid deuterium = new Fluid("deuterium", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/deuterium_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/deuterium_flowing"), null, Color.WHITE);
 	public static Fluid tritium = new Fluid("tritium", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/tritium_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/tritium_flowing"), null, Color.WHITE);
 
@@ -51,7 +56,11 @@ public class ModForgeFluids {
 	public static Fluid heavyoil = new Fluid("heavyoil", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavyoil_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heavyoil_flowing"), null, Color.WHITE);
 	public static Fluid bitumen = new Fluid("bitumen", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/bitumen_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/bitumen_flowing"), null, Color.WHITE);
 	public static Fluid smear = new Fluid("smear", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/smear_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/smear_flowing"), null, Color.WHITE);
-	public static Fluid heatingoil = new Fluid("heatingoil", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heatingoil_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/heatingoil_flowing"), null, Color.WHITE);
+	public static Fluid heatingoil = HbmFluid.builder("heatingoil")
+			.props(2, 2, 0, EnumSymbol.NONE)
+			.trait(FluidTrait.COMBUSTION_TU, 150)
+			.fuel(FuelGrade.LOW, 100_000)
+			.build();
 
 	public static Fluid reclaimed = new Fluid("reclaimed", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/reclaimed_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/reclaimed_flowing"), null, Color.WHITE);
 	public static Fluid petroil = new Fluid("petroil", new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/petroil_still"), new ResourceLocation(RefStrings.MODID, "blocks/forgefluid/petroil_flowing"), null, Color.WHITE);
@@ -148,8 +157,6 @@ public class ModForgeFluids {
 		if(!FluidRegistry.registerFluid(hotcoolant))
 			hotcoolant = FluidRegistry.getFluid("hotcoolant");
 
-		if(!FluidRegistry.registerFluid(heavywater))
-			heavywater = FluidRegistry.getFluid("heavywater");
 		if(!FluidRegistry.registerFluid(deuterium))
 			deuterium = FluidRegistry.getFluid("deuterium");
 		if(!FluidRegistry.registerFluid(tritium))
@@ -170,8 +177,6 @@ public class ModForgeFluids {
 			bitumen = FluidRegistry.getFluid("bitumen");
 		if(!FluidRegistry.registerFluid(smear))
 			smear = FluidRegistry.getFluid("smear");
-		if(!FluidRegistry.registerFluid(heatingoil))
-			heatingoil = FluidRegistry.getFluid("heatingoil");
 
 		if(!FluidRegistry.registerFluid(reclaimed))
 			reclaimed = FluidRegistry.getFluid("reclaimed");
@@ -323,6 +328,8 @@ public class ModForgeFluids {
 		FluidRegistry.addBucketForFluid(schrabidic);
 		FluidRegistry.addBucketForFluid(corium_fluid);
 		FluidRegistry.addBucketForFluid(volcanic_lava_fluid);
+
+		HbmFluid.registerAllToForge();
 	}
 
 	//Stupid forge reads a bunch of default fluids from NBT when the world loads, which screws up my logic for replacing my fluids with fluids from other mods.

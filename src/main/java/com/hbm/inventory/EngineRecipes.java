@@ -28,7 +28,6 @@ public class EngineRecipes {
 		addFuel(ModForgeFluids.naphtha, FuelGrade.MEDIUM, 200_000);
 
 		addFuel(ModForgeFluids.heavyoil, FuelGrade.LOW, 25_000);
-		addFuel(ModForgeFluids.heatingoil, FuelGrade.LOW, 100_000);
 		addFuel(ModForgeFluids.reclaimed, FuelGrade.LOW, 200_000);
 		addFuel(ModForgeFluids.fishoil, FuelGrade.LOW, 50_000);
 		addFuel(ModForgeFluids.sunfloweroil, FuelGrade.LOW, 80_000);

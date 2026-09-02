@@ -35,7 +35,6 @@ public class FluidCombustionRecipes {
 		addBurnableFluid(ModForgeFluids.reclaimed, 100);
 		addBurnableFluid(ModForgeFluids.petroil, 125);
 		addBurnableFluid(ModForgeFluids.naphtha, 125);
-		addBurnableFluid(ModForgeFluids.heatingoil, 150);
 		addBurnableFluid(ModForgeFluids.biofuel, 150);
 		addBurnableFluid(ModForgeFluids.diesel, 200);
 		addBurnableFluid(ModForgeFluids.lightoil, 200);
@@ -61,7 +60,8 @@ public class FluidCombustionRecipes {
 		addBurnableFluid("plantoil", 50);
 		addBurnableFluid("acetaldehyde", 80);
 		addBurnableFluid("biodiesel", 175);
-		
+
+		com.hbm.forgefluid.HbmFluid.applyAllFuels();
 	}
 
 	public static int getFlameEnergy(Fluid f){
