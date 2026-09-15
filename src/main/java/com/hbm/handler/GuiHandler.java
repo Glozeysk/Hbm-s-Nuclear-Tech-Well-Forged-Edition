@@ -17,6 +17,7 @@ import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
+import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
 import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
@@ -234,6 +235,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_hydrotreater:
 			if(entity instanceof TileEntityMachineHydrotreater) {
 				return new ContainerMachineHydrotreater(player.inventory, (TileEntityMachineHydrotreater) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_catalytic_reformer:
+			if(entity instanceof TileEntityMachineCatalyticReformer) {
+				return new ContainerMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:
@@ -892,6 +898,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_hydrotreater:
 			if(entity instanceof TileEntityMachineHydrotreater) {
 				return new GUIMachineHydrotreater(player.inventory, (TileEntityMachineHydrotreater) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_catalytic_reformer:
+			if(entity instanceof TileEntityMachineCatalyticReformer) {
+				return new GUIMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:

@@ -35,6 +35,7 @@ import com.hbm.inventory.MagicRecipes;
 import com.hbm.inventory.RefineryRecipes;
 import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.HydrotreaterRecipes;
+import com.hbm.inventory.CatalyticReformerRecipes;
 import com.hbm.inventory.NuclearTransmutationRecipes;
 import com.hbm.inventory.MagicRecipes.MagicRecipe;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -92,6 +93,7 @@ public class JeiRecipes {
 	private static List<RefineryRecipe> refineryRecipes = null;
 	private static List<CrackingRecipe> crackingRecipes = null;
 	private static List<HydrotreatingRecipe> hydrotreatingRecipes = null;
+	private static List<CatalyticReformingRecipe> catalyticReformingRecipes = null;
 	private static List<FractioningRecipe> fractioningRecipes = null;
 	private static List<FluidRecipe> fluidEquivalences = null;
 	private static List<BookRecipe> bookRecipes = null;
@@ -441,6 +443,24 @@ public class JeiRecipes {
 		@Override
 		public void getIngredients(IIngredients ingredients) {
 			ingredients.setInputs(VanillaTypes.ITEM, inputs);
+			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
+		}
+
+	}
+
+	public static class CatalyticReformingRecipe implements IRecipeWrapper {
+
+		private final ItemStack input;
+		private final List<ItemStack> outputs;
+
+		public CatalyticReformingRecipe(ItemStack input, List<ItemStack> outputs) {
+			this.input = input;
+			this.outputs = outputs;
+		}
+
+		@Override
+		public void getIngredients(IIngredients ingredients) {
+			ingredients.setInput(VanillaTypes.ITEM, input);
 			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
 		}
 
@@ -1081,6 +1101,26 @@ public class JeiRecipes {
 			);
 		}
 		return hydrotreatingRecipes;
+	}
+
+	public static List<CatalyticReformingRecipe> getCatalyticReformingRecipes() {
+		if(catalyticReformingRecipes != null)
+			return catalyticReformingRecipes;
+		catalyticReformingRecipes = new ArrayList<CatalyticReformingRecipe>();
+
+		for(Fluid fluid : CatalyticReformerRecipes.recipes.keySet()) {
+			Quartet<FluidStack, FluidStack, FluidStack, FluidStack> recipe = CatalyticReformerRecipes.getRecipe(fluid);
+			catalyticReformingRecipes.add(new CatalyticReformingRecipe(
+					ItemFluidIcon.getStackWithQuantity(recipe.getW().getFluid(), recipe.getW().amount),
+					Arrays.asList(
+						ItemFluidIcon.getStackWithQuantity(recipe.getX().getFluid(), recipe.getX().amount),
+						ItemFluidIcon.getStackWithQuantity(recipe.getY().getFluid(), recipe.getY().amount),
+						ItemFluidIcon.getStackWithQuantity(recipe.getZ().getFluid(), recipe.getZ().amount)
+					)
+				)
+			);
+		}
+		return catalyticReformingRecipes;
 	}
 
 	public static List<FractioningRecipe> getFractioningRecipe() {

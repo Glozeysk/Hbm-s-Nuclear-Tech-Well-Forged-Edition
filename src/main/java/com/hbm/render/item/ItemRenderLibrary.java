@@ -176,6 +176,18 @@ public class ItemRenderLibrary {
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_catalytic_reformer), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -3, 0);
+				GL11.glScaled(3.5, 3.5, 3.5);
+			}
+			public void renderCommon() {
+				GL11.glScaled(0.5, 0.5, 0.5);
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				bindTexture(ResourceManager.catalytic_reformer_tex); ResourceManager.catalytic_reformer.renderAll();
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_crystallizer), new ItemRenderBase() {
 			public void renderNonInv() {
 				GL11.glScaled(0.5, 0.5, 0.5);

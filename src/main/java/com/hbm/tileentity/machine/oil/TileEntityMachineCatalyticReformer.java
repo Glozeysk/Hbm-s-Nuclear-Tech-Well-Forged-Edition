@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
-import com.hbm.inventory.HydrotreaterRecipes;
+import com.hbm.inventory.CatalyticReformerRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -11,15 +11,15 @@ import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.util.Tuple.Triplet;
+import com.hbm.util.Tuple.Quartet;
 
 import api.hbm.energy.IEnergyUser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -33,27 +33,31 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineHydrotreater extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
+//Ported from NTM:CE, rewritten on this fork's Forge FluidTank / IEnergyUser primitives like the hydrotreater.
+//Slots: 0 battery, 1-2 feedstock container in/out, 3-4 / 5-6 / 7-8 output tank 1/2/3 containers in/out, 9 catalyst.
+public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, ITankPacketAcceptor {
 
 	public static final long maxPower = 1_000_000;
+	public static final int powerPerOperation = 20_000;
 	public long power;
 
+	//0 = feedstock (type picked from the first valid fluid), 1-3 = outputs (types follow the recipe)
 	public FluidTank[] tanks;
 	public Fluid[] tankTypes;
 
-	public TileEntityMachineHydrotreater() {
+	public TileEntityMachineCatalyticReformer() {
 		super(10);
 		tanks = new FluidTank[4];
-		tankTypes = new Fluid[] {null, ModForgeFluids.hydrogen, null, null};
+		tankTypes = new Fluid[4];
 
 		tanks[0] = new FluidTank(64000);
-		tanks[1] = new FluidTank(ModForgeFluids.hydrogen, 0, 64000);
+		tanks[1] = new FluidTank(24000);
 		tanks[2] = new FluidTank(24000);
-		tanks[3] = new FluidTank(ModForgeFluids.sourgas, 0, 24000);
+		tanks[3] = new FluidTank(24000);
 	}
 
 	public String getName() {
-		return "container.hydrotreater";
+		return "container.catalyticReformer";
 	}
 
 	@Override
@@ -65,10 +69,10 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 
 			if(this.inputValidForTank(1))
 				FFUtils.fillFromFluidContainer(inventory, tanks[0], 1, 2);
-			FFUtils.fillFromFluidContainer(inventory, tanks[1], 3, 4);
 
 			reform();
 
+			FFUtils.fillFluidContainer(inventory, tanks[1], 3, 4);
 			FFUtils.fillFluidContainer(inventory, tanks[2], 5, 6);
 			FFUtils.fillFluidContainer(inventory, tanks[3], 7, 8);
 
@@ -77,60 +81,66 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 	}
 
 	private void reform() {
-		Triplet<FluidStack, FluidStack, FluidStack> recipe = HydrotreaterRecipes.getRecipe(tankTypes[0]);
+		Quartet<FluidStack, FluidStack, FluidStack, FluidStack> recipe = CatalyticReformerRecipes.getRecipe(tankTypes[0]);
 
 		if(recipe == null) {
-			setTankType(2, null);
-			setTankType(3, null);
+			for(int i = 1; i < 4; i++)
+				setTankType(i, null);
 			return;
 		}
 
-		setTankType(2, recipe.getY().getFluid());
-		setTankType(3, recipe.getZ().getFluid());
+		FluidStack[] outputs = new FluidStack[] { recipe.getX(), recipe.getY(), recipe.getZ() };
+
+		for(int i = 0; i < 3; i++)
+			setTankType(i + 1, outputs[i].getFluid());
 
 		// don't run onto a leftover product of another recipe, it would be converted in place
-		if(outputBlocked(2, recipe.getY()) || outputBlocked(3, recipe.getZ()))
-			return;
+		for(int i = 0; i < 3; i++)
+			if(outputBlocked(i + 1, outputs[i]))
+				return;
 
-		if(power < 20_000)
+		if(power < powerPerOperation)
 			return;
-		if(tanks[0].getFluidAmount() < 1000)
-			return;
-		if(tanks[1].getFluidAmount() < recipe.getX().amount)
+		if(tanks[0].getFluidAmount() < recipe.getW().amount)
 			return;
 		if(inventory.getStackInSlot(9).isEmpty() || inventory.getStackInSlot(9).getItem() != ModItems.catalyst_cobalt)
 			return;
-		if(tanks[2].getFluidAmount() + recipe.getY().amount > tanks[2].getCapacity())
-			return;
-		if(tanks[3].getFluidAmount() + recipe.getZ().amount > tanks[3].getCapacity())
-			return;
+		for(int i = 0; i < 3; i++)
+			if(tanks[i + 1].getFluidAmount() + outputs[i].amount > tanks[i + 1].getCapacity())
+				return;
 
-		tanks[0].drain(1000, true);
-		tanks[1].drain(recipe.getX().amount, true);
-		tanks[2].fill(recipe.getY().copy(), true);
-		tanks[3].fill(recipe.getZ().copy(), true);
-		power -= 20_000;
+		tanks[0].drain(recipe.getW().amount, true);
+		for(int i = 0; i < 3; i++)
+			tanks[i + 1].fill(outputs[i].copy(), true);
+		power -= powerPerOperation;
 	}
 
 	private boolean outputBlocked(int idx, FluidStack out) {
 		return tanks[idx].getFluidAmount() > 0 && tanks[idx].getFluid().getFluid() != out.getFluid();
 	}
 
+	//Active HE subscription on the cable spots next to the 6 ports (see MachineCatalyticReformer.fillSpace),
+	//passive capability lookups don't reach the HE net through TileEntityProxyCombo.
 	private void updateConnections() {
-		this.trySubscribe(world, pos.add(2, 0, 1), ForgeDirection.EAST);
-		this.trySubscribe(world, pos.add(1, 0, 2), ForgeDirection.SOUTH);
-		this.trySubscribe(world, pos.add(2, 0, -1), ForgeDirection.EAST);
-		this.trySubscribe(world, pos.add(1, 0, -2), ForgeDirection.NORTH);
-		this.trySubscribe(world, pos.add(-2, 0, 1), ForgeDirection.WEST);
-		this.trySubscribe(world, pos.add(-1, 0, 2), ForgeDirection.SOUTH);
-		this.trySubscribe(world, pos.add(-2, 0, -1), ForgeDirection.WEST);
-		this.trySubscribe(world, pos.add(-1, 0, -2), ForgeDirection.NORTH);
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
+		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+		subscribe(dir.offsetX * 2 + rot.offsetX, dir.offsetZ * 2 + rot.offsetZ, dir);
+		subscribe(dir.offsetX * 2 - rot.offsetX, dir.offsetZ * 2 - rot.offsetZ, dir);
+		subscribe(-dir.offsetX * 2 + rot.offsetX, -dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite());
+		subscribe(-dir.offsetX * 2 - rot.offsetX, -dir.offsetZ * 2 - rot.offsetZ, dir.getOpposite());
+		subscribe(rot.offsetX * 3, rot.offsetZ * 3, rot);
+		subscribe(-rot.offsetX * 3, -rot.offsetZ * 3, rot.getOpposite());
+	}
+
+	private void subscribe(int dx, int dz, ForgeDirection dir) {
+		this.trySubscribe(world, new BlockPos(pos.getX() + dx, pos.getY(), pos.getZ() + dz), dir);
 	}
 
 	private boolean inputValidForTank(int slot) {
 		if(!inventory.getStackInSlot(slot).isEmpty()) {
 			FluidStack containerFluid = FluidUtil.getFluidContained(inventory.getStackInSlot(slot));
-			if(containerFluid != null && HydrotreaterRecipes.getRecipe(containerFluid.getFluid()) != null) {
+			if(containerFluid != null && CatalyticReformerRecipes.getRecipe(containerFluid.getFluid()) != null) {
 				if(tanks[0].getFluidAmount() > 0 && tanks[0].getFluid().getFluid() != containerFluid.getFluid())
 					return false;
 				tankTypes[0] = containerFluid.getFluid();
@@ -145,7 +155,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			return;
 		if(tankTypes[idx] != type) {
 			tankTypes[idx] = type;
-			tanks[idx].setFluid(type != null ? new FluidStack(type, tanks[idx].getFluidAmount()) : null);
+			tanks[idx].setFluid(type != null ? new FluidStack(type, 0) : null);
 		}
 	}
 
@@ -234,9 +244,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 		return i == 2 || i == 4 || i == 6 || i == 8;
 	}
 
+	private AxisAlignedBB bb = null;
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if(bb == null)
+			bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 7, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override
@@ -256,7 +270,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			return 0;
 		if(tankTypes[0] != null && resource.getFluid() == tankTypes[0])
 			return tanks[0].fill(resource, doFill);
-		if(tanks[0].getFluidAmount() == 0 && HydrotreaterRecipes.getRecipe(resource.getFluid()) != null) {
+		if(tanks[0].getFluidAmount() == 0 && CatalyticReformerRecipes.getRecipe(resource.getFluid()) != null) {
 			//a simulated fill must not switch the feedstock type
 			if(doFill) {
 				tankTypes[0] = resource.getFluid();
@@ -264,8 +278,6 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			}
 			return tanks[0].fill(resource, doFill);
 		}
-		if(resource.getFluid() == ModForgeFluids.hydrogen)
-			return tanks[1].fill(resource, doFill);
 		return 0;
 	}
 
@@ -273,20 +285,18 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
 		if(resource == null)
 			return null;
-		if(resource.isFluidEqual(tanks[2].getFluid()))
-			return tanks[2].drain(resource.amount, doDrain);
-		if(resource.isFluidEqual(tanks[3].getFluid()))
-			return tanks[3].drain(resource.amount, doDrain);
+		for(int i = 1; i < 4; i++)
+			if(resource.isFluidEqual(tanks[i].getFluid()))
+				return tanks[i].drain(resource.amount, doDrain);
 		return null;
 	}
 
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
-		//check the amount, not the stack: a typed but empty product tank holds a 0 mB stack and blocked the byproduct
-		if(tanks[2].getFluidAmount() > 0)
-			return tanks[2].drain(maxDrain, doDrain);
-		if(tanks[3].getFluidAmount() > 0)
-			return tanks[3].drain(maxDrain, doDrain);
+		//check the amount, not the stack: a typed but empty output tank holds a 0 mB stack
+		for(int i = 1; i < 4; i++)
+			if(tanks[i].getFluidAmount() > 0)
+				return tanks[i].drain(maxDrain, doDrain);
 		return null;
 	}
 

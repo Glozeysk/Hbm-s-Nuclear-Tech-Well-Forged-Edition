@@ -161,6 +161,11 @@ public class ModForgeFluids {
 			.trait(FluidTrait.COMBUSTION_TU, 220)
 			.fuel(FuelGrade.MEDIUM, 330_000)
 			.build();
+	public static Fluid reformate = HbmFluid.builder("reformate")
+			.props(2, 2, 0, EnumSymbol.NONE)
+			.trait(FluidTrait.COMBUSTION_TU, 2_400)
+			.fuel(FuelGrade.HIGH, 6_000_000)
+			.build();
 	public static Fluid diesel = HbmFluid.builder("diesel")
 			.props(1, 2, 0, EnumSymbol.NONE)
 			.trait(FluidTrait.COMBUSTION_TU, 550)

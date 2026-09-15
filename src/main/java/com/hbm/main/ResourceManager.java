@@ -327,6 +327,7 @@ public class ResourceManager {
 	public static final IModelCustom fraction_spacer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/fraction_spacer.obj")).asVBO();
 	public static final IModelCustom cracking_tower = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/cracking_tower.obj")).asVBO();
 	public static final IModelCustom hydrotreater = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/hydrotreater.obj")).asVBO();
+	public static final IModelCustom catalytic_reformer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/catalytic_reformer.obj")).asVBO();
 
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
@@ -664,6 +665,7 @@ public class ResourceManager {
 	public static final ResourceLocation fraction_spacer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/fraction_spacer.png");
 	public static final ResourceLocation cracking_tower_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/cracking_tower.png");
 	public static final ResourceLocation hydrotreater_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/hydrotreater.png");
+	public static final ResourceLocation catalytic_reformer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/catalytic_reformer.png");
 
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");
