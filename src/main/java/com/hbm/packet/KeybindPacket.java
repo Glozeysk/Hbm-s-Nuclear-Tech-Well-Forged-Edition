@@ -12,7 +12,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -56,7 +58,11 @@ public class KeybindPacket extends PrecompiledPacket {
 		@Override
 		public IMessage onMessage(KeybindPacket m, MessageContext ctx) {
 			if (ctx.side == Side.SERVER) {
-				ctx.getServerHandler().player.server.addScheduledTask(() -> {
+				// runs on the netty thread: the player can already be gone while the connection is torn down,
+				// and an exception here is fatal to the whole connection, so resolve the player on the main thread
+				MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+				if (server == null) return null;
+				server.addScheduledTask(() -> {
 					EntityPlayerMP p = ctx.getServerHandler().player;
 					if (p == null || p.world == null) return;
 
