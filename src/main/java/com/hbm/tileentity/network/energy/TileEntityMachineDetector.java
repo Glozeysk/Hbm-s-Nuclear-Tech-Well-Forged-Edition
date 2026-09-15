@@ -9,6 +9,12 @@ import net.minecraft.util.ITickable;
 
 public class TileEntityMachineDetector extends TileEntityLoadedBase implements ITickable, IEnergyUser {
 
+	//keep this TE when only the IS_ON state changes: a recreated client TE loses the synced values
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		return oldState.getBlock().getClass() != newState.getBlock().getClass();
+	}
+
 	private long power;
 
 	public TileEntityMachineDetector(){

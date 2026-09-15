@@ -174,19 +174,20 @@ public class MachineBoiler extends BlockContainer {
 		if (i.getBlock() == ModBlocks.machine_boiler_electric_off || i.getBlock() == ModBlocks.machine_boiler_electric_on){
 			if (isProcessing && i.getBlock() != ModBlocks.machine_boiler_electric_on) {
 				world.setBlockState(pos, ModBlocks.machine_boiler_electric_on.getDefaultState().withProperty(FACING, i.getValue(FACING)));
-			} else if (i.getBlock() != ModBlocks.machine_boiler_electric_off) {
+			} else if (!isProcessing && i.getBlock() != ModBlocks.machine_boiler_electric_off) {
 				world.setBlockState(pos, ModBlocks.machine_boiler_electric_off.getDefaultState().withProperty(FACING, i.getValue(FACING)));
 			}
 		}
 		if (i.getBlock() == ModBlocks.machine_boiler_rtg_off || i.getBlock() == ModBlocks.machine_boiler_rtg_on){
 			if (isProcessing && i.getBlock() != ModBlocks.machine_boiler_rtg_on) {
 				world.setBlockState(pos, ModBlocks.machine_boiler_rtg_on.getDefaultState().withProperty(FACING, i.getValue(FACING)));
-			} else if (i.getBlock() != ModBlocks.machine_boiler_rtg_off) {
+			} else if (!isProcessing && i.getBlock() != ModBlocks.machine_boiler_rtg_off) {
 				world.setBlockState(pos, ModBlocks.machine_boiler_rtg_off.getDefaultState().withProperty(FACING, i.getValue(FACING)));
 			}
 		}
 		keepInventory = false;
-		if (entity != null) {
+		//only when the block swap dropped this TE; re-setting an unchanged TE every tick forces a chunk update
+		if (entity != null && entity.isInvalid()) {
 			entity.validate();
 			world.setTileEntity(pos, entity);
 		}

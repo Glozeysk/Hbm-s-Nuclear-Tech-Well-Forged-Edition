@@ -83,6 +83,7 @@ public class GeneralConfig {
     public static boolean enablePacketThreading = true;
 	public static int packetThreadingWorkers = 0;
     public static boolean packetThreadingErrorBypass = false;
+	public static boolean packetDedupMaintenance = true;
 	public static boolean adaptiveClientQuality = true;
 	public static int clientQualityProfile = 0;
 	private static boolean baseInstancedParticles = false;
@@ -104,6 +105,7 @@ public class GeneralConfig {
 		enablePacketThreading = config.get(CATEGORY_GENERAL, "0.02_enablePacketThreading", true).getBoolean(true);
 		packetThreadingWorkers = Math.max(0, Math.min(16, config.get(CATEGORY_GENERAL, "0.03_packetThreadingWorkers", 0, "Packet worker count. 0 means automatic safe mode; manual values are clamped to 1..16. Higher values can help with packet-heavy bases, but too many workers can compete with the server tick thread.").getInt(0)));
 		packetThreadingErrorBypass = config.get(CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false).getBoolean(false);
+		packetDedupMaintenance = config.get(CATEGORY_GENERAL, "0.05_packetDedupMaintenance", true, "Skip machine sync packets (power, gauges, fluid tanks) whose content has not changed since the last send; an unchanged value is still resent once per second so players entering range or reloading chunks get the state. Disable if machine GUIs show stale values.").getBoolean(true);
 		adaptiveClientQuality = config.get(CATEGORY_GENERAL, "1.00_enableAdaptiveClientQuality", true).getBoolean(true);
 		clientQualityProfile = config.get(CATEGORY_GENERAL, "1.00_clientQualityProfile", 0).getInt(0);
 		enableDebugMode = config.get(CATEGORY_GENERAL, "1.00_enableDebugMode", false).getBoolean(false);

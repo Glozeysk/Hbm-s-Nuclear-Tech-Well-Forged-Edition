@@ -180,11 +180,13 @@ public class PacketThreading {
     }
 
     private static void flushReadyPackets() {
-        LOCK.lock();
-        try {
-            boolean doFlushServer = false;
-            boolean doFlushClient = false;
-            while (true) {
+        boolean doFlushServer = false;
+        boolean doFlushClient = false;
+        // lock per packet, not per batch: the server thread takes the same lock for non-threaded sends and a long
+        // batch stalled its tick. Order holds, since taking the next sequence and writing it share one lock hold.
+        while (true) {
+            LOCK.lock();
+            try {
                 PacketTask task = readyPackets.remove(nextSequenceToSend);
                 if (task == null) {
                     break;
@@ -204,15 +206,22 @@ public class PacketThreading {
                 } finally {
                     releaseTask(task);
                 }
+            } finally {
+                LOCK.unlock();
             }
-            if (doFlushServer) {
-                NetworkHandler.flushServerDirect();
+        }
+        if (doFlushServer || doFlushClient) {
+            LOCK.lock();
+            try {
+                if (doFlushServer) {
+                    NetworkHandler.flushServerDirect();
+                }
+                if (doFlushClient) {
+                    NetworkHandler.flushClientDirect();
+                }
+            } finally {
+                LOCK.unlock();
             }
-            if (doFlushClient) {
-                NetworkHandler.flushClientDirect();
-            }
-        } finally {
-            LOCK.unlock();
         }
     }
 
@@ -261,11 +270,46 @@ public class PacketThreading {
         }
     }
 
+    private static final long DEDUP_HEARTBEAT_NANOS = TimeUnit.SECONDS.toNanos(1L);
+    private static final long DEDUP_EVICT_NANOS = TimeUnit.SECONDS.toNanos(5L);
+    private static final ConcurrentHashMap<Long, long[]> lastMaintenanceSends = new ConcurrentHashMap<>();
+    private static volatile long lastDedupEvictNanos;
+
+    // Machines send power/gauge/tank state every tick, but only changed values need to go out. An unchanged value is
+    // still resent once per second, so players entering range, opening a GUI or reloading the chunk get the state.
+    private static boolean isUnchangedMaintenance(ThreadedPacket packet, PacketOp op, Object target) {
+        if (!GeneralConfig.packetDedupMaintenance || !isMaintenancePacket(packet) || !(target instanceof TargetPoint))
+            return false;
+        if (op != PacketOp.ALL_AROUND && op != PacketOp.TRACKING_POINT)
+            return false;
+
+        long key = (packet.hbm$getSyncKey() ^ ((TargetPoint) target).dimension) * 1099511628211L;
+        key = (key ^ op.ordinal()) * 1099511628211L;
+        long hash = com.hbm.lib.Library.fnv1a64(packet.getCompiledBuffer());
+        long now = System.nanoTime();
+
+        if (now - lastDedupEvictNanos > DEDUP_EVICT_NANOS) {
+            lastDedupEvictNanos = now;
+            lastMaintenanceSends.values().removeIf(v -> now - v[1] > DEDUP_EVICT_NANOS);
+        }
+
+        long[] last = lastMaintenanceSends.get(key);
+        if (last != null && last[0] == hash && now - last[1] < DEDUP_HEARTBEAT_NANOS)
+            return true;
+        lastMaintenanceSends.put(key, new long[] { hash, now });
+        return false;
+    }
+
     private static void dispatch(ThreadedPacket packet, PacketOp op, Object target, int dimension) {
         totalCnt.increment();
         recordPacket(packet);
         U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, 1);
         try {
+            if (isUnchangedMaintenance(packet, op, target)) {
+                packet.releaseBuffer();
+                return;
+            }
+
             if (!enabled || !GeneralConfig.enablePacketThreading) {
                 runSynchronously(packet, op, target, dimension);
                 return;

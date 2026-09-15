@@ -20,6 +20,12 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITickable, ICapabilityProvider, IBufPacketReceiver {
 
+	//keep this TE across the on/off block swap: a recreated client TE loses the synced values and an open GUI keeps reading the dropped one
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		return oldState.getBlock().getClass() != newState.getBlock().getClass();
+	}
+
 	public int rtgPower;
 	public static final int maxRTGPower = 6000;
 	public short progress;

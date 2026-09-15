@@ -170,7 +170,8 @@ public class MachineNukeFurnace extends BlockContainer implements IRadResistantB
 		
 		keepInventory = false;
 		
-		if(entity != null) {
+		//only when the block swap dropped this TE; re-setting an unchanged TE every tick forces a chunk update
+		if(entity != null && entity.isInvalid()) {
 			entity.validate();
 			world.setTileEntity(pos, entity);
 		}

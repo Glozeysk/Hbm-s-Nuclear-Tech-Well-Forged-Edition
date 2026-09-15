@@ -38,6 +38,12 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 public class TileEntityMachineCoal extends TileEntityMachineBase implements ITickable, ITankPacketAcceptor, IEnergyGenerator, IFluidHandler {
+
+	//keep this TE across the on/off block swap: a recreated client TE loses the synced values and an open GUI keeps reading the dropped one
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		return oldState.getBlock().getClass() != newState.getBlock().getClass();
+	}
 	
 	public long power;
 	public int burnTime;

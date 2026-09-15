@@ -31,6 +31,13 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class TileEntityMachineBoiler extends TileEntityMachineBase implements ITickable, IFluidHandler, ITankPacketAcceptor {
 
+	//keep this TE across the on/off block swap: a recreated client TE loses the synced values and an open GUI keeps reading the dropped one
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		net.minecraft.block.Block b = newState.getBlock();
+		return b != com.hbm.blocks.ModBlocks.machine_boiler_off && b != com.hbm.blocks.ModBlocks.machine_boiler_on;
+	}
+
 	public int burnTime;
 	public int heat = 2000;
 	public static final int maxHeat = 50000;

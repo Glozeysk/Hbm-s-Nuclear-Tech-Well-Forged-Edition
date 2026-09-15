@@ -18,6 +18,12 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class TileEntityNukeFurnace extends TileEntity implements ITickable {
 
+	//keep this TE across the on/off block swap: a recreated client TE loses the synced values and an open GUI keeps reading the dropped one
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		return oldState.getBlock().getClass() != newState.getBlock().getClass();
+	}
+
 	public ItemStackHandler inventory;
 	
 	public int dualCookTime;

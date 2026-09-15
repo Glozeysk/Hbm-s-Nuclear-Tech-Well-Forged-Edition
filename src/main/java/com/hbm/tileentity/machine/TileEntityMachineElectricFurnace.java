@@ -19,6 +19,12 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class TileEntityMachineElectricFurnace extends TileEntityMachineBase implements ITickable, IEnergyUser {
 
+	//keep this TE across the on/off block swap: a recreated client TE loses the synced values and an open GUI keeps reading the dropped one
+	@Override
+	public boolean shouldRefresh(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.state.IBlockState oldState, net.minecraft.block.state.IBlockState newState) {
+		return oldState.getBlock().getClass() != newState.getBlock().getClass();
+	}
+
 	public int dualCookTime;
 	public long power;
 	public static final long maxPower = 100000;
