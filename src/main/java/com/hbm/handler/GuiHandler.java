@@ -18,6 +18,7 @@ import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
+import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
@@ -240,6 +241,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_catalytic_reformer:
 			if(entity instanceof TileEntityMachineCatalyticReformer) {
 				return new ContainerMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_pyrooven:
+			if(entity instanceof TileEntityMachinePyroOven) {
+				return new ContainerMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:
@@ -903,6 +909,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_catalytic_reformer:
 			if(entity instanceof TileEntityMachineCatalyticReformer) {
 				return new GUIMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_pyrooven:
+			if(entity instanceof TileEntityMachinePyroOven) {
+				return new GUIMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:

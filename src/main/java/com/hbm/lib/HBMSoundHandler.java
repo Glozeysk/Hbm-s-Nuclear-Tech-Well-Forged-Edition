@@ -15,6 +15,7 @@ public final class HBMSoundHandler {
 
 	public static SoundEvent selenium_engine_operate;
 	public static SoundEvent flare_operate;
+	public static SoundEvent pyroOperate;
 	public static SoundEvent turbofan_operate2;
 	public static SoundEvent diesel_operate;
 	public static SoundEvent turretFocus;
@@ -296,6 +297,7 @@ public final class HBMSoundHandler {
 		selenium_engine_operate = register("block.selenium_engine_operate");
 		turbofan_operate2 = register("block.turbofan_operate2");
 		flare_operate = register("block.flare_operate");
+		pyroOperate = register("block.pyroOperate");
 		diesel_operate = register("block.diesel_operate");
 		turretFocus = register("block.turret_focus");
 		chungusOperate = register("block.chungusTurbineRunning");

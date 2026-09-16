@@ -36,6 +36,7 @@ import com.hbm.inventory.RefineryRecipes;
 import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.HydrotreaterRecipes;
 import com.hbm.inventory.CatalyticReformerRecipes;
+import com.hbm.inventory.PyroOvenRecipes;
 import com.hbm.inventory.NuclearTransmutationRecipes;
 import com.hbm.inventory.MagicRecipes.MagicRecipe;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -94,6 +95,7 @@ public class JeiRecipes {
 	private static List<CrackingRecipe> crackingRecipes = null;
 	private static List<HydrotreatingRecipe> hydrotreatingRecipes = null;
 	private static List<CatalyticReformingRecipe> catalyticReformingRecipes = null;
+	private static List<PyroOvenRecipe> pyroOvenRecipes = null;
 	private static List<FractioningRecipe> fractioningRecipes = null;
 	private static List<FluidRecipe> fluidEquivalences = null;
 	private static List<BookRecipe> bookRecipes = null;
@@ -462,6 +464,31 @@ public class JeiRecipes {
 		public void getIngredients(IIngredients ingredients) {
 			ingredients.setInput(VanillaTypes.ITEM, input);
 			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
+		}
+
+	}
+
+	public static class PyroOvenRecipe implements IRecipeWrapper {
+
+		//only the components the recipe has: 1 or 2 inputs, 1 or 2 outputs
+		public final List<List<ItemStack>> inputs;
+		public final List<List<ItemStack>> outputs;
+
+		public PyroOvenRecipe(List<List<ItemStack>> inputs, List<List<ItemStack>> outputs) {
+			this.inputs = inputs;
+			this.outputs = outputs;
+		}
+
+		@Override
+		public void getIngredients(IIngredients ingredients) {
+			ingredients.setInputLists(VanillaTypes.ITEM, inputs);
+			ingredients.setOutputLists(VanillaTypes.ITEM, outputs);
+		}
+
+		//category background is blank, the slot art depends on the component count
+		@Override
+		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
+			PyroOvenRecipeHandler.getLayout(inputs.size(), outputs.size()).draw(minecraft);
 		}
 
 	}
@@ -1121,6 +1148,24 @@ public class JeiRecipes {
 			);
 		}
 		return catalyticReformingRecipes;
+	}
+
+	//cell order: input fluid, input item -> output item, output fluid; missing components are left out
+	public static List<PyroOvenRecipe> getPyroOvenRecipes() {
+		if(pyroOvenRecipes != null)
+			return pyroOvenRecipes;
+		pyroOvenRecipes = new ArrayList<PyroOvenRecipe>();
+
+		for(PyroOvenRecipes.PyroOvenRecipe recipe : PyroOvenRecipes.recipes) {
+			List<List<ItemStack>> inputs = new ArrayList<List<ItemStack>>();
+			List<List<ItemStack>> outputs = new ArrayList<List<ItemStack>>();
+			if(recipe.inputFluid != null) inputs.add(Arrays.asList(ItemFluidIcon.getStackWithQuantity(recipe.inputFluid)));
+			if(recipe.inputItem != null) inputs.add(recipe.inputItem.getStackList());
+			if(recipe.outputItem != null) outputs.add(Arrays.asList(recipe.outputItem.copy()));
+			if(recipe.outputFluid != null) outputs.add(Arrays.asList(ItemFluidIcon.getStackWithQuantity(recipe.outputFluid)));
+			pyroOvenRecipes.add(new PyroOvenRecipe(inputs, outputs));
+		}
+		return pyroOvenRecipes;
 	}
 
 	public static List<FractioningRecipe> getFractioningRecipe() {

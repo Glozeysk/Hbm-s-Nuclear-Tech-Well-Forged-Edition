@@ -53,6 +53,7 @@ public class JEIConfig implements IModPlugin {
 	public static final String CRACKING = "hbm.cracking";
 	public static final String HYDROTREATING = "hbm.hydrotreating";
 	public static final String CATALYTIC_REFORMING = "hbm.catalytic_reforming";
+	public static final String PYROLYSIS = "hbm.pyrolysis";
 	public static final String FRACTIONING = "hbm.fracturing";
 	public static final String SHREDDER = "hbm.shredder";
 	public static final String FLUIDS = "hbm.fluids";
@@ -120,6 +121,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_catalytic_cracker), CRACKING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_hydrotreater), HYDROTREATING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_catalytic_reformer), CATALYTIC_REFORMING);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_pyrooven), PYROLYSIS);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_fraction_tower), FRACTIONING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shredder), SHREDDER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shreddermk2), SHREDDER);
@@ -161,6 +163,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(JeiRecipes.getCrackingRecipe(), CRACKING);
 		registry.addRecipes(JeiRecipes.getHydrotreatingRecipe(), HYDROTREATING);
 		registry.addRecipes(JeiRecipes.getCatalyticReformingRecipes(), CATALYTIC_REFORMING);
+		registry.addRecipes(JeiRecipes.getPyroOvenRecipes(), PYROLYSIS);
 		registry.addRecipes(JeiRecipes.getFractioningRecipe(), FRACTIONING);
 		registry.addRecipes(ShredderRecipes.getShredderRecipes(), SHREDDER);
 		registry.addRecipes(JeiRecipes.getFluidEquivalences(), FLUIDS);
@@ -206,6 +209,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineRefinery.class, 79, 71, 71, 17, REFINERY);
 		registry.addRecipeClickArea(GUIMachineHydrotreater.class, 85, 82, 24, 24, HYDROTREATING);
 		registry.addRecipeClickArea(GUIMachineCatalyticReformer.class, 67, 82, 24, 24, CATALYTIC_REFORMING);
+		registry.addRecipeClickArea(GUIMachinePyroOven.class, 57, 47, 27, 12, PYROLYSIS);
 		registry.addRecipeClickArea(GUIMachineShredder.class, 43, 89, 53, 17, SHREDDER);
 		registry.addRecipeClickArea(GUIMachineShreddermk2.class, 80, 35, 21, 14, SHREDDER);
 		registry.addRecipeClickArea(GUICrystallizer.class, 79, 40, 29, 26, CRYSTALLIZER);
@@ -294,6 +298,7 @@ public class JEIConfig implements IModPlugin {
 				new CrackingRecipeHandler(help),
 				new HydrotreatingRecipeHandler(help),
 				new CatalyticReformingRecipeHandler(help),
+				new PyroOvenRecipeHandler(help),
 				new FractioningRecipeHandler(help),
 				new CrystallizerRecipeHandler(help),
 				new CentrifugeRecipeHandler(help),

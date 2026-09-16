@@ -230,6 +230,7 @@ import com.hbm.inventory.BreederRecipes;
 import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.HydrotreaterRecipes;
 import com.hbm.inventory.CatalyticReformerRecipes;
+import com.hbm.inventory.PyroOvenRecipes;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.inventory.CyclotronRecipes;
@@ -692,6 +693,7 @@ public class MainRegistry {
 		reg(TileEntityMachineRefinery.class, "tileentity_machine_refinery");
 		reg(TileEntityMachineHydrotreater.class, "tileentity_machine_hydrotreater");
 		reg(TileEntityMachineCatalyticReformer.class, "tileentity_machine_catalytic_reformer");
+		reg(TileEntityMachinePyroOven.class, "tileentity_machine_pyrooven");
 		reg(TileEntityMachineCyclotron.class, "tileentity_machine_cyclotron");
 		reg(TileEntityMachineSchrabidiumTransmutator.class, "tileentity_machine_schrabidium_transmutator");
 		reg(TileEntityMachineSiren.class, "tileentity_machine_siren");
@@ -1174,6 +1176,7 @@ public class MainRegistry {
 		HeatRecipes.registerHeatRecipes();
 		EngineRecipes.registerEngineRecipes();
 		FluidCombustionRecipes.registerFluidCombustionRecipes();
+		PyroOvenRecipes.registerRecipes(); //solid fuel recipes read the combustion values
 		HbmDetox.init();
 
 		FluidContainerRegistry.registerContainer(Item.getItemFromBlock(ModBlocks.lox_barrel), ModItems.tank_steel, new FluidStack(ModForgeFluids.oxygen, 10000));
