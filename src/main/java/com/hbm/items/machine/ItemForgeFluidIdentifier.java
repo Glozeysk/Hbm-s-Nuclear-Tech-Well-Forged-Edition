@@ -17,6 +17,7 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.PipeUpdatePacket;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
+import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
 import com.hbm.util.I18nUtil;
 import com.hbm.forgefluid.FluidTypeHandler;
 
@@ -175,6 +176,8 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 		// buildNetwork flood-fills the whole connected component from one starting pipe, so a
 		// single rebuild from the origin reconstructs the network for the entire changed region.
 		TileEntityFFDuctBaseMk2.rebuildNetworks(worldIn, origin);
+		//setTypeSilent skips the magnetic pipes' setType override, so their energy nets are rebuilt here in one batch
+		TileEntityFFFluidDuctMk4.rebuildEnergyNetworks(worldIn, changed);
 
 		for(TileEntityFFDuctBaseMk2 duct : changed){
 			duct.refreshLocalState();

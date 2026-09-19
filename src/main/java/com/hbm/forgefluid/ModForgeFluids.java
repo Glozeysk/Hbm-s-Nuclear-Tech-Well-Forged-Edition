@@ -63,6 +63,23 @@ public class ModForgeFluids {
 			.props(4, 1, 1, EnumSymbol.NONE)
 			.build();
 
+	public static Fluid brine = HbmFluid.builder("brine")
+			.props(1, 0, 0, EnumSymbol.NONE)
+			.build();
+	public static Fluid sodiumhydroxide = HbmFluid.builder("sodiumhydroxide")
+			.props(3, 0, 1, EnumSymbol.NONE)
+			.build();
+	public static Fluid sodiumbase = HbmFluid.builder("sodiumbase")
+			.temperature(400)
+			.props(3, 3, 2, EnumSymbol.NOWATER)
+			.build();
+	public static Fluid sodiumhot = HbmFluid.builder("sodiumhot")
+			.temperature(1200)
+			.props(4, 4, 3, EnumSymbol.NOWATER)
+			.build();
+	public static Fluid electrosolvent = HbmFluid.builder("electrosolvent")
+			.props(4, 3, 2, EnumSymbol.ACID).dfc(1.75F).trait(FluidTrait.CORROSIVE_2)
+			.build();
 	public static Fluid heavywater = HbmFluid.builder("heavywater")
 			.props(1, 0, 0, EnumSymbol.NONE)
 			.build();

@@ -15,7 +15,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 public class PyroOvenRecipes {
 
-	//list order = JEI order
 	public static final List<PyroOvenRecipe> recipes = new ArrayList<>();
 
 	public static void registerRecipes() {
@@ -23,18 +22,23 @@ public class PyroOvenRecipes {
 				.in(new FluidStack(ModForgeFluids.hydrogen, 500))
 				.in(new OreDictStack(OreDictManager.COAL.gem()))
 				.out(new FluidStack(ModForgeFluids.heavyoil, 1000)));
+		addRecipe(new PyroOvenRecipe(200)
+				.in(new FluidStack(ModForgeFluids.gas, 12000))
+				.out(new ComparableStack(ModItems.ingot_graphite, 1))
+				.out(new FluidStack(ModForgeFluids.hydrogen, 8000)));
+		addRecipe(new PyroOvenRecipe(400)
+				.in(new ComparableStack(ModItems.oil_tar, 4))
+				.out(new ComparableStack(ModItems.powder_soot, 1)));
 		addRecipe(new PyroOvenRecipe(100)
 				.in(new FluidStack(ModForgeFluids.hydrogen, 500))
 				.in(new OreDictStack(OreDictManager.COAL.dust()))
 				.out(new FluidStack(ModForgeFluids.heavyoil, 1000)));
-		//moved from CentrifugeRecipes; runs after BedrockOreRegistry.registerBedrockOres()
 		for(int oreMeta : BedrockOreRegistry.oreIndexes.keySet()) {
 			addRecipe(new PyroOvenRecipe(100)
 					.in(new ComparableStack(ModItems.ore_bedrock_seared, 1, oreMeta))
 					.out(new ItemStack(ModItems.ore_bedrock_exquisite, 1, oreMeta)));
 		}
 
-		//solid fuel, CE list: diesel_reform = diesel_hq, kerosene_reform = kerosene_hq; missing fluids and balefire skipped
 		registerSFAuto(ModForgeFluids.smear);
 		registerSFAuto(ModForgeFluids.heatingoil);
 		registerSFAuto(ModForgeFluids.reclaimed);
@@ -53,8 +57,6 @@ public class PyroOvenRecipes {
 		registerSFAuto(ModForgeFluids.xylene);
 	}
 
-	//CE algorithm: 3200 burntime * 1.5 firebox time bonus * 300 TU/t per solid fuel, at double efficiency.
-	//Needs FluidCombustionRecipes to be registered first (TU per mB, same unit as the oil burner uses).
 	public static void registerSFAuto(Fluid fluid) {
 		long tuPerSF = 1_440_000L;
 		long tuPerBucket = FluidCombustionRecipes.getFlameEnergy(fluid) * 1000L;
@@ -106,7 +108,6 @@ public class PyroOvenRecipes {
 		public FluidStack inputFluid;
 		public AStack inputItem;
 		public FluidStack outputFluid;
-		//the output is always one concrete stack (item, meta, count, NBT): the machine has to know exactly what to put into the slot
 		public ItemStack outputItem;
 		public final int duration;
 
@@ -119,7 +120,6 @@ public class PyroOvenRecipes {
 		public PyroOvenRecipe in(ItemStack stack) { this.inputItem = new ComparableStack(stack); return this; }
 		public PyroOvenRecipe out(FluidStack stack) { this.outputFluid = stack; return this; }
 		public PyroOvenRecipe out(ItemStack stack) { this.outputItem = stack.copy(); return this; }
-		//ComparableStack -> that item and meta; OreDictStack -> the first item registered under the name
 		public PyroOvenRecipe out(AStack stack) {
 			if(stack.getStackList().isEmpty())
 				throw new IllegalArgumentException("Pyrolysis oven recipe output " + stack + " resolves to no item");

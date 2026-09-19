@@ -5,6 +5,7 @@ import api.hbm.energy.IEnergyGenerator;
 import com.hbm.entity.particle.EntityGasFlameFX;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.EngineRecipes.FuelGrade;
@@ -64,6 +65,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
+	public static final int SOOT_PETROLEUM = 32_000;
+	//mB of petroleum burnt since the last soot
+	private int burntPetroleum = 0;
+
 	private AudioWrapper audio;
 
 	@SideOnly(Side.CLIENT)
@@ -119,6 +124,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 		tank.readFromNBT(compound);
 		isOn = compound.getBoolean("isOn");
 		doesBurn = compound.getBoolean("doesBurn");
+		burntPetroleum = compound.getInteger("burntPetroleum");
 		prevDoesBurn = doesBurn;
 		super.readFromNBT(compound);
 	}
@@ -129,7 +135,21 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 		tank.writeToNBT(compound);
 		compound.setBoolean("isOn", isOn);
 		compound.setBoolean("doesBurn", doesBurn);
+		compound.setInteger("burntPetroleum", burntPetroleum);
 		return super.writeToNBT(compound);
+	}
+
+	//1 soot in slot 3 per full SOOT_PETROLEUM mB of burnt petroleum; soot for a full slot is lost
+	private void rollSoot(int burnt) {
+		burntPetroleum += burnt;
+		while(burntPetroleum >= SOOT_PETROLEUM) {
+			burntPetroleum -= SOOT_PETROLEUM;
+			ItemStack slot = inventory.getStackInSlot(3);
+			if(slot.isEmpty())
+				inventory.setStackInSlot(3, new ItemStack(ModItems.powder_soot));
+			else if(slot.getItem() == ModItems.powder_soot && slot.getCount() < slot.getMaxStackSize())
+				slot.grow(1);
+		}
 	}
 
 	public long getPowerScaled(long i) {
@@ -184,7 +204,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 				if (doesBurn && energyPerUnit > 0) {
 					int eject = Math.min(maxBurn, tank.getFluidAmount());
+					boolean petroleum = tank.getFluid().getFluid() == ModForgeFluids.petroleum;
 					tank.drain(eject, true);
+					if(petroleum)
+						rollSoot(eject);
 					needsUpdate = true;
 
 					long powerGen = energyPerUnit * eject;

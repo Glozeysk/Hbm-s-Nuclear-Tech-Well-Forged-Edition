@@ -248,6 +248,16 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
 			}
 			return null;
+		case ModBlocks.guiID_machine_electrolyser_metal:
+			if(entity instanceof TileEntityElectrolyser) {
+				return new ContainerElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_electrolyser_fluid:
+			if(entity instanceof TileEntityElectrolyser) {
+				return new ContainerElectrolyserFluid(player.inventory, (TileEntityElectrolyser) entity);
+			}
+			return null;
 		case ModBlocks.guiID_machine_cyclotron:
 			if(entity instanceof TileEntityMachineCyclotron) {
 				return new ContainerMachineCyclotron(player.inventory, (TileEntityMachineCyclotron) entity);
@@ -914,6 +924,16 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_pyrooven:
 			if(entity instanceof TileEntityMachinePyroOven) {
 				return new GUIMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_electrolyser_metal:
+			if(entity instanceof TileEntityElectrolyser) {
+				return new GUIElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_electrolyser_fluid:
+			if(entity instanceof TileEntityElectrolyser) {
+				return new GUIElectrolyserFluid(player.inventory, (TileEntityElectrolyser) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:

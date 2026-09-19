@@ -16,6 +16,13 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements IEnergyUser {
 
@@ -91,6 +98,55 @@ public class TileEntityFFFluidDuctMk4 extends TileEntityFFDuctBaseMk2 implements
                     neighbor.loadGraceTicks = 0;
                 }
             }
+        }
+    }
+
+    /**
+     * Batch counterpart of the setType() rebuild for bulk retypes that go through setTypeSilent()
+     * (the fluid identifier's flood-fill). Every energy net touching the changed pipes is dropped once
+     * and all its members rejoin on their next tick, so pipes retyped to match an existing net merge into it.
+     */
+    public static void rebuildEnergyNetworks(World world, Collection<? extends TileEntityFFDuctBaseMk2> changed) {
+        if (world == null || world.isRemote) {
+            return;
+        }
+
+        Set<PipeEnergyNetMk4> nets = new HashSet<>();
+        List<TileEntityFFFluidDuctMk4> toRejoin = new ArrayList<>();
+
+        for (TileEntityFFDuctBaseMk2 duct : changed) {
+            if (!(duct instanceof TileEntityFFFluidDuctMk4)) {
+                continue;
+            }
+            TileEntityFFFluidDuctMk4 pipe = (TileEntityFFFluidDuctMk4) duct;
+            toRejoin.add(pipe);
+            if (pipe.pipeNet != null && pipe.pipeNet.isValid()) {
+                nets.add(pipe.pipeNet);
+            }
+            for (EnumFacing facing : EnumFacing.VALUES) {
+                BlockPos neighborPos = pipe.getPos().offset(facing);
+                if (!world.isBlockLoaded(neighborPos)) {
+                    continue;
+                }
+                TileEntity te = world.getTileEntity(neighborPos);
+                if (te instanceof TileEntityFFFluidDuctMk4) {
+                    PipeEnergyNetMk4 net = ((TileEntityFFFluidDuctMk4) te).pipeNet;
+                    if (net != null && net.isValid()) {
+                        nets.add(net);
+                    }
+                }
+            }
+        }
+
+        for (PipeEnergyNetMk4 net : nets) {
+            toRejoin.addAll(net.getMembers());
+            net.destroy();
+        }
+
+        for (TileEntityFFFluidDuctMk4 pipe : toRejoin) {
+            pipe.pipeNet = null;
+            pipe.needsNetworkJoin = true;
+            pipe.loadGraceTicks = 0;
         }
     }
 

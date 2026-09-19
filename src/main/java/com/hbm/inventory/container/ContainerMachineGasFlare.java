@@ -25,7 +25,7 @@ public class ContainerMachineGasFlare extends Container {
 		//Fluid in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 17, 17));
 		//Fluid out
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 17, 71) {
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 17, 53) {
 			@Override
 			public boolean isItemValid(@Nonnull ItemStack stack) {
 				return false;
@@ -34,6 +34,8 @@ public class ContainerMachineGasFlare extends Container {
 		//Upgrades
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 80, 71));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 98, 71));
+		//Byproduct
+		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 3, 17, 71));
 
 		int offset = 37;
 		for(int i = 0; i < 3; i++)

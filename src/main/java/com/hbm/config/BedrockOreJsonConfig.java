@@ -43,10 +43,24 @@ public class BedrockOreJsonConfig {
 		return isInList;
 	}
 
+	//An ore is hidden from JEI when no configured dimension can spawn it (every blacklist names it, no whitelist does)
+	public static boolean canSpawnAnywhere(String ore){
+		for(Integer dimID : dimOres.keySet())
+			if(isOreAllowed(dimID, ore)) return true;
+		return false;
+	}
+
 	public static void setDefaults() {
 		addEntry(0, 15, Arrays.asList(
 			"orePlutonium", 
 			"oreQuartz", 
+			"oreStarmetal", 
+			"oreReiium", 
+			"oreWeidanium", 
+			"oreAustralium", 
+			"oreVerticium", 
+			"oreUnobtainium", 
+			"oreDaffergon", 
 			"oreInfernalCoal", 
 			"oreRedPhosphorus", 
 			"oreSchrabidium", 
@@ -71,11 +85,9 @@ public class BedrockOreJsonConfig {
 			"oreSteel"
 		), false);
 		addEntry(-1, 60, Arrays.asList(
-			"orePlutonium", 
 			"oreQuartz", 
 			"oreInfernalCoal", 
 			"oreRedPhosphorus", 
-			"oreSchrabidium", 
 			"oreNeodymium", 
 			"oreTungsten",
 			"oreUranium",
@@ -87,6 +99,13 @@ public class BedrockOreJsonConfig {
 		addEntry(-6, 30, Arrays.asList(//Mining Dim
 			"orePlutonium", 
 			"oreQuartz", 
+			"oreStarmetal", 
+			"oreReiium", 
+			"oreWeidanium", 
+			"oreAustralium", 
+			"oreVerticium", 
+			"oreUnobtainium", 
+			"oreDaffergon", 
 			"oreInfernalCoal", 
 			"oreRedPhosphorus", 
 			"oreSchrabidium", 

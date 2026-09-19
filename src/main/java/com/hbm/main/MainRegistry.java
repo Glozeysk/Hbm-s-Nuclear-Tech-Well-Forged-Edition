@@ -231,6 +231,8 @@ import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.HydrotreaterRecipes;
 import com.hbm.inventory.CatalyticReformerRecipes;
 import com.hbm.inventory.PyroOvenRecipes;
+import com.hbm.inventory.ElectrolyserFluidRecipes;
+import com.hbm.inventory.ElectrolyserMetalRecipes;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.CrystallizerRecipes;
 import com.hbm.inventory.CyclotronRecipes;
@@ -694,6 +696,7 @@ public class MainRegistry {
 		reg(TileEntityMachineHydrotreater.class, "tileentity_machine_hydrotreater");
 		reg(TileEntityMachineCatalyticReformer.class, "tileentity_machine_catalytic_reformer");
 		reg(TileEntityMachinePyroOven.class, "tileentity_machine_pyrooven");
+		reg(TileEntityElectrolyser.class, "tileentity_electrolyser");
 		reg(TileEntityMachineCyclotron.class, "tileentity_machine_cyclotron");
 		reg(TileEntityMachineSchrabidiumTransmutator.class, "tileentity_machine_schrabidium_transmutator");
 		reg(TileEntityMachineSiren.class, "tileentity_machine_siren");
@@ -1156,6 +1159,8 @@ public class MainRegistry {
 		CrackRecipes.registerRecipes();
 		HydrotreaterRecipes.registerRecipes();
 		CatalyticReformerRecipes.registerRecipes();
+		ElectrolyserFluidRecipes.registerRecipes();
+		ElectrolyserMetalRecipes.registerRecipes();
 		ExplosionNukeGeneric.loadSoliniumFromFile();
 		CyclotronRecipes.register();
 		HadronRecipes.register();

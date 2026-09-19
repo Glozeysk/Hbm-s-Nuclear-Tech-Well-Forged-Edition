@@ -81,6 +81,7 @@ public class MixerRecipes {
 		addRecipe(new FluidStack(ModForgeFluids.phosgene, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.chlorine, 500), new FluidStack(ModForgeFluids.unsaturateds, 500)}, null, 40);
 		addRecipe(new FluidStack(ModForgeFluids.sulfuric_acid, 500), new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 800)}, new ComparableStack(ModItems.sulfur), 50);
 		addRecipe(new FluidStack(ModForgeFluids.iongel, 1000), new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 1000), new FluidStack(ModForgeFluids.hydrogen, 200)}, new ComparableStack(ModItems.pellet_charged), 50);
+		addRecipe(new FluidStack(ModForgeFluids.electrosolvent, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.sodiumhydroxide, 500), new FluidStack(ModForgeFluids.radiosolvent, 500)}, null, 40);
 	}
 
 	public static void addRecipe(FluidStack output, FluidStack[] inputs, AStack inputItem, int duration){

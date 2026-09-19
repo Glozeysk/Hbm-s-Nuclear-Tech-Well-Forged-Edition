@@ -54,6 +54,9 @@ public class JEIConfig implements IModPlugin {
 	public static final String HYDROTREATING = "hbm.hydrotreating";
 	public static final String CATALYTIC_REFORMING = "hbm.catalytic_reforming";
 	public static final String PYROLYSIS = "hbm.pyrolysis";
+	public static final String ELECTROLYSIS_FLUID = "hbm.electrolysis_fluid";
+	public static final String ELECTROLYSIS_METAL = "hbm.electrolysis_metal";
+	public static final String GAS_FLARE = "hbm.gas_flare";
 	public static final String FRACTIONING = "hbm.fracturing";
 	public static final String SHREDDER = "hbm.shredder";
 	public static final String FLUIDS = "hbm.fluids";
@@ -122,6 +125,9 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_hydrotreater), HYDROTREATING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_catalytic_reformer), CATALYTIC_REFORMING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_pyrooven), PYROLYSIS);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_electrolyser), ELECTROLYSIS_FLUID);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_electrolyser), ELECTROLYSIS_METAL);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_flare), GAS_FLARE);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_fraction_tower), FRACTIONING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shredder), SHREDDER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shreddermk2), SHREDDER);
@@ -164,6 +170,9 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(JeiRecipes.getHydrotreatingRecipe(), HYDROTREATING);
 		registry.addRecipes(JeiRecipes.getCatalyticReformingRecipes(), CATALYTIC_REFORMING);
 		registry.addRecipes(JeiRecipes.getPyroOvenRecipes(), PYROLYSIS);
+		registry.addRecipes(ElectrolyserFluidRecipeHandler.getRecipes(), ELECTROLYSIS_FLUID);
+		registry.addRecipes(ElectrolyserMetalRecipeHandler.getRecipes(), ELECTROLYSIS_METAL);
+		registry.addRecipes(GasFlareRecipeHandler.getRecipes(), GAS_FLARE);
 		registry.addRecipes(JeiRecipes.getFractioningRecipe(), FRACTIONING);
 		registry.addRecipes(ShredderRecipes.getShredderRecipes(), SHREDDER);
 		registry.addRecipes(JeiRecipes.getFluidEquivalences(), FLUIDS);
@@ -210,6 +219,8 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineHydrotreater.class, 85, 82, 24, 24, HYDROTREATING);
 		registry.addRecipeClickArea(GUIMachineCatalyticReformer.class, 67, 82, 24, 24, CATALYTIC_REFORMING);
 		registry.addRecipeClickArea(GUIMachinePyroOven.class, 57, 47, 27, 12, PYROLYSIS);
+		registry.addRecipeClickArea(GUIElectrolyserFluid.class, 46, 25, 12, 40, ELECTROLYSIS_FLUID);
+		registry.addRecipeClickArea(GUIElectrolyserMetal.class, 12, 45, 22, 25, ELECTROLYSIS_METAL);
 		registry.addRecipeClickArea(GUIMachineShredder.class, 43, 89, 53, 17, SHREDDER);
 		registry.addRecipeClickArea(GUIMachineShreddermk2.class, 80, 35, 21, 14, SHREDDER);
 		registry.addRecipeClickArea(GUICrystallizer.class, 79, 40, 29, 26, CRYSTALLIZER);
@@ -224,6 +235,7 @@ public class JEIConfig implements IModPlugin {
 
 		IIngredientBlacklist blacklist = registry.getJeiHelpers().getIngredientBlacklist();
 
+		DisabledBedrockOres.blacklistItems(blacklist);
 		blacklist.addIngredientToBlacklist(new ItemStack(ModItems.memory));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_coal_on));
 		blacklist.addIngredientToBlacklist(new ItemStack(ModBlocks.machine_electric_furnace_on));
@@ -299,6 +311,9 @@ public class JEIConfig implements IModPlugin {
 				new HydrotreatingRecipeHandler(help),
 				new CatalyticReformingRecipeHandler(help),
 				new PyroOvenRecipeHandler(help),
+				new ElectrolyserFluidRecipeHandler(help),
+				new ElectrolyserMetalRecipeHandler(help),
+				new GasFlareRecipeHandler(help),
 				new FractioningRecipeHandler(help),
 				new CrystallizerRecipeHandler(help),
 				new CentrifugeRecipeHandler(help),
@@ -371,5 +386,6 @@ public class JEIConfig implements IModPlugin {
 		if(!GeneralConfig.jei || ingredientRegistry == null)
 			return;
 		ingredientRegistry.addIngredientsAtRuntime(VanillaTypes.ITEM, JeiRecipes.getFluidIcons());
+		DisabledBedrockOres.hideRecipes(jeiRuntime.getRecipeRegistry());
 	}
 }

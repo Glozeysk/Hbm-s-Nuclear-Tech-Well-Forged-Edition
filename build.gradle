@@ -665,7 +665,6 @@ processResources {
 
     inputs.property 'version', modVersion
     inputs.property 'mcversion', minecraftVersion
-    inputs.property "builddate", getBuildDate()
 
     exclude('spotless.importorder')
     exclude('spotless.eclipseformat.xml')

@@ -201,6 +201,20 @@ public class ItemRenderLibrary {
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_electrolyser), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(-1, -1, 0);
+				GL11.glScaled(2.5, 2.5, 2.5);
+			}
+			public void renderCommon() {
+				GL11.glScaled(0.5, 0.5, 0.5);
+				GlStateManager.disableCull();
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				bindTexture(ResourceManager.electrolyser_tex); ResourceManager.electrolyser.renderAll();
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+				GlStateManager.enableCull();
+			}});
+
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_crystallizer), new ItemRenderBase() {
 			public void renderNonInv() {
 				GL11.glScaled(0.5, 0.5, 0.5);
