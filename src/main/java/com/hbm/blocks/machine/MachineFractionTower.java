@@ -147,6 +147,11 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 			}
 		}
 
+		//heat is pooled across the whole stack, so the overlay reports the stack and not this single tower
+		int[] chain = frac.getChainHeat();
+		text.add("§e" + String.format("%,d", chain[0]) + " / " + String.format("%,d", chain[1] * TileEntityMachineFractionTower.maxHeat) + " TU");
+		text.add("§e" + String.format("%,d", chain[1] * TileEntityMachineFractionTower.heatPerOp) + " TU/s");
+
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}
 }

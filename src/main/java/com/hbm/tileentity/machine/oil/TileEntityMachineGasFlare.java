@@ -65,18 +65,31 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
-	public static final int SOOT_PETROLEUM = 32_000;
-	//mB of petroleum burnt since the last soot
-	private int burntPetroleum = 0;
+	//soot progress is counted in these units so that switching gas mid-batch keeps the partial progress
+	public static final int SOOT_UNIT = 64_000;
+	private int sootProgress = 0;
 
 	private AudioWrapper audio;
 
 	@SideOnly(Side.CLIENT)
 	private ParticleRBMKFlame flameParticle;
 
+	//mB of a gas burnt per one soot powder, 0 = no soot; built on demand, ModForgeFluids is not ready at class load
+	public static Fluid[] getSootFluids() {
+		return new Fluid[] { ModForgeFluids.petroleum, ModForgeFluids.petroleum_raw, ModForgeFluids.methane, ModForgeFluids.gas };
+	}
+
+	public static int getSootCost(Fluid type) {
+		if(type == ModForgeFluids.petroleum) return 16_000;
+		if(type == ModForgeFluids.petroleum_raw) return 32_000;
+		if(type == ModForgeFluids.methane) return 64_000;
+		if(type == ModForgeFluids.gas) return 64_000;
+		return 0;
+	}
+
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		fuelEfficiency.put(FuelGrade.GAS, 1.0D);
+		fuelEfficiency.put(FuelGrade.GAS, 0.5D);
 	}
 
 	public TileEntityMachineGasFlare() {
@@ -124,7 +137,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 		tank.readFromNBT(compound);
 		isOn = compound.getBoolean("isOn");
 		doesBurn = compound.getBoolean("doesBurn");
-		burntPetroleum = compound.getInteger("burntPetroleum");
+		sootProgress = compound.getInteger("sootProgress");
 		prevDoesBurn = doesBurn;
 		super.readFromNBT(compound);
 	}
@@ -135,15 +148,15 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 		tank.writeToNBT(compound);
 		compound.setBoolean("isOn", isOn);
 		compound.setBoolean("doesBurn", doesBurn);
-		compound.setInteger("burntPetroleum", burntPetroleum);
+		compound.setInteger("sootProgress", sootProgress);
 		return super.writeToNBT(compound);
 	}
 
-	//1 soot in slot 3 per full SOOT_PETROLEUM mB of burnt petroleum; soot for a full slot is lost
-	private void rollSoot(int burnt) {
-		burntPetroleum += burnt;
-		while(burntPetroleum >= SOOT_PETROLEUM) {
-			burntPetroleum -= SOOT_PETROLEUM;
+	//1 soot in slot 3 per full cost of burnt gas; soot for a full slot is lost
+	private void rollSoot(int burnt, int cost) {
+		sootProgress += burnt * SOOT_UNIT / cost;
+		while(sootProgress >= SOOT_UNIT) {
+			sootProgress -= SOOT_UNIT;
 			ItemStack slot = inventory.getStackInSlot(3);
 			if(slot.isEmpty())
 				inventory.setStackInSlot(3, new ItemStack(ModItems.powder_soot));
@@ -204,10 +217,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 
 				if (doesBurn && energyPerUnit > 0) {
 					int eject = Math.min(maxBurn, tank.getFluidAmount());
-					boolean petroleum = tank.getFluid().getFluid() == ModForgeFluids.petroleum;
+					int sootCost = getSootCost(tank.getFluid().getFluid());
 					tank.drain(eject, true);
-					if(petroleum)
-						rollSoot(eject);
+					if(sootCost > 0)
+						rollSoot(eject, sootCost);
 					needsUpdate = true;
 
 					long powerGen = energyPerUnit * eject;

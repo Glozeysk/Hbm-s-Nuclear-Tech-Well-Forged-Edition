@@ -86,6 +86,7 @@ public class MachineTurbofan extends BlockDummyable {
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		list.add(I18n.format("trait.fuelefficiency"));
 		list.add(" "+I18n.format("trait.fuelefficiency.desc", I18n.format(FuelGrade.AERO.getGrade()), 100));
+		list.add(" "+I18n.format("trait.fuelefficiency.desc", I18n.format(FuelGrade.GAS.getGrade()), 100));
 		super.addInformation(stack, worldIn, list, flagIn);
 	}
 }

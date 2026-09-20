@@ -150,7 +150,9 @@ public class ChemplantRecipes {
 		makeRecipe(510, "TNT", new AStack[] { new OreDictStack(KNO.dust(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.aromatics, 500) }, new AStack[] { new ComparableStack(ModItems.ball_tnt, 4) }, null, 150);
 
 		makeRecipe(520, "C4", new AStack[] { new OreDictStack(KNO.dust(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.unsaturateds, 500) }, new AStack[] { new ComparableStack(ModItems.ingot_c4, 4) }, null, 150);
-		
+
+		makeRecipe(530, "PVC", new AStack[] { new ComparableStack(ModItems.powder_cadmium, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.chlorine, 250), new FluidStack(ModForgeFluids.aromatics, 250) }, new AStack[] { new ComparableStack(ModItems.ingot_pvc, 1) }, null, 100);
+
 		makeRecipe(540, "DEUTERIUM", new AStack[] { new OreDictStack(S.dust(), 2) }, new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 4000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.deuterium, 500) }, 200);
 		
 		makeRecipe(550, "STEAM", null, new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 1000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.steam, 1000) }, 20);
@@ -195,7 +197,7 @@ public class ChemplantRecipes {
 		
 		makeRecipe(750, "SATURN", new AStack[] {new OreDictStack(DURA.dust(), 1), new OreDictStack(P_RED.dust(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 100), new FluidStack(ModForgeFluids.mercury, 50) }, new AStack[] { new ComparableStack(ModItems.ingot_saturnite, 2) }, null, 60);
 		
-		makeRecipe(760, "BALEFIRE", new AStack[] {new ComparableStack(ModItems.egg_balefire_shard, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene, 6000) }, new AStack[] { new ComparableStack(ModItems.powder_balefire, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.balefire, 8000) }, 100);
+		makeRecipe(760, "BALEFIRE", new AStack[] {new ComparableStack(ModItems.egg_balefire_shard, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene_hq, 6000) }, new AStack[] { new ComparableStack(ModItems.powder_balefire, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.balefire, 8000) }, 100);
 		
 		makeRecipe(770, "SCHRABIDIC", new AStack[] {new ComparableStack(ModItems.pellet_charged, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.sas3, 8000), new FluidStack(ModForgeFluids.acid, 6000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.schrabidic, 16000) }, 100);
 		

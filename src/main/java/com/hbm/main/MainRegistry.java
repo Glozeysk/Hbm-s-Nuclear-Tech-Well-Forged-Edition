@@ -697,6 +697,7 @@ public class MainRegistry {
 		reg(TileEntityMachineCatalyticReformer.class, "tileentity_machine_catalytic_reformer");
 		reg(TileEntityMachinePyroOven.class, "tileentity_machine_pyrooven");
 		reg(TileEntityElectrolyser.class, "tileentity_electrolyser");
+		reg(TileEntityMachinePumpOcean.class, "tileentity_machine_pump_ocean");
 		reg(TileEntityMachineCyclotron.class, "tileentity_machine_cyclotron");
 		reg(TileEntityMachineSchrabidiumTransmutator.class, "tileentity_machine_schrabidium_transmutator");
 		reg(TileEntityMachineSiren.class, "tileentity_machine_siren");

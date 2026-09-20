@@ -28,6 +28,9 @@ public class MixerRecipes {
 	private static HashSet<String> blacklistedRecipes = new HashSet<>();
 	
 	static {
+		blacklistedRecipes.add("XENON");
+		blacklistedRecipes.add("XENON_OXY");
+		blacklistedRecipes.add("ELECTROLYSIS");
 		blacklistedRecipes.add("COOLANT");
 		blacklistedRecipes.add("CRYOGEL");
 		blacklistedRecipes.add("SULFURIC_ACID");
@@ -76,12 +79,13 @@ public class MixerRecipes {
 		addRecipe(new FluidStack(ModForgeFluids.nitroglycerin, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 1000), new FluidStack(ModForgeFluids.nitric_acid, 1000)}, null, 20);
 		addRecipe(new FluidStack(ModForgeFluids.biofuel, 250), new FluidStack[]{ new FluidStack(ModForgeFluids.fishoil, 500), new FluidStack(ModForgeFluids.sunfloweroil, 500)}, null, 20);
 		addRecipe(new FluidStack(ModForgeFluids.lubricant, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.ethanol, 200), new FluidStack(ModForgeFluids.sunfloweroil, 800)}, null, 20);
-		addRecipe(new FluidStack(ModForgeFluids.solvent, 300), new FluidStack[]{ new FluidStack(ModForgeFluids.dichloromethane, 900)}, null, 100);
 		addRecipe(new FluidStack(ModForgeFluids.solvent, 300), new FluidStack[]{ new FluidStack(ModForgeFluids.chloroform, 450)}, null, 100);
 		addRecipe(new FluidStack(ModForgeFluids.phosgene, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.chlorine, 500), new FluidStack(ModForgeFluids.unsaturateds, 500)}, null, 40);
 		addRecipe(new FluidStack(ModForgeFluids.sulfuric_acid, 500), new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 800)}, new ComparableStack(ModItems.sulfur), 50);
 		addRecipe(new FluidStack(ModForgeFluids.iongel, 1000), new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 1000), new FluidStack(ModForgeFluids.hydrogen, 200)}, new ComparableStack(ModItems.pellet_charged), 50);
 		addRecipe(new FluidStack(ModForgeFluids.electrosolvent, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.sodiumhydroxide, 500), new FluidStack(ModForgeFluids.radiosolvent, 500)}, null, 40);
+		addRecipe(new FluidStack(ModForgeFluids.diesel_hq, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.diesel, 900), new FluidStack(ModForgeFluids.reformate, 100)}, null, 20);
+		addRecipe(new FluidStack(ModForgeFluids.kerosene_hq, 1000), new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene, 900), new FluidStack(ModForgeFluids.reformate, 100)}, null, 20);
 	}
 
 	public static void addRecipe(FluidStack output, FluidStack[] inputs, AStack inputItem, int duration){

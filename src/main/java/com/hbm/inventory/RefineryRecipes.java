@@ -64,6 +64,7 @@ public class RefineryRecipes {
 		fractions.put(ModForgeFluids.lightoil, new Quartet<>(ModForgeFluids.diesel, ModForgeFluids.kerosene, light_frac_diesel, light_frac_kero));
 		fractions.put(ModForgeFluids.naphtha_pure, new Quartet<>(ModForgeFluids.xylene, ModForgeFluids.petroil_hq, napht_frac_heat, napht_frac_diesel));
 		fractions.put(ModForgeFluids.lightoil_pure, new Quartet<>(ModForgeFluids.diesel_hq, ModForgeFluids.kerosene_hq, light_frac_diesel, light_frac_kero));
+		fractions.put(ModForgeFluids.reformate, new Quartet<>(ModForgeFluids.aromatics, ModForgeFluids.xylene, light_frac_diesel, light_frac_kero));
 	}
 	
 	public static Quartet<Fluid, Fluid, Integer, Integer> getFractions(Fluid oil) {

@@ -35,7 +35,7 @@ public class ElectrolyserMetalRecipes {
 		crystal(ModItems.crystal_thorium, out(ModItems.powder_thorium, 6), out(ModItems.powder_uranium, 2), out(ModItems.powder_lithium_tiny, 2));
 		crystal(ModItems.crystal_trixite, out(ModItems.powder_plutonium, 3), out(ModItems.powder_cobalt, 4), out(ModItems.powder_spark_mix, 2), out(ModItems.powder_nitan_mix, 4));
 		crystal(ModItems.crystal_schrabidium, out(ModItems.powder_schrabidium, 6), out(ModItems.powder_plutonium, 2), out(ModItems.powder_lithium_tiny, 3));
-		crystal(ModItems.crystal_lead, out(ModItems.powder_lead, 6), out(ModItems.powder_gold, 2), out(ModItems.powder_lithium_tiny, 3));
+		crystal(ModItems.crystal_lead, out(ModItems.powder_lead, 6), out(ModItems.powder_gold, 2), out(ModItems.nugget_cadmium, 1) ,out(ModItems.powder_lithium_tiny, 3));
 		crystal(ModItems.crystal_plutonium, out(ModItems.powder_plutonium, 6), out(ModItems.powder_plutonium, 2), out(ModItems.powder_lithium_tiny, 3));
 		crystal(ModItems.crystal_aluminium, out(ModItems.powder_aluminium, 6), out(ModItems.powder_iron, 2), out(ModItems.powder_lithium_tiny, 3));
 		crystal(ModItems.crystal_uranium, out(ModItems.powder_uranium, 6), out(ModItems.nugget_ra226, 4), out(ModItems.powder_lithium_tiny, 3));

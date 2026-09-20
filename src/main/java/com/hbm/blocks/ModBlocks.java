@@ -1296,6 +1296,8 @@ public class ModBlocks {
 	public static final int guiID_machine_electrolyser_fluid = 143;
 	public static final int guiID_machine_electrolyser_metal = 144;
 
+	public static final Block machine_pump_ocean = new MachinePumpOcean(Material.IRON, "machine_pump_ocean").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+
 	public static final Block machine_electric_furnace_off = new MachineElectricFurnace(Material.IRON, false, "machine_electric_furnace_off").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_electric_furnace_on = new MachineElectricFurnace(Material.IRON, true, "machine_electric_furnace_on").setHardness(5.0F).setLightLevel(1.0F).setResistance(10.0F);
 	public static final Block machine_arc_furnace_off = new MachineArcFurnace(Material.IRON, false, "machine_arc_furnace_off").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);

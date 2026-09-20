@@ -16,6 +16,7 @@
     "block.selenium_engine_operate": {"category": "block", "sounds": [{"name": "hbm:block/selenium_engine_operate", "stream": false}]},
     "block.flare_operate": {"category": "block", "sounds": [{"name": "hbm:block/flare_operate", "stream": false}]},
     "block.pyroOperate": {"category": "block", "sounds": [{"name": "hbm:block/pyrooperate", "stream": false}]},
+    "block.steamEngineOperate": {"category": "block", "sounds": [{"name": "hbm:block/steamengineoperate", "stream": false}]},
     "block.turbofan_operate2": {"category": "block", "sounds": [{"name": "hbm:block/turbofan_operate2", "stream": false}]},
     "block.igeneratorOperate": {"category": "block", "sounds": [{"name": "hbm:block/igeneratorOperate", "stream": false}]},
     "block.turbofanOperate": {"category": "block", "sounds": [{"name": "hbm:block/turbofanOperate", "stream": false}]},

@@ -10,6 +10,7 @@ import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.inventory.EngineRecipes;
+import com.hbm.inventory.EngineRecipes.FuelGrade;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSource;
@@ -37,6 +38,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.FluidUtil;
@@ -150,7 +152,7 @@ public class TileEntityMachineTurbofan extends TileEntityLoadedBase implements I
 			long burnValue = 0;
 			int amount = 1 + this.afterburner;
 			
-			if(tank.getFluid() != null && EngineRecipes.isAero(tank.getFluid().getFluid())) {
+			if(tank.getFluid() != null && isValidFuel(tank.getFluid().getFluid())) {
 				burnValue = EngineRecipes.getEnergy(tank.getFluid().getFluid()) / 1_000;
 			}
 			
@@ -374,7 +376,14 @@ public class TileEntityMachineTurbofan extends TileEntityLoadedBase implements I
 	private boolean isValidFluid(FluidStack stack) {
 		if(stack == null)
 			return false;
-		return EngineRecipes.isAero(stack.getFluid());
+		return isValidFuel(stack.getFluid());
+	}
+
+	//aero fuel and fuel gasses, both at full efficiency
+	public static boolean isValidFuel(Fluid fluid) {
+		if(fluid == null)
+			return false;
+		return EngineRecipes.isAero(fluid) || EngineRecipes.getFuelGrade(fluid) == FuelGrade.GAS;
 	}
 
 	protected void sendTurboPower() {

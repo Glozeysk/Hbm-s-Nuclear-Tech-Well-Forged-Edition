@@ -14,6 +14,8 @@ import com.hbm.packet.PacketDispatcher;
 import com.hbm.util.Tuple.Pair;
 
 import api.hbm.energy.IEnergyUser;
+import api.hbm.tile.IHeatSource;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -40,7 +42,13 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	public long power = 0;
 	public int itemOutputTimer = 0;
 	public static final int totalItemTime = 50;
-	public static final long maxPower = 1000;
+	public static final long maxPower = 10000;
+
+	public int heat = 0;
+	public static final int maxHeat = 100_000;
+	//one operation per tick, so this is also the TU per tick while running
+	public static final int heatPerOp = 1_000;
+	public static final double diffusion = 0.05D;
 	public int age = 0;
 	public boolean needsUpdate = false;
 	public FluidTank[] tanks;
@@ -73,6 +81,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			this.tankTypes[0] = FluidRegistry.getFluid(nbt.getString("f"));
 		}
 		power = nbt.getLong("power");
+		heat = nbt.getInteger("heat");
 		itemOutputTimer = nbt.getInteger("itemOutputTimer");
 		if(nbt.hasKey("tanks"))
 			FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
@@ -89,6 +98,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			}
 		}
 		nbt.setLong("power", power);
+		nbt.setInteger("heat", heat);
 		nbt.setInteger("itemOutputTimer", itemOutputTimer);
 		nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
 		return super.writeToNBT(nbt);
@@ -102,6 +112,9 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			}
 			this.updateConnections();
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
+
+			this.heat *= 0.999;
+			this.tryPullHeat();
 
 			age++;
 			if(age >= 20)
@@ -143,7 +156,23 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			}
 
 			detectAndSendChanges();
+
+			//heat has no packet of its own, the buf sync covers it; the bar does not need 20Hz
+			if(age % 5 == 0)
+				networkPackNT(20);
 		}
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeInt(heat);
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		this.heat = buf.readInt();
 	}
 
 	private boolean canRefine() {
@@ -152,11 +181,29 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		FluidStack[] outputFluids = recipe.getKey();
 		if(outputFluids == null) return false;
 
-		return power >= 5 && tanks[0].getFluidAmount() >= 100 &&
+		return power >= 50 && heat >= heatPerOp && tanks[0].getFluidAmount() >= 100 &&
 				tanks[1].getFluidAmount() + outputFluids[0].amount <= tanks[1].getCapacity() &&
 				tanks[2].getFluidAmount() + outputFluids[1].amount <= tanks[2].getCapacity() &&
 				tanks[3].getFluidAmount() + outputFluids[2].amount <= tanks[3].getCapacity() &&
 				tanks[4].getFluidAmount() + outputFluids[3].amount <= tanks[4].getCapacity();
+	}
+
+	//heat comes from a heater directly below the core, same diffusion rate as the heat boiler
+	private void tryPullHeat() {
+
+		if(this.heat >= maxHeat) return;
+
+		TileEntity con = world.getTileEntity(pos.down());
+
+		if(con instanceof IHeatSource source) {
+			int diff = source.getHeatStored() - this.heat;
+
+			if(diff > 0) {
+				diff = (int) Math.ceil(diff * diffusion);
+				source.useUpHeat(diff);
+				this.heat = Math.min(this.heat + diff, maxHeat);
+			}
+		}
 	}
 
 	private void updateConnections() {
@@ -197,7 +244,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		ItemStack outputItem = recipe.getValue();
 		setupTanks(outputFluids);
 
-		if(power >= 5 && tanks[0].getFluidAmount() >= 100 &&
+		if(power >= 50 && heat >= heatPerOp && tanks[0].getFluidAmount() >= 100 &&
 				tanks[1].getFluidAmount() + outputFluids[0].amount <= tanks[1].getCapacity() &&
 				tanks[2].getFluidAmount() + outputFluids[1].amount <= tanks[2].getCapacity() &&
 				tanks[3].getFluidAmount() + outputFluids[2].amount <= tanks[3].getCapacity() &&
@@ -209,7 +256,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			tanks[3].fill(outputFluids[2].copy(), true);
 			tanks[4].fill(outputFluids[3].copy(), true);
 			itemOutputTimer += 1;
-			power -= 5;
+			power -= 50;
+			heat -= heatPerOp;
 			needsUpdate = true;
 		}
 
@@ -296,6 +344,10 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
 	public long getPowerScaled(long i) {
 		return (power * i) / maxPower;
+	}
+
+	public int getHeatScaled(int i) {
+		return (heat * i) / maxHeat;
 	}
 
 	@Override

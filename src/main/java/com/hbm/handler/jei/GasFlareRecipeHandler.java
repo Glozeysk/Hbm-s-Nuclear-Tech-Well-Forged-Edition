@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.lib.RefStrings;
@@ -20,6 +19,7 @@ import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategory;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraft.util.ResourceLocation;
 
 //Soot byproduct of burning petroleum in the flare stack; gui_nei_one_one, 108x18 crop at (34,34): input x=18, output x=72
@@ -33,7 +33,11 @@ public class GasFlareRecipeHandler implements IRecipeCategory<GasFlareRecipeHand
 
 	public static List<Wrapper> getRecipes() {
 		List<Wrapper> list = new ArrayList<>();
-		list.add(new Wrapper(ItemFluidIcon.getStackWithQuantity(ModForgeFluids.petroleum, TileEntityMachineGasFlare.SOOT_PETROLEUM), new ItemStack(ModItems.powder_soot)));
+		for(Fluid fluid : TileEntityMachineGasFlare.getSootFluids()) {
+			int cost = TileEntityMachineGasFlare.getSootCost(fluid);
+			if(cost > 0)
+				list.add(new Wrapper(ItemFluidIcon.getStackWithQuantity(fluid, cost), new ItemStack(ModItems.powder_soot)));
+		}
 		return list;
 	}
 

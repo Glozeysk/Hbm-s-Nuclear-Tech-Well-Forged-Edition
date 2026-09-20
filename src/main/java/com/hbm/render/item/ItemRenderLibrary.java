@@ -13,6 +13,7 @@ import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.amlfrom1710.Tessellator;
 import com.hbm.render.tileentity.RenderDemonLamp;
+import com.hbm.render.tileentity.RenderPumpOcean;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -199,6 +200,15 @@ public class ItemRenderLibrary {
 				GlStateManager.shadeModel(GL11.GL_SMOOTH);
 				bindTexture(ResourceManager.pyrooven_tex); ResourceManager.pyrooven.renderAll();
 				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_pump_ocean), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -3, 0);
+				GL11.glScaled(2.5, 2.5, 2.5);
+			}
+			public void renderCommon() {
+				RenderPumpOcean.renderCommon(System.currentTimeMillis() % 3600 * 0.1D);
 			}});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_electrolyser), new ItemRenderBase() {

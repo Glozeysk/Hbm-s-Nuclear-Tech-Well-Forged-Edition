@@ -17,6 +17,8 @@ import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.inventory.OreDictManager.DictFrame;
+import com.hbm.inventory.OreDictManager.DictGroup;
 import com.hbm.items.ItemEnums.EnumCokeType;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.main.MainRegistry;
@@ -153,6 +155,8 @@ public class OreDictManager {
 	public static final DictFrame TCALLOY = new DictFrame("TcAlloy");
 	/** CADMIUM STEEL */
 	public static final DictFrame CDALLOY = new DictFrame("CdAlloy");
+	public static final DictFrame PVC = new DictFrame("PVC");
+	public static final DictFrame POLYCARBONATE = new DictFrame("Polycarbonate");
 	/** LEAD */ 
 	public static final DictFrame PB = new DictFrame("Lead");
 	//public static final DictFrame BI = new DictFrame("Bismuth");
@@ -272,6 +276,7 @@ public class OreDictManager {
 	public static final DictGroup ANY_PLASTIC = new DictGroup("AnyPlastic", POLYMER, BAKELITE);		//using the Any prefix means that it's just the secondary prefix, and that shape prefixes are applicable
 	/** Any post nuclear steel like TCA or CDA */
 	public static final DictGroup ANY_RESISTANTALLOY = new DictGroup("AnyResistantAlloy", TCALLOY, CDALLOY);
+	public static final DictGroup ANY_HARDPLASTIC = new DictGroup("AnyHardPlastic", PVC, POLYCARBONATE);
 	/** Any "powder" propellant like gunpowder, ballistite and cordite */
 	public static final DictFrame ANY_GUNPOWDER = new DictFrame("AnyPropellant");
 	/** Any smokeless powder like ballistite and cordite */
@@ -337,6 +342,8 @@ public class OreDictManager {
 		STEEL																												.ingot(ingot_steel)			.dust(powder_steel)		.dustSmall(powder_steel_tiny)	.block(block_steel)																.plate(plate_steel);
 		TCALLOY																												.ingot(ingot_tcalloy)		.dust(powder_tcalloy);
 		CDALLOY																												.ingot(ingot_cdalloy)		.dust(powder_cdalloy);
+		PVC																													.ingot(ingot_pvc);
+		POLYCARBONATE																										.ingot(ingot_polycarbonate);
 		GRAPHITE																											.ingot(ingot_graphite)																.block(block_graphite);
 		DURA																												.ingot(ingot_dura_steel)	.dust(powder_dura_steel)								.block(block_dura_steel);
 		POLYMER																												.ingot(ingot_polymer)		.dust(powder_polymer)									.block(block_polymer);
@@ -527,6 +534,7 @@ public class OreDictManager {
 		ANY_RUBBER.addPrefix(INGOT, true);
 		ANY_PLASTIC.addPrefix(INGOT, true).addPrefix(DUST, true).addPrefix(BLOCK, true);
 		ANY_RESISTANTALLOY.addPrefix(INGOT, true).addPrefix(DUST, true);
+		ANY_HARDPLASTIC.addPrefix(INGOT, true);
 		ANY_TAR.addPrefix(ANY, false);
 	}
 	

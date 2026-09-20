@@ -331,6 +331,9 @@ public class ResourceManager {
 	public static final IModelCustom pyrooven = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/pyrooven.obj")).asVBO();
 	public static final IModelCustom electrolyser = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/electrolyser.obj")).asVBO();
 
+	//Ocean Pump
+	public static final IModelCustom pump_ocean = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/pump_ocean.obj")).asVBO();
+
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
 
@@ -670,6 +673,9 @@ public class ResourceManager {
 	public static final ResourceLocation catalytic_reformer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/catalytic_reformer.png");
 	public static final ResourceLocation pyrooven_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/pyrooven.png");
 	public static final ResourceLocation electrolyser_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/electrolyser.png");
+
+	//Ocean Pump
+	public static final ResourceLocation pump_ocean_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/pump_ocean.png");
 
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");

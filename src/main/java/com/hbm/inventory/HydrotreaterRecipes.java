@@ -28,6 +28,11 @@ public class HydrotreaterRecipes {
 				new FluidStack(ModForgeFluids.lightoil_pure, 800),
 				new FluidStack(ModForgeFluids.sourgas, 300)
 		));
+		recipes.put(ModForgeFluids.petroil, new Triplet<FluidStack, FluidStack, FluidStack>(
+				new FluidStack(ModForgeFluids.sodiumhydroxide, 200),
+				new FluidStack(ModForgeFluids.petroil_hq, 800),
+				new FluidStack(ModForgeFluids.sourgas, 200)
+		));
 		recipes.put(ModForgeFluids.petroleum, new Triplet<FluidStack, FluidStack, FluidStack>(
 				new FluidStack(ModForgeFluids.hydrogen, 150),
 				new FluidStack(ModForgeFluids.methane, 500),
