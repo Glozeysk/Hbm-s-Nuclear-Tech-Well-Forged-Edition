@@ -54,8 +54,8 @@ private TileEntityITER iter;
 			ItemStack var5 = var4.getStack();
 			var3 = var5.copy();
 
-            if (par2 <= 2) {
-				if (!this.mergeItemStack(var5, 2, this.inventorySlots.size(), true))
+            if (par2 <= 4) {
+				if (!this.mergeItemStack(var5, 5, this.inventorySlots.size(), true))
 				{
 					return ItemStack.EMPTY;
 				}

@@ -48,7 +48,7 @@ private TileEntityMicrowave microwave;
 			var3 = var5.copy();
 
             if (par2 <= 2) {
-				if (!this.mergeItemStack(var5, 2, this.inventorySlots.size(), true))
+				if (!this.mergeItemStack(var5, 3, this.inventorySlots.size(), true))
 				{
 					return ItemStack.EMPTY;
 				}

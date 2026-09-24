@@ -46,8 +46,8 @@ public class ContainerCraneUnboxer extends Container {
             ItemStack var5 = var4.getStack();
             var3 = var5.copy();
 
-            if(par2 <= 21) {
-                if(!this.mergeItemStack(var5, 21, this.inventorySlots.size(), true)) {
+            if(par2 <= 22) {
+                if(!this.mergeItemStack(var5, 23, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else {

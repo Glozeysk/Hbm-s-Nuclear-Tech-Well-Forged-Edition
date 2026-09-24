@@ -45,7 +45,7 @@ public class ContainerNukeFstbmb extends Container {
 			ItemStack var5 = var4.getStack();
 			var3 = var5.copy();
 
-            if (par2 <= 2) {
+            if (par2 <= 1) {
 				if (!this.mergeItemStack(var5, 2, this.inventorySlots.size(), true))
 				{
 					return ItemStack.EMPTY;

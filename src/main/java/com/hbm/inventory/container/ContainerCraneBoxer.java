@@ -41,7 +41,7 @@ public class ContainerCraneBoxer extends Container {
             ItemStack var5 = var4.getStack();
             var3 = var5.copy();
 
-            if(slot <= 21) {
+            if(slot <= 20) {
                 if(!this.mergeItemStack(var5, 21, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
