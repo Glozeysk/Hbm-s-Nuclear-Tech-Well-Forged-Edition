@@ -16,9 +16,11 @@ out
 # gradle
 build
 .gradle
-CLAUDE.md
+
 
 # other
 eclipse
 run
 /src/main/java/com/hbm/lib/BuildInfo.java
+.factorypath
+CLAUDE.md
