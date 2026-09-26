@@ -88,6 +88,12 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 						}
 					} else {
 						Fluid type = ItemForgeFluidIdentifier.getType(player.getHeldItem(hand));
+						if(type == null){
+							if(world.isRemote){
+								player.sendMessage(new TextComponentTranslation("chat.fractioning.noid"));
+							}
+							return false;
+						}
 						if(RefineryRecipes.getFractions(type) == null){
 							if(world.isRemote){
 								player.sendMessage(new TextComponentTranslation("chat.fractioning.norecipe", type.getLocalizedName(new FluidStack(type, 1))));

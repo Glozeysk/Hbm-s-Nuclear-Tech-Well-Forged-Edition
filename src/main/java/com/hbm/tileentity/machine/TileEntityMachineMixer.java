@@ -159,7 +159,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ITi
         if(itemId == ModItems.forge_fluid_identifier) {
             Fluid fluid = ItemForgeFluidIdentifier.getType(slotId);
 
-            if(outputFluid != fluid && ((uuMixer && MachineConfig.isFluidAllowed(fluid)) || MixerRecipes.hasMixerRecipe(fluid))) {
+            if(fluid != null && outputFluid != fluid && ((uuMixer && MachineConfig.isFluidAllowed(fluid)) || MixerRecipes.hasMixerRecipe(fluid))) {
                 outputFluid = fluid;
                 tanks[2].setFluid(new FluidStack(fluid, 0));
 

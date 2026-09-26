@@ -298,6 +298,7 @@ chat.factory.structurebad=[Basic Factory] Error: Factory Structure not valid!
 chat.factoryadvanced.corebad=[Advanced Factory] Error: Factory Core not found!
 chat.factoryadvanced.structurebad=[Advanced Factory] Error: Factory Structure not valid!
 chat.fractioning.changedto=§eChanged type to §a%s
+chat.fractioning.noid=§cNo fluid selected in the identifier
 chat.fractioning.norecipe=§cNo recipe found for §e%s
 chat.fractioning.onlybottom=§cYou can only change the type in the bottom segment!
 chat.fractioning.y=§e=== FRACTIONING TOWER Y:%s ===

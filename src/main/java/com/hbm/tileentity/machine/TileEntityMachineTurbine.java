@@ -92,7 +92,7 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 			
 			if(inventory.getStackInSlot(0).getItem() == ModItems.forge_fluid_identifier && inventory.getStackInSlot(1).isEmpty()){
 				Fluid f = ItemForgeFluidIdentifier.getType(inventory.getStackInSlot(0));
-				if(isValidFluidForTank(0, new FluidStack(f, 1000))){
+				if(f != null && isValidFluidForTank(0, new FluidStack(f, 1000))){
 					if(tankTypes[0] != f){
 						tankTypes[0] = f;
 						tanks[0].setFluid(null);

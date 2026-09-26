@@ -334,6 +334,7 @@ chat.factory.structurebad=[Базовая фабрика] Ошибка: стру
 chat.factoryadvanced.corebad=[Усовершенствованная фабрика] Ошибка: ядро фабрики не найдено!
 chat.factoryadvanced.structurebad=[Усовершенствованная фабрика] Ошибка: структура неверно построена!
 chat.fractioning.changedto=§eТип сменён на §a%s
+chat.fractioning.noid=§cВ идентификаторе не выбрана жидкость
 chat.fractioning.norecipe=§cОтсутствует рецепт для §e%s
 chat.fractioning.onlybottom=§cВы можете поменять тип только в нижней части!
 chat.fractioning.y=§e=== РЕКТИФИКАЦИОННАЯ КОЛОННА Y:%s ===
