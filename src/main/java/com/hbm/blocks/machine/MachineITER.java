@@ -72,15 +72,6 @@ public class MachineITER extends BlockDummyable {
 	public static final int height = 2;
 
 	@Override
-	public boolean canPlaceBlockAt(World world, BlockPos pos) {
-		return checkRequirementForPlacement(world, pos);
-	}
-
-	private boolean checkRequirementForPlacement(World world, BlockPos pos) {
-		return true;
-	}
-
-	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack itemStack) {
 		if(world.isRemote)
 			return;
@@ -161,7 +152,7 @@ public class MachineITER extends BlockDummyable {
 					int ex = ix - layer.length / 2;
 					int ez = iz - layer.length / 2;
 
-					if(ex == 0 && y == 2 && ez == 0)
+					if(ex == 0 && iy == 2 && ez == 0)
 						continue;
 
 					if(layout[l][ix][iz] > 0) {

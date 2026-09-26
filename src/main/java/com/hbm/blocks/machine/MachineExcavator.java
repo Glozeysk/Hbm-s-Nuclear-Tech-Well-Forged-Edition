@@ -55,7 +55,16 @@ public class MachineExcavator extends BlockDummyable {
 		y += dir.offsetY * o;
 		z += dir.offsetZ * o;
 		
-		return MultiblockHandlerXR.checkSpace(world, x, y, z, getDimensions(), x, y, z, dir);
+		if(!MultiblockHandlerXR.checkSpace(world, x, y, z, getDimensions(), x, y, z, dir))
+			return false;
+		if(!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[] {-1, 3, 3, -2, 3, -2}, x, y, z, dir))
+			return false;
+		if(!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[] {-1, 3, 3, -2, -2, 3}, x, y, z, dir))
+			return false;
+		if(!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[] {-1, 3, -2, 3, 3, 3}, x, y, z, dir))
+			return false;
+
+		return true;
 	}
 
 	@Override
