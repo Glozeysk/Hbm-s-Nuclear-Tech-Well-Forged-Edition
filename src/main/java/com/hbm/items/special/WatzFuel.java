@@ -66,18 +66,12 @@ public class WatzFuel extends ItemHazard {
 	}
 	
 	public static void updateDamage(ItemStack stack) {
-		
-		if(!stack.hasTagCompound())
-			stack.setTagCompound(new NBTTagCompound());
-		
 		stack.setItemDamage((int)((double)getLifeTime(stack) / (double)((WatzFuel)stack.getItem()).lifeTime * 100D));
 	}
 	
 	public static int getLifeTime(ItemStack stack) {
-		if(!stack.hasTagCompound()) {
-			stack.setTagCompound(new NBTTagCompound());
+		if(!stack.hasTagCompound())
 			return 0;
-		}
 		
 		return stack.getTagCompound().getInteger("life");
 	}
