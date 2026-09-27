@@ -1161,6 +1161,8 @@ public class ModItems {
 	public static final Item billet_uranium = new ItemHazard(ItemHazard.u * ItemHazard.billet, "billet_uranium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item billet_u233 = new ItemHazard(ItemHazard.u233 * ItemHazard.billet, "billet_u233").setCreativeTab(MainRegistry.partsTab);
 	public static final Item billet_u235 = new ItemHazard(ItemHazard.u235 * ItemHazard.billet, "billet_u235").setCreativeTab(MainRegistry.partsTab);
+	public static final Item billet_silicon = new ItemBase("billet_silicon").setCreativeTab(MainRegistry.partsTab);
+	public static final Item nugget_silicon = new ItemBase("nugget_silicon").setCreativeTab(MainRegistry.partsTab);
 	public static final Item billet_u238 = new ItemHazard(ItemHazard.u238 * ItemHazard.billet, "billet_u238").setCreativeTab(MainRegistry.partsTab);
 	public static final Item billet_plutonium = new ItemHazard(ItemHazard.pu * ItemHazard.billet, "billet_plutonium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item billet_pu238 = new ItemHazard(ItemHazard.pu238 * ItemHazard.billet, true, "billet_pu238").setCreativeTab(MainRegistry.partsTab);
@@ -2249,6 +2251,21 @@ public class ModItems {
 	public static final Item plate_gold = new ItemBase("plate_gold").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_lead = new ItemHazard("plate_lead").addToxic(2).toItem().setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_steel = new ItemBase("plate_steel").setCreativeTab(MainRegistry.partsTab);
+
+	//welded plates, the arc welder's output; textures are CE's plate_welded recoloured per material
+	public static final Item plate_welded_iron = new ItemBase("plate_welded_iron").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_titanium = new ItemBase("plate_welded_titanium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_copper = new ItemBase("plate_welded_copper").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_aluminium = new ItemBase("plate_welded_aluminium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_steel = new ItemBase("plate_welded_steel").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_zirconium = new ItemBase("plate_welded_zirconium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_tcalloy = new ItemBase("plate_welded_tcalloy").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_cdalloy = new ItemBase("plate_welded_cdalloy").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_combine_steel = new ItemBase("plate_welded_combine_steel").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_osmiridium = new ItemBase("plate_welded_osmiridium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_advanced_alloy = new ItemBase("plate_welded_advanced_alloy").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_niobium = new ItemBase("plate_welded_niobium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_saturnite = new ItemBase("plate_welded_saturnite").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_advanced_alloy = new ItemBase("plate_advanced_alloy").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_combine_steel = new ItemBase("plate_combine_steel").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_paa = new ItemCustomLore("plate_paa").setCreativeTab(MainRegistry.partsTab);
@@ -2312,6 +2329,7 @@ public class ModItems {
 	public static final Item circuit_red_copper = new ItemBase("circuit_red_copper").setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_gold = new ItemBase("circuit_gold").setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_schrabidium = new ItemCustomLore("circuit_schrabidium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item circuit_multi = new ItemCustomLore("circuit_multi").setRarity(EnumRarity.EPIC).setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_bismuth_raw = new ItemBase("circuit_bismuth_raw").setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_bismuth = new ItemCustomLore("circuit_bismuth").setRarity(EnumRarity.UNCOMMON).setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_arsenic_raw = new ItemBase("circuit_arsenic_raw").setCreativeTab(MainRegistry.partsTab);
@@ -2354,6 +2372,7 @@ public class ModItems {
 	public static final Item coil_tungsten = new ItemBase("coil_tungsten").setCreativeTab(MainRegistry.partsTab);
 	public static final Item wire_aluminium = new ItemBase("wire_aluminium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item wire_copper = new ItemBase("wire_copper").setCreativeTab(MainRegistry.partsTab);
+	public static final Item wire_lead = new ItemBase("wire_lead").setCreativeTab(MainRegistry.partsTab);
 	public static final Item coil_copper = new ItemBase("coil_copper").setCreativeTab(MainRegistry.partsTab);
 	public static final Item coil_copper_torus = new ItemBase("coil_copper_torus").setCreativeTab(MainRegistry.partsTab);
 	public static final Item wire_schrabidium = new ItemHazard(1.5F, false, true, "wire_schrabidium").setCreativeTab(MainRegistry.partsTab);

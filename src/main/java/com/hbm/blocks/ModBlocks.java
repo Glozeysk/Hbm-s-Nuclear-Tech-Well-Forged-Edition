@@ -1297,6 +1297,16 @@ public class ModBlocks {
 	public static final int guiID_machine_electrolyser_metal = 144;
 
 	public static final Block machine_pump_ocean = new MachinePumpOcean(Material.IRON, "machine_pump_ocean").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block machine_intake = new MachineIntake(Material.IRON, "machine_intake").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+
+	public static final Block machine_arc_welder = new MachineArcWelder(Material.IRON, "machine_arc_welder").setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_arc_welder = 145;
+
+	public static final Block machine_soldering_station = new MachineSolderingStation(Material.IRON, "machine_soldering_station").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_soldering_station = 146;
+
+	public static final Block machine_pump = new MachineVacuumPump(Material.IRON, "machine_pump", false).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final Block machine_cryopump = new MachineVacuumPump(Material.IRON, "machine_cryopump", true).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 
 	public static final Block machine_electric_furnace_off = new MachineElectricFurnace(Material.IRON, false, "machine_electric_furnace_off").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_electric_furnace_on = new MachineElectricFurnace(Material.IRON, true, "machine_electric_furnace_on").setHardness(5.0F).setLightLevel(1.0F).setResistance(10.0F);

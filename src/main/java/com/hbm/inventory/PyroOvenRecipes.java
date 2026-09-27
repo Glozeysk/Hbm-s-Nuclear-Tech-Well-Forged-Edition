@@ -18,21 +18,21 @@ public class PyroOvenRecipes {
 	public static final List<PyroOvenRecipe> recipes = new ArrayList<>();
 
 	public static void registerRecipes() {
-		addRecipe(new PyroOvenRecipe(100)
-				.in(new FluidStack(ModForgeFluids.hydrogen, 500))
-				.in(new OreDictStack(OreDictManager.COAL.gem()))
-				.out(new FluidStack(ModForgeFluids.heavyoil, 1000)));
 		addRecipe(new PyroOvenRecipe(200)
 				.in(new FluidStack(ModForgeFluids.gas, 12000))
 				.out(new ComparableStack(ModItems.ingot_graphite, 1))
 				.out(new FluidStack(ModForgeFluids.hydrogen, 8000)));
-		addRecipe(new PyroOvenRecipe(400)
-				.in(new ComparableStack(ModItems.oil_tar, 4))
-				.out(new ComparableStack(ModItems.powder_soot, 1)));
+		addRecipe(new PyroOvenRecipe(100)
+				.in(new FluidStack(ModForgeFluids.hydrogen, 500))
+				.in(new OreDictStack(OreDictManager.COAL.gem()))
+				.out(new FluidStack(ModForgeFluids.heavyoil, 1000)));
 		addRecipe(new PyroOvenRecipe(100)
 				.in(new FluidStack(ModForgeFluids.hydrogen, 500))
 				.in(new OreDictStack(OreDictManager.COAL.dust()))
 				.out(new FluidStack(ModForgeFluids.heavyoil, 1000)));
+		addRecipe(new PyroOvenRecipe(400)
+				.in(new ComparableStack(ModItems.oil_tar, 4))
+				.out(new ComparableStack(ModItems.powder_soot, 1)));
 		for(int oreMeta : BedrockOreRegistry.oreIndexes.keySet()) {
 			addRecipe(new PyroOvenRecipe(100)
 					.in(new ComparableStack(ModItems.ore_bedrock_seared, 1, oreMeta))

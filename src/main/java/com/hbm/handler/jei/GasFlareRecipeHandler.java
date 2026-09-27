@@ -22,13 +22,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraft.util.ResourceLocation;
 
-//Soot byproduct of burning petroleum in the flare stack; gui_nei_one_one, 108x18 crop at (34,34): input x=18, output x=72
+//Soot byproduct of burning petroleum in the flare stack; gui_nei_one_one, 108x18 crop at (16,34): input x=0, output x=90
 public class GasFlareRecipeHandler implements IRecipeCategory<GasFlareRecipeHandler.Wrapper> {
 
 	protected final IDrawable background;
 
 	public GasFlareRecipeHandler(IGuiHelper help) {
-		background = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_one_one.png"), 34, 34, 108, 18);
+		//gui_nei_one_one has its input at x=16 and output at x=106, so a crop from x=16 spans exactly input to output
+		background = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_one_one.png"), 16, 34, 108, 18);
 	}
 
 	public static List<Wrapper> getRecipes() {
@@ -64,8 +65,8 @@ public class GasFlareRecipeHandler implements IRecipeCategory<GasFlareRecipeHand
 	@Override
 	public void setRecipe(IRecipeLayout recipeLayout, Wrapper wrapper, IIngredients ingredients) {
 		IGuiItemStackGroup guiItemStacks = recipeLayout.getItemStacks();
-		guiItemStacks.init(0, true, 18, 0);
-		guiItemStacks.init(1, false, 72, 0);
+		guiItemStacks.init(0, true, 0, 0);
+		guiItemStacks.init(1, false, 90, 0);
 		guiItemStacks.set(ingredients);
 	}
 

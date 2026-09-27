@@ -248,6 +248,16 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
 			}
 			return null;
+		case ModBlocks.guiID_machine_arc_welder:
+			if(entity instanceof TileEntityMachineArcWelder) {
+				return new ContainerMachineArcWelder(player.inventory, (TileEntityMachineArcWelder) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_soldering_station:
+			if(entity instanceof TileEntityMachineSolderingStation) {
+				return new ContainerMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
+			}
+			return null;
 		case ModBlocks.guiID_machine_electrolyser_metal:
 			if(entity instanceof TileEntityElectrolyser) {
 				return new ContainerElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
@@ -919,6 +929,16 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_catalytic_reformer:
 			if(entity instanceof TileEntityMachineCatalyticReformer) {
 				return new GUIMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_arc_welder:
+			if(entity instanceof TileEntityMachineArcWelder) {
+				return new GUIMachineArcWelder(player.inventory, (TileEntityMachineArcWelder) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_soldering_station:
+			if(entity instanceof TileEntityMachineSolderingStation) {
+				return new GUIMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_pyrooven:

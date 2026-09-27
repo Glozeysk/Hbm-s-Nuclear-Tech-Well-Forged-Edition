@@ -103,7 +103,7 @@ public class ChemplantRecipes {
 		
 		makeRecipe(300, "SF_BIOFUEL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.biofuel, 300) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
 		
-		makeRecipe(310, "BP_BIOGAS", new AStack[] { new ComparableStack(ModItems.biomass, 32) }, null, null, new FluidStack[]{ new FluidStack(ModForgeFluids.biogas, 4000) }, 200);
+		makeRecipe(310, "BP_BIOGAS", new AStack[] { new ComparableStack(ModItems.biomass, 16) }, new FluidStack[]{ new FluidStack(ModForgeFluids.air, 4000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.biogas, 2000) }, 100);
 		
 		makeRecipe(320, "BP_BIOFUEL", new AStack[] { new ComparableStack(ModItems.biomass, 4) }, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 500), new FluidStack(ModForgeFluids.ethanol, 500) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.biofuel, 1000) }, 100);
 		
@@ -115,7 +115,7 @@ public class ChemplantRecipes {
 		
 		makeRecipe(360, "COOLANT", new AStack[] { new OreDictStack(F.dust(), 1), new ComparableStack(ModItems.catalyst_clay, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.tetrachromethane, 300) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.coolant, 400) }, 100);
 		
-		makeRecipe(370, "CRYOGEL", new AStack[] { new OreDictStack(F.dust(), 2), new ComparableStack(ModItems.catalyst_clay, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.chloroform, 500) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.cryogel, 50) }, 300);
+		makeRecipe(370, "CRYOGEL", new AStack[] { new OreDictStack(F.dust(), 2), new ComparableStack(ModItems.catalyst_clay, 2), new ComparableStack(ModItems.powder_ice, 2) }, new FluidStack[]{ new FluidStack(ModForgeFluids.chloroform, 500) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.cryogel, 100) }, 300);
 		
 		if(GeneralConfig.enableBabyMode) {
 			makeRecipe(380, "DESH", new AStack[] { new ComparableStack(ModItems.powder_desh_mix, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.lightoil, 200) }, new AStack[] { new ComparableStack(ModItems.ingot_desh, 1) }, null, 300);
@@ -134,10 +134,6 @@ public class ChemplantRecipes {
 		makeRecipe(430, "SOLVENT", null, new FluidStack[]{ new FluidStack(ModForgeFluids.petroil, 800), new FluidStack(ModForgeFluids.aromatics, 300) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.solvent, 1000) }, 50);
 		
 		makeRecipe(440, "RADIOSOLVENT", null, new FluidStack[]{ new FluidStack(ModForgeFluids.tetrachromethane, 500), new FluidStack(ModForgeFluids.watz, 500) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.radiosolvent, 1000) }, 50);
-		
-		makeRecipe(450, "CIRCUIT_4", new AStack[] { new ComparableStack(ModItems.circuit_red_copper, 1), new ComparableStack(ModItems.wire_gold, 4), new OreDictStack(LAPIS.dust(), 1), new OreDictStack(ANY_PLASTIC.ingot(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 400) }, new AStack[] { new ComparableStack(ModItems.circuit_gold, 1) }, null, 200);
-		
-		makeRecipe(460, "CIRCUIT_5", new AStack[] { new ComparableStack(ModItems.circuit_gold, 1), new ComparableStack(ModItems.wire_schrabidium, 4), new OreDictStack(DIAMOND.dust(), 1), new OreDictStack(DESH.ingot(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 800), new FluidStack(ModForgeFluids.petroleum, 400) }, new AStack[] { new ComparableStack(ModItems.circuit_schrabidium, 1) }, null, 250);
 		
 		makeRecipe(470, "POLYMER", new AStack[] { new OreDictStack(COAL.gem(), 2), new OreDictStack(F.dust(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 600) }, new AStack[] { new ComparableStack(ModItems.ingot_polymer, 1) }, null, 100);
 		
@@ -191,9 +187,9 @@ public class ChemplantRecipes {
 		
 		makeRecipe(720, "ELECTROLYSIS", new AStack[] {new OreDictStack(COAL.gem(), 1) }, new FluidStack[]{ new FluidStack(FluidRegistry.WATER, 8000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.hydrogen, 500) }, 150);
 		
-		makeRecipe(730, "XENON", null, null, null, new FluidStack[]{ new FluidStack(ModForgeFluids.xenon, 50) }, 300);
+		makeRecipe(730, "XENON", null, new FluidStack[]{ new FluidStack(ModForgeFluids.air, 16000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.xenon, 50) }, 300);
 		
-		makeRecipe(740, "XENON_OXY", null, new FluidStack[]{ new FluidStack(ModForgeFluids.oxygen, 250) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.xenon, 50) }, 20);
+		makeRecipe(740, "XENON_OXY", null, new FluidStack[]{ new FluidStack(ModForgeFluids.air, 8000), new FluidStack(ModForgeFluids.oxygen, 250) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.xenon, 50) }, 20);
 		
 		makeRecipe(750, "SATURN", new AStack[] {new OreDictStack(DURA.dust(), 1), new OreDictStack(P_RED.dust(), 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.acid, 100), new FluidStack(ModForgeFluids.mercury, 50) }, new AStack[] { new ComparableStack(ModItems.ingot_saturnite, 2) }, null, 60);
 		
@@ -245,6 +241,7 @@ public class ChemplantRecipes {
 
 		makeRecipe(990, "PC", null, new FluidStack[]{ new FluidStack(ModForgeFluids.xylene, 500), new FluidStack(ModForgeFluids.phosgene, 500) }, new AStack[] { new ComparableStack(ModItems.ingot_polycarbonate, 1) }, null, 100);
 		
+		makeRecipe(1000, "CRYOFRAC", null, new FluidStack[]{ new FluidStack(ModForgeFluids.air, 16000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.nitrogen, 500), new FluidStack(ModForgeFluids.argon, 200) }, 1200);
 	}
 
 	public static void makeRecipe(int index, String name, AStack[] itemInputs, FluidStack[] fluidInputs, AStack[] outputItems, FluidStack[] outputFluids, int duration) {

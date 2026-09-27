@@ -23,7 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-//gui_nei_one_two (one_one when the recipe has no second output), 108x18 crop at (34,34): input x=18, outputs x=72/90
+//gui_nei_one_two (one_one when the recipe has no second output), 108x18: input x=0, the last output at x=90. one_one has its output at x=106 instead of 124, so it is cropped from x=16 instead of 34.
 public class ElectrolyserFluidRecipeHandler implements IRecipeCategory<ElectrolyserFluidRecipeHandler.Wrapper> {
 
 	private static IDrawable oneOne;
@@ -32,7 +32,7 @@ public class ElectrolyserFluidRecipeHandler implements IRecipeCategory<Electroly
 
 	public ElectrolyserFluidRecipeHandler(IGuiHelper help) {
 		background = help.createBlankDrawable(108, 18);
-		oneOne = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_one_one.png"), 34, 34, 108, 18);
+		oneOne = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_one_one.png"), 16, 34, 108, 18);
 		oneTwo = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_one_two.png"), 34, 34, 108, 18);
 	}
 
@@ -72,10 +72,10 @@ public class ElectrolyserFluidRecipeHandler implements IRecipeCategory<Electroly
 	@Override
 	public void setRecipe(IRecipeLayout recipeLayout, Wrapper wrapper, IIngredients ingredients) {
 		IGuiItemStackGroup guiItemStacks = recipeLayout.getItemStacks();
-		guiItemStacks.init(0, true, 18, 0);
+		guiItemStacks.init(0, true, 0, 0);
 		guiItemStacks.set(0, wrapper.input);
 		for(int i = 0; i < wrapper.outputs.size(); i++) {
-			guiItemStacks.init(1 + i, false, 72 + i * 18, 0);
+			guiItemStacks.init(1 + i, false, 90 - (wrapper.outputs.size() - 1 - i) * 18, 0);
 			guiItemStacks.set(1 + i, wrapper.outputs.get(i));
 		}
 	}

@@ -334,6 +334,15 @@ public class ResourceManager {
 	//Ocean Pump
 	public static final IModelCustom pump_ocean = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/pump_ocean.obj")).asVBO();
 
+	//Air Intake
+	public static final IModelCustom intake = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/intake.obj")).asVBO();
+
+	//Arc Welder
+	public static final IModelCustom arc_welder = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/arc_welder.obj")).asVBO();
+
+	//Soldering Station
+	public static final IModelCustom soldering_station = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/soldering_station.obj")).asVBO();
+
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
 
@@ -676,6 +685,17 @@ public class ResourceManager {
 
 	//Ocean Pump
 	public static final ResourceLocation pump_ocean_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/pump_ocean.png");
+
+	//Air Intake
+	public static final ResourceLocation intake_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/intake.png");
+
+	//Arc Welder
+	public static final ResourceLocation arc_welder_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder.png");
+	public static final ResourceLocation arc_welder_dome_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder_dome.png");
+	public static final ResourceLocation arc_welder_dome_argon_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder_dome_argon.png");
+
+	//Soldering Station
+	public static final ResourceLocation soldering_station_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/soldering_station.png");
 
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");

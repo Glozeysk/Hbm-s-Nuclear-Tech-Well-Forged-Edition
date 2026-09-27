@@ -14,6 +14,8 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.amlfrom1710.Tessellator;
 import com.hbm.render.tileentity.RenderDemonLamp;
 import com.hbm.render.tileentity.RenderPumpOcean;
+import com.hbm.render.tileentity.RenderArcWelder;
+import com.hbm.render.tileentity.RenderSolderingStation;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -209,6 +211,36 @@ public class ItemRenderLibrary {
 			}
 			public void renderCommon() {
 				RenderPumpOcean.renderCommon(System.currentTimeMillis() % 3600 * 0.1D);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_arc_welder), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -1, 0);
+				GL11.glScaled(3.5, 3.5, 3.5);
+			}
+			public void renderCommon() {
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				RenderArcWelder.renderParts(false, ResourceManager.arc_welder_dome_tex);
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_soldering_station), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -1, 0);
+				GL11.glScaled(5, 5, 5);
+			}
+			public void renderCommon() {
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				RenderSolderingStation.renderModel();
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_intake), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glScaled(5, 5, 5);
+			}
+			public void renderCommon() {
+				bindTexture(ResourceManager.intake_tex); ResourceManager.intake.renderAll();
 			}});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_electrolyser), new ItemRenderBase() {

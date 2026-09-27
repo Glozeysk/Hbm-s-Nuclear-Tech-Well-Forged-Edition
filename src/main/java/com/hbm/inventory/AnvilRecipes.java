@@ -129,6 +129,7 @@ public class AnvilRecipes {
 
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(AL.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_aluminium, 8))).setTier(4));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(CU.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_copper, 8))).setTier(4));
+		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(PB.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_lead, 8))).setTier(4));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(W.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_tungsten, 8))).setTier(4));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(MINGRADE.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_red_copper, 8))).setTier(4));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(ALLOY.ingot()), new AnvilOutput(new ItemStack(ModItems.wire_advanced_alloy, 8))).setTier(4));
@@ -227,13 +228,13 @@ public class AnvilRecipes {
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new ComparableStack(Blocks.FURNACE),
-						new OreDictStack(STEEL.plate(), 8),
+						new ComparableStack(ModItems.plate_welded_steel, 8),
 						new OreDictStack(CU.ingot(), 8)
 				}, new AnvilOutput(new ItemStack(ModBlocks.heater_firebox))).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[]{
 						new ComparableStack(ModItems.ingot_firebrick, 16),
-						new OreDictStack(STEEL.plate(), 4),
+						new ComparableStack(ModItems.plate_welded_steel, 4),
 						new OreDictStack(CU.ingot(), 8),
 				} ,new AnvilOutput(new ItemStack(ModBlocks.heater_oven))).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
@@ -247,7 +248,7 @@ public class AnvilRecipes {
 				new AStack[] {
 						new OreDictStack(ANY_PLASTIC.ingot(), 4),
 						new OreDictStack(CU.ingot(), 8),
-						new OreDictStack(STEEL.plate(), 8),
+						new ComparableStack(ModItems.plate_welded_steel, 8),
 						new ComparableStack(ModItems.coil_tungsten, 8),
 						new ComparableStack(ModItems.circuit_copper, 1)
 				}, new AnvilOutput(new ItemStack(ModBlocks.heater_electric))).setTier(3));
@@ -255,7 +256,7 @@ public class AnvilRecipes {
 				new AStack[] {
 						new OreDictStack(RUBBER.ingot(), 4),
 						new OreDictStack(CU.ingot(), 16),
-						new OreDictStack(STEEL.plate(), 16),
+						new ComparableStack(ModItems.plate_welded_steel, 16),
 						new ComparableStack(ModItems.pipes_steel, 1),
 				}, new AnvilOutput(new ItemStack(ModBlocks.heater_heatex))).setTier(3));
 		constructionRecipes.add(new AnvilConstructionRecipe(
@@ -264,20 +265,20 @@ public class AnvilRecipes {
 						new OreDictStack(getReflector(), 8),
 						new OreDictStack(CU.ingot(), 16),
 						new OreDictStack(TCALLOY.ingot(), 6),
-						new OreDictStack(STEEL.plate(), 8),
+						new ComparableStack(ModItems.plate_welded_steel, 8),
 				}, new AnvilOutput(new ItemStack(ModBlocks.heater_rt))).setTier(4));
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new ComparableStack(Blocks.STONEBRICK, 16),
 						new OreDictStack(IRON.ingot(), 4),
-						new OreDictStack(STEEL.plate(), 16),
+						new ComparableStack(ModItems.plate_welded_steel, 16),
 						new OreDictStack(CU.ingot(), 8),
 						new ComparableStack(ModBlocks.steel_grate, 16)
 				}, new AnvilOutput(new ItemStack(ModBlocks.furnace_steel))).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new OreDictStack(STEEL.ingot(), 4),
-						new OreDictStack(CU.plate(), 16),
+						new ComparableStack(ModItems.plate_welded_copper, 16),
 						new ComparableStack(ModItems.plate_polymer, 8)
 				}, new AnvilOutput(new ItemStack(ModBlocks.heat_boiler))).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
@@ -335,8 +336,8 @@ public class AnvilRecipes {
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new OreDictStack(S.dust(), 8),
-						new OreDictStack(STEEL.plate(), 4),
-						new OreDictStack(AL.plate(), 2),
+						new ComparableStack(ModItems.plate_welded_steel, 4),
+						new ComparableStack(ModItems.plate_welded_aluminium, 2),
 						new ComparableStack(ModItems.hull_small_steel, 4),
 						new ComparableStack(ModItems.board_copper, 1),
 						new ComparableStack(ModItems.turbine_titanium, 1),
@@ -354,21 +355,17 @@ public class AnvilRecipes {
 						new OreDictStack(S.dust(), 32),
 				},
 				new AnvilOutput(new ItemStack(ModBlocks.machine_deuterium_tower))).setTier(4));
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack(DESH.ingot(), 4), new OreDictStack(ANY_PLASTIC.dust(), 2), new OreDictStack(DURA.ingot(), 1)},
-				new AnvilOutput(new ItemStack(ModItems.plate_desh, 4))).setTier(3));
+		//desh compound plates moved to the arc welder
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {new OreDictStack(EUPH.ingot(), 4), new OreDictStack(AT.ingot(), 3), new OreDictStack(ANY_BISMOID.dust(), 1), new OreDictStack(VOLCANIC.gem(), 1), new ComparableStack(ModItems.ingot_osmiridium)},
 				new AnvilOutput(new ItemStack(ModItems.plate_euphemium, 4))).setTier(6));
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack(DNT.ingot(), 4), new ComparableStack(ModItems.powder_spark_mix, 2), new OreDictStack(DESH.ingot(), 1)},
-				new AnvilOutput(new ItemStack(ModItems.plate_dineutronium, 4))).setTier(7));
+		//dineutronium compound plates moved to the arc welder
 
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {new OreDictStack("plateTitanium", 2), new OreDictStack(STEEL.ingot(), 1), new ComparableStack(ModItems.bolt_tungsten, 2)},
 				new AnvilOutput(new ItemStack(ModItems.plate_armor_titanium))).setTier(2));
 		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack(IRON.plate(), 4), new OreDictStack(BIGMT.plate(), 2), new ComparableStack(ModItems.plate_armor_titanium, 1)},
+				new AStack[] {new ComparableStack(ModItems.plate_welded_iron, 4), new ComparableStack(ModItems.plate_welded_saturnite, 2), new ComparableStack(ModItems.plate_armor_titanium, 1)},
 				new AnvilOutput(new ItemStack(ModItems.plate_armor_ajr))).setTier(3));
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {new ComparableStack(ModItems.plate_paa, 2), new ComparableStack(ModItems.plate_armor_ajr, 1), new ComparableStack(ModItems.wire_tungsten, 4)},
@@ -486,25 +483,7 @@ public class AnvilRecipes {
 	}
 	
 	public static void registerConstructionUpgrades() {
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_template), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_speed_1), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_speed_2), 3);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_speed_3), 4);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_power_1), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_power_2), 3);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_power_3), 4);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_effect_1), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_effect_2), 3);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_effect_3), 4);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_fortune_1), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_fortune_2), 3);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_fortune_3), 4);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_afterburn_1), 2);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_afterburn_2), 3);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_afterburn_3), 4);
-
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_radius), 4);
-		pullFromAssembler(new ComparableStack(ModItems.upgrade_health), 4);
+		//the template, the tiered upgrades, radius and health moved to the soldering station
 		pullFromAssembler(new ComparableStack(ModItems.upgrade_smelter), 4);
 		pullFromAssembler(new ComparableStack(ModItems.upgrade_shredder), 4);
 		pullFromAssembler(new ComparableStack(ModItems.upgrade_centrifuge), 4);
@@ -583,6 +562,17 @@ public class AnvilRecipes {
 						new AnvilOutput(new ItemStack(ModItems.wire_schrabidium, 1), 0.25F),
 						new AnvilOutput(new ItemStack(ModItems.powder_diamond, 1), 0.25F),
 						new AnvilOutput(new ItemStack(ModItems.ingot_desh, 1), 0.5F)
+				}
+		).setTier(5));
+		constructionRecipes.add(new AnvilConstructionRecipe(
+				new ComparableStack(ModItems.circuit_multi),
+				new AnvilOutput[] {
+						new AnvilOutput(new ItemStack(ModItems.circuit_schrabidium, 1)),
+						new AnvilOutput(new ItemStack(ModItems.wire_schrabidium, 8)),
+						new AnvilOutput(new ItemStack(ModItems.wire_schrabidium, 4), 0.5F),
+						new AnvilOutput(new ItemStack(ModItems.wire_schrabidium, 4), 0.25F),
+						new AnvilOutput(new ItemStack(ModItems.powder_tantalium, 1), 0.25F),
+						new AnvilOutput(new ItemStack(ModItems.ingot_bismuth, 1), 0.5F)
 				}
 		).setTier(6));
 

@@ -879,6 +879,22 @@ public class Library {
 		}
 	}
 
+	public static void consumeInventoryOreDict(InventoryPlayer inventory, String name) {
+		int oreId = OreDictionary.getOreID(name);
+		for(int i = 0; i < inventory.getSizeInventory(); i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
+			if(stack.isEmpty())
+				continue;
+			for(int id : OreDictionary.getOreIDs(stack)) {
+				if(id == oreId) {
+					stack.shrink(1);
+					inventory.setInventorySlotContents(i, stack.copy());
+					return;
+				}
+			}
+		}
+	}
+
 	//////  //////  //////  //////  //////  ////        //////  //////  //////
 	//      //  //  //        //    //      //  //      //      //      //    
 	////    //////  /////     //    ////    ////        ////    //  //  //  //

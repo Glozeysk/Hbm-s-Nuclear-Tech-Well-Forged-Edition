@@ -93,16 +93,24 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 				
 				//the feedstock is levelled out like the heat, so every tower runs dry at the same time
 				if(types[0] != null) {
-					int move = (tanks[0].getFluidAmount() - frac.tanks[0].getFluidAmount()) / 2;
+					//anything under one operation in the tower above slides down to where new feed arrives, or it would sit there forever
+					int rest = frac.tanks[0].getFluidAmount() % 100;
+					if(rest > 0 && tanks[0].getCapacity() - tanks[0].getFluidAmount() >= rest) {
+						frac.tanks[0].drain(rest, true);
+						tanks[0].fill(new FluidStack(types[0], rest), true);
+					}
+
+					//levelling only moves whole operations of 100mB
+					int move = (tanks[0].getFluidAmount() - frac.tanks[0].getFluidAmount()) / 200 * 100;
 
 					if(move > 0) {
-						move = Math.min(move, frac.tanks[0].getCapacity() - frac.tanks[0].getFluidAmount());
+						move = Math.min(move, frac.tanks[0].getCapacity() - frac.tanks[0].getFluidAmount()) / 100 * 100;
 						if(move > 0) {
 							tanks[0].drain(move, true);
 							frac.tanks[0].fill(new FluidStack(frac.types[0], move), true);
 						}
 					} else if(move < 0) {
-						move = Math.min(-move, tanks[0].getCapacity() - tanks[0].getFluidAmount());
+						move = Math.min(-move, tanks[0].getCapacity() - tanks[0].getFluidAmount()) / 100 * 100;
 						if(move > 0) {
 							frac.tanks[0].drain(move, true);
 							tanks[0].fill(new FluidStack(types[0], move), true);

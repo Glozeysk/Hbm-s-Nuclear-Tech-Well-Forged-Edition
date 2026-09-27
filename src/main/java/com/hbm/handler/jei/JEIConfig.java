@@ -57,6 +57,8 @@ public class JEIConfig implements IModPlugin {
 	public static final String ELECTROLYSIS_FLUID = "hbm.electrolysis_fluid";
 	public static final String ELECTROLYSIS_METAL = "hbm.electrolysis_metal";
 	public static final String GAS_FLARE = "hbm.gas_flare";
+	public static final String ARC_WELDER = "hbm.arc_welder";
+	public static final String SOLDERING_STATION = "hbm.soldering_station";
 	public static final String FRACTIONING = "hbm.fracturing";
 	public static final String SHREDDER = "hbm.shredder";
 	public static final String FLUIDS = "hbm.fluids";
@@ -128,6 +130,8 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_electrolyser), ELECTROLYSIS_FLUID);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_electrolyser), ELECTROLYSIS_METAL);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_flare), GAS_FLARE);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_arc_welder), ARC_WELDER);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_soldering_station), SOLDERING_STATION);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_fraction_tower), FRACTIONING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shredder), SHREDDER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shreddermk2), SHREDDER);
@@ -173,6 +177,8 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(ElectrolyserFluidRecipeHandler.getRecipes(), ELECTROLYSIS_FLUID);
 		registry.addRecipes(ElectrolyserMetalRecipeHandler.getRecipes(), ELECTROLYSIS_METAL);
 		registry.addRecipes(GasFlareRecipeHandler.getRecipes(), GAS_FLARE);
+		registry.addRecipes(ArcWelderRecipeHandler.getRecipes(), ARC_WELDER);
+		registry.addRecipes(SolderingStationRecipeHandler.getRecipes(), SOLDERING_STATION);
 		registry.addRecipes(JeiRecipes.getFractioningRecipe(), FRACTIONING);
 		registry.addRecipes(ShredderRecipes.getShredderRecipes(), SHREDDER);
 		registry.addRecipes(JeiRecipes.getFluidEquivalences(), FLUIDS);
@@ -216,6 +222,8 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineGasCent.class, 118, 36, 51, 13, GAS_CENT);
 		registry.addRecipeClickArea(GUIMachineReactor.class, 80, 35, 21, 14, REACTOR);
 		registry.addRecipeClickArea(GUIMachineRefinery.class, 79, 71, 71, 17, REFINERY);
+		registry.addRecipeClickArea(GUIMachineArcWelder.class, 72, 37, 33, 14, ARC_WELDER);
+		registry.addRecipeClickArea(GUIMachineSolderingStation.class, 72, 28, 33, 14, SOLDERING_STATION);
 		registry.addRecipeClickArea(GUIMachineHydrotreater.class, 85, 82, 24, 24, HYDROTREATING);
 		registry.addRecipeClickArea(GUIMachineCatalyticReformer.class, 67, 82, 24, 24, CATALYTIC_REFORMING);
 		registry.addRecipeClickArea(GUIMachinePyroOven.class, 57, 47, 27, 12, PYROLYSIS);
@@ -314,6 +322,8 @@ public class JEIConfig implements IModPlugin {
 				new ElectrolyserFluidRecipeHandler(help),
 				new ElectrolyserMetalRecipeHandler(help),
 				new GasFlareRecipeHandler(help),
+				new ArcWelderRecipeHandler(help),
+				new SolderingStationRecipeHandler(help),
 				new FractioningRecipeHandler(help),
 				new CrystallizerRecipeHandler(help),
 				new CentrifugeRecipeHandler(help),

@@ -34,6 +34,9 @@ public class ModForgeFluids {
 
 	public static HashMap<Fluid, Integer> fluidColors = new HashMap<Fluid, Integer>();
 
+	public static Fluid air = HbmFluid.builder("air")
+			.props(0, 0, 0, EnumSymbol.NONE)
+			.build();
 	public static Fluid spentsteam = HbmFluid.builder("spentsteam")
 			.temperature(40)
 			.props(0, 0, 0, EnumSymbol.NONE)
@@ -389,6 +392,14 @@ public class ModForgeFluids {
 	public static Fluid xenon = HbmFluid.builder("xenon")
 			.temperatureKelvin(163)
 			.props(0, 0, 0, EnumSymbol.ASPHYXIANT).dfc(1.25F)
+			.build();
+	public static Fluid argon = HbmFluid.builder("argon")
+			.temperatureKelvin(87)
+			.props(1, 0, 0, EnumSymbol.ASPHYXIANT).dfc(1.3F)
+			.build();
+	public static Fluid nitrogen = HbmFluid.builder("nitrogen")
+			.temperatureKelvin(77)
+			.props(3, 0, 0, EnumSymbol.ASPHYXIANT).dfc(1.15F)
 			.build();
 	public static Fluid balefire = HbmFluid.builder("balefire")
 			.temperature(15000)

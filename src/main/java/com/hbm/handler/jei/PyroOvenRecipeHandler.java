@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 //The background art follows the component count (gui_nei_one_one / one_two / two_one / two_two).
-//All four share the 108x18 crop at (34,34): paired cells at x 0/18 and 72/90, a single cell at 18 (input) or 72 (output).
+//Every layout spans the full 108px: inputs from x=0, the last output at x=90. Sheets with one output have it at x=106 instead of 124, so they are cropped from x=16 instead of 34.
 public class PyroOvenRecipeHandler implements IRecipeCategory<PyroOvenRecipe> {
 
 	private static final String[] NAMES = {"one_one", "one_two", "two_one", "two_two"};
@@ -27,7 +27,7 @@ public class PyroOvenRecipeHandler implements IRecipeCategory<PyroOvenRecipe> {
 	public PyroOvenRecipeHandler(IGuiHelper help) {
 		background = help.createBlankDrawable(108, 18);
 		for(int i = 0; i < 4; i++)
-			LAYOUTS[i] = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_" + NAMES[i] + ".png"), 34, 34, 108, 18);
+			LAYOUTS[i] = help.createDrawable(new ResourceLocation(RefStrings.MODID + ":textures/gui/jei/gui_nei_" + NAMES[i] + ".png"), i % 2 == 0 ? 16 : 34, 34, 108, 18);
 	}
 
 	public static IDrawable getLayout(int inputs, int outputs) {
@@ -62,11 +62,11 @@ public class PyroOvenRecipeHandler implements IRecipeCategory<PyroOvenRecipe> {
 
 		int slot = 0;
 		for(int i = 0; i < inputs.size(); i++) {
-			guiItemStacks.init(slot, true, inputs.size() >= 2 ? i * 18 : 18, 0);
+			guiItemStacks.init(slot, true, i * 18, 0);
 			guiItemStacks.set(slot++, inputs.get(i));
 		}
 		for(int i = 0; i < outputs.size(); i++) {
-			guiItemStacks.init(slot, false, 72 + i * 18, 0);
+			guiItemStacks.init(slot, false, 90 - (outputs.size() - 1 - i) * 18, 0);
 			guiItemStacks.set(slot++, outputs.get(i));
 		}
 	}
