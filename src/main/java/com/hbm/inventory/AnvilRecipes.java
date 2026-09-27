@@ -356,23 +356,10 @@ public class AnvilRecipes {
 				},
 				new AnvilOutput(new ItemStack(ModBlocks.machine_deuterium_tower))).setTier(4));
 		//desh compound plates moved to the arc welder
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack(EUPH.ingot(), 4), new OreDictStack(AT.ingot(), 3), new OreDictStack(ANY_BISMOID.dust(), 1), new OreDictStack(VOLCANIC.gem(), 1), new ComparableStack(ModItems.ingot_osmiridium)},
-				new AnvilOutput(new ItemStack(ModItems.plate_euphemium, 4))).setTier(6));
+		//euphemium compound plates moved to the arc welder
 		//dineutronium compound plates moved to the arc welder
 
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack("plateTitanium", 2), new OreDictStack(STEEL.ingot(), 1), new ComparableStack(ModItems.bolt_tungsten, 2)},
-				new AnvilOutput(new ItemStack(ModItems.plate_armor_titanium))).setTier(2));
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new ComparableStack(ModItems.plate_welded_iron, 4), new ComparableStack(ModItems.plate_welded_saturnite, 2), new ComparableStack(ModItems.plate_armor_titanium, 1)},
-				new AnvilOutput(new ItemStack(ModItems.plate_armor_ajr))).setTier(3));
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new ComparableStack(ModItems.plate_paa, 2), new ComparableStack(ModItems.plate_armor_ajr, 1), new ComparableStack(ModItems.wire_tungsten, 4)},
-				new AnvilOutput(new ItemStack(ModItems.plate_armor_hev))).setTier(4));
-		constructionRecipes.add(new AnvilConstructionRecipe(
-				new AStack[] {new OreDictStack(OreDictManager.getReflector(), 2), new ComparableStack(ModItems.plate_armor_hev, 1), new ComparableStack(ModItems.wire_magnetized_tungsten, 4)},
-				new AnvilOutput(new ItemStack(ModItems.plate_armor_lunar))).setTier(4));
+		//titanium, AJR, HEV and lunar armor plates moved to the arc welder
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {new ComparableStack(ModItems.ingot_meteorite_forged, 4), new OreDictStack(DESH.ingot(), 1), new ComparableStack(ModItems.billet_yharonite, 1)},
 				new AnvilOutput(new ItemStack(ModItems.plate_armor_fau))).setTier(6));

@@ -31,16 +31,17 @@ import net.minecraftforge.oredict.OreDictionary;
 public class MachineRecipes {
 
 	// return: Fluid, amount produced, amount required, HE produced
+	// same heat values as NTM:CE and HeatRecipes, so heating and turbine cooling balance at every stage
 	public static Object[] getTurbineOutput(Fluid type) {
 
 		if (type == ModForgeFluids.steam) {
-			return new Object[] { ModForgeFluids.spentsteam, 5, 500, 50 };
+			return new Object[] { ModForgeFluids.spentsteam, 1, 100, 200 };
 		} else if (type == ModForgeFluids.hotsteam) {
-			return new Object[] { ModForgeFluids.steam, 50, 5, 100 };
+			return new Object[] { ModForgeFluids.steam, 10, 1, 2 };
 		} else if (type == ModForgeFluids.superhotsteam) {
-			return new Object[] { ModForgeFluids.hotsteam, 50, 5, 150 };
+			return new Object[] { ModForgeFluids.hotsteam, 10, 1, 18 };
 		} else if(type == ModForgeFluids.ultrahotsteam){
-			return new Object[] { ModForgeFluids.superhotsteam, 50, 5, 250 };
+			return new Object[] { ModForgeFluids.superhotsteam, 10, 1, 120 };
 		}
 
 		return null;

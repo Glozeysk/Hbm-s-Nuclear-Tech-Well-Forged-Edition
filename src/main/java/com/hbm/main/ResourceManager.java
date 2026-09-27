@@ -343,6 +343,12 @@ public class ResourceManager {
 	//Soldering Station
 	public static final IModelCustom soldering_station = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/soldering_station.obj")).asVBO();
 
+	//Solidifier
+	public static final IModelCustom solidifier = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/solidifier.obj")).asVBO();
+
+	//Liquefactor
+	public static final IModelCustom liquefactor = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/liquefactor.obj")).asVBO();
+
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
 
@@ -696,6 +702,12 @@ public class ResourceManager {
 
 	//Soldering Station
 	public static final ResourceLocation soldering_station_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/soldering_station.png");
+
+	//Solidifier
+	public static final ResourceLocation solidifier_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/solidifier.png");
+
+	//Liquefactor
+	public static final ResourceLocation liquefactor_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/liquefactor.png");
 
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");

@@ -73,36 +73,6 @@ public class ChemplantRecipes {
 		
 		makeRecipe(150, "CC_NAPHTHA", new AStack[] { new OreDictStack(COAL.dust(), 8), new ComparableStack(ModItems.oil_tar, 4) }, new FluidStack[]{ new FluidStack(ModForgeFluids.naphtha, 1200), new FluidStack(ModForgeFluids.steam, 2400) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.naphtha, 2000) }, 300);
 		
-		makeRecipe(160, "SF_OIL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.oil, 350) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(170, "SF_HEAVYOIL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.heavyoil, 250) }, new AStack[] { new ComparableStack(ModItems.oil_tar, 2) }, null, 20);
-		
-		makeRecipe(180, "SF_SMEAR", null, new FluidStack[]{ new FluidStack(ModForgeFluids.smear, 200) }, new AStack[] { new ComparableStack(ModItems.oil_tar, 2) }, null, 20);
-		
-		makeRecipe(190, "SF_HEATINGOIL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.heatingoil, 100) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(200, "SF_RECLAIMED", null, new FluidStack[]{ new FluidStack(ModForgeFluids.reclaimed, 200) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(210, "SF_PETROIL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.petroil, 250) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(220, "SF_LUBRICANT", null, new FluidStack[]{ new FluidStack(ModForgeFluids.lubricant, 250) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(230, "SF_NAPHTHA", null, new FluidStack[]{ new FluidStack(ModForgeFluids.naphtha, 300) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(240, "SF_DIESEL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.diesel, 400) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(250, "SF_LIGHTOIL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.lightoil, 450) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(260, "SF_KEROSENE", null, new FluidStack[]{ new FluidStack(ModForgeFluids.kerosene, 550) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(270, "SF_GAS", null, new FluidStack[]{ new FluidStack(ModForgeFluids.gas, 750) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(280, "SF_PETROLEUM", null, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 600) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(290, "SF_BIOGAS", null, new FluidStack[]{ new FluidStack(ModForgeFluids.biogas, 400) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
-		makeRecipe(300, "SF_BIOFUEL", null, new FluidStack[]{ new FluidStack(ModForgeFluids.biofuel, 300) }, new AStack[] { new ComparableStack(ModItems.solid_fuel, 2) }, null, 20);
-		
 		makeRecipe(310, "BP_BIOGAS", new AStack[] { new ComparableStack(ModItems.biomass, 16) }, new FluidStack[]{ new FluidStack(ModForgeFluids.air, 4000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.biogas, 2000) }, 100);
 		
 		makeRecipe(320, "BP_BIOFUEL", new AStack[] { new ComparableStack(ModItems.biomass, 4) }, new FluidStack[]{ new FluidStack(ModForgeFluids.petroleum, 500), new FluidStack(ModForgeFluids.ethanol, 500) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.biofuel, 1000) }, 100);

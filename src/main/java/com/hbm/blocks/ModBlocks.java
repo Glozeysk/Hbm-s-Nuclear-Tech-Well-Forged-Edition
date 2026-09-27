@@ -1305,6 +1305,12 @@ public class ModBlocks {
 	public static final Block machine_soldering_station = new MachineSolderingStation(Material.IRON, "machine_soldering_station").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_soldering_station = 146;
 
+	public static final Block machine_solidifier = new MachineSolidifier(Material.IRON, "machine_solidifier").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_solidifier = 147;
+
+	public static final Block machine_liquefactor = new MachineLiquefactor(Material.IRON, "machine_liquefactor").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_liquefactor = 148;
+
 	public static final Block machine_pump = new MachineVacuumPump(Material.IRON, "machine_pump", false).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_cryopump = new MachineVacuumPump(Material.IRON, "machine_cryopump", true).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 

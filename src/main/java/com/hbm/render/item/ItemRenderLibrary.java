@@ -16,6 +16,8 @@ import com.hbm.render.tileentity.RenderDemonLamp;
 import com.hbm.render.tileentity.RenderPumpOcean;
 import com.hbm.render.tileentity.RenderArcWelder;
 import com.hbm.render.tileentity.RenderSolderingStation;
+import com.hbm.render.tileentity.RenderSolidifier;
+import com.hbm.render.tileentity.RenderLiquefactor;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -221,6 +223,28 @@ public class ItemRenderLibrary {
 			public void renderCommon() {
 				GlStateManager.shadeModel(GL11.GL_SMOOTH);
 				RenderArcWelder.renderParts(false, ResourceManager.arc_welder_dome_tex);
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_liquefactor), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -2.5, 0);
+				GL11.glScaled(3, 3, 3);
+			}
+			public void renderCommon() {
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				RenderLiquefactor.renderMain();
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_solidifier), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(0, -2.5, 0);
+				GL11.glScaled(3, 3, 3);
+			}
+			public void renderCommon() {
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				RenderSolidifier.renderMain();
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 

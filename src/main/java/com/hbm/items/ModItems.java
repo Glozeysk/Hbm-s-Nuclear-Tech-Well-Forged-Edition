@@ -2262,9 +2262,9 @@ public class ModItems {
 	public static final Item plate_welded_tcalloy = new ItemBase("plate_welded_tcalloy").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_welded_cdalloy = new ItemBase("plate_welded_cdalloy").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_welded_combine_steel = new ItemBase("plate_welded_combine_steel").setCreativeTab(MainRegistry.partsTab);
-	public static final Item plate_welded_osmiridium = new ItemBase("plate_welded_osmiridium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_osmiridium = ((ItemCustomLore) new ItemHazard("plate_welded_osmiridium").addDigamma(0.080F).toItem()).setRarity(EnumRarity.EPIC).setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_welded_advanced_alloy = new ItemBase("plate_welded_advanced_alloy").setCreativeTab(MainRegistry.partsTab);
-	public static final Item plate_welded_niobium = new ItemBase("plate_welded_niobium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item plate_welded_niobium = new ItemCustomLore("plate_welded_niobium").setRarity(EnumRarity.EPIC).setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_welded_saturnite = new ItemBase("plate_welded_saturnite").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_advanced_alloy = new ItemBase("plate_advanced_alloy").setCreativeTab(MainRegistry.partsTab);
 	public static final Item plate_combine_steel = new ItemBase("plate_combine_steel").setCreativeTab(MainRegistry.partsTab);
@@ -2340,8 +2340,8 @@ public class ModItems {
 	public static final Item circuit_targeting_tier2 = new ItemBase("circuit_targeting_tier2").setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_targeting_tier3 = new ItemBase("circuit_targeting_tier3").setCreativeTab(MainRegistry.partsTab);
 	public static final Item circuit_targeting_tier4 = new ItemBase("circuit_targeting_tier4").setCreativeTab(MainRegistry.partsTab);
-	public static final Item circuit_targeting_tier5 = new ItemBase("circuit_targeting_tier5").setCreativeTab(MainRegistry.partsTab);
-	public static final Item circuit_targeting_tier6 = new ItemBase("circuit_targeting_tier6").setCreativeTab(MainRegistry.partsTab);
+	public static final Item circuit_targeting_tier5 = new ItemCustomLore("circuit_targeting_tier5").setRarity(EnumRarity.RARE).setCreativeTab(MainRegistry.partsTab);
+	public static final Item circuit_targeting_tier6 = new ItemCustomLore("circuit_targeting_tier6").setRarity(EnumRarity.EPIC).setCreativeTab(MainRegistry.partsTab);
 	public static final Item mechanism_revolver_1 = new ItemBase("mechanism_revolver_1").setCreativeTab(MainRegistry.partsTab);
 	public static final Item mechanism_revolver_2 = new ItemBase("mechanism_revolver_2").setCreativeTab(MainRegistry.partsTab);
 	public static final Item mechanism_rifle_1 = new ItemBase("mechanism_rifle_1").setCreativeTab(MainRegistry.partsTab);

@@ -231,6 +231,8 @@ import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.HydrotreaterRecipes;
 import com.hbm.inventory.ArcWelderRecipes;
 import com.hbm.inventory.SolderingRecipes;
+import com.hbm.inventory.SolidificationRecipes;
+import com.hbm.inventory.LiquefactionRecipes;
 import com.hbm.inventory.CatalyticReformerRecipes;
 import com.hbm.inventory.PyroOvenRecipes;
 import com.hbm.inventory.ElectrolyserFluidRecipes;
@@ -606,7 +608,7 @@ public class MainRegistry {
 		enumArmorMaterialHazmat3.setRepairItem(new ItemStack(ModItems.hazmat_cloth_grey));
 		enumArmorMaterialT45.setRepairItem(new ItemStack(ModItems.plate_titanium));
 		enumArmorMaterialT51.setRepairItem(new ItemStack(ModItems.plate_titanium));
-		aMatBJ.setRepairItem(new ItemStack(ModItems.plate_armor_lunar));
+		aMatBJ.setRepairItem(new ItemStack(ModItems.plate_armor_hev));
 		aMatAJR.setRepairItem(new ItemStack(ModItems.plate_armor_ajr));
 		aMatHEV.setRepairItem(new ItemStack(ModItems.plate_armor_hev));
 		enumArmorMaterialTitanium.setRepairItem(new ItemStack(ModItems.ingot_titanium));
@@ -703,6 +705,8 @@ public class MainRegistry {
 		reg(TileEntityMachineIntake.class, "tileentity_machine_intake");
 		reg(TileEntityMachineArcWelder.class, "tileentity_machine_arc_welder");
 		reg(TileEntityMachineSolderingStation.class, "tileentity_machine_soldering_station");
+		reg(TileEntityMachineSolidifier.class, "tileentity_machine_solidifier");
+		reg(TileEntityMachineLiquefactor.class, "tileentity_machine_liquefactor");
 		reg(TileEntityMachineVacuumPump.class, "tileentity_machine_vacuum_pump");
 		reg(TileEntityMachineCryoPump.class, "tileentity_machine_cryo_pump");
 		reg(TileEntityMachineCyclotron.class, "tileentity_machine_cyclotron");
@@ -1191,6 +1195,8 @@ public class MainRegistry {
 		HeatRecipes.registerHeatRecipes();
 		EngineRecipes.registerEngineRecipes();
 		FluidCombustionRecipes.registerFluidCombustionRecipes();
+		SolidificationRecipes.register();
+		LiquefactionRecipes.register();
 		PyroOvenRecipes.registerRecipes(); //solid fuel recipes read the combustion values
 		HbmDetox.init();
 

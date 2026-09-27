@@ -15,6 +15,8 @@ import com.hbm.tileentity.machine.*;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
+import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
+import com.hbm.tileentity.machine.oil.TileEntityMachineLiquefactor;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
@@ -256,6 +258,16 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_soldering_station:
 			if(entity instanceof TileEntityMachineSolderingStation) {
 				return new ContainerMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_solidifier:
+			if(entity instanceof TileEntityMachineSolidifier) {
+				return new ContainerSolidifier(player.inventory, (TileEntityMachineSolidifier) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_liquefactor:
+			if(entity instanceof TileEntityMachineLiquefactor) {
+				return new ContainerLiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_electrolyser_metal:
@@ -939,6 +951,16 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_soldering_station:
 			if(entity instanceof TileEntityMachineSolderingStation) {
 				return new GUIMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_solidifier:
+			if(entity instanceof TileEntityMachineSolidifier) {
+				return new GUISolidifier(player.inventory, (TileEntityMachineSolidifier) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_liquefactor:
+			if(entity instanceof TileEntityMachineLiquefactor) {
+				return new GUILiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_pyrooven:

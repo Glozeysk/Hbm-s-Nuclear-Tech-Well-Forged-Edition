@@ -167,7 +167,9 @@ public class ShredderRecipes {
 		ShredderRecipes.setRecipe(ModBlocks.block_schrabidate, new ItemStack(ModItems.powder_schrabidate, 9));
 		ShredderRecipes.setRecipe(ModItems.coal_infernal, new ItemStack(ModItems.powder_coal, 3));
 		ShredderRecipes.setRecipe(ModBlocks.block_coal_infernal, new ItemStack(ModItems.powder_coal, 27));
-		ShredderRecipes.setRecipe(Items.REEDS, new ItemStack(Items.SUGAR, 2));
+		ShredderRecipes.setRecipe(Items.CARROT, new ItemStack(Items.SUGAR, 1));
+		ShredderRecipes.setRecipe(Items.APPLE, new ItemStack(Items.SUGAR, 1));
+		ShredderRecipes.setRecipe(Items.REEDS, new ItemStack(Items.SUGAR, 3));
 		ShredderRecipes.setRecipe(Items.FERMENTED_SPIDER_EYE, new ItemStack(ModItems.powder_poison, 3));
 		ShredderRecipes.setRecipe(Items.POISONOUS_POTATO, new ItemStack(ModItems.powder_poison, 1));
 
