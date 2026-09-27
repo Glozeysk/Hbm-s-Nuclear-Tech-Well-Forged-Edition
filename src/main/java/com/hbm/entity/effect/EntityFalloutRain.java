@@ -293,16 +293,21 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		
 		for(int i = lastGapHeight; i <= contactHeight; i++) {
 			pos.setY(i);
-			Block b = world.getBlockState(pos).getBlock();
+			IBlockState state = world.getBlockState(pos);
+			Block b = state.getBlock();
 			if(!b.isReplaceable(world, pos)){
 
 				float hardness = b.getExplosionResistance(null);
-				if(hardness >= 0 && hardness < 50 && i != bottomHeight){
-					gapPos.setY(bottomHeight);
-					world.setBlockState(gapPos, world.getBlockState(pos));
-					world.setBlockToAir(pos);
+				if(hardness >= 0 && hardness < 50 && !b.hasTileEntity(state)){
+					if(i != bottomHeight){
+						gapPos.setY(bottomHeight);
+						world.setBlockState(gapPos, state);
+						world.setBlockToAir(pos);
+					}
+					bottomHeight++;
+				} else {
+					bottomHeight = i + 1;
 				}
-				bottomHeight++;
 			}	
 		}
 	}
