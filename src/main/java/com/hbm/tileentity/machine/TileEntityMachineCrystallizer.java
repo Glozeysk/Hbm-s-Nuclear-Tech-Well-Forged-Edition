@@ -15,6 +15,8 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.MainRegistry;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 
@@ -59,8 +61,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
 	public FluidTank tank;
 
-	private int soundTimer;
-	private static final int SOUND_DURATION = 20;
+	private AudioWrapper audio;
 
 	private List<BlockPos> ladderPositions = new ArrayList<>();
 	private EnumFacing ladderFacing = EnumFacing.NORTH;
@@ -157,20 +158,27 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 				}
 			}
 
-			if(progress > 0) {
-				if(soundTimer <= 0) {
-					world.playSound(null, pos.getX() + 0.5, pos.getY() + 3.0, pos.getZ() + 0.5,
-							HBMSoundHandler.crystallizer_loop, SoundCategory.BLOCKS, 1.0F, 1.0F);
-					soundTimer = SOUND_DURATION;
-				}
-				soundTimer--;
-			} else {
-				soundTimer = 0;
-			}
-
 			networkPackNT(25);
 
 		} else {
+
+			boolean isRunning = progress > 0;
+			float volume = this.getVolume(2);
+
+			if(isRunning && volume > 0) {
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.crystallizer_loop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio.startSound();
+				}
+				audio.updateVolume(volume);
+				audio.updatePitch(1.0F);
+				audio.updateRange(37.0F);
+			} else {
+				if(audio != null) {
+					audio.stopSound();
+					audio = null;
+				}
+			}
 
 			prevAngle = angle;
 
@@ -606,5 +614,23 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public void onChunkUnload() {
+		super.onChunkUnload();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
 	}
 }
