@@ -54,11 +54,22 @@ public class ItemAnalyzer extends Item {
 			} else {
 				
 				if(te instanceof TileEntityDummy) {
+					BlockPos target = ((TileEntityDummy)te).getTarget();
+
+					if(target == null) {
+						player.sendMessage(new TextComponentString("Dummy Block, no target"));
+						return EnumActionResult.SUCCESS;
+					}
 
 					player.sendMessage(new TextComponentString(
-							"Dummy Block, references TE at " + ((TileEntityDummy)te).getTarget().getX() + " / " + ((TileEntityDummy)te).getTarget().getY() + " / " + ((TileEntityDummy)te).getTarget().getZ()));
+							"Dummy Block, references TE at " + target.getX() + " / " + target.getY() + " / " + target.getZ()));
 					
-					te = world.getTileEntity(((TileEntityDummy)te).getTarget());
+					te = world.getTileEntity(target);
+
+					if(te == null) {
+						player.sendMessage(new TextComponentString("Dummy Block, target has no TE"));
+						return EnumActionResult.SUCCESS;
+					}
 				}
 				
 				String[] parts = te.toString().split("\\.");

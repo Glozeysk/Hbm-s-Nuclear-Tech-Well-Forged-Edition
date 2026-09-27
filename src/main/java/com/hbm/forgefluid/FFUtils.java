@@ -264,8 +264,8 @@ public class FFUtils {
 		}
 
 		if(te instanceof TileEntityDummy) {
-			TileEntityDummy ted = (TileEntityDummy)te;
-			if(world.getTileEntity(ted.getTarget()) == tileEntity) {
+			BlockPos target = ((TileEntityDummy)te).getTarget();
+			if(target == null || world.getTileEntity(target) == tileEntity) {
 				return false;
 			}
 		}

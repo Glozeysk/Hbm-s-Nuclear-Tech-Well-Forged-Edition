@@ -216,7 +216,9 @@ public class DummyBlockBase extends BlockContainer
         if (!props.isDoor) return;
         TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityDummy)) return;
-        TileEntity target = world.getTileEntity(((TileEntityDummy) te).getTarget());
+        BlockPos targetPos = ((TileEntityDummy) te).getTarget();
+        if (targetPos == null) return;
+        TileEntity target = world.getTileEntity(targetPos);
         if (target == null) return;
 
         if (target instanceof TileEntityVaultDoor && !((TileEntityVaultDoor)target).isLocked()) ((TileEntityVaultDoor)target).tryToggle();

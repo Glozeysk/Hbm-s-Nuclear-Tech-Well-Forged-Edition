@@ -40,8 +40,9 @@ public class DummyBlockCraneSplitter extends BlockContainer implements IDummy {
             if(!safeBreak) {
                 TileEntity te = world.getTileEntity(pos);
                 if(te != null && te instanceof TileEntityDummy) {
-                    if(!world.isRemote)
-                        world.destroyBlock(((TileEntityDummy)te).getTarget(), true);
+                    BlockPos target = ((TileEntityDummy)te).getTarget();
+                    if(!world.isRemote && target != null)
+                        world.destroyBlock(target, true);
                 }
             }
             world.removeTileEntity(pos);
