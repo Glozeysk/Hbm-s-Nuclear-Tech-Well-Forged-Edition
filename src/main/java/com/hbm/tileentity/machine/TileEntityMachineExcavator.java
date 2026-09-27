@@ -189,7 +189,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 					}
 					audio.updateVolume(volume);
 					audio.updatePitch(1.0F);
-					audio.updateRange(37.0F);
+					audio.updateRange(15.0F);
 				}
 			} else {
 				if(audio != null) {

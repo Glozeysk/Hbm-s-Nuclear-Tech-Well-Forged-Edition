@@ -12,9 +12,11 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManager;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.AuxParticlePacketNT;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
@@ -26,6 +28,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
@@ -72,10 +75,14 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 	public int mode = MODE_MMA;
 	public int vacuum;
 	public ItemStack display = ItemStack.EMPTY;
+	public boolean active = false;
 
 	private int argonRemainder;
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 	private AxisAlignedBB bb = null;
+
+	private AudioWrapper audio;
+	private int audioMode = -1;
 
 	public TileEntityMachineArcWelder() {
 		super(8);
@@ -102,6 +109,8 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 			int powerSaving = Math.min(upgradeManager.getLevel(UpgradeType.POWER), 3);
 			int overdrive = Math.min(upgradeManager.getLevel(UpgradeType.OVERDRIVE), 3);
 
+			boolean isActive = false;
+
 			if(recipe != null) {
 				int upgradeTime = Math.max(recipe.duration - (recipe.duration * speed / 6) + (recipe.duration * powerSaving / 3), 1);
 				this.consumption = recipe.consumption + (recipe.consumption * speed) - (recipe.consumption * powerSaving / 6);
@@ -118,6 +127,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 					//the chamber lost its vacuum, the weld is ruined
 					this.progress = 0;
 				} else if(canProcess(recipe)) {
+					isActive = true;
 					this.progress += step;
 					this.power -= this.consumption;
 					this.drawConsumables(speedFactor);
@@ -144,9 +154,46 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 				this.display = ItemStack.EMPTY;
 			}
 
+			this.active = isActive;
+
 			this.networkPackNT(25);
+
+		} else {
+
+		float volume = this.getVolume(2);
+
+		if(audio != null && audioMode != this.mode) {
+			audio.stopSound();
+			audio = null;
+			audioMode = -1;
 		}
-	}
+
+		if(this.active) {
+
+			if(audio == null) {
+				String suffix = switch (this.mode) {
+					case MODE_TIG -> "tig";
+					case MODE_VAW -> "vaw";
+					case MODE_EBW -> "ebw";
+					default -> "mma";
+				};
+				audio = MainRegistry.proxy.getLoopedSound(
+						HBMSoundHandler.getSoundEvent("block.arc_welder_loop_" + suffix),
+						SoundCategory.BLOCKS,
+						pos.getX(), pos.getY(), pos.getZ(),
+						volume, 1.0F);
+				audio.startSound();
+				audioMode = this.mode;
+			}
+
+			audio.updateVolume(volume);
+			audio.updatePitch(1.0F);
+			audio.updateRange(15.0F);
+
+		} else if(audio != null) {
+			audio.updateVolume(0F);
+		}
+	}	}
 
 	public boolean usesVacuum() {
 		return mode >= MODE_VAW;
@@ -308,6 +355,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 		buf.writeInt(tank.getFluidAmount());
 		buf.writeByte(mode);
 		buf.writeInt(vacuum);
+		buf.writeBoolean(active);
 
 		if(!display.isEmpty()) {
 			buf.writeBoolean(true);
@@ -329,6 +377,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 		tank.setFluid(amount > 0 ? new FluidStack(ModForgeFluids.argon, amount) : null);
 		this.mode = buf.readByte();
 		this.vacuum = buf.readInt();
+		this.active = buf.readBoolean();
 
 		this.display = buf.readBoolean() ? new ItemStack(Item.getItemById(buf.readInt()), 1, buf.readInt()) : ItemStack.EMPTY;
 	}
@@ -459,5 +508,25 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase implements
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
+	}
+
+	@Override
+	public void onChunkUnload() {
+		super.onChunkUnload();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+			audioMode = -1;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+			audioMode = -1;
+		}
 	}
 }

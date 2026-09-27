@@ -44,7 +44,10 @@
     "block.assemblerStop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStop", "stream": false}]},
     "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
     "block.electrolyser_loop": {"category": "block", "sounds": [{"name": "hbm:block/electrolyser_loop", "stream": false}]},
-
+    "block.arc_welder_loop_mma": {"category": "block", "sounds": [{"name": "hbm:block/arc_welder_loop_mma", "stream": false}]},
+    "block.arc_welder_loop_tig": {"category": "block", "sounds": [{"name": "hbm:block/arc_welder_loop_tig", "stream": false}]},
+    "block.arc_welder_loop_vaw": {"category": "block", "sounds": [{"name": "hbm:block/arc_welder_loop_vaw", "stream": false}]},
+    "block.arc_welder_loop_ebw": {"category": "block", "sounds": [{"name": "hbm:block/arc_welder_loop_ebw", "stream": false}]},
 
 	"item.techBleep": {"category": "player", "sounds": [{"name": "hbm:tool/techBleep", "stream": false}]},
     "item.techBoop": {"category": "player", "sounds": [{"name": "hbm:tool/techBoop", "stream": false}]},
