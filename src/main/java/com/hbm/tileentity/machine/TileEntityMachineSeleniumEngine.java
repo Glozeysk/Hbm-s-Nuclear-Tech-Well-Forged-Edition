@@ -8,17 +8,19 @@ import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.items.ModItems;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.inventory.EngineRecipes.FuelGrade;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.MainRegistry;
 import com.hbm.packet.AuxElectricityPacket;
 import com.hbm.packet.AuxGaugePacket;
 import com.hbm.packet.FluidTankPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyGenerator;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -48,7 +50,7 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 	public Fluid tankType;
 	public boolean needsUpdate = true;
 	public int pistonCount = 0;
-	public int soundCycle = 0;
+	private AudioWrapper audio;
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
@@ -150,6 +152,20 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
 			PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos.getX(), pos.getY(), pos.getZ(), pistonCount, 0), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
 			PacketDispatcher.wrapper.sendToAllAround(new AuxGaugePacket(pos.getX(), pos.getY(), pos.getZ(), (int)powerCap, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+		} else {
+			boolean isGenerating = this.pistonCount > 2 && hasAcceptableFuel() && tank.getFluidAmount() > 0;
+
+			if(isGenerating) {
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.selenium_engine_operate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1.0F, 1.0F);
+					audio.startSound();
+				}
+			} else {
+				if(audio != null) {
+					audio.stopSound();
+					audio = null;
+				}
+			}
 		}
 	}
 
@@ -183,13 +199,6 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 	public void generate() {
 		if (hasAcceptableFuel()) {
 			if (tank.getFluidAmount() > 0) {
-				if (soundCycle == 0)
-					this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.BLOCKS, 1.0F, 0.5F);
-				soundCycle++;
-
-				if (soundCycle >= 3)
-					soundCycle = 0;
-
 				tank.drain(this.pistonCount, true);
 				needsUpdate = true;
 
@@ -290,5 +299,22 @@ public class TileEntityMachineSeleniumEngine extends TileEntityLoadedBase implem
 	@Override
 	public long getMaxPower() {
 		return maxPower;
+	}
+
+	@Override
+	public void onChunkUnload() {
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
 	}
 }
