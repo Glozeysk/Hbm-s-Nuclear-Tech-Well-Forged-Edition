@@ -43,6 +43,7 @@
     "block.assemblerStart": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStart", "stream": false}]},
     "block.assemblerStop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerStop", "stream": false}]},
     "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
+    "block.electrolyser_loop": {"category": "block", "sounds": [{"name": "hbm:block/electrolyser_loop", "stream": false}]},
 
 
 	"item.techBleep": {"category": "player", "sounds": [{"name": "hbm:tool/techBleep", "stream": false}]},

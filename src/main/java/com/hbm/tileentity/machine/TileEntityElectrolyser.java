@@ -11,8 +11,10 @@ import com.hbm.inventory.ElectrolyserMetalRecipes.ElectrolysisMetalRecipe;
 import com.hbm.inventory.UpgradeManager;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyUser;
@@ -23,6 +25,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
@@ -38,9 +41,6 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-//Ported from NTM:CE without fluid identifiers, item byproducts of the fluid mode and molten material output.
-//Only the process of the selected mode runs; the mode also picks the GUI page.
-//Slots: 0 battery, 1-2 upgrades, 3-4 / 5-6 / 7-8 containers of tank 0 / 1 / 2, 9 crystal, 10-11 metal-fluid containers, 12-20 metal outputs.
 public class TileEntityElectrolyser extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IControlReceiver {
 
 	public static final long maxPower = 20_000_000;
@@ -56,11 +56,13 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 	public int durationFluid = 100;
 	public int progressOre;
 	public int durationMetal = 600;
-	//0 = fluid page, 1 = metal page
 	public int mode = 0;
 
-	//0 = input (type picked from the first recipe fluid), 1-2 = outputs, 3 = metal-mode fluid (type picked from the first metal-recipe fluid)
+	public boolean isRunning = false;
+
 	public FluidTank[] tanks;
+
+	private AudioWrapper audio;
 
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
@@ -78,8 +80,25 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 
 	@Override
 	public void update() {
-		if(world.isRemote)
+		if(world.isRemote) {
+			float volume = this.getVolume(2);
+
+			if(isRunning && volume > 0) {
+				if(audio == null) {
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.electrolyser_loop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio.startSound();
+				}
+				audio.updateVolume(volume);
+				audio.updatePitch(1.0F);
+				audio.updateRange(37.0F);
+			} else {
+				if(audio != null) {
+					audio.stopSound();
+					audio = null;
+				}
+			}
 			return;
+		}
 
 		power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 		updateConnections();
@@ -133,11 +152,12 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 			}
 		}
 
-		//a stalled or switched recipe starts over instead of finishing on leftover progress
 		if(!fluidRan)
 			progressFluid = 0;
 		if(!metalRan)
 			progressOre = 0;
+
+		this.isRunning = fluidRan || metalRan;
 
 		networkPackNT(50);
 	}
@@ -157,7 +177,6 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		return outputFits(tanks[1], recipe.output1) && outputFits(tanks[2], recipe.output2);
 	}
 
-	//CE retyped the output tank and converted a leftover of another fluid in place
 	private static boolean outputFits(FluidTank tank, FluidStack out) {
 		if(out == null)
 			return true;
@@ -192,7 +211,6 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		inventory.getStackInSlot(9).shrink(recipe.input.count());
 	}
 
-	//output slots are a shared buffer like the shredder's: fill matching stacks first, then empty slots
 	private boolean placeOutputs(ItemStack[] outputs, boolean doPlace) {
 		ItemStack[] slots = new ItemStack[OUT_END - OUT_START + 1];
 		for(int i = 0; i < slots.length; i++)
@@ -242,14 +260,12 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		return contained != null && acceptsMetalFluid(contained.getFluid());
 	}
 
-	//the metal tank takes any metal-recipe fluid while empty, then only that fluid
 	private boolean acceptsMetalFluid(Fluid fluid) {
 		if(!ElectrolyserMetalRecipes.isRecipeFluid(fluid))
 			return false;
 		return tanks[3].getFluidAmount() == 0 || tanks[3].getFluid().getFluid() == fluid;
 	}
 
-	//cable spots behind the 6 ports of MachineElectrolyser.fillSpace
 	private void updateConnections() {
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
@@ -292,6 +308,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		buf.writeInt(usageOre);
 		buf.writeInt(durationFluid);
 		buf.writeInt(durationMetal);
+		buf.writeBoolean(isRunning);
 		for(FluidTank tank : tanks) {
 			if(tank.getFluid() != null) {
 				buf.writeBoolean(true);
@@ -312,6 +329,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		usageOre = buf.readInt();
 		durationFluid = buf.readInt();
 		durationMetal = buf.readInt();
+		isRunning = buf.readBoolean();
 		for(FluidTank tank : tanks) {
 			if(buf.readBoolean()) {
 				Fluid fluid = FluidRegistry.getFluid(ByteBufUtils.readUTF8String(buf));
@@ -433,5 +451,23 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements ITi
 		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
 			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public void onChunkUnload() {
+		super.onChunkUnload();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		if(audio != null) {
+			audio.stopSound();
+			audio = null;
+		}
 	}
 }
