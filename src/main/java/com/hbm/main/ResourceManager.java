@@ -349,6 +349,9 @@ public class ResourceManager {
 	//Liquefactor
 	public static final IModelCustom liquefactor = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/liquefactor.obj")).asVBO();
 
+	//Compact compressor, uses the condenser model
+	public static final IModelCustom condenser = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/condenser.obj")).asVBO();
+
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
 
@@ -709,6 +712,9 @@ public class ResourceManager {
 	//Liquefactor
 	public static final ResourceLocation liquefactor_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/liquefactor.png");
 
+	//Compact compressor
+	public static final ResourceLocation compressor_compact_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/compressor_compact.png");
+
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");
 
@@ -728,6 +734,7 @@ public class ResourceManager {
 
 	//Pipe
 	public static final ResourceLocation pipe_neo_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo.png");
+	public static final ResourceLocation air_duct_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/air_duct.png");
 	public static final ResourceLocation pipe_neo_mk3_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3.png");
 	public static final ResourceLocation pipe_neo_mk3_overlay_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3_overlay.png");
 	public static final ResourceLocation pipe_neo_mk4_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk4.png");

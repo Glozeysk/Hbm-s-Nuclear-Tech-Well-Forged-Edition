@@ -270,6 +270,11 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerLiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
 			}
 			return null;
+		case ModBlocks.guiID_machine_compressor_compact:
+			if(entity instanceof TileEntityMachineCompressorCompact) {
+				return new ContainerCompressor(player.inventory, (TileEntityMachineCompressorCompact) entity);
+			}
+			return null;
 		case ModBlocks.guiID_machine_electrolyser_metal:
 			if(entity instanceof TileEntityElectrolyser) {
 				return new ContainerElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
@@ -961,6 +966,11 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_liquefactor:
 			if(entity instanceof TileEntityMachineLiquefactor) {
 				return new GUILiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_compressor_compact:
+			if(entity instanceof TileEntityMachineCompressorCompact) {
+				return new GUICompressor(player.inventory, (TileEntityMachineCompressorCompact) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_pyrooven:

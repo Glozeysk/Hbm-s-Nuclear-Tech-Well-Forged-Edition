@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.oil;
 
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.HydrotreaterRecipes;
@@ -47,7 +48,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 		tankTypes = new Fluid[] {null, ModForgeFluids.hydrogen, null, null};
 
 		tanks[0] = new FluidTank(64000);
-		tanks[1] = new FluidTank(ModForgeFluids.hydrogen, 0, 64000);
+		tanks[1] = new FluidTank(64000);
 		tanks[2] = new FluidTank(24000);
 		tanks[3] = new FluidTank(ModForgeFluids.sourgas, 0, 24000);
 	}
@@ -65,7 +66,9 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 
 			if(this.inputValidForTank(1))
 				FFUtils.fillFromFluidContainer(inventory, tanks[0], 1, 2);
-			FFUtils.fillFromFluidContainer(inventory, tanks[1], 3, 4);
+			//only pressurized hydrogen runs the machine, a canister of plain hydrogen would just clog the tank
+			if(PressurizedFluids.isPressurized(FluidUtil.getFluidContained(inventory.getStackInSlot(3))))
+				FFUtils.fillFromFluidContainer(inventory, tanks[1], 3, 4);
 
 			reform();
 
@@ -96,7 +99,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			return;
 		if(tanks[0].getFluidAmount() < 1000)
 			return;
-		if(tanks[1].getFluidAmount() < recipe.getX().amount)
+		if(tanks[1].getFluidAmount() < recipe.getX().amount || !PressurizedFluids.isPressurized(tanks[1].getFluid()))
 			return;
 		if(inventory.getStackInSlot(9).isEmpty() || inventory.getStackInSlot(9).getItem() != ModItems.catalyst_cobalt)
 			return;
@@ -264,7 +267,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			}
 			return tanks[0].fill(resource, doFill);
 		}
-		if(resource.getFluid() == ModForgeFluids.hydrogen)
+		if(resource.getFluid() == ModForgeFluids.hydrogen && PressurizedFluids.isPressurized(resource))
 			return tanks[1].fill(resource, doFill);
 		return 0;
 	}
@@ -277,6 +280,9 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase impleme
 			return tanks[2].drain(resource.amount, doDrain);
 		if(resource.isFluidEqual(tanks[3].getFluid()))
 			return tanks[3].drain(resource.amount, doDrain);
+		//plain hydrogen left over from before the pressure flag can still be pumped out
+		if(resource.isFluidEqual(tanks[1].getFluid()) && !PressurizedFluids.isPressurized(resource))
+			return tanks[1].drain(resource.amount, doDrain);
 		return null;
 	}
 

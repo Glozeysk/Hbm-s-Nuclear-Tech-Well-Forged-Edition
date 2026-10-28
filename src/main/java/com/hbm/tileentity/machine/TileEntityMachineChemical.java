@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -617,10 +618,10 @@ public class TileEntityMachineChemical extends TileEntityMachineBase implements 
 		if(Library.isArrayEmpty(fluids))
 			return true;
 		if(fluids.length == 2){
-			if((fluids[0] == null || fluids[0].amount <= tanks[0].getFluidAmount()) && (fluids[1] == null || fluids[1].amount <= tanks[1].getFluidAmount()))
+			if((fluids[0] == null || PressurizedFluids.hasEnough(tanks[0], fluids[0])) && (fluids[1] == null || PressurizedFluids.hasEnough(tanks[1], fluids[1])))
 				return true;
 		}else{
-			if(fluids[0] == null || fluids[0].amount <= tanks[0].getFluidAmount())
+			if(fluids[0] == null || PressurizedFluids.hasEnough(tanks[0], fluids[0]))
 				return true;
 		}
 		return false;

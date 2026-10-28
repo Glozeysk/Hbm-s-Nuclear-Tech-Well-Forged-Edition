@@ -805,7 +805,7 @@ public class JeiRecipes {
 			if(fluidIn != null)
 				for(int j = 0; j < fluidIn.length; j++)
 					if(fluidIn[j] != null)
-						inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j].getFluid(), fluidIn[j].amount)));
+						inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j])));
 
 			if(listOut != null)
 				for(int j = 0; j < listOut.length; j++)
@@ -1118,7 +1118,7 @@ public class JeiRecipes {
 			hydrotreatingRecipes.add(new HydrotreatingRecipe(
 					Arrays.asList(
 						ItemFluidIcon.getStackWithQuantity(fluid, 1000),
-						ItemFluidIcon.getStackWithQuantity(recipe.getX().getFluid(), recipe.getX().amount)
+						ItemFluidIcon.getStackWithQuantity(recipe.getX())
 					),
 					Arrays.asList(
 						ItemFluidIcon.getStackWithQuantity(recipe.getY().getFluid(), recipe.getY().amount),
@@ -1140,7 +1140,7 @@ public class JeiRecipes {
 			catalyticReformingRecipes.add(new CatalyticReformingRecipe(
 					ItemFluidIcon.getStackWithQuantity(recipe.getW().getFluid(), recipe.getW().amount),
 					Arrays.asList(
-						ItemFluidIcon.getStackWithQuantity(recipe.getX().getFluid(), recipe.getX().amount),
+						ItemFluidIcon.getStackWithQuantity(recipe.getX()),
 						ItemFluidIcon.getStackWithQuantity(recipe.getY().getFluid(), recipe.getY().amount),
 						ItemFluidIcon.getStackWithQuantity(recipe.getZ().getFluid(), recipe.getZ().amount)
 					)

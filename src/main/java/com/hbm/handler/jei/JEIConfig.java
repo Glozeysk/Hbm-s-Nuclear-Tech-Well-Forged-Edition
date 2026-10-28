@@ -61,6 +61,7 @@ public class JEIConfig implements IModPlugin {
 	public static final String SOLDERING_STATION = "hbm.soldering_station";
 	public static final String SOLIDIFICATION = "hbm.solidification";
 	public static final String LIQUEFACTION = "hbm.liquefaction";
+	public static final String COMPRESSOR = "hbm.compressor";
 	public static final String FRACTIONING = "hbm.fracturing";
 	public static final String SHREDDER = "hbm.shredder";
 	public static final String FLUIDS = "hbm.fluids";
@@ -136,6 +137,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_soldering_station), SOLDERING_STATION);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_solidifier), SOLIDIFICATION);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_liquefactor), LIQUEFACTION);
+		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_compressor_compact), COMPRESSOR);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_fraction_tower), FRACTIONING);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shredder), SHREDDER);
 		registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_shreddermk2), SHREDDER);
@@ -185,6 +187,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipes(SolderingStationRecipeHandler.getRecipes(), SOLDERING_STATION);
 		registry.addRecipes(SolidificationRecipeHandler.getRecipes(), SOLIDIFICATION);
 		registry.addRecipes(LiquefactionRecipeHandler.getRecipes(), LIQUEFACTION);
+		registry.addRecipes(CompressorRecipeHandler.getRecipes(), COMPRESSOR);
 		registry.addRecipes(JeiRecipes.getFractioningRecipe(), FRACTIONING);
 		registry.addRecipes(ShredderRecipes.getShredderRecipes(), SHREDDER);
 		registry.addRecipes(JeiRecipes.getFluidEquivalences(), FLUIDS);
@@ -232,6 +235,7 @@ public class JEIConfig implements IModPlugin {
 		registry.addRecipeClickArea(GUIMachineSolderingStation.class, 72, 28, 33, 14, SOLDERING_STATION);
 		registry.addRecipeClickArea(GUISolidifier.class, 42, 17, 38, 17, SOLIDIFICATION);
 		registry.addRecipeClickArea(GUILiquefactor.class, 42, 18, 41, 16, LIQUEFACTION);
+		registry.addRecipeClickArea(GUICompressor.class, 42, 26, 55, 17, COMPRESSOR);
 		registry.addRecipeClickArea(GUIMachineHydrotreater.class, 85, 82, 24, 24, HYDROTREATING);
 		registry.addRecipeClickArea(GUIMachineCatalyticReformer.class, 67, 82, 24, 24, CATALYTIC_REFORMING);
 		registry.addRecipeClickArea(GUIMachinePyroOven.class, 57, 47, 27, 12, PYROLYSIS);
@@ -334,6 +338,7 @@ public class JEIConfig implements IModPlugin {
 				new SolderingStationRecipeHandler(help),
 				new SolidificationRecipeHandler(help),
 				new LiquefactionRecipeHandler(help),
+				new CompressorRecipeHandler(help),
 				new FractioningRecipeHandler(help),
 				new CrystallizerRecipeHandler(help),
 				new CentrifugeRecipeHandler(help),

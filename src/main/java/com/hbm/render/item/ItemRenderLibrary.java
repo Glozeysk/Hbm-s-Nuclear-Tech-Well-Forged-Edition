@@ -18,6 +18,7 @@ import com.hbm.render.tileentity.RenderArcWelder;
 import com.hbm.render.tileentity.RenderSolderingStation;
 import com.hbm.render.tileentity.RenderSolidifier;
 import com.hbm.render.tileentity.RenderLiquefactor;
+import com.hbm.render.tileentity.RenderCompressorCompact;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -223,6 +224,19 @@ public class ItemRenderLibrary {
 			public void renderCommon() {
 				GlStateManager.shadeModel(GL11.GL_SMOOTH);
 				RenderArcWelder.renderParts(false, ResourceManager.arc_welder_dome_tex);
+				GlStateManager.shadeModel(GL11.GL_FLAT);
+			}});
+
+		renderers.put(Item.getItemFromBlock(ModBlocks.machine_compressor_compact), new ItemRenderBase() {
+			public void renderInventory() {
+				GL11.glTranslated(-1, -1, 0);
+				GL11.glScaled(2.75, 2.75, 2.75);
+			}
+			public void renderCommon() {
+				GL11.glScaled(0.75, 0.75, 0.75);
+				GL11.glTranslated(0.5, 0, 0);
+				GlStateManager.shadeModel(GL11.GL_SMOOTH);
+				RenderCompressorCompact.renderItem();
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
 

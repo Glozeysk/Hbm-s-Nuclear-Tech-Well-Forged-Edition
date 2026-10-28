@@ -124,9 +124,9 @@ public class FFUtils {
 
 	public static void renderTankInfo(GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height, FluidTank fluidTank, Fluid fluid){
 		if(fluidTank.getFluid() != null) {
-			renderFluidInfo(gui, mouseX, mouseY, x, y, width, height, fluidTank.getFluid().getFluid(), fluidTank.getFluidAmount(), fluidTank.getCapacity());
+			renderFluidInfo(gui, mouseX, mouseY, x, y, width, height, fluidTank.getFluid().getFluid(), fluidTank.getFluidAmount(), fluidTank.getCapacity(), PressurizedFluids.isPressurized(fluidTank.getFluid()));
 		} else {
-			renderFluidInfo(gui, mouseX, mouseY, x, y, width, height, fluid, 0, fluidTank.getCapacity());
+			renderFluidInfo(gui, mouseX, mouseY, x, y, width, height, fluid, 0, fluidTank.getCapacity(), false);
 		}
 	}
 
@@ -230,12 +230,14 @@ public class FFUtils {
 		}
 	}
 
-	private static void renderFluidInfo(GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height, Fluid fluid, int amount, int capacity) {
+	private static void renderFluidInfo(GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height, Fluid fluid, int amount, int capacity, boolean pressurized) {
 		if(x <= mouseX && x + width > mouseX && y < mouseY && y + height >= mouseY) {
 			List<String> texts = new ArrayList<>();
 			if(fluid != null) {
 				texts.add(fluid.getLocalizedName(new FluidStack(fluid, 1)));
 				texts.add(amount + "/" + capacity + "mB");
+				if(pressurized)
+					texts.add("§c[" + I18nUtil.resolveKey("trait.pressurized") + "]");
 				addFluidInfo(fluid, texts);
 			} else {
 				texts.add(I18nUtil.resolveKey("desc.none"));
@@ -570,6 +572,9 @@ public class FFUtils {
 	}
 
 	public static boolean fillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2) {
+		//nothing a player can carry holds a pressurized fluid
+		if(tank != null && PressurizedFluids.isPressurized(tank.getFluid()))
+			return false;
 		if(slots == null || tank == null || tank.getFluid() == null || slots.getSlots() < slot1 || slots.getSlots() < slot2 || slots.getStackInSlot(slot1) == null || slots.getStackInSlot(slot1).isEmpty()) {
 			return false;
 		}

@@ -60,6 +60,8 @@ public class HbmFluidHandlerCanister implements ICapabilityProvider, IFluidHandl
 	
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
+		if(PressurizedFluids.isPressurized(resource))
+			return 0;
 		if(resource == null || container.getCount() > 1)
 			return 0;
 		FluidStack contained = getFluid();

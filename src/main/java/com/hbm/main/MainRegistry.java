@@ -233,6 +233,7 @@ import com.hbm.inventory.ArcWelderRecipes;
 import com.hbm.inventory.SolderingRecipes;
 import com.hbm.inventory.SolidificationRecipes;
 import com.hbm.inventory.LiquefactionRecipes;
+import com.hbm.inventory.CompressorRecipes;
 import com.hbm.inventory.CatalyticReformerRecipes;
 import com.hbm.inventory.PyroOvenRecipes;
 import com.hbm.inventory.ElectrolyserFluidRecipes;
@@ -707,6 +708,8 @@ public class MainRegistry {
 		reg(TileEntityMachineSolderingStation.class, "tileentity_machine_soldering_station");
 		reg(TileEntityMachineSolidifier.class, "tileentity_machine_solidifier");
 		reg(TileEntityMachineLiquefactor.class, "tileentity_machine_liquefactor");
+		reg(TileEntityMachineCompressorCompact.class, "tileentity_machine_compressor_compact");
+		reg(TileEntityAirDuct.class, "tileentity_air_duct");
 		reg(TileEntityMachineVacuumPump.class, "tileentity_machine_vacuum_pump");
 		reg(TileEntityMachineCryoPump.class, "tileentity_machine_cryo_pump");
 		reg(TileEntityMachineCyclotron.class, "tileentity_machine_cyclotron");
@@ -1197,6 +1200,7 @@ public class MainRegistry {
 		FluidCombustionRecipes.registerFluidCombustionRecipes();
 		SolidificationRecipes.register();
 		LiquefactionRecipes.register();
+		CompressorRecipes.register();
 		PyroOvenRecipes.registerRecipes(); //solid fuel recipes read the combustion values
 		HbmDetox.init();
 

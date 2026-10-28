@@ -1311,6 +1311,9 @@ public class ModBlocks {
 	public static final Block machine_liquefactor = new MachineLiquefactor(Material.IRON, "machine_liquefactor").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_machine_liquefactor = 148;
 
+	public static final Block machine_compressor_compact = new MachineCompressorCompact(Material.IRON, "machine_compressor_compact").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+	public static final int guiID_machine_compressor_compact = 149;
+
 	public static final Block machine_pump = new MachineVacuumPump(Material.IRON, "machine_pump", false).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block machine_cryopump = new MachineVacuumPump(Material.IRON, "machine_cryopump", true).setHardness(5.0F).setResistance(100.0F).setCreativeTab(MainRegistry.machineTab);
 
@@ -1529,6 +1532,7 @@ public class ModBlocks {
 	//Drillgon200: Removed, by order of lord Bob.
 	//Alcater: excecuting removal of classes/registry/render
 	public static final Block fluid_duct_mk2 = new BlockFluidPipeMk2(Material.IRON, "fluid_duct_mk2").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.templateTab);
+	public static final Block air_duct = new BlockAirDuct(Material.IRON, "air_duct").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.templateTab);
 	public static final Block fluid_duct_mk3 = new BlockFluidPipeMk3(Material.IRON, "fluid_duct_mk3").setHardness(15.0F).setResistance(10000.0F).setCreativeTab(MainRegistry.templateTab);
 	public static final Block fluid_duct_mk4 = new BlockFluidPipeMk4(Material.IRON, "fluid_duct_mk4").setHardness(25.0F).setResistance(20000.0F).setCreativeTab(MainRegistry.templateTab);
 	public static final Block fluid_duct_solid = new BlockFluidPipeSolid(Material.IRON, "fluid_duct_solid").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.templateTab);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.forgefluid.FFPipeNetworkMk2;
+import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.interfaces.IFluidPipeMk2;
 import com.hbm.packet.PacketDispatcher;
@@ -329,42 +330,49 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 		int remaining = getRemainingThroughput();
 		if (remaining <= 0) return;
 
-		int maxNetFill = network.fill(new FluidStack(network.getType(), Integer.MAX_VALUE), false);
-		if (maxNetFill <= 0) return;
+		//the plain and the pressurized form of the pipe's fluid are different stacks, so both are pulled; receivers pick the one they take
+		for(boolean pressurized : new boolean[] { false, true }) {
+			FluidStack form = pressurized ? PressurizedFluids.make(network.getType(), 1) : new FluidStack(network.getType(), 1);
 
-		for(EnumFacing e : EnumFacing.VALUES) {
-			TileEntity te = world.getTileEntity(pos.offset(e));
-			if(te == null || te instanceof IFluidPipeMk2) continue;
-			if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) continue;
+			int maxNetFill = network.fill(new FluidStack(form, Integer.MAX_VALUE), false);
+			if (maxNetFill <= 0) continue;
 
-			IFluidHandler neighbor = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite());
+			for(EnumFacing e : EnumFacing.VALUES) {
+				TileEntity te = world.getTileEntity(pos.offset(e));
+				if(te == null || te instanceof IFluidPipeMk2) continue;
+				if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) continue;
 
-			int canExtract = (throughput == -1) ? maxNetFill : Math.min(remaining, maxNetFill);
-			if (canExtract <= 0) break;
+				IFluidHandler neighbor = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite());
 
-			FluidStack simulatedDrain = neighbor.drain(new FluidStack(network.getType(), canExtract), false);
-			if (simulatedDrain == null || simulatedDrain.amount <= 0) continue;
+				int canExtract = (throughput == -1) ? maxNetFill : Math.min(remaining, maxNetFill);
+				if (canExtract <= 0) break;
 
-			if (!world.isRemote && checkFluidCorrosion(simulatedDrain)) {
-				destroyPipe();
-				return;
-			}
+				FluidStack simulatedDrain = neighbor.drain(new FluidStack(form, canExtract), false);
+				if (simulatedDrain == null || simulatedDrain.amount <= 0) continue;
 
-			int accepted = network.fill(simulatedDrain, false, te.getPos());
-			if (accepted <= 0) continue;
+				if (!world.isRemote && checkFluidCorrosion(simulatedDrain)) {
+					destroyPipe();
+					return;
+				}
 
-			FluidStack drained = neighbor.drain(new FluidStack(network.getType(), accepted), true);
-			if (drained != null && drained.amount > 0) {
-				int actuallyAccepted = network.fill(drained, true, te.getPos());
+				int accepted = network.fill(simulatedDrain, false, te.getPos());
+				if (accepted <= 0) continue;
 
-				if (actuallyAccepted > 0) {
-					if (throughput != -1) {
-						transferredThisTick += actuallyAccepted;
+				FluidStack drained = neighbor.drain(new FluidStack(form, accepted), true);
+				if (drained != null && drained.amount > 0) {
+					int actuallyAccepted = network.fill(drained, true, te.getPos());
+
+					if (actuallyAccepted > 0) {
+						if (throughput != -1) {
+							transferredThisTick += actuallyAccepted;
+						}
+						remaining -= actuallyAccepted;
+						maxNetFill -= actuallyAccepted;
 					}
-					remaining -= actuallyAccepted;
-					maxNetFill -= actuallyAccepted;
 				}
 			}
+
+			if (remaining <= 0) return;
 		}
 	}
 
