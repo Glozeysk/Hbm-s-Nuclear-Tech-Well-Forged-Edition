@@ -12,16 +12,22 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -157,32 +163,70 @@ class AudioWrapperServerSideTest {
     }
 
     private static Map<String, ClassNode> readMainClasses() throws IOException {
-        Path mainClasses = mainClassesDir();
-        try (Stream<Path> files = Files.walk(mainClasses)) {
-            List<Path> classFiles = files
-                    .filter(path -> path.toString().endsWith(".class"))
-                    .collect(Collectors.toList());
+        Path location = mainClassesLocation();
+        Map<String, ClassNode> classes = new HashMap<>();
 
-            Map<String, ClassNode> classes = new HashMap<>();
-            for (Path classFile : classFiles) {
-                ClassNode node = new ClassNode();
-                new ClassReader(Files.readAllBytes(classFile)).accept(node, 0);
-                classes.put(node.name, node);
+        if (Files.isDirectory(location)) {
+            try (Stream<Path> files = Files.walk(location)) {
+                List<Path> classFiles = files
+                        .filter(path -> path.toString().endsWith(".class"))
+                        .collect(Collectors.toList());
+
+                for (Path classFile : classFiles) {
+                    addClass(classes, Files.readAllBytes(classFile));
+                }
             }
-            return classes;
+        } else {
+            try (JarFile jar = new JarFile(location.toFile())) {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
+                        continue;
+                    }
+
+                    try (InputStream input = jar.getInputStream(entry)) {
+                        addClass(classes, readAllBytes(input));
+                    }
+                }
+            }
         }
+
+        return classes;
     }
 
-    private static Path mainClassesDir() {
-        String configured = System.getProperty("hbm.mainClassesDir");
-        if (configured != null && !configured.isEmpty()) {
-            return Paths.get(configured);
+    private static void addClass(Map<String, ClassNode> classes, byte[] classBytes) {
+        ClassNode node = new ClassNode();
+        new ClassReader(classBytes).accept(node, 0);
+        classes.put(node.name, node);
+    }
+
+    private static byte[] readAllBytes(InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int read;
+
+        while ((read = input.read(buffer)) != -1) {
+            output.write(buffer, 0, read);
+        }
+
+        return output.toByteArray();
+    }
+
+    /**
+     * Uses the code source of a class from the main output instead of passing a path through a
+     * system property. This keeps working from Gradle, an IDE and a packaged jar alike.
+     */
+    private static Path mainClassesLocation() {
+        CodeSource codeSource = AudioWrapper.class.getProtectionDomain().getCodeSource();
+        if (codeSource == null || codeSource.getLocation() == null) {
+            throw new IllegalStateException("Could not locate the code source of AudioWrapper");
         }
 
         try {
-            return Paths.get(AudioWrapper.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            return Paths.get(codeSource.getLocation().toURI());
         } catch (Exception e) {
-            throw new IllegalStateException("Could not locate compiled main classes", e);
+            throw new IllegalStateException("Could not convert the AudioWrapper code source to a path", e);
         }
     }
 
