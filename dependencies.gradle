@@ -132,10 +132,6 @@ tasks.named('compileJava').configure {
     dependsOn tasks.named('checkAudioWrapperSideOnly')
 }
 
-tasks.named('test').configure {
-    systemProperty 'hbm.mainClassesDir', sourceSets.main.output.classesDirs.singleFile.absolutePath
-}
-
 /*
  * Full dedicated-server smoke test. Starts the same JVM/classpath that :runServer uses,
  * waits for "Done (", sends "stop", and checks the log for AudioWrapper linkage errors.
