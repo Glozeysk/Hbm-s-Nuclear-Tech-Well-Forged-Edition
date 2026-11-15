@@ -29,8 +29,6 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 public class TileEntityMachineDiesel extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
@@ -43,7 +41,6 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	public Fluid tankType;
 	public boolean needsUpdate;
 
-	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	private static final int[] slots_top = new int[] { 0 };
