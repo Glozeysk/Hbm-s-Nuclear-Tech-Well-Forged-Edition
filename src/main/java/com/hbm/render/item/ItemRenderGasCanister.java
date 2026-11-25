@@ -2,7 +2,7 @@ package com.hbm.render.item;
 
 import org.lwjgl.opengl.GL11;
 
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumGasCanister;
 import com.hbm.render.RenderHelper;
 
 import net.minecraft.client.Minecraft;
@@ -15,8 +15,8 @@ public class ItemRenderGasCanister extends TEISRBase {
 	@Override
 	public void renderByItem(ItemStack stack) {
 		IBakedModel model = null;
-		if(FluidUtil.getFluidContained(stack) != null && HbmFluidContainer.GAS_CANISTER.contains(FluidUtil.getFluidContained(stack).getFluid()))
-			model = HbmFluidContainer.GAS_CANISTER.getEntry(FluidUtil.getFluidContained(stack).getFluid()).getRenderModel();
+		if(FluidUtil.getFluidContained(stack) != null && EnumGasCanister.contains(FluidUtil.getFluidContained(stack).getFluid()))
+			model = EnumGasCanister.getEnumFromFluid(FluidUtil.getFluidContained(stack).getFluid()).getRenderModel();
 		if(model == null){
 			model = itemModel;
 		}

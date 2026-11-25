@@ -326,31 +326,6 @@ public class ResourceManager {
 	public static final IModelCustom fraction_tower = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/fraction_tower.obj")).asVBO();
 	public static final IModelCustom fraction_spacer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/fraction_spacer.obj")).asVBO();
 	public static final IModelCustom cracking_tower = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/cracking_tower.obj")).asVBO();
-	public static final IModelCustom hydrotreater = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/hydrotreater.obj")).asVBO();
-	public static final IModelCustom catalytic_reformer = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/catalytic_reformer.obj")).asVBO();
-	public static final IModelCustom pyrooven = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/pyrooven.obj")).asVBO();
-	public static final IModelCustom electrolyser = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/electrolyser.obj")).asVBO();
-
-	//Ocean Pump
-	public static final IModelCustom pump_ocean = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/pump_ocean.obj")).asVBO();
-
-	//Air Intake
-	public static final IModelCustom intake = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/intake.obj")).asVBO();
-
-	//Arc Welder
-	public static final IModelCustom arc_welder = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/arc_welder.obj")).asVBO();
-
-	//Soldering Station
-	public static final IModelCustom soldering_station = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/soldering_station.obj")).asVBO();
-
-	//Solidifier
-	public static final IModelCustom solidifier = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/solidifier.obj")).asVBO();
-
-	//Liquefactor
-	public static final IModelCustom liquefactor = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/liquefactor.obj")).asVBO();
-
-	//Compact compressor, uses the condenser model
-	public static final IModelCustom condenser = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/condenser.obj")).asVBO();
 
 	//Flare Stack
 	public static final IModelCustom oilflare = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/flare_stack.obj")).asVBO();
@@ -687,34 +662,7 @@ public class ResourceManager {
 	public static final ResourceLocation fraction_tower_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/fraction_tower.png");
 	public static final ResourceLocation fraction_spacer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/fraction_spacer.png");
 	public static final ResourceLocation cracking_tower_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/cracking_tower.png");
-	public static final ResourceLocation hydrotreater_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/hydrotreater.png");
-	public static final ResourceLocation catalytic_reformer_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/catalytic_reformer.png");
-	public static final ResourceLocation pyrooven_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/pyrooven.png");
-	public static final ResourceLocation electrolyser_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/electrolyser.png");
-
-	//Ocean Pump
-	public static final ResourceLocation pump_ocean_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/pump_ocean.png");
-
-	//Air Intake
-	public static final ResourceLocation intake_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/intake.png");
-
-	//Arc Welder
-	public static final ResourceLocation arc_welder_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder.png");
-	public static final ResourceLocation arc_welder_dome_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder_dome.png");
-	public static final ResourceLocation arc_welder_dome_argon_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/arc_welder_dome_argon.png");
-
-	//Soldering Station
-	public static final ResourceLocation soldering_station_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/soldering_station.png");
-
-	//Solidifier
-	public static final ResourceLocation solidifier_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/solidifier.png");
-
-	//Liquefactor
-	public static final ResourceLocation liquefactor_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/liquefactor.png");
-
-	//Compact compressor
-	public static final ResourceLocation compressor_compact_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/compressor_compact.png");
-
+	
 	//Flare Stack
 	public static final ResourceLocation oilflare_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/flare_stack.png");
 
@@ -734,7 +682,6 @@ public class ResourceManager {
 
 	//Pipe
 	public static final ResourceLocation pipe_neo_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo.png");
-	public static final ResourceLocation air_duct_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/air_duct.png");
 	public static final ResourceLocation pipe_neo_mk3_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3.png");
 	public static final ResourceLocation pipe_neo_mk3_overlay_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk3_overlay.png");
 	public static final ResourceLocation pipe_neo_mk4_tex = new ResourceLocation(RefStrings.MODID, "textures/blocks/pipe_neo_mk4.png");

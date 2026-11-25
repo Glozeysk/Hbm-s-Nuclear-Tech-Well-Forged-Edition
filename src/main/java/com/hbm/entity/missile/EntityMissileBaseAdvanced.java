@@ -50,7 +50,7 @@ public abstract class EntityMissileBaseAdvanced extends Entity implements IChunk
 	double decelY;
 	double accelXZ;
 	boolean isCluster = false;
-	public double acceleration = 1;
+	public static double acceleration = 1; 
 	private Ticket loaderTicket;
 	public int health = 50;
 
@@ -296,7 +296,7 @@ public abstract class EntityMissileBaseAdvanced extends Entity implements IChunk
 			this.setDead();
 			return;
 		}
-		PacketDispatcher.wrapper.sendToAllTracking(new LoopedEntitySoundPacket(this.getEntityId()), this);
+		PacketDispatcher.wrapper.sendToAll(new LoopedEntitySoundPacket(this.getEntityId()));
 		if((int) (posX / 16) != chunkX || (int) (posZ / 16) != chunkZ){
 			chunkX = (int) (posX / 16);
 			chunkZ = (int) (posZ / 16);

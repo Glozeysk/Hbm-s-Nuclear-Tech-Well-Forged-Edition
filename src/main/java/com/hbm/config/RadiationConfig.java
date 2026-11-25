@@ -49,17 +49,17 @@ public class RadiationConfig {
 		worldRad = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "6.10_worldRadCount", "How many block operations radiation can perform per tick", 10);
 		worldRadThreshold = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "6.11_worldRadThreshold", "The least amount of RADs required for block modification to happen", 40);
 		worldRadEffects = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "6.12_worldRadEffects", "Whether high radiation levels should perform changes in the world", true);
-		blocksFallCh = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "6.13_blocksFallingChance", "The chance (in percentage form) that a block with low blast resistance will fall down. -1 Disables falling", 100);
+		blocksFallCh = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "6.13_blocksFallingChance", "The chance (in percentage form) that a block with low blast resistance will fall down. -1 Disables falling", -1);
 		// railgun
 		Property railDamage = config.get(CATEGORY_NUKE, "6.11_railgunDamage", 1000);
 		railDamage.setComment("How much damage a railgun death blast does per tick");
 		railgunDamage = railDamage.getInt();
 		Property railBuffer = config.get(CATEGORY_NUKE, "6.12_railgunBuffer", 500000000);
 		railBuffer.setComment("How much RF the railgun can store");
-		railgunBuffer = railBuffer.getInt();
+		railgunDamage = railBuffer.getInt();
 		Property railUse = config.get(CATEGORY_NUKE, "6.13_railgunConsumption", 250000000);
 		railUse.setComment("How much RF the railgun requires per shot");
-		railgunUse = railUse.getInt();
+		railgunDamage = railUse.getInt();
 		Property fireDurationP = config.get(CATEGORY_NUKE, "6.14_fireDuration", 15 * 20);
 		fireDurationP.setComment("How long the fire blast will last in ticks");
 		fireDuration = fireDurationP.getInt();

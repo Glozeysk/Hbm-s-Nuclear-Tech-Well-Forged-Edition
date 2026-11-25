@@ -449,7 +449,6 @@ import com.hbm.tileentity.network.energy.TileEntitySubstation;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk3;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
-import com.hbm.tileentity.conductor.TileEntityAirDuct;
 import com.hbm.tileentity.deco.TileEntityDecoBlock;
 import com.hbm.tileentity.deco.TileEntityDecoBlockAlt;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
@@ -458,15 +457,10 @@ import com.hbm.tileentity.deco.TileEntityObjTester;
 import com.hbm.tileentity.deco.TileEntitySpinnyLight;
 import com.hbm.tileentity.deco.TileEntityTestRender;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
-import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
-import com.hbm.tileentity.machine.oil.TileEntityMachineLiquefactor;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFractionTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticCracker;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
-import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
-import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
-import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKAbsorber;
@@ -649,18 +643,6 @@ public class ClientProxy extends ServerProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRailgun.class, new RenderRailgun());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineFluidTank.class, new RenderFluidTank());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineRefinery.class, new RenderRefinery());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineHydrotreater.class, new RenderHydrotreater());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineCatalyticReformer.class, new RenderCatalyticReformer());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePyroOven.class, new RenderPyroOven());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityElectrolyser.class, new RenderElectrolyser());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePumpOcean.class, new RenderPumpOcean());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineIntake.class, new RenderIntake());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineArcWelder.class, new RenderArcWelder());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineSolderingStation.class, new RenderSolderingStation());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineSolidifier.class, new RenderSolidifier());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineLiquefactor.class, new RenderLiquefactor());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineCompressorCompact.class, new RenderCompressorCompact());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAirDuct.class, new RenderAirDuct());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineCyclotron.class, new RenderCyclotron());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBroadcaster.class, new RenderBroadcaster());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityGeiger.class, new RenderGeiger());
@@ -2177,41 +2159,12 @@ public class ClientProxy extends ServerProxy {
 	}
 	
 	@Override
-	public void construct() {
-		//Register the generated-default resource pack during construction, BEFORE the resource reload that bakes models
-		//snapshots the pack list. Doing this in preInit is too late. Plain cube blocks / flat items then need no JSON.
-		//Find defaultResourcePacks by type (only List<IResourcePack> in Minecraft) so we don't depend on the obf field name.
-		try {
-			net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
-			boolean added = false;
-			for(java.lang.reflect.Field field : net.minecraft.client.Minecraft.class.getDeclaredFields()) {
-				if(!java.util.List.class.isAssignableFrom(field.getType()))
-					continue;
-				field.setAccessible(true);
-				Object val = field.get(mc);
-				if(val instanceof java.util.List) {
-					java.util.List<?> list = (java.util.List<?>) val;
-					if(!list.isEmpty() && list.get(0) instanceof net.minecraft.client.resources.IResourcePack) {
-						((java.util.List<net.minecraft.client.resources.IResourcePack>) val).add(new GeneratedDefaultResourcePack());
-						added = true;
-						break;
-					}
-				}
-			}
-			if(!added)
-				System.err.println("[GenPack] could not locate defaultResourcePacks to register generated defaults");
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
 	public void preInit(FMLPreInitializationEvent evt){
 		if(SoundSystemConfig.getNumberNormalChannels() < 128){
 			SoundSystemConfig.setNumberNormalChannels(128);
 		}
 		OBJLoader.INSTANCE.addDomain(RefStrings.MODID);
-
+		
 		ItemRenderLibrary.init();
 
         MinecraftForge.EVENT_BUS.register(new HardLandingClientFXHandler());
@@ -2380,7 +2333,6 @@ public class ClientProxy extends ServerProxy {
 	@Override
 	public void init(FMLInitializationEvent event) {
 		JetpackLayerRegistration.init();
-		GasMaskLayerRegistration.init();
 	}
 	
 	public static int boxcarCalllist;

@@ -53,7 +53,7 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 					world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.fstbmbPing, SoundCategory.BLOCKS, 5.0F, 1.0F);
 			}
 
-			if(started && isLoaded() && timer <= 0) {
+			if(timer <= 0) {
 				explode();
 			}
 
@@ -69,7 +69,7 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 		}
 
 		if(meta == 1)
-			timer = Math.max(1, value) * 20;
+			timer = value * 20;
 	}
 
 	@Override
@@ -120,9 +120,6 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 	}
 
 	public void explode() {
-		if(!isLoaded())
-			return;
-
 		for(int i = 0; i < inventory.getSlots(); i++)
 			inventory.setStackInSlot(i, ItemStack.EMPTY);
 

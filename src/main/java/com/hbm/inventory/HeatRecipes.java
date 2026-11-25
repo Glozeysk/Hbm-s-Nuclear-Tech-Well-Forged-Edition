@@ -27,17 +27,15 @@ public class HeatRecipes {
 
 	//for 100 mb
 	public static void registerHeatRecipes() {
-		addBoilRecipe(new FluidStack(FluidRegistry.WATER, 1), new FluidStack(ModForgeFluids.steam, 100), 200);
-		addCoolRecipe(new FluidStack(ModForgeFluids.steam, 100), new FluidStack(ModForgeFluids.spentsteam, 1), 200);
+		addBoilRecipe(new FluidStack(FluidRegistry.WATER, 1), new FluidStack(ModForgeFluids.steam, 100), 100);
+		addCoolRecipe(new FluidStack(ModForgeFluids.steam, 100), new FluidStack(ModForgeFluids.spentsteam, 1), 100);
 		
-		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.steam, 10), new FluidStack(ModForgeFluids.hotsteam, 1), 2);
-		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.hotsteam, 10), new FluidStack(ModForgeFluids.superhotsteam, 1), 18);
+		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.steam, 10), new FluidStack(ModForgeFluids.hotsteam, 1), 15);
+		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.hotsteam, 10), new FluidStack(ModForgeFluids.superhotsteam, 1), 30);
 		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.superhotsteam, 10), new FluidStack(ModForgeFluids.ultrahotsteam, 1), 120);
 		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.oil, 1), new FluidStack(ModForgeFluids.hotoil, 1), 300);
 		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.crackoil, 1), new FluidStack(ModForgeFluids.hotcrackoil, 1), 300);
-		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.crackoil_pure, 1), new FluidStack(ModForgeFluids.hotcrackoil_pure, 1), 300);
 		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.coolant, 1), new FluidStack(ModForgeFluids.hotcoolant, 1), 500);
-		addBoilAndCoolRecipe(new FluidStack(ModForgeFluids.sodiumbase, 1), new FluidStack(ModForgeFluids.sodiumhot, 1), 750);
 
 		//Compat
 		addBoilRecipe("crude_oil", 1, "hotoil", 1, 300); //thermalfoundation

@@ -780,7 +780,7 @@ public class Library {
 				return true;
 		}
 
-		return false;
+		return com.hbm.compat.energy.ExternalEnergy.connects(te, dir.getOpposite().toEnumFacing());
 	}
 
 	public static long blockPosToLong(int x, int y, int z) {
@@ -875,22 +875,6 @@ public class Library {
 				stack.shrink(1);
 				inventory.setInventorySlotContents(i, stack.copy());
 				return;
-			}
-		}
-	}
-
-	public static void consumeInventoryOreDict(InventoryPlayer inventory, String name) {
-		int oreId = OreDictionary.getOreID(name);
-		for(int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stack = inventory.getStackInSlot(i);
-			if(stack.isEmpty())
-				continue;
-			for(int id : OreDictionary.getOreIDs(stack)) {
-				if(id == oreId) {
-					stack.shrink(1);
-					inventory.setInventorySlotContents(i, stack.copy());
-					return;
-				}
 			}
 		}
 	}
@@ -1155,4 +1139,21 @@ public class Library {
 		}
 		return hash;
 	}
+
+    public static int getGroundHeight(World world, int x, int z){
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, 255, z);
+        for(int y = 255; y > 1; y--){
+            pos.setY(y);
+            IBlockState state = world.getBlockState(pos);
+            Block b = state.getBlock();
+            if(!b.isReplaceable(world, pos)){
+                if(b.isOpaqueCube(state)){
+                    if(b.getMaterial(state) != net.minecraft.block.material.Material.WOOD){
+                        return y;
+                    }
+                }
+            }
+        }
+        return 1;
+    }
 }

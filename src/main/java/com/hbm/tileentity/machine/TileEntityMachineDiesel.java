@@ -15,6 +15,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 
 import api.hbm.energy.IEnergyGenerator;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -28,6 +29,8 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 
 public class TileEntityMachineDiesel extends TileEntityMachineBase implements ITickable, IEnergyGenerator, IFluidHandler, IBufPacketReceiver {
@@ -40,6 +43,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 	public Fluid tankType;
 	public boolean needsUpdate;
 
+	@SideOnly(Side.CLIENT)
 	private AudioWrapper audio;
 
 	private static final int[] slots_top = new int[] { 0 };
@@ -48,10 +52,9 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 	public static HashMap<FuelGrade, Double> fuelEfficiency = new HashMap();
 	static {
-		;
-		fuelEfficiency.put(FuelGrade.HIGH,		1.0D);
-		fuelEfficiency.put(FuelGrade.MEDIUM,	0.75D);
-		fuelEfficiency.put(FuelGrade.AERO,		0.25D);
+		fuelEfficiency.put(FuelGrade.MEDIUM,	0.5D);
+		fuelEfficiency.put(FuelGrade.HIGH,		0.75D);
+		fuelEfficiency.put(FuelGrade.AERO,		0.1D);
 	}
 
 	public TileEntityMachineDiesel() {
@@ -120,12 +123,13 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 
 			networkPackNT(50);
 		} else {
+			// Клиентская логика для управления зацикленным звуком
 			boolean isGenerating = hasAcceptableFuel() && tank.getFluidAmount() > 0;
 			float volume = this.getVolume(2);
 
 			if(isGenerating && volume > 0) {
 				if(audio == null) {
-					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.diesel_operate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
+					audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.dieselOperate, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
 					audio.startSound();
 				}
 			} else {

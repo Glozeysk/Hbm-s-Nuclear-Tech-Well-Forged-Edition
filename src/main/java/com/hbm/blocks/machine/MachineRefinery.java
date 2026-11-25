@@ -3,12 +3,12 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockRefinery;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 
@@ -96,8 +96,8 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		TileEntity tileentity = world.getTileEntity(pos);
 
-		if(tileentity instanceof TileEntityMachineRefinery) {
-			InventoryHelper.dropInventoryItems(world, pos, (TileEntityMachineRefinery) tileentity);
+		if(tileentity instanceof TileEntityMachineAssembler) {
+			InventoryHelper.dropInventoryItems(world, pos, (TileEntityMachineAssembler) tileentity);
 
 			world.updateComparatorOutputLevel(pos, this);
 		}
@@ -111,32 +111,32 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.refineryDimensions, ModBlocks.dummy_block_refinery);
 				
 			//
-			DummyBlockBase.safeBreak = true;
+			DummyBlockRefinery.safeBreak = true;
 			world.setBlockState(pos.add(1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(1, 0, 1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(1, 0, -1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.add(1, 0, -1));
 			if(te2 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(-1, 0, -1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te3 = world.getTileEntity(pos.add(-1, 0, -1));
 			if(te3 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te3;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(-1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te4 = world.getTileEntity(pos.add(-1, 0, 1));
 			if(te4 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
-			DummyBlockBase.safeBreak = false;
+			DummyBlockRefinery.safeBreak = false;
 			//
 				
 		} else {

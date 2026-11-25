@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.hbm.interfaces.IFluidPipe;
 import com.hbm.items.ModItems;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.network.energy.TileEntityPylonBase;
 
@@ -54,22 +54,11 @@ public class ItemAnalyzer extends Item {
 			} else {
 				
 				if(te instanceof TileEntityDummy) {
-					BlockPos target = ((TileEntityDummy)te).getTarget();
-
-					if(target == null) {
-						player.sendMessage(new TextComponentString("Dummy Block, no target"));
-						return EnumActionResult.SUCCESS;
-					}
 
 					player.sendMessage(new TextComponentString(
-							"Dummy Block, references TE at " + target.getX() + " / " + target.getY() + " / " + target.getZ()));
+							"Dummy Block, references TE at " + ((TileEntityDummy)te).target.getX() + " / " + ((TileEntityDummy)te).target.getY() + " / " + ((TileEntityDummy)te).target.getZ()));
 					
-					te = world.getTileEntity(target);
-
-					if(te == null) {
-						player.sendMessage(new TextComponentString("Dummy Block, target has no TE"));
-						return EnumActionResult.SUCCESS;
-					}
+					te = world.getTileEntity(((TileEntityDummy)te).target);
 				}
 				
 				String[] parts = te.toString().split("\\.");

@@ -88,12 +88,6 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 						}
 					} else {
 						Fluid type = ItemForgeFluidIdentifier.getType(player.getHeldItem(hand));
-						if(type == null){
-							if(world.isRemote){
-								player.sendMessage(new TextComponentTranslation("chat.fractioning.noid"));
-							}
-							return false;
-						}
 						if(RefineryRecipes.getFractions(type) == null){
 							if(world.isRemote){
 								player.sendMessage(new TextComponentTranslation("chat.fractioning.norecipe", type.getLocalizedName(new FluidStack(type, 1))));
@@ -152,11 +146,6 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 				text.add((i < 1 ? ("§a" + "-> ") : ("§c" + "<- ")) + "§r" + frac.types[i].getLocalizedName(new FluidStack(frac.types[i], 1)) + ": " + frac.tanks[i].getFluidAmount() + "/" + frac.tanks[i].getCapacity() + "mB");
 			}
 		}
-
-		//heat is pooled across the whole stack, so the overlay reports the stack and not this single tower
-		int[] chain = frac.getChainHeat();
-		text.add("§e" + String.format("%,d", chain[0]) + " / " + String.format("%,d", chain[1] * TileEntityMachineFractionTower.maxHeat) + " TU");
-		text.add("§e" + String.format("%,d", chain[1] * TileEntityMachineFractionTower.heatPerOp) + " TU/s");
 
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}

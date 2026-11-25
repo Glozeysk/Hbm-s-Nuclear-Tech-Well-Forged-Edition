@@ -17,8 +17,6 @@ import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
-import com.hbm.inventory.OreDictManager.DictFrame;
-import com.hbm.inventory.OreDictManager.DictGroup;
 import com.hbm.items.ItemEnums.EnumCokeType;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.main.MainRegistry;
@@ -155,8 +153,6 @@ public class OreDictManager {
 	public static final DictFrame TCALLOY = new DictFrame("TcAlloy");
 	/** CADMIUM STEEL */
 	public static final DictFrame CDALLOY = new DictFrame("CdAlloy");
-	public static final DictFrame PVC = new DictFrame("PVC");
-	public static final DictFrame POLYCARBONATE = new DictFrame("Polycarbonate");
 	/** LEAD */ 
 	public static final DictFrame PB = new DictFrame("Lead");
 	//public static final DictFrame BI = new DictFrame("Bismuth");
@@ -164,7 +160,6 @@ public class OreDictManager {
 	public static final DictFrame AS = new DictFrame("Arsenic");
 	/** TANTALUM */ 
 	public static final DictFrame TA = new DictFrame("Tantalum");
-	public static final DictFrame SI = new DictFrame("Silicon");
 	public static final DictFrame COLTAN = new DictFrame("Coltan");
 	/** NIOBIUM */ 
 	public static final DictFrame NB = new DictFrame("Niobium");
@@ -277,7 +272,6 @@ public class OreDictManager {
 	public static final DictGroup ANY_PLASTIC = new DictGroup("AnyPlastic", POLYMER, BAKELITE);		//using the Any prefix means that it's just the secondary prefix, and that shape prefixes are applicable
 	/** Any post nuclear steel like TCA or CDA */
 	public static final DictGroup ANY_RESISTANTALLOY = new DictGroup("AnyResistantAlloy", TCALLOY, CDALLOY);
-	public static final DictGroup ANY_HARDPLASTIC = new DictGroup("AnyHardPlastic", PVC, POLYCARBONATE);
 	/** Any "powder" propellant like gunpowder, ballistite and cordite */
 	public static final DictFrame ANY_GUNPOWDER = new DictFrame("AnyPropellant");
 	/** Any smokeless powder like ballistite and cordite */
@@ -316,7 +310,6 @@ public class OreDictManager {
 		AS															.nugget(nugget_arsenic)									.ingot(ingot_arsenic);
 		CD															.nugget(nugget_cadmium)									.ingot(ingot_cadmium)		.dust(powder_cadmium)									.block(block_cadmium);
 		TA															.nugget(nugget_tantalium)								.ingot(ingot_tantalium)		.dust(powder_tantalium)									.block(block_tantalium)		.gem(gem_tantalium);
-		SI.nugget(nugget_silicon).billet(billet_silicon);
 		COLTAN																												.ingot(fragment_coltan)		.dust(powder_coltan_ore)								.block(block_coltan)																					.ore(ore_coltan);
 		NB															.nugget(fragment_niobium)								.ingot(ingot_niobium)		.dust(powder_niobium)	.dustSmall(powder_niobium_tiny)	.block(block_niobium);
 		BE															.nugget(nugget_beryllium)	.billet(billet_beryllium)	.ingot(ingot_beryllium)		.dust(powder_beryllium)									.block(block_beryllium)							.crystal(crystal_beryllium)								.ore(ore_beryllium);
@@ -342,10 +335,8 @@ public class OreDictManager {
 		MINGRADE																											.ingot(ingot_red_copper)	.dust(powder_red_copper)								.block(block_red_copper);
 		ALLOY																												.ingot(ingot_advanced_alloy).dust(powder_advanced_alloy)							.block(block_advanced_alloy)													.plate(plate_advanced_alloy);
 		STEEL																												.ingot(ingot_steel)			.dust(powder_steel)		.dustSmall(powder_steel_tiny)	.block(block_steel)																.plate(plate_steel);
-		TCALLOY																												.ingot(ingot_tcalloy)		.dust(powder_tcalloy)	.plate(plate_welded_tcalloy);
-		CDALLOY																												.ingot(ingot_cdalloy)		.dust(powder_cdalloy)	.plate(plate_welded_cdalloy);
-		PVC																													.ingot(ingot_pvc);
-		POLYCARBONATE																										.ingot(ingot_polycarbonate);
+		TCALLOY																												.ingot(ingot_tcalloy)		.dust(powder_tcalloy);
+		CDALLOY																												.ingot(ingot_cdalloy)		.dust(powder_cdalloy);
 		GRAPHITE																											.ingot(ingot_graphite)																.block(block_graphite);
 		DURA																												.ingot(ingot_dura_steel)	.dust(powder_dura_steel)								.block(block_dura_steel);
 		POLYMER																												.ingot(ingot_polymer)		.dust(powder_polymer)									.block(block_polymer);
@@ -453,7 +444,6 @@ public class OreDictManager {
 		OreDictionary.registerOre(KEY_CIRCUIT_BISMUTH, circuit_arsenic);
         //if this isn't implemented when fracking tower becomes real, yell at me
 		OreDictionary.registerOre("itemRubber", ingot_rubber);
-		OreDictionary.registerOre("itemSilicon", billet_silicon);
 
 		OreDictionary.registerOre("coalCoke", fromOne(coke, EnumCokeType.COAL));
 		
@@ -536,8 +526,7 @@ public class OreDictManager {
 	public static void registerGroups() {
 		ANY_RUBBER.addPrefix(INGOT, true);
 		ANY_PLASTIC.addPrefix(INGOT, true).addPrefix(DUST, true).addPrefix(BLOCK, true);
-		ANY_RESISTANTALLOY.addPrefix(INGOT, true).addPrefix(DUST, true).addPrefix(PLATE, true);
-		ANY_HARDPLASTIC.addPrefix(INGOT, true);
+		ANY_RESISTANTALLOY.addPrefix(INGOT, true).addPrefix(DUST, true);
 		ANY_TAR.addPrefix(ANY, false);
 	}
 	

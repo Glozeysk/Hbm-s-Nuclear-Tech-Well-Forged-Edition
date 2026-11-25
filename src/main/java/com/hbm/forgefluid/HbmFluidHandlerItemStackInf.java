@@ -25,24 +25,13 @@ public class HbmFluidHandlerItemStackInf implements IFluidHandlerItem, ICapabili
 		this.maxDrainAmount = maxDrain;
 	}
 	
-	private boolean isInfWater() {
-		return container.getItem() == ModItems.inf_water || container.getItem() == ModItems.inf_water_mk2 || container.getItem() == ModItems.inf_water_mk3 || container.getItem() == ModItems.inf_water_mk4;
-	}
-
-	private boolean isChlorinePinwheel() {
-		return container.getItem() == ModItems.chlorine_pinwheel;
-	}
-
 	@Override
 	public IFluidTankProperties[] getTankProperties() {
-		FluidStack contents = isInfWater() ? new FluidStack(FluidRegistry.WATER, maxDrainAmount) : isChlorinePinwheel() ? new FluidStack(ModForgeFluids.chlorine, maxDrainAmount) : null;
-		return new IFluidTankProperties[]{new FluidTankProperties(contents, maxDrainAmount)};
+		return new IFluidTankProperties[]{new FluidTankProperties((container.getItem() == ModItems.inf_water || container.getItem() == ModItems.inf_water_mk2 || container.getItem() == ModItems.inf_water_mk3 || container.getItem() == ModItems.inf_water_mk4) ? new FluidStack(FluidRegistry.WATER, maxDrainAmount) : null, maxDrainAmount)};
 	}
-
+	
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
-		if(PressurizedFluids.isPressurized(resource))
-			return 0;
 		if(resource != null)
 			return resource.amount;
 		return 0;
@@ -50,10 +39,8 @@ public class HbmFluidHandlerItemStackInf implements IFluidHandlerItem, ICapabili
 
 	@Override
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if(isInfWater())
+		if(container.getItem() == ModItems.inf_water || container.getItem() == ModItems.inf_water_mk2 || container.getItem() == ModItems.inf_water_mk3 || container.getItem() == ModItems.inf_water_mk4)
 			return new FluidStack(FluidRegistry.WATER, maxDrainAmount);
-		if(isChlorinePinwheel())
-			return new FluidStack(ModForgeFluids.chlorine, maxDrainAmount);
 		if(resource == null)
 			return null;
 		return new FluidStack(resource.getFluid(), maxDrainAmount);
@@ -61,10 +48,8 @@ public class HbmFluidHandlerItemStackInf implements IFluidHandlerItem, ICapabili
 
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if(isInfWater())
+		if(container.getItem() == ModItems.inf_water || container.getItem() == ModItems.inf_water_mk2 || container.getItem() == ModItems.inf_water_mk3 || container.getItem() == ModItems.inf_water_mk4)
 			return new FluidStack(FluidRegistry.WATER, maxDrainAmount);
-		if(isChlorinePinwheel())
-			return new FluidStack(ModForgeFluids.chlorine, maxDrainAmount);
 		return null;
 	}
 

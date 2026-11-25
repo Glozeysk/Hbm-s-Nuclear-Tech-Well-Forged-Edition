@@ -10,16 +10,10 @@ import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public final class HBMSoundHandler {
-
+	
 	public static List<SoundEvent> ALL_SOUNDS = new ArrayList<SoundEvent>();
 
-	public static SoundEvent electrolyser_loop;
-	public static SoundEvent selenium_engine_operate;
-	public static SoundEvent flare_operate;
-	public static SoundEvent pyroOperate;
-	public static SoundEvent steamEngineOperate;
-	public static SoundEvent turbofan_operate2;
-	public static SoundEvent diesel_operate;
+	public static SoundEvent dieselOperate;
 	public static SoundEvent turretFocus;
 	public static SoundEvent chungusOperate;
 	public static SoundEvent crystallizer_loop;
@@ -27,7 +21,7 @@ public final class HBMSoundHandler {
 	public static SoundEvent machine_refinery_loop;
 	public static SoundEvent pumpjack_loop;
 	public static SoundEvent assemblerOperate;
-	public static SoundEvent difurnace_loop;
+    public static SoundEvent difurnace_loop;
 	public static SoundEvent fel;
 	public static SoundEvent siloopen;
 	public static SoundEvent siloclose;
@@ -234,7 +228,7 @@ public final class HBMSoundHandler {
 	public static SoundEvent ufoBlast;
 	public static SoundEvent nightvision_on;
 	public static SoundEvent nightvision_off;
-
+	
 	public static SoundEvent transitionSealOpen;
 	public static SoundEvent garage;
 	public static SoundEvent garage_stop;
@@ -252,15 +246,10 @@ public final class HBMSoundHandler {
 	public static SoundEvent sliding_seal_stop;
 
 	public static SoundEvent assemblerStrike;
-	public static SoundEvent assemblerStart;
-	public static SoundEvent assemblerStop;
+    public static SoundEvent assemblerStart;
+    public static SoundEvent assemblerStop;
 	public static SoundEvent motor;
-
-	public static SoundEvent arc_welder_loop_mma;
-	public static SoundEvent arc_welder_loop_tig;
-	public static SoundEvent arc_welder_loop_vaw;
-	public static SoundEvent arc_welder_loop_ebw;
-
+	
 	public static SoundEvent alarmHatch = registerBypass("alarm.hatch");
 	public static SoundEvent alarmAutopilot = registerBypass("alarm.autopilot");
 	public static SoundEvent alarmAMSSiren = registerBypass("alarm.amsSiren");
@@ -287,31 +276,26 @@ public final class HBMSoundHandler {
 	public static SoundEvent ironLand = registerBypass("step.iron_land");
 	public static SoundEvent ironJump = registerBypass("step.iron_jump");
 	public static SoundEvent poweredStep = registerBypass("step.powered");
-
+	
 	public static SoundEvent lambdaCore = registerBypass("music.recordlambdacore");
 	public static SoundEvent sectorSweep = registerBypass("music.recordsectorsweep");
 	public static SoundEvent vortalCombat = registerBypass("music.recordvortalcombat");
 	public static SoundEvent glass = registerBypass("music.transmission");
-
+	
 	public static SoundEvent metalBlock = registerBypass("step.metalBlock");
-
+	
 	public static SoundEvent[] geigerSounds;
 	public static SoundEvent[] voiceSounds;
 
-
-
+	
+	
 	public static void init() {
-		electrolyser_loop = register("block.electrolyser_loop");
-		selenium_engine_operate = register("block.selenium_engine_operate");
-		turbofan_operate2 = register("block.turbofan_operate2");
-		flare_operate = register("block.flare_operate");
-		pyroOperate = register("block.pyroOperate");
-		steamEngineOperate = register("block.steamEngineOperate");
-		diesel_operate = register("block.diesel_operate");
+
+		dieselOperate = register("block.dieselOperate");
 		turretFocus = register("block.turret_focus");
 		chungusOperate = register("block.chungusTurbineRunning");
 		assemblerOperate = register("block.assembleroperate");
-		difurnace_loop = register("block.difurnace_loop");
+        difurnace_loop = register("block.difurnace_loop");
 		excavator_loop = register("block.excavator_loop");
 		crystallizer_loop = register("block.crystallizer_loop");
 		machine_refinery_loop = register("block.machine_refinery_loop");
@@ -538,49 +522,26 @@ public final class HBMSoundHandler {
 		sliding_seal_open = register("block.door.sliding_seal_open");
 		sliding_seal_stop = register("block.door.sliding_seal_stop");
 		assemblerStrike = register("block.assemblerStrike");
-		assemblerStart = register("block.assemblerStart");
-		assemblerStop = register("block.assemblerStop");
+        assemblerStart = register("block.assemblerStart");
+        assemblerStop = register("block.assemblerStop");
 		motor = register("block.motor");
-
-		arc_welder_loop_mma = register("block.arc_welder_loop_mma");
-		arc_welder_loop_tig = register("block.arc_welder_loop_tig");
-		arc_welder_loop_vaw = register("block.arc_welder_loop_vaw");
-		arc_welder_loop_ebw = register("block.arc_welder_loop_ebw");
-
+		
 		geigerSounds = new SoundEvent[]{geiger1, geiger2, geiger3, geiger4, geiger5, geiger6, geiger7, geiger8};
 		voiceSounds = new SoundEvent[]{voices1, voices2, voices3, voices4, voices5, voices6, voices7, voices8};
 	}
-
+	
 	public static SoundEvent register(String name) {
 		SoundEvent e = new SoundEvent(new ResourceLocation(RefStrings.MODID, name));
 		e.setRegistryName(name);
 		ALL_SOUNDS.add(e);
 		return e;
 	}
-
+	
 	public static SoundEvent registerBypass(String name){
 		SoundEvent e = new SoundEvent(new ResourceLocation(RefStrings.MODID, name));
 		e.setRegistryName(name);
 		ForgeRegistries.SOUND_EVENTS.register(e);
 		return e;
 	}
-
-	public static SoundEvent getSoundEvent(String name) {
-		if(name == null || name.isEmpty())
-			return null;
-
-		ResourceLocation key = new ResourceLocation(RefStrings.MODID, name);
-		SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(key);
-		if(event != null)
-			return event;
-
-		for(SoundEvent sound : ALL_SOUNDS) {
-			if(sound.getRegistryName() != null && sound.getRegistryName().equals(key))
-				return sound;
-		}
-
-		System.err.println("[HBM] Sound event not found: " + key);
-		return null;
-	}
-
+	
 }

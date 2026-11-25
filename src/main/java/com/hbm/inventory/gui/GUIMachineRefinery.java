@@ -36,9 +36,6 @@ public class GUIMachineRefinery extends GuiInfoContainer {
 		FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 70 - 52, 16, 52, refinery.tanks[4], refinery.tankTypes[4]);
 		
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 70 - 52, 16, 52, refinery.power, TileEntityMachineRefinery.maxPower);
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 62, guiTop + 70 - 52, 8, 52, mouseX, mouseY, new String[] {
-				String.format("%,d", Math.min(refinery.heat, TileEntityMachineRefinery.maxHeat)) + " / " + String.format("%,d", TileEntityMachineRefinery.maxHeat) + " TU",
-				String.format("%,d", TileEntityMachineRefinery.heatPerOp) + " TU/t" });
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	
@@ -47,6 +44,7 @@ public class GUIMachineRefinery extends GuiInfoContainer {
 		String name = this.refinery.hasCustomInventoryName() ? this.refinery.getInventoryName() : I18n.format(this.refinery.getInventoryName());
 		
 		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
+		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 
 	@Override
@@ -58,9 +56,6 @@ public class GUIMachineRefinery extends GuiInfoContainer {
 
 		int j = (int)refinery.getPowerScaled(52);
 		drawTexturedModalRect(guiLeft + 8, guiTop + 70 - j, 176, 52 - j, 16, j);
-
-		int h = refinery.getHeatScaled(52);
-		drawTexturedModalRect(guiLeft + 62, guiTop + 70 - h, 192, 52 - h, 8, h);
 		
 		FFUtils.drawLiquid(refinery.tanks[0], guiLeft, guiTop, zLevel, 34, 52, 26, 98);
 		

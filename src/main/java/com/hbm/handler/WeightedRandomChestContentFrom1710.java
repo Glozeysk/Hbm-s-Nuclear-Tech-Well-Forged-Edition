@@ -147,4 +147,9 @@ public class WeightedRandomChestContentFrom1710 extends WeightedRandom.Item
         }
         return ret;
     }
+
+    public static void placeLootChest(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.util.EnumFacing dir, int lootID){
+        world.setBlockState(pos, net.minecraft.init.Blocks.CHEST.getDefaultState().withProperty(net.minecraft.block.BlockChest.FACING, dir), 3);
+        WeightedRandomChestContentFrom1710.generateChestContents(world.rand, com.hbm.lib.HbmChestContents.getLoot(lootID), world.getTileEntity(pos), 8);
+    }
 }

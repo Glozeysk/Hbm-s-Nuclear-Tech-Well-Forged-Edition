@@ -30,7 +30,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BlockDummyable extends BlockContainer {
@@ -205,7 +204,6 @@ public abstract class BlockDummyable extends BlockContainer {
 
     	super.onBlockPlacedBy(world, pos, state, player, itemStack);
     }
-
     protected boolean standardOpenBehavior(World world, int x, int y, int z, EntityPlayer player, int id) {
 		
 		if(world.isRemote) {
@@ -234,46 +232,6 @@ public abstract class BlockDummyable extends BlockContainer {
 
 		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), this, dir);
 	}
-
-	// Rebuilds this multiblock's dummy/port shell in place around an existing core, keeping the core TE (and its
-	// NBT) untouched. Lets old-world structures with a different footprint/port layout be brought up to the current
-	// one without losing contents. corePos must hold this block's core (meta >= 12).
-	public void migrateStructureInPlace(World world, BlockPos corePos) {
-		if(world.isRemote)
-			return;
-
-		IBlockState coreState = world.getBlockState(corePos);
-		if(coreState.getBlock() != this || coreState.getValue(META) < 12)
-			return;
-
-		ForgeDirection dir = ForgeDirection.getOrientation(coreState.getValue(META) - offset);
-		int o = getOffset();
-
-		// collect this core's existing shell parts (same block, meta < 12) within a generous box, then remove them
-		// (collect first so findCore stays valid while we still have the old blocks in place)
-		List<BlockPos> shell = new ArrayList<BlockPos>();
-		for(int dx = -3; dx <= 3; dx++) {
-			for(int dy = -1; dy <= 8; dy++) {
-				for(int dz = -3; dz <= 3; dz++) {
-					BlockPos p = corePos.add(dx, dy, dz);
-					if(p.equals(corePos))
-						continue;
-					IBlockState s = world.getBlockState(p);
-					if(s.getBlock() != this || s.getValue(META) >= 12)
-						continue;
-					int[] c = findCore(world, p.getX(), p.getY(), p.getZ());
-					if(c != null && c[0] == corePos.getX() && c[1] == corePos.getY() && c[2] == corePos.getZ())
-						shell.add(p);
-				}
-			}
-		}
-
-		safeRem = true;
-		for(BlockPos p : shell)
-			world.setBlockToAir(p);
-		fillSpace(world, corePos.getX() - dir.offsetX * o, corePos.getY() - dir.offsetY * o, corePos.getZ() - dir.offsetZ * o, dir, o);
-		safeRem = false;
-	}
 	
 	//"upgrades" regular dummy blocks to ones with the extra flag
 	public void makeExtra(World world, int x, int y, int z) {
@@ -291,7 +249,6 @@ public abstract class BlockDummyable extends BlockContainer {
 		world.setBlockState(pos, this.getDefaultState().withProperty(META, meta + extra), 3);
 		safeRem = false;
 	}
-
 	
 	//Drillgon200: Removes the extra. I could have sworn there was already a method for this, but I can't find it.
 	public void removeExtra(World world, int x, int y, int z) {
@@ -314,25 +271,31 @@ public abstract class BlockDummyable extends BlockContainer {
 	public boolean hasExtra(int meta) {
 		return meta > 5 && meta < 12;
 	}
-
+	
 	@Override
 	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
 		if(i >= 12) {
+			//ForgeDirection d = ForgeDirection.getOrientation(world.getBlockMetadata(x, y, z) - offset);
+			//MultiblockHandler.emptySpace(world, x, y, z, getDimensions(), this, d);
 		} else if(!safeRem) {
-			if(i >= extra)
-				i -= extra;
+			
+	    	if(i >= extra)
+	    		i -= extra;
 
-			ForgeDirection dir = ForgeDirection.getOrientation(i).getOpposite();
+	    	ForgeDirection dir = ForgeDirection.getOrientation(i).getOpposite();
 			int[] pos1 = findCore(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
-
+			
 			if(pos1 != null) {
+
+				//ForgeDirection d = ForgeDirection.getOrientation(world.getBlockMetadata(pos[0], pos[1], pos[2]) - offset);
 				world.setBlockToAir(new BlockPos(pos1[0], pos1[1], pos1[2]));
 			}
 		}
 		InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
 		super.breakBlock(world, pos, state);
 	}
+	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.INVISIBLE;

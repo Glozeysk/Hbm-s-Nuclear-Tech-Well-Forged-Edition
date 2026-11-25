@@ -1,12 +1,12 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockAMSBase;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityAMSBase;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -60,32 +60,32 @@ public class BlockAMSBase extends BlockContainer implements IMultiBlock {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.AMSBaseDimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSBaseDimension, ModBlocks.dummy_block_ams_base);
 
-			DummyBlockBase.safeBreak = true;
+			DummyBlockAMSBase.safeBreak = true;
 			world.setBlockState(pos.add(1, 0, 0), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(1, 0, 0));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(0, 0, -1), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.add(0, 0, -1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(-1, 0, 0), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te3 = world.getTileEntity(pos.add(-1, 0, 0));
 			if(te3 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te3;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(0, 0, 1), ModBlocks.dummy_port_ams_base.getDefaultState());
 			TileEntity te4 = world.getTileEntity(pos.add(0, 0, 1));
 			if(te4 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
-			DummyBlockBase.safeBreak = false;
+			DummyBlockAMSBase.safeBreak = false;
 			
 		} else
 			world.destroyBlock(pos, true);

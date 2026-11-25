@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.hbm.forgefluid.HbmFluidHandlerGasCanister;
 import com.hbm.forgefluid.HbmFluidHandlerItemStack;
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumGasCanister;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
@@ -75,10 +75,10 @@ public class ItemGasCanister extends Item implements IHasCustomModel {
 		if(f == null || f.getFluid() == null) {
 			return I18n.format("item.gas_empty.name");
 		} else {
-			HbmFluidContainer.Entry entry = HbmFluidContainer.GAS_CANISTER.getEntry(f.getFluid());
-			if(entry == null)
+			EnumGasCanister canister = EnumGasCanister.getEnumFromFluid(f.getFluid());
+			if(canister == null)
 				return I18n.format("item.gas_null.name");
-			return I18n.format(entry.translateKey);
+			return I18n.format(canister.getTranslateKey());
 		}
 	}
 	
@@ -91,7 +91,7 @@ public class ItemGasCanister extends Item implements IHasCustomModel {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
-			for(Fluid f : HbmFluidContainer.GAS_CANISTER.getFluids()){
+			for(Fluid f : EnumGasCanister.getFluids()){
 				ItemStack stack = new ItemStack(this, 1, 0);
 				stack.setTagCompound(new NBTTagCompound());
 				if(f != null)
@@ -124,7 +124,7 @@ public class ItemGasCanister extends Item implements IHasCustomModel {
 	public static ItemStack getFullCanister(Fluid f){
 		ItemStack stack = new ItemStack(ModItems.gas_canister, 1, 0);
 		stack.setTagCompound(new NBTTagCompound());
-		if(f != null && HbmFluidContainer.GAS_CANISTER.contains(f))
+		if(f != null && EnumGasCanister.contains(f))
 			stack.getTagCompound().setTag(HbmFluidHandlerGasCanister.FLUID_NBT_KEY, new FluidStack(f, 4000).writeToNBT(new NBTTagCompound()));
 		return stack;
 	}

@@ -10,7 +10,9 @@ import java.util.Map.Entry;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumCell;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumCanister;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumGasCanister;
 import com.hbm.inventory.AnvilRecipes;
 import com.hbm.inventory.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.AnvilRecipes.AnvilOutput;
@@ -34,9 +36,6 @@ import com.hbm.inventory.MachineRecipes.GasCentOutput;
 import com.hbm.inventory.MagicRecipes;
 import com.hbm.inventory.RefineryRecipes;
 import com.hbm.inventory.CrackRecipes;
-import com.hbm.inventory.HydrotreaterRecipes;
-import com.hbm.inventory.CatalyticReformerRecipes;
-import com.hbm.inventory.PyroOvenRecipes;
 import com.hbm.inventory.NuclearTransmutationRecipes;
 import com.hbm.inventory.MagicRecipes.MagicRecipe;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -57,7 +56,6 @@ import com.hbm.main.MainRegistry;
 import com.hbm.util.WeightedRandomObject;
 import com.hbm.util.Tuple.Quartet;
 import com.hbm.util.Tuple.Pair;
-import com.hbm.util.Tuple.Triplet;
 import com.hbm.util.I18nUtil;
 
 import mezz.jei.api.gui.IDrawableStatic;
@@ -93,9 +91,6 @@ public class JeiRecipes {
 	private static List<RBMKFuelRecipe> rbmkFuelRecipes = null;
 	private static List<RefineryRecipe> refineryRecipes = null;
 	private static List<CrackingRecipe> crackingRecipes = null;
-	private static List<HydrotreatingRecipe> hydrotreatingRecipes = null;
-	private static List<CatalyticReformingRecipe> catalyticReformingRecipes = null;
-	private static List<PyroOvenRecipe> pyroOvenRecipes = null;
 	private static List<FractioningRecipe> fractioningRecipes = null;
 	private static List<FluidRecipe> fluidEquivalences = null;
 	private static List<BookRecipe> bookRecipes = null;
@@ -118,42 +113,20 @@ public class JeiRecipes {
 
 		private final List<List<ItemStack>> inputs;
 		private final List<ItemStack> outputs;
-		private final ItemStack template;
 
-		public ChemRecipe(List<AStack> inputs, List<ItemStack> outputs, ItemStack template) {
+		public ChemRecipe(List<AStack> inputs, List<ItemStack> outputs) {
 			List<List<ItemStack>> list = new ArrayList<>(inputs.size());
 			for(AStack s : inputs)
 				list.add(s.getStackList());
 			this.inputs = list;
 			this.outputs = outputs;
-			this.template = template;
 		}
 
 		@Override
 		public void getIngredients(IIngredients ingredients) {
-			List<List<ItemStack>> in = Library.copyItemStackListList(inputs);
+			List<List<ItemStack>> in = Library.copyItemStackListList(inputs); // list of inputs and their list of possible items
 			ingredients.setInputLists(VanillaTypes.ITEM, in);
 			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
-		}
-
-		@Override
-		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
-			if(!template.isEmpty()) {
-				GlStateManager.pushMatrix();
-				GlStateManager.translate(0, 0, 200);
-				minecraft.getRenderItem().renderItemAndEffectIntoGUI(template, 82, 1);
-				GlStateManager.popMatrix();
-			}
-		}
-
-		@Override
-		public List<String> getTooltipStrings(int mouseX, int mouseY) {
-			if(mouseX >= 82 && mouseX < 98 && mouseY >= 1 && mouseY < 17) {
-				if(!template.isEmpty()) {
-					return template.getTooltip(Minecraft.getMinecraft().player, Minecraft.getMinecraft().gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
-				}
-			}
-			return java.util.Collections.emptyList();
 		}
 	}
 
@@ -180,6 +153,48 @@ public class JeiRecipes {
 		public int getInputSize(){
 			return inputs.size();
 		}
+	}
+
+	public static List<AssemblerRecipeWrapper> getAssemblerRecipes() {
+		if(assemblerRecipes != null)
+			return assemblerRecipes;
+		assemblerRecipes = new ArrayList<>();
+
+		for(Object recipeObj : AssemblerRecipes.recipeList) {
+			try {
+				ItemStack output = null;
+				AStack[] inputs = null;
+				int time = 0;
+
+				Class<?> clazz = recipeObj.getClass();
+				while(clazz != null) {
+					for(java.lang.reflect.Field f : clazz.getDeclaredFields()) {
+						f.setAccessible(true);
+						if(f.getType() == ItemStack.class && output == null) {
+							output = (ItemStack) f.get(recipeObj);
+						} else if(f.getType().isArray() && AStack.class.isAssignableFrom(f.getType().getComponentType()) && inputs == null) {
+							Object[] objArray = (Object[]) f.get(recipeObj);
+							if(objArray != null) {
+								inputs = new AStack[objArray.length];
+								for(int i = 0; i < objArray.length; i++) {
+									inputs[i] = (AStack) objArray[i];
+								}
+							}
+						} else if((f.getType() == int.class || f.getType() == Integer.class) && time == 0) {
+							time = f.getInt(recipeObj);
+						}
+					}
+					clazz = clazz.getSuperclass();
+				}
+
+				if(output != null && inputs != null) {
+					assemblerRecipes.add(new AssemblerRecipeWrapper(output, inputs, time));
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return assemblerRecipes;
 	}
 
 	public static class CyclotronRecipe implements IRecipeWrapper {
@@ -432,67 +447,6 @@ public class JeiRecipes {
 
 	}
 
-	public static class HydrotreatingRecipe implements IRecipeWrapper {
-
-		private final List<ItemStack> inputs;
-		private final List<ItemStack> outputs;
-
-		public HydrotreatingRecipe(List<ItemStack> inputs, List<ItemStack> outputs) {
-			this.inputs = inputs;
-			this.outputs = outputs;
-		}
-
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			ingredients.setInputs(VanillaTypes.ITEM, inputs);
-			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
-		}
-
-	}
-
-	public static class CatalyticReformingRecipe implements IRecipeWrapper {
-
-		private final ItemStack input;
-		private final List<ItemStack> outputs;
-
-		public CatalyticReformingRecipe(ItemStack input, List<ItemStack> outputs) {
-			this.input = input;
-			this.outputs = outputs;
-		}
-
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			ingredients.setInput(VanillaTypes.ITEM, input);
-			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
-		}
-
-	}
-
-	public static class PyroOvenRecipe implements IRecipeWrapper {
-
-		//only the components the recipe has: 1 or 2 inputs, 1 or 2 outputs
-		public final List<List<ItemStack>> inputs;
-		public final List<List<ItemStack>> outputs;
-
-		public PyroOvenRecipe(List<List<ItemStack>> inputs, List<List<ItemStack>> outputs) {
-			this.inputs = inputs;
-			this.outputs = outputs;
-		}
-
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			ingredients.setInputLists(VanillaTypes.ITEM, inputs);
-			ingredients.setOutputLists(VanillaTypes.ITEM, outputs);
-		}
-
-		//category background is blank, the slot art depends on the component count
-		@Override
-		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
-			PyroOvenRecipeHandler.getLayout(inputs.size(), outputs.size()).draw(minecraft);
-		}
-
-	}
-
 	public static class FractioningRecipe implements IRecipeWrapper {
 
 		private final ItemStack input;
@@ -561,35 +515,24 @@ public class JeiRecipes {
 		@Override
 		public void getIngredients(IIngredients ingredients) {
 			List<List<ItemStack>> in = Library.copyItemStackListList(inputs);
-
-			while(in.size() < 14)
-				in.add(Arrays.asList(ItemStack.EMPTY));
-
-			ComparableStack comp = new ComparableStack(output);
-			FluidStack[] fluids = AssemblerRecipes.fluidInputs.get(comp);
-
-			if(fluids != null && fluids.length > 0 && fluids[0] != null) {
-				in.set(13, Arrays.asList(ItemFluidIcon.getStackWithQuantity(fluids[0].getFluid(), fluids[0].amount)));
+			while(in.size() < 12)
+				in.add(Arrays.asList(new ItemStack(ModItems.nothing)));
+			int index = -1;
+			for(int i = 0; i < AssemblerRecipes.recipeList.size(); i++){ // finding the template item
+				if(AssemblerRecipes.recipeList.get(i).isApplicable(output)){
+					index = i;
+					break;
+				}
 			}
-
+			if(index >= 0) // adding the template item
+				in.add(Arrays.asList(ItemAssemblyTemplate.getTemplate(index)));
+			else {
+				in.add(Arrays.asList(new ItemStack(ModItems.nothing)));
+			}
 			ingredients.setInputLists(VanillaTypes.ITEM, in);
 			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
 
-		@Override
-		public List<String> getTooltipStrings(int mouseX, int mouseY) {
-			if(mouseX >= 102 && mouseX < 118 && mouseY >= 37 && mouseY < 53) {
-				ComparableStack comp = new ComparableStack(output);
-				FluidStack[] fluids = AssemblerRecipes.fluidInputs.get(comp);
-				if(fluids != null && fluids.length > 0 && fluids[0] != null) {
-					ItemStack fluidStack = ItemFluidIcon.getStackWithQuantity(fluids[0].getFluid(), fluids[0].amount);
-					if(!fluidStack.isEmpty()) {
-						return fluidStack.getTooltip(Minecraft.getMinecraft().player, Minecraft.getMinecraft().gameSettings.advancedItemTooltips ? net.minecraft.client.util.ITooltipFlag.TooltipFlags.ADVANCED : net.minecraft.client.util.ITooltipFlag.TooltipFlags.NORMAL);
-					}
-				}
-			}
-			return java.util.Collections.emptyList();
-		}
 	}
 
 	public static class BookRecipe implements IRecipeWrapper {
@@ -602,7 +545,7 @@ public class JeiRecipes {
 			for(int i = 0; i < recipe.in.size(); i ++)
 				inputs.add(recipe.in.get(i).getStack());
 			while(inputs.size() < 4)
-				inputs.add(ItemStack.EMPTY);
+				inputs.add(new ItemStack(ModItems.nothing));
 			output = recipe.getResult();
 		}
 
@@ -779,46 +722,48 @@ public class JeiRecipes {
 			return chemRecipes;
 		chemRecipes = new ArrayList<ChemRecipe>();
 
-	for(int i: ChemplantRecipes.recipeNames.keySet()){
+       for(int i: ChemplantRecipes.recipeNames.keySet()){
 
-			List<AStack> inputs = new ArrayList<AStack>(6);
-			for(int j = 0; j < 6; j ++)
-				inputs.add(j, new ComparableStack(ItemStack.EMPTY));
+        	List<AStack> inputs = new ArrayList<AStack>(7);
+        	for(int j = 0; j < 7; j ++)
+        		inputs.add(j, new ComparableStack(ModItems.nothing));
 
-			List<ItemStack> outputs = new ArrayList<ItemStack>(6);
-			for(int j = 0; j < 6; j ++)
-				outputs.add(j, ItemStack.EMPTY);
+        	List<ItemStack> outputs = new ArrayList<ItemStack>(6);
+        	for(int j = 0; j < 6; j ++)
+        		outputs.add(j, new ItemStack(ModItems.nothing));
 
-			//Template item (only for display, not an ingredient)
-			ItemStack template = new ItemStack(ModItems.chemistry_template, 1, i);
+        	//Adding template item
+        	ItemStack template = new ItemStack(ModItems.chemistry_template, 1, i);
 
-			List<AStack> listIn = ChemplantRecipes.getChemInputFromTempate(template);
-			FluidStack[] fluidIn = ChemplantRecipes.getFluidInputFromTempate(template);
-			ItemStack[] listOut = ChemplantRecipes.getChemOutputFromTempate(template);
-			FluidStack[] fluidOut = ChemplantRecipes.getFluidOutputFromTempate(template);
+        	List<AStack> listIn = ChemplantRecipes.getChemInputFromTempate(template);
+        	FluidStack[] fluidIn = ChemplantRecipes.getFluidInputFromTempate(template);
+        	ItemStack[] listOut = ChemplantRecipes.getChemOutputFromTempate(template);
+        	FluidStack[] fluidOut = ChemplantRecipes.getFluidOutputFromTempate(template);
 
-			if(listIn != null)
-				for(int j = 0; j < listIn.size(); j++)
-					if(listIn.get(j) != null)
-						inputs.set(j + 2, listIn.get(j).copy());
+        	inputs.set(6, new ComparableStack(template));
 
-			if(fluidIn != null)
-				for(int j = 0; j < fluidIn.length; j++)
-					if(fluidIn[j] != null)
-						inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j])));
+        	if(listIn != null)
+        		for(int j = 0; j < listIn.size(); j++)
+        			if(listIn.get(j) != null)
+        				inputs.set(j + 2, listIn.get(j).copy());
 
-			if(listOut != null)
-				for(int j = 0; j < listOut.length; j++)
-					if(listOut[j] != null)
-						outputs.set(j + 2, listOut[j].copy());
+        	if(fluidIn != null)
+	        	for(int j = 0; j < fluidIn.length; j++)
+	        		if(fluidIn[j] != null)
+	        			inputs.set(j, new NbtComparableStack(ItemFluidIcon.getStackWithQuantity(fluidIn[j].getFluid(), fluidIn[j].amount)));
 
-			if(fluidOut != null)
-				for(int j = 0; j < fluidOut.length; j++)
-					if(fluidOut[j] != null)
-						outputs.set(j, ItemFluidIcon.getStackWithQuantity(fluidOut[j].getFluid(), fluidOut[j].amount));
+        	if(listOut != null)
+	        	for(int j = 0; j < listOut.length; j++)
+	        		if(listOut[j] != null)
+	        			outputs.set(j + 2, listOut[j].copy());
 
-			chemRecipes.add(new ChemRecipe(inputs, outputs, template));
-		}
+        	if(fluidOut != null)
+	        	for(int j = 0; j < fluidOut.length; j++)
+	        		if(fluidOut[j] != null)
+	        			outputs.set(j, ItemFluidIcon.getStackWithQuantity(fluidOut[j].getFluid(), fluidOut[j].amount));
+
+        	chemRecipes.add(new ChemRecipe(inputs, outputs));
+        }
 
 		return chemRecipes;
 	}
@@ -953,6 +898,7 @@ public class JeiRecipes {
 		batteries.add(new ItemStack(ModItems.battery_spark_cell_10000));
 		batteries.add(new ItemStack(ModItems.battery_spark_cell_power));
 		batteries.add(new ItemStack(ModItems.fusion_core));
+		batteries.add(new ItemStack(ModItems.energy_core));
 		return batteries;
 	}
 
@@ -1108,66 +1054,6 @@ public class JeiRecipes {
 		return crackingRecipes;
 	}
 
-	public static List<HydrotreatingRecipe> getHydrotreatingRecipe() {
-		if(hydrotreatingRecipes != null)
-			return hydrotreatingRecipes;
-		hydrotreatingRecipes = new ArrayList<HydrotreatingRecipe>();
-
-		for(Fluid fluid : HydrotreaterRecipes.recipes.keySet()){
-			Triplet<FluidStack, FluidStack, FluidStack> recipe = HydrotreaterRecipes.getRecipe(fluid);
-			hydrotreatingRecipes.add(new HydrotreatingRecipe(
-					Arrays.asList(
-						ItemFluidIcon.getStackWithQuantity(fluid, 1000),
-						ItemFluidIcon.getStackWithQuantity(recipe.getX())
-					),
-					Arrays.asList(
-						ItemFluidIcon.getStackWithQuantity(recipe.getY().getFluid(), recipe.getY().amount),
-						ItemFluidIcon.getStackWithQuantity(recipe.getZ().getFluid(), recipe.getZ().amount)
-					)
-				)
-			);
-		}
-		return hydrotreatingRecipes;
-	}
-
-	public static List<CatalyticReformingRecipe> getCatalyticReformingRecipes() {
-		if(catalyticReformingRecipes != null)
-			return catalyticReformingRecipes;
-		catalyticReformingRecipes = new ArrayList<CatalyticReformingRecipe>();
-
-		for(Fluid fluid : CatalyticReformerRecipes.recipes.keySet()) {
-			Quartet<FluidStack, FluidStack, FluidStack, FluidStack> recipe = CatalyticReformerRecipes.getRecipe(fluid);
-			catalyticReformingRecipes.add(new CatalyticReformingRecipe(
-					ItemFluidIcon.getStackWithQuantity(recipe.getW().getFluid(), recipe.getW().amount),
-					Arrays.asList(
-						ItemFluidIcon.getStackWithQuantity(recipe.getX()),
-						ItemFluidIcon.getStackWithQuantity(recipe.getY().getFluid(), recipe.getY().amount),
-						ItemFluidIcon.getStackWithQuantity(recipe.getZ().getFluid(), recipe.getZ().amount)
-					)
-				)
-			);
-		}
-		return catalyticReformingRecipes;
-	}
-
-	//cell order: input fluid, input item -> output item, output fluid; missing components are left out
-	public static List<PyroOvenRecipe> getPyroOvenRecipes() {
-		if(pyroOvenRecipes != null)
-			return pyroOvenRecipes;
-		pyroOvenRecipes = new ArrayList<PyroOvenRecipe>();
-
-		for(PyroOvenRecipes.PyroOvenRecipe recipe : PyroOvenRecipes.recipes) {
-			List<List<ItemStack>> inputs = new ArrayList<List<ItemStack>>();
-			List<List<ItemStack>> outputs = new ArrayList<List<ItemStack>>();
-			if(recipe.inputFluid != null) inputs.add(Arrays.asList(ItemFluidIcon.getStackWithQuantity(recipe.inputFluid)));
-			if(recipe.inputItem != null) inputs.add(recipe.inputItem.getStackList());
-			if(recipe.outputItem != null) outputs.add(Arrays.asList(recipe.outputItem.copy()));
-			if(recipe.outputFluid != null) outputs.add(Arrays.asList(ItemFluidIcon.getStackWithQuantity(recipe.outputFluid)));
-			pyroOvenRecipes.add(new PyroOvenRecipe(inputs, outputs));
-		}
-		return pyroOvenRecipes;
-	}
-
 	public static List<FractioningRecipe> getFractioningRecipe() {
 		if(fractioningRecipes != null)
 			return fractioningRecipes;
@@ -1216,15 +1102,15 @@ public class JeiRecipes {
 			fluidEquivalences.add(new FluidRecipe(ItemFluidIcon.getStack(f), ItemFluidTank.getFullBarrel(f)));
 			fluidEquivalences.add(new FluidRecipeInverse(ItemFluidIcon.getStack(f), ItemFluidTank.getFullBarrel(f)));
 
-			if(HbmFluidContainer.CANISTER.contains(f)){
+			if(EnumCanister.contains(f)){
 				fluidEquivalences.add(new FluidRecipe(ItemFluidIcon.getStack(f), ItemFluidCanister.getFullCanister(f)));
 				fluidEquivalences.add(new FluidRecipeInverse(ItemFluidIcon.getStack(f), ItemFluidCanister.getFullCanister(f)));
 			}
-			if(HbmFluidContainer.GAS_CANISTER.contains(f)){
+			if(EnumGasCanister.contains(f)){
 				fluidEquivalences.add(new FluidRecipe(ItemFluidIcon.getStack(f), ItemGasCanister.getFullCanister(f)));
 				fluidEquivalences.add(new FluidRecipeInverse(ItemFluidIcon.getStack(f), ItemGasCanister.getFullCanister(f)));
 			}
-			if(HbmFluidContainer.CELL.contains(f)){
+			if(EnumCell.contains(f)){
 				fluidEquivalences.add(new FluidRecipe(ItemFluidIcon.getStack(f), ItemCell.getFullCell(f)));
 				fluidEquivalences.add(new FluidRecipeInverse(ItemFluidIcon.getStack(f), ItemCell.getFullCell(f)));
 			}

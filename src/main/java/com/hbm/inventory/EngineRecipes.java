@@ -1,10 +1,17 @@
 package com.hbm.inventory;
 
-import com.hbm.forgefluid.ModForgeFluids;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-
+import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Map;
+
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.BlockBaseVisualFluidConnectable;
+import com.hbm.forgefluid.ModForgeFluids;
+
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidRegistry;
 
 public class EngineRecipes {
 	
@@ -13,11 +20,34 @@ public class EngineRecipes {
 
 	//for 1000 mb
 	public static void registerEngineRecipes() {
-		//ethanol stays manual; everything else via HbmFluid.applyAllFuels
-		addFuel(ModForgeFluids.ethanol, FuelGrade.LOW, 687_000);
+		addFuel(ModForgeFluids.hydrogen, FuelGrade.HIGH, 10_000);
+		addFuel(ModForgeFluids.deuterium, FuelGrade.HIGH, 10_000);
+		addFuel(ModForgeFluids.tritium, FuelGrade.HIGH, 10_000);
+		addFuel(ModForgeFluids.heavyoil, FuelGrade.LOW, 25_000);
+		addFuel(ModForgeFluids.heatingoil, FuelGrade.LOW, 100_000);
+		addFuel(ModForgeFluids.reclaimed, FuelGrade.LOW, 200_000);
+		addFuel(ModForgeFluids.petroil, FuelGrade.MEDIUM, 300_000);
+		addFuel(ModForgeFluids.naphtha, FuelGrade.MEDIUM, 200_000);
+		addFuel(ModForgeFluids.diesel, FuelGrade.HIGH, 500_000);
+		addFuel(ModForgeFluids.lightoil, FuelGrade.MEDIUM, 500_000);
+		addFuel(ModForgeFluids.kerosene, FuelGrade.AERO, 1_250_000);
+		addFuel(ModForgeFluids.biogas, FuelGrade.AERO, 500_000);
+		addFuel(ModForgeFluids.biofuel, FuelGrade.HIGH, 400_000);
+		addFuel(ModForgeFluids.nitan, FuelGrade.HIGH, 5_000_000);
+		addFuel(ModForgeFluids.sparkfuel, FuelGrade.HIGH, 10_000_000);
+		addFuel(ModForgeFluids.balefire, FuelGrade.HIGH, 2_500_000);
+		addFuel(ModForgeFluids.gasoline, FuelGrade.HIGH, 1_000_000);
+		addFuel(ModForgeFluids.ethanol, FuelGrade.HIGH, 200_000);
+		addFuel(ModForgeFluids.fishoil, FuelGrade.LOW, 50_000);
+		addFuel(ModForgeFluids.sunfloweroil, FuelGrade.LOW, 80_000);
+		addFuel(ModForgeFluids.gas, FuelGrade.GAS, 100_000);
+		addFuel(ModForgeFluids.petroleum, FuelGrade.GAS, 300_000);
+		addFuel(ModForgeFluids.aromatics, FuelGrade.GAS, 150_000);
+		addFuel(ModForgeFluids.unsaturateds, FuelGrade.GAS, 250_000);
 
 		//Compat
-		addFuel("petroil", FuelGrade.MEDIUM, 200_000); //galacticraft
+		addFuel("biofuel", FuelGrade.HIGH, 400_000); //galacticraft & industrialforegoing
+		addFuel("petroil", FuelGrade.MEDIUM, 300_000); //galacticraft
 		addFuel("refined_fuel", FuelGrade.HIGH, 1_000_000); //thermalfoundation
 		addFuel("refined_biofuel", FuelGrade.HIGH, 400_000); //thermalfoundation
 	

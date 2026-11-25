@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.forgefluid.FFPipeNetworkMk2;
-import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.interfaces.IFluidPipeMk2;
 import com.hbm.packet.PacketDispatcher;
@@ -74,48 +73,22 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 
 	public void setType(Fluid f) {
 		if (f != type) {
-			setTypeSilent(f);
+			type = f;
 			world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
 			world.neighborChanged(pos, getBlockType(), pos);
+			IBlockState state = world.getBlockState(pos);
+			world.markAndNotifyBlock(pos, world.getChunk(pos), state, state, 2);
 			rebuildNetworks(world, pos);
-			syncToWatchers();
-			if (!world.isRemote)
-				PacketDispatcher.wrapper.sendToAllTracking(new PipeUpdatePacket(pos, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
-		}
-	}
-
-	/**
-	 * Sets the fluid type without notifying neighbors, rebuilding the network, or syncing to
-	 * clients - those are the caller's responsibility. Used by bulk operations (the fluid
-	 * identifier's flood-fill) that batch these steps once for a whole region instead of once
-	 * per pipe, to avoid a packet storm and repeated full network rebuilds.
-	 */
-	public void setTypeSilent(Fluid f) {
-		type = f;
-		markDirty();
-	}
-
-	/** Recomputes the tileentity cache and connection mask without sending a PipeUpdatePacket. */
-	public void refreshLocalState() {
-		rebuildCache();
-		updateConnections();
-	}
-
-	/**
-	 * Syncs the current NBT state (incl. fluid type) to watching players and triggers a
-	 * blockstate resync so clients rerender connections. Does not touch the network - call
-	 * rebuildNetworks separately.
-	 */
-	public void syncToWatchers() {
-		IBlockState state = world.getBlockState(pos);
-		world.markAndNotifyBlock(pos, world.getChunk(pos), state, state, 2);
-		if (world instanceof WorldServer) {
-			PlayerChunkMapEntry entry = ((WorldServer) world).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
-			if (entry != null) {
-				for (EntityPlayerMP player : entry.getWatchingPlayers()) {
-					player.connection.sendPacket(new SPacketUpdateTileEntity(pos, 0, writeToNBT(new NBTTagCompound())));
+			if (world instanceof WorldServer) {
+				PlayerChunkMapEntry entry = ((WorldServer) world).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
+				if (entry != null) {
+					for (EntityPlayerMP player : entry.getWatchingPlayers()) {
+						player.connection.sendPacket(new SPacketUpdateTileEntity(pos, 0, writeToNBT(new NBTTagCompound())));
+					}
 				}
 			}
+			if (!world.isRemote)
+				PacketDispatcher.wrapper.sendToAllTracking(new PipeUpdatePacket(pos, 1), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 10));
 		}
 	}
 
@@ -330,49 +303,42 @@ public class TileEntityFFDuctBaseMk2 extends TileEntity implements IFluidPipeMk2
 		int remaining = getRemainingThroughput();
 		if (remaining <= 0) return;
 
-		//the plain and the pressurized form of the pipe's fluid are different stacks, so both are pulled; receivers pick the one they take
-		for(boolean pressurized : new boolean[] { false, true }) {
-			FluidStack form = pressurized ? PressurizedFluids.make(network.getType(), 1) : new FluidStack(network.getType(), 1);
+		int maxNetFill = network.fill(new FluidStack(network.getType(), Integer.MAX_VALUE), false);
+		if (maxNetFill <= 0) return;
 
-			int maxNetFill = network.fill(new FluidStack(form, Integer.MAX_VALUE), false);
-			if (maxNetFill <= 0) continue;
+		for(EnumFacing e : EnumFacing.VALUES) {
+			TileEntity te = world.getTileEntity(pos.offset(e));
+			if(te == null || te instanceof IFluidPipeMk2) continue;
+			if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) continue;
 
-			for(EnumFacing e : EnumFacing.VALUES) {
-				TileEntity te = world.getTileEntity(pos.offset(e));
-				if(te == null || te instanceof IFluidPipeMk2) continue;
-				if(!te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite())) continue;
+			IFluidHandler neighbor = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite());
 
-				IFluidHandler neighbor = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, e.getOpposite());
+			int canExtract = (throughput == -1) ? maxNetFill : Math.min(remaining, maxNetFill);
+			if (canExtract <= 0) break;
 
-				int canExtract = (throughput == -1) ? maxNetFill : Math.min(remaining, maxNetFill);
-				if (canExtract <= 0) break;
+			FluidStack simulatedDrain = neighbor.drain(new FluidStack(network.getType(), canExtract), false);
+			if (simulatedDrain == null || simulatedDrain.amount <= 0) continue;
 
-				FluidStack simulatedDrain = neighbor.drain(new FluidStack(form, canExtract), false);
-				if (simulatedDrain == null || simulatedDrain.amount <= 0) continue;
-
-				if (!world.isRemote && checkFluidCorrosion(simulatedDrain)) {
-					destroyPipe();
-					return;
-				}
-
-				int accepted = network.fill(simulatedDrain, false, te.getPos());
-				if (accepted <= 0) continue;
-
-				FluidStack drained = neighbor.drain(new FluidStack(form, accepted), true);
-				if (drained != null && drained.amount > 0) {
-					int actuallyAccepted = network.fill(drained, true, te.getPos());
-
-					if (actuallyAccepted > 0) {
-						if (throughput != -1) {
-							transferredThisTick += actuallyAccepted;
-						}
-						remaining -= actuallyAccepted;
-						maxNetFill -= actuallyAccepted;
-					}
-				}
+			if (!world.isRemote && checkFluidCorrosion(simulatedDrain)) {
+				destroyPipe();
+				return;
 			}
 
-			if (remaining <= 0) return;
+			int accepted = network.fill(simulatedDrain, false, te.getPos());
+			if (accepted <= 0) continue;
+
+			FluidStack drained = neighbor.drain(new FluidStack(network.getType(), accepted), true);
+			if (drained != null && drained.amount > 0) {
+				int actuallyAccepted = network.fill(drained, true, te.getPos());
+
+				if (actuallyAccepted > 0) {
+					if (throughput != -1) {
+						transferredThisTick += actuallyAccepted;
+					}
+					remaining -= actuallyAccepted;
+					maxNetFill -= actuallyAccepted;
+				}
+			}
 		}
 	}
 

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="JUnit Jupiter" tests="6" skipped="0" failures="0" errors="0" time="0.324" hostname="190aaa1ebac3" timestamp="2026-11-22T10:26:34">
+<properties>
+<property name="file.encoding" value="UTF-8"/>
+<property name="file.separator" value="/"/>
+<property name="java.class.path" value="/workspace/scratch/68e1bee787d1/build-tools/test-classes:/workspace/scratch/68e1bee787d1/build-tools/test-libs/junit.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/guava.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/log4j-api.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/log4j-core.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/gson.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/lang.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/netty.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/fastutil.jar:/workspace/scratch/68e1bee787d1/build-tools/test-libs/jsr305.jar:/workspace/scratch/68e1bee787d1/well-forged/build/classes/java/main:/workspace/scratch/68e1bee787d1/well-forged/build/classes/java/patchedMc:/workspace/scratch/68e1bee787d1/well-forged/libs/ic2-api-2.8.221.jar"/>
+<property name="java.class.version" value="69.0"/>
+<property name="java.home" value="/workspace/scratch/68e1bee787d1/build-tools/jdk-25.0.5.1+2"/>
+<property name="java.io.tmpdir" value="/tmp"/>
+<property name="java.library.path" value="/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib"/>
+<property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+<property name="java.runtime.version" value="25.0.5.1+2-LTS"/>
+<property name="java.specification.name" value="Java Platform API Specification"/>
+<property name="java.specification.vendor" value="Oracle Corporation"/>
+<property name="java.specification.version" value="25"/>
+<property name="java.vendor" value="Eclipse Adoptium"/>
+<property name="java.vendor.url" value="https://adoptium.net/"/>
+<property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
+<property name="java.vendor.version" value="Temurin-25.0.5.1+2"/>
+<property name="java.version" value="25.0.5.1"/>
+<property name="java.version.date" value="2026-11-17"/>
+<property name="java.vm.compressedOopsMode" value="Zero based"/>
+<property name="java.vm.info" value="mixed mode, sharing"/>
+<property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+<property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+<property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+<property name="java.vm.specification.version" value="25"/>
+<property name="java.vm.vendor" value="Eclipse Adoptium"/>
+<property name="java.vm.version" value="25.0.5.1+2-LTS"/>
+<property name="jdk.debug" value="release"/>
+<property name="line.separator" value="
+"/>
+<property name="native.encoding" value="UTF-8"/>
+<property name="os.arch" value="amd64"/>
+<property name="os.name" value="Linux"/>
+<property name="os.version" value="6.18.57"/>
+<property name="path.separator" value=":"/>
+<property name="stderr.encoding" value="UTF-8"/>
+<property name="stdin.encoding" value="UTF-8"/>
+<property name="stdout.encoding" value="UTF-8"/>
+<property name="sun.arch.data.model" value="64"/>
+<property name="sun.boot.library.path" value="/workspace/scratch/68e1bee787d1/build-tools/jdk-25.0.5.1+2/lib"/>
+<property name="sun.cpu.endian" value="little"/>
+<property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+<property name="sun.java.command" value="org.junit.platform.console.ConsoleLauncher --select-package com.hbm.compat.energy --reports-dir /workspace/scratch/68e1bee787d1/build-tools/test-results"/>
+<property name="sun.java.launcher" value="SUN_STANDARD"/>
+<property name="sun.jnu.encoding" value="UTF-8"/>
+<property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+<property name="user.dir" value="/workspace/scratch/68e1bee787d1"/>
+<property name="user.home" value="/home/agent"/>
+<property name="user.language" value="en"/>
+<property name="user.name" value="agent"/>
+<property name="user.timezone" value="Europe/Berlin"/>
+</properties>
+<testcase name="freshCapabilityWrappersStillShareMachineBattery()" classname="com.hbm.compat.energy.AdvancedRocketryPortTest" time="0.29">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.AdvancedRocketryPortTest]/[method:freshCapabilityWrappersStillShareMachineBattery()]
+display-name: freshCapabilityWrappersStillShareMachineBattery()
+]]></system-out>
+</testcase>
+<testcase name="invalidConversionRateFallsBackSafely()" classname="com.hbm.compat.energy.ExternalEnergyTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.ExternalEnergyTest]/[method:invalidConversionRateFallsBackSafely()]
+display-name: invalidConversionRateFallsBackSafely()
+]]></system-out>
+</testcase>
+<testcase name="fractionalConversionCannotCreateEnergy()" classname="com.hbm.compat.energy.ExternalEnergyTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.ExternalEnergyTest]/[method:fractionalConversionCannotCreateEnergy()]
+display-name: fractionalConversionCannotCreateEnergy()
+]]></system-out>
+</testcase>
+<testcase name="simulationVoltageAndPartialAcceptance()" classname="com.hbm.compat.energy.IC2PortsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.IC2PortsTest]/[method:simulationVoltageAndPartialAcceptance()]
+display-name: simulationVoltageAndPartialAcceptance()
+]]></system-out>
+</testcase>
+<testcase name="sourceDrawRespectsSideTierAndBuffer()" classname="com.hbm.compat.energy.IC2PortsTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.IC2PortsTest]/[method:sourceDrawRespectsSideTierAndBuffer()]
+display-name: sourceDrawRespectsSideTierAndBuffer()
+]]></system-out>
+</testcase>
+<testcase name="simulationAndActualTransferRespectPortAndCapacity()" classname="com.hbm.compat.energy.ExternalEnergyTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:com.hbm.compat.energy.ExternalEnergyTest]/[method:simulationAndActualTransferRespectPortAndCapacity()]
+display-name: simulationAndActualTransferRespectPortAndCapacity()
+]]></system-out>
+</testcase>
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]
+display-name: JUnit Jupiter
+]]></system-out>
+</testsuite>

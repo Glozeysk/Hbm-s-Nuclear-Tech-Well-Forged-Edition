@@ -15,12 +15,7 @@ import com.hbm.tileentity.machine.*;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
-import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
-import com.hbm.tileentity.machine.oil.TileEntityMachineLiquefactor;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
-import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
-import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
-import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
@@ -233,56 +228,6 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_refinery:
 			if(entity instanceof TileEntityMachineRefinery) {
 				return new ContainerMachineRefinery(player.inventory, (TileEntityMachineRefinery) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_hydrotreater:
-			if(entity instanceof TileEntityMachineHydrotreater) {
-				return new ContainerMachineHydrotreater(player.inventory, (TileEntityMachineHydrotreater) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_catalytic_reformer:
-			if(entity instanceof TileEntityMachineCatalyticReformer) {
-				return new ContainerMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_pyrooven:
-			if(entity instanceof TileEntityMachinePyroOven) {
-				return new ContainerMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_arc_welder:
-			if(entity instanceof TileEntityMachineArcWelder) {
-				return new ContainerMachineArcWelder(player.inventory, (TileEntityMachineArcWelder) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_soldering_station:
-			if(entity instanceof TileEntityMachineSolderingStation) {
-				return new ContainerMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_solidifier:
-			if(entity instanceof TileEntityMachineSolidifier) {
-				return new ContainerSolidifier(player.inventory, (TileEntityMachineSolidifier) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_liquefactor:
-			if(entity instanceof TileEntityMachineLiquefactor) {
-				return new ContainerLiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_compressor_compact:
-			if(entity instanceof TileEntityMachineCompressorCompact) {
-				return new ContainerCompressor(player.inventory, (TileEntityMachineCompressorCompact) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_electrolyser_metal:
-			if(entity instanceof TileEntityElectrolyser) {
-				return new ContainerElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_electrolyser_fluid:
-			if(entity instanceof TileEntityElectrolyser) {
-				return new ContainerElectrolyserFluid(player.inventory, (TileEntityElectrolyser) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:
@@ -936,56 +881,6 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_machine_refinery:
 			if(entity instanceof TileEntityMachineRefinery) {
 				return new GUIMachineRefinery(player.inventory, (TileEntityMachineRefinery) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_hydrotreater:
-			if(entity instanceof TileEntityMachineHydrotreater) {
-				return new GUIMachineHydrotreater(player.inventory, (TileEntityMachineHydrotreater) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_catalytic_reformer:
-			if(entity instanceof TileEntityMachineCatalyticReformer) {
-				return new GUIMachineCatalyticReformer(player.inventory, (TileEntityMachineCatalyticReformer) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_arc_welder:
-			if(entity instanceof TileEntityMachineArcWelder) {
-				return new GUIMachineArcWelder(player.inventory, (TileEntityMachineArcWelder) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_soldering_station:
-			if(entity instanceof TileEntityMachineSolderingStation) {
-				return new GUIMachineSolderingStation(player.inventory, (TileEntityMachineSolderingStation) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_solidifier:
-			if(entity instanceof TileEntityMachineSolidifier) {
-				return new GUISolidifier(player.inventory, (TileEntityMachineSolidifier) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_liquefactor:
-			if(entity instanceof TileEntityMachineLiquefactor) {
-				return new GUILiquefactor(player.inventory, (TileEntityMachineLiquefactor) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_compressor_compact:
-			if(entity instanceof TileEntityMachineCompressorCompact) {
-				return new GUICompressor(player.inventory, (TileEntityMachineCompressorCompact) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_pyrooven:
-			if(entity instanceof TileEntityMachinePyroOven) {
-				return new GUIMachinePyroOven(player.inventory, (TileEntityMachinePyroOven) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_electrolyser_metal:
-			if(entity instanceof TileEntityElectrolyser) {
-				return new GUIElectrolyserMetal(player.inventory, (TileEntityElectrolyser) entity);
-			}
-			return null;
-		case ModBlocks.guiID_machine_electrolyser_fluid:
-			if(entity instanceof TileEntityElectrolyser) {
-				return new GUIElectrolyserFluid(player.inventory, (TileEntityElectrolyser) entity);
 			}
 			return null;
 		case ModBlocks.guiID_machine_cyclotron:

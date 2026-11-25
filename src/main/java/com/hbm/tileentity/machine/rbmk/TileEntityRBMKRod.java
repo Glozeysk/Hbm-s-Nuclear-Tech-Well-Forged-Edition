@@ -192,7 +192,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			TileEntityRBMKBase base = (TileEntityRBMKBase) te;
 			
 			if(!base.hasLid())
-				RadiationSavedData.incrementRad(world, new BlockPos(x, y, z), (float) (flux * 0.05F), Float.MAX_VALUE);
+				RadiationSavedData.incrementRad(world, pos, (float) (flux * 0.05F), Float.MAX_VALUE);
 			
 			if(base.isModerated()) {
 				TileEntityRBMKRod.stream = NType.SLOW;
@@ -246,12 +246,12 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		int hits = 0;
 		for(int h = 0; h <= limit; h++) {
 			
-			if(!world.getBlockState(new BlockPos(x, y + h, z)).isOpaqueCube())
+			if(!world.getBlockState(new BlockPos(x, y, z)).isOpaqueCube())
 				hits++;
 		}
 		
 		if(hits > 0)
-			RadiationSavedData.incrementRad(world, pos, (float) (flux * 0.05F * hits / (float)(limit + 1)), (float) (flux * 0.05F * hits / (float)(limit + 1)) * 10F);
+			RadiationSavedData.incrementRad(world, pos, (float) (flux * 0.05F * hits / (float)limit), (float) (flux * 0.05F * hits / (float)limit) * 10F);
 		
 		return 0;
 	}

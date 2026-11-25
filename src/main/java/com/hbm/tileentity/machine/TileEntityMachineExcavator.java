@@ -23,8 +23,6 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.main.MainRegistry;
-import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -99,7 +97,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 	public FluidTank tank;
 	public Fluid fluidType;
 
-	private AudioWrapper audio;
+	private int soundTimer = 0;
 
 	private final UpgradeManager upgradeManager = new UpgradeManager();
 
@@ -176,27 +174,19 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 				this.drillRating = 0;
 			}
 
+			if(operational) {
+				if(soundTimer <= 0) {
+					world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.excavator_loop, SoundCategory.BLOCKS, 1.5F, 1.0F);
+					soundTimer = 20;
+				}
+				soundTimer--;
+			} else {
+				soundTimer = 0;
+			}
+
 			networkPackNT(150);
 
 		} else {
-
-			if(this.operational) {
-				float volume = this.getVolume(2);
-				if(volume > 0) {
-					if(audio == null) {
-						audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.excavator_loop, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), volume, 1.0F);
-						audio.startSound();
-					}
-					audio.updateVolume(volume);
-					audio.updatePitch(1.0F);
-					audio.updateRange(15.0F);
-				}
-			} else {
-				if(audio != null) {
-					audio.stopSound();
-					audio = null;
-				}
-			}
 
 			this.prevDrillExtension = this.drillExtension;
 
@@ -942,24 +932,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 			return true;
 		} else {
 			return super.hasCapability(capability, facing);
-		}
-	}
-
-	@Override
-	public void onChunkUnload() {
-		super.onChunkUnload();
-		if(audio != null) {
-			audio.stopSound();
-			audio = null;
-		}
-	}
-
-	@Override
-	public void invalidate() {
-		super.invalidate();
-		if(audio != null) {
-			audio.stopSound();
-			audio = null;
 		}
 	}
 }

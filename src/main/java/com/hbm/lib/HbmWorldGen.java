@@ -623,7 +623,13 @@ public class HbmWorldGen implements IWorldGenerator {
 					world.setBlockState(new BlockPos(x, columnY + 3, z), Blocks.REDSTONE_BLOCK.getDefaultState());
 				}
 			}
-			if(biome.getTempCategory() == Biome.TempCategory.COLD){
+			if(biome.getTempCategory() != Biome.TempCategory.OCEAN){
+                int frequency = fallbackInt(CompatibilityConfig.vaulttecStructure.get(dimID), 0);
+                if(frequency > 0 && rand.nextInt(frequency) == 0) {
+                    generateVaultDungeon(world, i + rand.nextInt(16), j + rand.nextInt(16), rand);
+                }
+            }
+            if(biome.getTempCategory() == Biome.TempCategory.COLD){
 				int dimArcticStructure = fallbackInt(CompatibilityConfig.arcticStructure.get(dimID), WorldConfig.arcticStructure);
 				if (dimArcticStructure > 0 && rand.nextInt(dimArcticStructure) == 0) {
 					int x = i + rand.nextInt(16);
@@ -762,4 +768,8 @@ public class HbmWorldGen implements IWorldGenerator {
 		}
 		return true;
 	}
+
+    public static void generateVaultDungeon(World world, int x, int z, Random rand) {
+        CellularDungeonFactory.createVault().generate(world, x, 16, z, rand);
+    }
 }

@@ -3,12 +3,12 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockMachine;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityMachineReactorSmall;
 
 import net.minecraft.block.BlockContainer;
@@ -94,20 +94,20 @@ public class MachineReactorSmall extends BlockContainer implements IMultiBlock {
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.reactorSmallDimension)) {
 
-			DummyBlockBase.safeBreak = true;
+			DummyBlockMachine.safeBreak = true;
 			world.setBlockState(pos.up(1), ModBlocks.dummy_block_reactor_small.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.up(1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.up(2), ModBlocks.dummy_port_reactor_small.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.up(2));
 			if(te2 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
-			DummyBlockBase.safeBreak = false;
+			DummyBlockMachine.safeBreak = false;
 			//
 			
 		} else

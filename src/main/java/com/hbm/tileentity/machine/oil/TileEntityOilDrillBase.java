@@ -58,7 +58,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
         tanks[0] = new FluidTank(128000);
         tankTypes[0] = ModForgeFluids.oil;
         tanks[1] = new FluidTank(128000);
-        tankTypes[1] = ModForgeFluids.petroleum_raw;
+        tankTypes[1] = ModForgeFluids.gas;
         needsUpdate = false;
     }
 
@@ -90,7 +90,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityLoadedBase implem
         this.power = compound.getLong("powerTime");
         this.age = compound.getInteger("age");
         tankTypes[0] = ModForgeFluids.oil;
-        tankTypes[1] = ModForgeFluids.petroleum_raw;
+        tankTypes[1] = ModForgeFluids.gas;
         if(compound.hasKey("tanks"))
             FFUtils.deserializeTankArray(compound.getTagList("tanks", 10), tanks);
         if(compound.hasKey("inventory"))

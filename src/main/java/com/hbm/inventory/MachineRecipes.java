@@ -31,17 +31,16 @@ import net.minecraftforge.oredict.OreDictionary;
 public class MachineRecipes {
 
 	// return: Fluid, amount produced, amount required, HE produced
-	// same heat values as NTM:CE and HeatRecipes, so heating and turbine cooling balance at every stage
 	public static Object[] getTurbineOutput(Fluid type) {
 
 		if (type == ModForgeFluids.steam) {
-			return new Object[] { ModForgeFluids.spentsteam, 1, 100, 200 };
+			return new Object[] { ModForgeFluids.spentsteam, 5, 500, 50 };
 		} else if (type == ModForgeFluids.hotsteam) {
-			return new Object[] { ModForgeFluids.steam, 10, 1, 2 };
+			return new Object[] { ModForgeFluids.steam, 50, 5, 100 };
 		} else if (type == ModForgeFluids.superhotsteam) {
-			return new Object[] { ModForgeFluids.hotsteam, 10, 1, 18 };
+			return new Object[] { ModForgeFluids.hotsteam, 50, 5, 150 };
 		} else if(type == ModForgeFluids.ultrahotsteam){
-			return new Object[] { ModForgeFluids.superhotsteam, 10, 1, 120 };
+			return new Object[] { ModForgeFluids.superhotsteam, 50, 5, 250 };
 		}
 
 		return null;
@@ -66,8 +65,8 @@ public class MachineRecipes {
 			return list;
 		} else if(fluid == ModForgeFluids.watz){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_solinium), 1));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_iron), 2));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_lead), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_uranium), 2));
+			list.add(new GasCentOutput(2, new ItemStack(ModItems.powder_lead), 3));
 			list.add(new GasCentOutput(4, new ItemStack(ModItems.dust), 4));
 			return list;
 		} else if(fluid == ModForgeFluids.sas3){
@@ -76,11 +75,23 @@ public class MachineRecipes {
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.sulfur), 3));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.sulfur), 4));
 			return list;
+		} else if(fluid == ModForgeFluids.coolant){
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 1));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 2));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 4));
+			return list;
+		} else if(fluid == ModForgeFluids.cryogel){
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_ice), 1));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_ice), 2));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.niter), 4));
+			return list;
 		} else if(fluid == ModForgeFluids.nitan){
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 1));
 			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 2));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_mercury), 3));
-			list.add(new GasCentOutput(1, new ItemStack(ModItems.nugget_mercury), 4));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 3));
+			list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_nitan_mix), 4));
 			return list;
 		} else if(fluid == ModForgeFluids.sparkfuel){
 				list.add(new GasCentOutput(1, new ItemStack(ModItems.powder_spark_mix), 1));
@@ -125,6 +136,10 @@ public class MachineRecipes {
 			return 8000;
 		else if(fluid == ModForgeFluids.sas3)
 			return 1000;
+		else if(fluid == ModForgeFluids.coolant)
+			return 8000;
+		else if(fluid == ModForgeFluids.cryogel)
+			return 4000;
 		else if(fluid == ModForgeFluids.nitan)
 			return 2000;
 		else if(fluid == ModForgeFluids.sparkfuel)
