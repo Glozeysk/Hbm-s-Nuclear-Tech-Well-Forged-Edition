@@ -56,8 +56,10 @@ public class ItemFuelRod extends ItemHazard {
 	}
 	
 	public static int getLifeTime(ItemStack stack){
-		if(!stack.hasTagCompound())
+		if(!stack.hasTagCompound()){
+			stack.setTagCompound(new NBTTagCompound());
 			return 0;
+		}
 		return stack.getTagCompound().getInteger("life");
 	}
 	

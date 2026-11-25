@@ -4,7 +4,6 @@ import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.packet.threading.PrecompiledPacket;
 
 import io.netty.buffer.ByteBuf;
-import com.hbm.forgefluid.PressurizedFluids;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -64,13 +63,11 @@ public class FluidTankPacket extends PrecompiledPacket {
 			byte[] bytes = new byte[buf.readInt()];
 			buf.readBytes(bytes);
 			String id = new String(bytes);
-			boolean pressurized = buf.readBoolean();
 			NBTTagCompound tag = new NBTTagCompound();
 			if(id.equals("HBM_EMPTY") || FluidRegistry.getFluid(id) == null){
 				tag.setString("Empty", "");
 			} else {
-				FluidStack stack = new FluidStack(FluidRegistry.getFluid(id), amount);
-				(pressurized ? PressurizedFluids.pressurize(stack) : stack).writeToNBT(tag);
+				new FluidStack(FluidRegistry.getFluid(id), amount).writeToNBT(tag);
 			}
 			tags[i] = tag;
 		}
@@ -87,7 +84,6 @@ public class FluidTankPacket extends PrecompiledPacket {
 			byte[] bytes = tanks[i].getFluid() == null ? "HBM_EMPTY".getBytes() : FluidRegistry.getFluidName(tanks[i].getFluid()).getBytes();
 			buf.writeInt(bytes.length);
 			buf.writeBytes(bytes);
-			buf.writeBoolean(PressurizedFluids.isPressurized(tanks[i].getFluid()));
 		}
 	}
 

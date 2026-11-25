@@ -3,12 +3,12 @@ package com.hbm.blocks.machine;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockPumpjack;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 
 import net.minecraft.block.BlockContainer;
@@ -122,32 +122,33 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionEast, ModBlocks.dummy_block_pumpjack);
 
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockPumpjack.safeBreak = true;
 				world.setBlockState(pos.add(-2, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(-2, 0, 1));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-2, 0, -1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(-2, 0, -1));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-4, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te3 = world.getTileEntity(pos.add(-4, 0, 1));
 				if(te3 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te3;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-4, 0, -1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te4 = world.getTileEntity(pos.add(-4, 0, -1));
 				if(te4 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockPumpjack.safeBreak = false;
+				//
 
 			} else
 				world.destroyBlock(pos, true);
@@ -156,32 +157,33 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 			if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.pumpjackDimensionSouth)) {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionSouth, ModBlocks.dummy_block_pumpjack);
 
-				DummyBlockBase.safeBreak = true;
+				//
+				DummyBlockPumpjack.safeBreak = true;
 				world.setBlockState(pos.add(1, 0, -2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(1, 0, -2));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-1, 0, -2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(-1, 0, -2));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(1, 0, -4), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te3 = world.getTileEntity(pos.add(1, 0, -4));
 				if(te3 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te3;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-1, 0, -4), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te4 = world.getTileEntity(pos.add(-1, 0, -4));
 				if(te4 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockPumpjack.safeBreak = false;
 				//
 
 			} else
@@ -192,32 +194,32 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionWest, ModBlocks.dummy_block_pumpjack);
 
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockPumpjack.safeBreak = true;
 				world.setBlockState(pos.add(2, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(2, 0, 1));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(2, 0, -1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(2, 0, -1));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(4, 0, 1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te3 = world.getTileEntity(pos.add(4, 0, 1));
 				if(te3 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te3;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(4, 0, -1), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te4 = world.getTileEntity(pos.add(4, 0, -1));
 				if(te4 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockPumpjack.safeBreak = false;
 				//
 
 			} else
@@ -227,32 +229,33 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 			if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.pumpjackDimensionNorth)) {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.pumpjackDimensionNorth, ModBlocks.dummy_block_pumpjack);
 
-				DummyBlockBase.safeBreak = true;
+				//
+				DummyBlockPumpjack.safeBreak = true;
 				world.setBlockState(pos.add(1, 0, 2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(1, 0, 2));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-1, 0, 2), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(-1, 0, 2));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(1, 0, 4), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te3 = world.getTileEntity(pos.add(1, 0, 4));
 				if(te3 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te3;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-1, 0, 4), ModBlocks.dummy_port_pumpjack.getDefaultState());
 				TileEntity te4 = world.getTileEntity(pos.add(-1, 0, 4));
 				if(te4 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy) te4;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockPumpjack.safeBreak = false;
 				//
 
 			} else

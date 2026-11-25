@@ -275,22 +275,23 @@ public class ArmorUtil {
 	public static void damageGasMaskFilter(EntityLivingBase entity, int damage) {
 		
 		ItemStack mask = entity.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
-
-		if(mask == null || mask.isEmpty())
+		
+		if(mask == null)
 			return;
-
-		if(mask.getItem() instanceof IGasMask) {
-			damageGasMaskFilter(mask, damage);
-		} else if(ArmorModHandler.hasMods(mask)) {
-
-			ItemStack mods[] = ArmorModHandler.pryMods(mask);
-			ItemStack modMask = mods[ArmorModHandler.helmet_only];
-
-			if(modMask != null && modMask.getItem() instanceof IGasMask) {
-				damageGasMaskFilter(modMask, damage);
-				ArmorModHandler.applyMod(mask, modMask); // pryMods returns a copy; persist the wear back into the helmet
+		
+		if(!(mask.getItem() instanceof IGasMask)) {
+			
+			if(ArmorModHandler.hasMods(mask)) {
+				
+				ItemStack mods[] = ArmorModHandler.pryMods(mask);
+				
+				if(mods[ArmorModHandler.helmet_only] != null && mods[ArmorModHandler.helmet_only].getItem() instanceof IGasMask)
+					mask = mods[ArmorModHandler.helmet_only];
 			}
 		}
+		
+		if(mask != null)
+			damageGasMaskFilter(mask, damage);
 	}
 	
 	public static void damageGasMaskFilter(ItemStack mask, int damage) {

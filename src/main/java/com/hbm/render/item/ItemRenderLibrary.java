@@ -13,12 +13,6 @@ import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.amlfrom1710.Tessellator;
 import com.hbm.render.tileentity.RenderDemonLamp;
-import com.hbm.render.tileentity.RenderPumpOcean;
-import com.hbm.render.tileentity.RenderArcWelder;
-import com.hbm.render.tileentity.RenderSolderingStation;
-import com.hbm.render.tileentity.RenderSolidifier;
-import com.hbm.render.tileentity.RenderLiquefactor;
-import com.hbm.render.tileentity.RenderCompressorCompact;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -168,133 +162,6 @@ public class ItemRenderLibrary {
 		        bindTexture(ResourceManager.epress_head_tex); ResourceManager.epress_head.renderAll();
 			}});
 
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_hydrotreater), new ItemRenderBase() {
-			public void renderNonInv() {
-				GL11.glScaled(0.5, 0.5, 0.5);
-			}
-			public void renderInventory() {
-				GL11.glTranslated(0, -4, 0);
-				GL11.glScaled(2, 2, 2);
-			}
-			public void renderCommon() {
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-		        bindTexture(ResourceManager.hydrotreater_tex); ResourceManager.hydrotreater.renderAll();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_catalytic_reformer), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -3, 0);
-				GL11.glScaled(3.5, 3.5, 3.5);
-			}
-			public void renderCommon() {
-				GL11.glScaled(0.5, 0.5, 0.5);
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				bindTexture(ResourceManager.catalytic_reformer_tex); ResourceManager.catalytic_reformer.renderAll();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_pyrooven), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -1, 0);
-				GL11.glScaled(3.5, 3.5, 3.5);
-			}
-			public void renderCommon() {
-				GL11.glScaled(0.5, 0.5, 0.5);
-				GL11.glRotated(90, 0, 1, 0);
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				bindTexture(ResourceManager.pyrooven_tex); ResourceManager.pyrooven.renderAll();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_pump_ocean), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -3, 0);
-				GL11.glScaled(2.5, 2.5, 2.5);
-			}
-			public void renderCommon() {
-				RenderPumpOcean.renderCommon(System.currentTimeMillis() % 3600 * 0.1D);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_arc_welder), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -1, 0);
-				GL11.glScaled(3.5, 3.5, 3.5);
-			}
-			public void renderCommon() {
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				RenderArcWelder.renderParts(false, ResourceManager.arc_welder_dome_tex);
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_compressor_compact), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(-1, -1, 0);
-				GL11.glScaled(2.75, 2.75, 2.75);
-			}
-			public void renderCommon() {
-				GL11.glScaled(0.75, 0.75, 0.75);
-				GL11.glTranslated(0.5, 0, 0);
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				RenderCompressorCompact.renderItem();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_liquefactor), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -2.5, 0);
-				GL11.glScaled(3, 3, 3);
-			}
-			public void renderCommon() {
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				RenderLiquefactor.renderMain();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_solidifier), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -2.5, 0);
-				GL11.glScaled(3, 3, 3);
-			}
-			public void renderCommon() {
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				RenderSolidifier.renderMain();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_soldering_station), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(0, -1, 0);
-				GL11.glScaled(5, 5, 5);
-			}
-			public void renderCommon() {
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				RenderSolderingStation.renderModel();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_intake), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glScaled(5, 5, 5);
-			}
-			public void renderCommon() {
-				bindTexture(ResourceManager.intake_tex); ResourceManager.intake.renderAll();
-			}});
-
-		renderers.put(Item.getItemFromBlock(ModBlocks.machine_electrolyser), new ItemRenderBase() {
-			public void renderInventory() {
-				GL11.glTranslated(-1, -1, 0);
-				GL11.glScaled(2.5, 2.5, 2.5);
-			}
-			public void renderCommon() {
-				GL11.glScaled(0.5, 0.5, 0.5);
-				GlStateManager.disableCull();
-				GlStateManager.shadeModel(GL11.GL_SMOOTH);
-				bindTexture(ResourceManager.electrolyser_tex); ResourceManager.electrolyser.renderAll();
-				GlStateManager.shadeModel(GL11.GL_FLAT);
-				GlStateManager.enableCull();
-			}});
-
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_crystallizer), new ItemRenderBase() {
 			public void renderNonInv() {
 				GL11.glScaled(0.5, 0.5, 0.5);
@@ -311,6 +178,31 @@ public class ItemRenderLibrary {
 				ResourceManager.crystallizer.renderPart("Spinner");
 				GlStateManager.shadeModel(GL11.GL_FLAT);
 			}});
+
+		// В ItemRenderLibrary.java
+//		renderers.put(Item.getItemFromBlock(ModBlocks.sign_deco_warning), new ItemRenderBase() {
+//			@Override
+//			public void renderInventory() {
+//				GL11.glTranslated(0.5, -0.2, 0);
+//				GL11.glScaled(2.5, 2.5, 2.5);
+//				GL11.glRotated(90, 1, 0, 0);
+//			}
+//
+//			@Override
+//			public void renderCommon() {
+//				// 1. Рендерим основу с её текстурой
+//				bindTexture(ResourceManager.sign_base_tex);
+//				ResourceManager.sign_deco_model.renderPart("sign_base"); // ← рендерим только меш sign_base
+//
+//				// 2. Рендерим столб с его текстурой
+//				bindTexture(ResourceManager.sign_pole_tex);
+//				ResourceManager.sign_deco_model.renderPart("sign_pole"); // ← рендерим только меш sign_pole
+//
+//				// 3. Рендерим табличку с нужной текстурой знака
+//				bindTexture(ResourceManager.sign_warning_tex); // Меняй на parasite/radiation для других блоков
+//				ResourceManager.sign_deco_model.renderPart("sign_image"); // ← рендерим только меш sign_image (не sign_plate!)
+//			}
+//		});
 
 		renderers.put(Item.getItemFromBlock(ModBlocks.machine_difurnace_big), new ItemRenderBase() {
 			public void renderNonInv() {

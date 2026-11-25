@@ -2,7 +2,7 @@ package com.hbm.forgefluid;
 
 import javax.annotation.Nonnull;
 
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumCell;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -60,8 +60,6 @@ public class HbmFluidHandlerCell implements ICapabilityProvider, IFluidHandlerIt
 	
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
-		if(PressurizedFluids.isPressurized(resource))
-			return 0;
 		if(resource == null || container.getCount() > 1)
 			return 0;
 		FluidStack contained = getFluid();
@@ -131,7 +129,7 @@ public class HbmFluidHandlerCell implements ICapabilityProvider, IFluidHandlerIt
 
 	public boolean canFillEmpty(FluidStack stack){
 		if(stack != null){
-			return HbmFluidContainer.CELL.contains(stack.getFluid());
+			return EnumCell.contains(stack.getFluid());
 		}
 		return false;
 	}

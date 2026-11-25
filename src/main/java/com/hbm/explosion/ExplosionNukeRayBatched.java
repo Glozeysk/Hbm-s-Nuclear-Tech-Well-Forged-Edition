@@ -15,7 +15,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.hbm.config.CompatibilityConfig;
-import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
 
 import net.minecraft.util.math.BlockPos;
@@ -218,8 +217,7 @@ public class ExplosionNukeRayBatched {
 						addPos(triplet.xCoord, triplet.yCoord, triplet.zCoord);
 					}
 				}
-			} catch(Exception e) {
-				MainRegistry.logger.warn("Batched nuke ray collection failed, stopping early", e);
+			} catch(Exception ignored) {
 				break;
 			}
 		}
@@ -364,16 +362,12 @@ public class ExplosionNukeRayBatched {
 				int iZ = (int)Math.floor(posZ + (vec.zCoord * r));
 
 				pos.setPos(iX, iY, iZ);
-				IBlockState blockState;
-				//world/chunk internals aren't thread-safe; this task runs on a worker thread alongside
-				//up to LARGE_BLAST_WORKERS-1 others, so serialize the actual world reads between them
-				synchronized(world) {
-					if(!world.isBlockLoaded(pos, false)) {
-						result.contained = false;
-						break;
-					}
-					blockState = world.getBlockState(pos);
+				if(!world.isBlockLoaded(pos, false)) {
+					result.contained = false;
+					break;
 				}
+
+				IBlockState blockState = world.getBlockState(pos);
 				Block b = blockState.getBlock();
 				if(b.getExplosionResistance(null) >= 2_000_000) {
 					break;

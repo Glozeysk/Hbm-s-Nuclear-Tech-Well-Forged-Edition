@@ -122,7 +122,23 @@ def getBuildDate() {
     return new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC"))
 }
 
+
+task generateBuildInfo {
+    def outputFile = file("src/main/java/com/hbm/lib/BuildInfo.java")
+    outputs.file outputFile
+
+    doLast {
+        outputFile.text = """package com.hbm.lib;
+
+public class BuildInfo {
+    public static final String BUILD_DATE = "${getBuildDate()}";
+}
+"""
+    }
+}
+
 sourceSets.main.java.srcDirs += 'src/main/java'
+compileJava.dependsOn generateBuildInfo
 
 final String javaSourceDir = 'src/main/java/'
 final String scalaSourceDir = 'src/main/scala/'
@@ -665,6 +681,7 @@ processResources {
 
     inputs.property 'version', modVersion
     inputs.property 'mcversion', minecraftVersion
+    inputs.property "builddate", getBuildDate()
 
     exclude('spotless.importorder')
     exclude('spotless.eclipseformat.xml')

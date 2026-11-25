@@ -48,8 +48,7 @@ public class PowerDetector extends BlockContainer {
 		if(i.getBlock() == ModBlocks.machine_detector){
 			world.setBlockState(pos, world.getBlockState(pos).withProperty(PowerDetector.IS_ON, isOn));
 		}
-		//only when the block swap dropped this TE; re-setting an unchanged TE every tick forces a chunk update
-		if (entity != null && entity.isInvalid()) {
+		if (entity != null) {
 			entity.validate();
 			world.setTileEntity(pos, entity);
 		}

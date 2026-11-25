@@ -5,7 +5,7 @@ import java.util.List;
 import com.hbm.forgefluid.HbmFluidHandlerCanister;
 import com.hbm.forgefluid.HbmFluidHandlerItemStack;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumCanister;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
@@ -59,7 +59,7 @@ public class ItemFluidCanister extends Item implements IHasCustomModel {
 		} else {
 			//Drillgon200: I don't feel like figuring out this crash so time to slap on a try/catch and call it good enough I guess.
 			try {
-				return I18n.format(HbmFluidContainer.CANISTER.getEntry(f.getFluid()).translateKey);
+				return I18n.format(EnumCanister.getEnumFromFluid(f.getFluid()).getTranslateKey());
 			} catch (Exception x){
 				return I18n.format("item.canister_empty.name");
 			}
@@ -81,7 +81,7 @@ public class ItemFluidCanister extends Item implements IHasCustomModel {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
-			for(Fluid f : HbmFluidContainer.CANISTER.getFluids()){
+			for(Fluid f : EnumCanister.getFluids()){
 				ItemStack stack = new ItemStack(this, 1, 0);
 				stack.setTagCompound(new NBTTagCompound());
 				if(f != null)
@@ -116,7 +116,7 @@ public class ItemFluidCanister extends Item implements IHasCustomModel {
 	public static ItemStack getFullCanister(Fluid f, int amount){
 		ItemStack stack = new ItemStack(ModItems.canister_generic, amount, 0);
 		stack.setTagCompound(new NBTTagCompound());
-		if(f != null && HbmFluidContainer.CANISTER.contains(f))
+		if(f != null && EnumCanister.contains(f))
 			stack.getTagCompound().setTag(HbmFluidHandlerCanister.FLUID_NBT_KEY, new FluidStack(f, 1000).writeToNBT(new NBTTagCompound()));
 		return stack;
 	}

@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.hbm.items.ModItems;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.PressurizedFluids;
-import com.hbm.util.I18nUtil;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -48,8 +46,6 @@ public class ItemFluidIcon extends Item {
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		if(stack.hasTagCompound() && stack.getTagCompound().getInteger("fill") > 0)
 			tooltip.add(stack.getTagCompound().getInteger("fill") + "mB");
-		if(stack.hasTagCompound() && stack.getTagCompound().getBoolean(PressurizedFluids.TAG))
-			tooltip.add("§c[" + I18nUtil.resolveKey("trait.pressurized") + "]");
 		Fluid f = getFluid(stack);
 		if(f != null)
 			FFUtils.addFluidInfo(f, tooltip, true);
@@ -83,8 +79,6 @@ public class ItemFluidIcon extends Item {
 		stack.setTagCompound(new NBTTagCompound());
 		stack.getTagCompound().setString("type", f.getFluid().getName());
 		stack.getTagCompound().setInteger("fill", f.amount);
-		if(PressurizedFluids.isPressurized(f))
-			stack.getTagCompound().setBoolean(PressurizedFluids.TAG, true);
 		return stack;
 	}
 

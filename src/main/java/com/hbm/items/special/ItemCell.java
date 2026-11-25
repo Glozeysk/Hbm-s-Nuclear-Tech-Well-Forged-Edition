@@ -11,7 +11,7 @@ import com.hbm.entity.logic.EntityNukeExplosionMK3;
 import com.hbm.forgefluid.HbmFluidHandlerCell;
 import com.hbm.forgefluid.HbmFluidHandlerItemStack;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.SpecialContainerFillLists.EnumCell;
 import com.hbm.items.ModItems;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
@@ -144,7 +144,7 @@ public class ItemCell extends Item {
 		if(f != null){
 			//Why is there a npe here? I have no idea, and I can't replicate it. Stupid try/catch it is.
 			try {
-				return I18n.format(HbmFluidContainer.CELL.getEntry(f.getFluid()).translateKey);
+				return I18n.format(EnumCell.getEnumFromFluid(f.getFluid()).getTranslateKey());
 			} catch(NullPointerException e){ }
 		}
 		return I18n.format("item.cell_empty.name");
@@ -153,7 +153,7 @@ public class ItemCell extends Item {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
-			for(Fluid f : HbmFluidContainer.CELL.getFluids()) {
+			for(Fluid f : EnumCell.getFluids()) {
 				ItemStack stack = new ItemStack(this, 1, 0);
 				stack.setTagCompound(new NBTTagCompound());
 				if(f != null)
@@ -227,7 +227,7 @@ public class ItemCell extends Item {
 	}
 
 	public static ItemStack getFullCell(Fluid fluid, int amount) {
-		if(HbmFluidContainer.CELL.contains(fluid)) {
+		if(EnumCell.contains(fluid)) {
 			ItemStack stack = new ItemStack(ModItems.cell, amount, 0);
 			stack.setTagCompound(new NBTTagCompound());
 			stack.getTagCompound().setTag(HbmFluidHandlerCell.FLUID_NBT_KEY, new FluidStack(fluid, 1000).writeToNBT(new NBTTagCompound()));

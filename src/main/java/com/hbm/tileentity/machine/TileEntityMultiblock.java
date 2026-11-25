@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
 
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.init.Blocks;
@@ -189,7 +188,7 @@ public class TileEntityMultiblock extends TileEntity implements ITickable {
 		
 		if(te instanceof TileEntityDummy) {
 			TileEntityDummy dummy = (TileEntityDummy)te;
-			dummy.setTarget(target);;
+			dummy.target = target;
 		}
 	}
 	

@@ -1,0 +1,1 @@
+Test-only unmodified sources from https://github.com/Advanced-Rocketry/libVulpes commit c2ca79dc18625c9e63a191a795f1f07d078f29f0. Not included in the production JAR. Tests exercise the real ForgePowerCapability and UniversalBattery; no Minecraft/AR world was launched.

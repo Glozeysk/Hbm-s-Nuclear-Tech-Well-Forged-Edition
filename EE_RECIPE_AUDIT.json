@@ -1,0 +1,189 @@
+{
+  "note": "Static source references, not a proof of runtime reachability or recipe registration.",
+  "new_ee_recipe_modules": [
+    "ArcWelderRecipes.java",
+    "CokerRecipes.java",
+    "CombinationRecipes.java",
+    "CrucibleRecipes.java",
+    "FluidFlameRecipes.java",
+    "FractionRecipes.java",
+    "GasCentrifugeRecipes.java",
+    "HydrotreatingRecipes.java",
+    "LiquefactionRecipes.java",
+    "ReformingRecipes.java",
+    "SolderingRecipes.java",
+    "SolidificationRecipes.java",
+    "VacuumDistillRecipes.java"
+  ],
+  "vault_blocks": [
+    {
+      "block": "brick_compound",
+      "recipe_references": [
+        "inventory/AssemblerRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "brick_concrete",
+      "recipe_references": [
+        "inventory/AssemblerRecipes.java",
+        "inventory/ShredderRecipes.java",
+        "inventory/AnvilRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "brick_concrete_broken",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "brick_concrete_cracked",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "brick_concrete_mossy",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "concrete_gray",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "concrete_hazard",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "concrete_pillar",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "concrete_smooth",
+      "recipe_references": [
+        "inventory/AssemblerRecipes.java",
+        "inventory/ChemplantRecipes.java",
+        "inventory/ShredderRecipes.java",
+        "inventory/AnvilRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "concrete_stairs",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "deco_steel",
+      "recipe_references": [
+        "inventory/AnvilRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "deco_tungsten",
+      "recipe_references": [
+        "inventory/AnvilRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "ducrete",
+      "recipe_references": [
+        "inventory/ChemplantRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "ducrete_reinforced",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "ducrete_smooth",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "glow_spawner",
+      "recipe_references": []
+    },
+    {
+      "block": "ladder_steel",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "railing_end_flipped_self",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "railing_end_self",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "railing_normal",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "reinforced_light",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "steel_beam",
+      "recipe_references": [
+        "inventory/AssemblerRecipes.java",
+        "inventory/ShredderRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "steel_grate",
+      "recipe_references": [
+        "inventory/ShredderRecipes.java",
+        "inventory/AnvilRecipes.java",
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "tile_lab",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "tile_lab_broken",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    },
+    {
+      "block": "tile_lab_cracked",
+      "recipe_references": [
+        "main/CraftingManager.java"
+      ]
+    }
+  ]
+}

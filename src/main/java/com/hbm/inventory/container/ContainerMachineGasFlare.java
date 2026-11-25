@@ -31,11 +31,11 @@ public class ContainerMachineGasFlare extends Container {
 				return false;
 			}
 		});
+		//Fluid ID
+		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 35, 71));
 		//Upgrades
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 80, 71));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 98, 71));
-		//Byproduct
-		this.addSlotToContainer(new SlotMachineOutput(tedf.inventory, 3, 17, 71));
 
 		int offset = 37;
 		for(int i = 0; i < 3; i++)

@@ -1,8 +1,6 @@
 package com.hbm.forgefluid;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +58,7 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 
 			if(te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)){
 				IFluidHandler h = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
-				if(h != null && h.fill(new FluidStack(resource, 1), false) > 0){
+				if(h != null && h.fill(new FluidStack(resource.getFluid(), 1), false) > 0){
 					handlers.add(h);
 				}
 			}
@@ -86,7 +84,7 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 
 		for(int i = 0; i < handlers.size(); i++){
 			IFluidHandler consumer = handlers.get(i);
-			int vol = consumer.fill(new FluidStack(resource, randomFillIndex == i ? part + intRoundingCompensation : part), doFill);
+			int vol = consumer.fill(new FluidStack(resource.getFluid(), randomFillIndex == i ? part + intRoundingCompensation : part), doFill);
 			totalDrained += vol;
 			remaining -= vol;
 			if(remaining <= 0) return totalDrained;
@@ -177,41 +175,27 @@ public class FFPipeNetworkMk2 implements IFluidHandler {
 		return net;
 	}
 
-	//Iterative flood-fill (explicit stack instead of recursion) - recursion depth used to equal the length of the
-	//connected pipe chain, which threw StackOverflowError on long pipelines whenever a pipe was broken or retyped.
-	public static void iteratePipes(Map<BlockPos, IFluidPipeMk2> pipes, Map<BlockPos, TileEntity> consumers, List<FFPipeNetworkMk2> networks, TileEntity start, Fluid type, int tier) {
-		if(start == null) return;
-
-		Deque<TileEntity> stack = new ArrayDeque<TileEntity>();
-		stack.push(start);
-
-		while(!stack.isEmpty()) {
-			TileEntity te = stack.pop();
-			if(te == null) continue;
-
-			if(te instanceof IFluidPipeMk2) {
-				IFluidPipeMk2 pipe = (IFluidPipeMk2) te;
-				if(pipe.getType() == type && pipe.getPipeTier() == tier && pipe.isValidForBuilding()) {
-					if(pipe.getNetwork() == null) {
-						if(!pipes.containsKey(te.getPos())) {
-							pipes.put(te.getPos(), pipe);
-							for(EnumFacing e : EnumFacing.VALUES){
-								BlockPos pos = te.getPos().offset(e);
-								if(te.getWorld().isBlockLoaded(pos)) {
-									TileEntity neighbor = te.getWorld().getTileEntity(pos);
-									//ArrayDeque rejects null elements (unlike the old recursion, which just returned on a null te)
-									if(neighbor != null) stack.push(neighbor);
-								}
-							}
+	public static void iteratePipes(Map<BlockPos, IFluidPipeMk2> pipes, Map<BlockPos, TileEntity> consumers, List<FFPipeNetworkMk2> networks, TileEntity te, Fluid type, int tier) {
+		if(te == null) return;
+		if(te instanceof IFluidPipeMk2) {
+			IFluidPipeMk2 pipe = (IFluidPipeMk2) te;
+			if(pipe.getType() == type && pipe.getPipeTier() == tier && pipe.isValidForBuilding()) {
+				if(pipe.getNetwork() == null) {
+					if(!pipes.containsKey(te.getPos())) {
+						pipes.put(te.getPos(), pipe);
+						for(EnumFacing e : EnumFacing.VALUES){
+							BlockPos pos = te.getPos().offset(e);
+							if(te.getWorld().isBlockLoaded(pos))
+								iteratePipes(pipes, consumers, networks, te.getWorld().getTileEntity(pos), type, tier);
 						}
-					} else if(pipe.getNetwork().type == type && pipe.getNetwork().pipeTier == tier && !networks.contains(pipe.getNetwork())) {
-						networks.add(pipe.getNetwork());
 					}
+				} else if(pipe.getNetwork().type == type && pipe.getNetwork().pipeTier == tier && !networks.contains(pipe.getNetwork())) {
+					networks.add(pipe.getNetwork());
 				}
-			} else if(te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) {
-				if(!consumers.containsKey(te.getPos()))
-					consumers.put(te.getPos(), te);
 			}
+		} else if(te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) {
+			if(!consumers.containsKey(te.getPos()))
+				consumers.put(te.getPos(), te);
 		}
 	}
 }

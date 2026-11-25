@@ -6,7 +6,6 @@ import java.util.Map;
 
 import api.hbm.energy.IEnergyUser;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.items.ModItems;
@@ -201,7 +200,7 @@ public abstract class TileEntityMachineChemplantBase extends TileEntityMachineBa
 
 		for(int i = 0; i < inputs.length; i++) {
 			if(inputs[i] != null) {
-				if(!PressurizedFluids.hasEnough(tanks[index * 4 + i].tank, inputs[i])) {
+				if(tanks[index * 4 + i].tank.getFluidAmount() < inputs[i].amount) {
 					return false;
 				}
 			}
@@ -666,8 +665,6 @@ public abstract class TileEntityMachineChemplantBase extends TileEntityMachineBa
 		int demand = 0;
 		List<Integer> weight = new ArrayList<>();
 		for(TypedFluidTank tank : rec) {
-			//a pressurized fluid and its plain form do not share a tank
-			if(tank.tank.getFluid() != null && !tank.tank.getFluid().isFluidEqual(resource)) { weight.add(0); continue; }
 			int fillWeight = tank.tank.getCapacity() - tank.tank.getFluidAmount();
 			if(fillWeight < 0) {
 				fillWeight = 0;
@@ -691,7 +688,7 @@ public abstract class TileEntityMachineChemplantBase extends TileEntityMachineBa
 			TypedFluidTank tank = rec.get(i);
 			int fillWeight = weight.get(i);
 			int part = (int) (Math.min(total, demand) * (float) fillWeight / (float) demand);
-			fluidUsed += tank.tank.fill(new FluidStack(resource, part), true);
+			fluidUsed += tank.tank.fill(new FluidStack(resource.getFluid(), part), true);
 		}
 
 		return fluidUsed;

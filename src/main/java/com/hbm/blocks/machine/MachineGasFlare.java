@@ -1,26 +1,19 @@
 package com.hbm.blocks.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockFlare;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
-import com.hbm.inventory.EngineRecipes;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityMachineDiesel;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -118,52 +111,35 @@ public class MachineGasFlare extends BlockContainer implements IMultiBlock {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.flareDimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.flareDimension, ModBlocks.dummy_block_flare);
 
-			DummyBlockBase.safeBreak = true;
+			DummyBlockFlare.safeBreak = true;
 			world.setBlockState(pos.add(0, 0, 1), ModBlocks.dummy_port_flare.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(0, 0, 1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(0, 0, -1), ModBlocks.dummy_port_flare.getDefaultState());
 			TileEntity te2 = world.getTileEntity(pos.add(0, 0, -1));
 			if(te instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(1, 0, 0), ModBlocks.dummy_port_flare.getDefaultState());
 			TileEntity te3 = world.getTileEntity(pos.add(1, 0, 0));
 			if(te3 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te3;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
 			world.setBlockState(pos.add(-1, 0, 0), ModBlocks.dummy_port_flare.getDefaultState());
 			TileEntity te4 = world.getTileEntity(pos.add(-1, 0, 0));
 			if(te4 instanceof TileEntityDummy) {
 				TileEntityDummy dummy = (TileEntityDummy)te4;
-				dummy.setTarget(pos);
+				dummy.target = pos;
 			}
-			DummyBlockBase.safeBreak = false;
+			DummyBlockFlare.safeBreak = false;
 			
 		} else
 			world.destroyBlock(pos, true);
 	}
 
-	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-		list.add(I18n.format("trait.fuelefficiency"));
-
-		List<Map.Entry<EngineRecipes.FuelGrade, Double>> sortedFuel = new ArrayList<>(TileEntityMachineGasFlare.fuelEfficiency.entrySet());
-
-		for (Map.Entry<EngineRecipes.FuelGrade, Double> entry : sortedFuel) {
-			Double efficiency = entry.getValue();
-			if (efficiency != null) {
-				EngineRecipes.FuelGrade grade = entry.getKey();
-				int eff = (int) (efficiency * 100);
-				list.add(" " + I18n.format("trait.fuelefficiency.desc", I18n.format(grade.getGrade()), eff));
-			}
-		}
-
-		super.addInformation(stack, worldIn, list, flagIn);
-	}
 }

@@ -77,7 +77,7 @@ public class CommandHbm extends CommandBase {
 			if("subcommands".equals(args[0])) {
 				return Lists.newArrayList("gen").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
 			} else if("gen".equals(args[0])) {
-				return Lists.newArrayList("antenna", "relay", "dud", "silo", "factory", "barrel", "vertibird", "vertibird_crashed", "satellite", "spaceship", "sellafield", "radio", "bunker", "desert_atom", "library", "geysir_water", "geysir_vapor", "geysir_chlorine").stream().filter(s ->  s.startsWith(args[1])).collect(Collectors.toList());
+				return Lists.newArrayList("antenna", "relay", "dud", "silo", "factory", "barrel", "vertibird", "vertibird_crashed", "satellite", "spaceship", "sellafield", "radio", "bunker", "vault_dungeon", "desert_atom", "library", "geysir_water", "geysir_vapor", "geysir_chlorine").stream().filter(s ->  s.startsWith(args[1])).collect(Collectors.toList());
 			}
 		}
 		return Collections.emptyList();
@@ -304,7 +304,7 @@ public class CommandHbm extends CommandBase {
 				builder.append("Info for command: gen\n\n");
 				builder.append("Generates a structure at the block under your current position. Generation can be forced.\n\n");
 				builder.append("Available structures:\n\n");
-				builder.append("antenna      relay\ndud           silo\nfactory      barrel\nvertibird     vertibird_crashed\nsatellite      spaceship\nsellafield     radio\nbunker       desert_atom\nlibrary      geysir_water\ngeysir_vapor      geysir_chlorine");
+				builder.append("antenna      relay\ndud           silo\nfactory      barrel\nvertibird     vertibird_crashed\nsatellite      spaceship\nsellafield     radio\nbunker       desert_atom\nvault_dungeon\nlibrary      geysir_water\ngeysir_vapor      geysir_chlorine");
 				//builder.delete(builder.length() - 1, builder.length());
 				sender.sendMessage(new TextComponentTranslation(builder.toString()));
 			} else {
@@ -354,7 +354,9 @@ public class CommandHbm extends CommandBase {
 				new Radio01().generate(world, rand, genPos, force);
 			} else if("bunker".equals(args[1])){
 				new Bunker().generate(world, rand, genPos, force);
-			} else if("desert_atom".equals(args[1])){
+			} else if("vault_dungeon".equals(args[1])){
+                com.hbm.lib.HbmWorldGen.generateVaultDungeon(world, (int)senderPos.x, (int)senderPos.z, rand);
+            } else if("desert_atom".equals(args[1])){
 				new DesertAtom001().generate(world, rand, genPos, force);
 			} else if("library".equals(args[1])){
 				new LibraryDungeon().generate(world, rand, genPos, force);

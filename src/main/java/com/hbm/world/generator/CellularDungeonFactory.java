@@ -39,4 +39,20 @@ public class CellularDungeonFactory {
 		jungle.rooms.add(new JungleDungeonRoomZombie(jungle));
 	}
 
+
+    public static VaultDungeon createVault() {
+        VaultDungeon vault = new VaultDungeon(17, 9, 7, 7, 150, 4);
+        vault.rooms.add(new VaultDungeonRoomWiese(vault));
+        vault.rooms.add(new VaultDungeonRoomFarm(vault));
+        vault.rooms.add(new VaultDungeonRoomArmory(vault));
+        vault.rooms.add(new VaultDungeonRoomControl(vault));
+        vault.rooms.add(new VaultDungeonRoomCanteen(vault));
+        vault.rooms.add(new VaultDungeonRoomMedical(vault));
+        vault.rooms.add(new VaultDungeonRoomPower(vault));
+        vault.rooms.add(new VaultDungeonRoomSleep(vault));
+        vault.rooms.add(new VaultDungeonRoomTall(vault, 2));
+        vault.rooms.add(new VaultDungeonRoomTall(vault, 6));
+        vault.rooms.add(new VaultDungeonRoomTall(vault, 10));
+        return vault;
+    }
 }

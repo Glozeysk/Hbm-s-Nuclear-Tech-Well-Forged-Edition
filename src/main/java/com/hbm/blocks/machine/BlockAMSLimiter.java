@@ -1,12 +1,12 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.dummy.DummyBlockBase;
+import com.hbm.blocks.machine.dummy.DummyBlockAMSLimiter;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityAMSLimiter;
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
+import com.hbm.tileentity.machine.TileEntityDummy;
 
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
@@ -73,20 +73,20 @@ public class BlockAMSLimiter extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSLimiterDimensionEast, ModBlocks.dummy_block_ams_limiter);
 				
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockAMSLimiter.safeBreak = true;
 				world.setBlockState(pos.add(2, 0, 0), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(2, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-2, 0, 0), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(-2, 0, 0));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockAMSLimiter.safeBreak = false;
 				//
 				
 			} else
@@ -97,20 +97,20 @@ public class BlockAMSLimiter extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSLimiterDimensionSouth, ModBlocks.dummy_block_ams_limiter);
 				
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockAMSLimiter.safeBreak = true;
 				world.setBlockState(pos.add(0, 0, 2), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(0, 0, 2));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(0, 0, -2), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(0, 0, -2));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockAMSLimiter.safeBreak = false;
 				//
 				
 			} else
@@ -121,20 +121,20 @@ public class BlockAMSLimiter extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSLimiterDimensionWest, ModBlocks.dummy_block_ams_limiter);
 				
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockAMSLimiter.safeBreak = true;
 				world.setBlockState(pos.add(2, 0, 0), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(2, 0, 0));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(-2, 0, 0), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(-2, 0, 0));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockAMSLimiter.safeBreak = false;
 				//
 				
 			} else
@@ -145,20 +145,20 @@ public class BlockAMSLimiter extends BlockContainer implements IMultiBlock {
 				MultiblockHandler.fillUp(world, pos, MultiblockHandler.AMSLimiterDimensionNorth, ModBlocks.dummy_block_ams_limiter);
 				
 				//
-				DummyBlockBase.safeBreak = true;
+				DummyBlockAMSLimiter.safeBreak = true;
 				world.setBlockState(pos.add(0, 0, 2), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te = world.getTileEntity(pos.add(0, 0, 2));
 				if(te instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
 				world.setBlockState(pos.add(0, 0, -2), ModBlocks.dummy_port_ams_limiter.getDefaultState());
 				TileEntity te2 = world.getTileEntity(pos.add(0, 0, -2));
 				if(te2 instanceof TileEntityDummy) {
 					TileEntityDummy dummy = (TileEntityDummy)te2;
-					dummy.setTarget(pos);
+					dummy.target = pos;
 				}
-				DummyBlockBase.safeBreak = false;
+				DummyBlockAMSLimiter.safeBreak = false;
 				//
 				
 			} else

@@ -136,17 +136,16 @@ public class MachineRtgFurnace extends BlockContainer {
 		TileEntity entity = world.getTileEntity(pos);
 		keepInventory = true;
 		
-		if(isProcessing && world.getBlockState(pos).getBlock() != ModBlocks.machine_rtg_furnace_on)
+		if(isProcessing)
 		{
 			world.setBlockState(pos, ModBlocks.machine_rtg_furnace_on.getDefaultState().withProperty(FACING, e));
-		}else if(!isProcessing && world.getBlockState(pos).getBlock() != ModBlocks.machine_rtg_furnace_off){
+		}else{
 			world.setBlockState(pos, ModBlocks.machine_rtg_furnace_off.getDefaultState().withProperty(FACING, e));
 		}
 		
 		keepInventory = false;
 		
-		//only when the block swap dropped this TE; re-setting an unchanged TE every tick forces a chunk update
-		if(entity != null && entity.isInvalid()) {
+		if(entity != null) {
 			entity.validate();
 			world.setTileEntity(pos, entity);
 		}

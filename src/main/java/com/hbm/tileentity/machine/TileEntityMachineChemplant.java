@@ -7,7 +7,6 @@ import java.util.Map;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineChemplant;
 import com.hbm.forgefluid.FFUtils;
-import com.hbm.forgefluid.PressurizedFluids;
 import com.hbm.handler.MultiblockHandler;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.ChemplantRecipes;
@@ -587,10 +586,10 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 		if(Library.isArrayEmpty(fluids))
 			return true;
 		if(fluids.length == 2){
-			if((fluids[0] == null || PressurizedFluids.hasEnough(tanks[0], fluids[0])) && (fluids[1] == null || PressurizedFluids.hasEnough(tanks[1], fluids[1])))
+			if((fluids[0] == null || fluids[0].amount <= tanks[0].getFluidAmount()) && (fluids[1] == null || fluids[1].amount <= tanks[1].getFluidAmount()))
 				return true;
 		}else{
-			if(fluids[0] == null || PressurizedFluids.hasEnough(tanks[0], fluids[0]))
+			if(fluids[0] == null || fluids[0].amount <= tanks[0].getFluidAmount())
 				return true;
 		}
 
@@ -1006,7 +1005,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 			soundSyncTick++;
 			if(soundSyncTick >= 10) {
 				soundSyncTick = 0;
-				PacketDispatcher.wrapper.sendToAllAround(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16));
+				PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
 			}
 		}
 

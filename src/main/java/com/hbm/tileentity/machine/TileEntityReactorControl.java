@@ -6,7 +6,6 @@ import com.hbm.items.ModItems;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.TEControlPacket;
 
-import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneComparator;
 import net.minecraft.entity.player.EntityPlayer;
@@ -118,7 +117,7 @@ public class TileEntityReactorControl extends TileEntity implements ITickable {
         		if(b == ModBlocks.machine_reactor_small || b == ModBlocks.reactor_computer) {
         			link = possibleReactor;
         		} else if(b == ModBlocks.dummy_block_reactor_small || b == ModBlocks.dummy_port_reactor_small) {
-        			link = ((TileEntityDummy)world.getTileEntity(possibleReactor)).getTarget();
+        			link = ((TileEntityDummy)world.getTileEntity(possibleReactor)).target;
         		} else {
         			link = null;
             	}
