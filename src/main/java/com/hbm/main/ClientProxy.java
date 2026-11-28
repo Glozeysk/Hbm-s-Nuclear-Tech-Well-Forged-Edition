@@ -598,6 +598,7 @@ public class ClientProxy extends ServerProxy {
 			Minecraft.getMinecraft().getFramebuffer().enableStencil();
 		
 		MinecraftForge.EVENT_BUS.register(new ModEventHandlerClient());
+		MinecraftForge.EVENT_BUS.register(new com.hbm.render.world.MultiblockPlacementPreviewRenderer());
 		AdvancedModelLoader.registerModelHandler(new HmfModelLoader());
 		MinecraftForge.EVENT_BUS.register(theInfoSystem);
         FMLCommonHandler.instance().bus().register(theInfoSystem);

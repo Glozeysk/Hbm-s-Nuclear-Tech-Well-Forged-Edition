@@ -53,6 +53,17 @@ public class MachineCatalyticCracker extends BlockDummyable implements ILookOver
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {4, -1, 3, -1, 1, 1},
+				new int[] {13, 0, 0, 3, 2, 1},
+				new int[] {14, -13, -1, 2, 1, 0},
+				new int[] {3, -1, 2, 3, -1, 3}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 3;
 	}

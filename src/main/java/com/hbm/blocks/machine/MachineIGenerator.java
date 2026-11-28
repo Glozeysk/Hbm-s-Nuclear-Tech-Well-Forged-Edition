@@ -69,6 +69,17 @@ public class MachineIGenerator extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {5, 0, 2, 2, 8, -2},
+				new int[] {4, 0, 2, 2, -4, 8},
+				new int[] {3, -2, 1, 1, -1, 3},
+				new int[] {4, -2, 1, 1, 1, 0}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 2;
 	}

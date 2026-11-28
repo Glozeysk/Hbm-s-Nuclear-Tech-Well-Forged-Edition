@@ -44,6 +44,15 @@ public class MachineBigAssTank9000 extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {4, 0, 1, 1, 2, -2},
+				new int[] {4, 0, 1, 1, -2, 2}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 2;
 	}

@@ -3,6 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityAMSLimiter;
@@ -201,6 +202,24 @@ public class BlockAMSLimiter extends BlockContainer implements IMultiBlock {
 		return new BlockStateContainer(this, new IProperty[]{FACING});
 	}
 	
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		EnumFacing facing = player.getHorizontalFacing().getOpposite().rotateY();
+		int[] dimensions;
+
+		if(facing == EnumFacing.EAST) {
+			dimensions = MultiblockHandler.AMSLimiterDimensionEast;
+		} else if(facing == EnumFacing.SOUTH) {
+			dimensions = MultiblockHandler.AMSLimiterDimensionSouth;
+		} else if(facing == EnumFacing.WEST) {
+			dimensions = MultiblockHandler.AMSLimiterDimensionWest;
+		} else {
+			dimensions = MultiblockHandler.AMSLimiterDimensionNorth;
+		}
+
+		return MultiblockPlacement.create(this, world, pos, facing, facing.getIndex(), dimensions);
+	}
+
 	@Override
 	public int getMetaFromState(IBlockState state) {
 		return ((EnumFacing)state.getValue(FACING)).getIndex();

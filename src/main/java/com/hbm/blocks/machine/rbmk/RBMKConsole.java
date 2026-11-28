@@ -152,6 +152,14 @@ public class RBMKConsole extends BlockDummyable implements ITooltipProvider {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {0, 0, 0, 1, 2, 2}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 1;
 	}

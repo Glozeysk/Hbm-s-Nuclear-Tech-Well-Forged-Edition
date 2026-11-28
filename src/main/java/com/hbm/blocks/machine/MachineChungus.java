@@ -108,6 +108,16 @@ public class MachineChungus extends BlockDummyable implements ILookOverlay {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {4, -4, 0, 3, 1, 1},
+				new int[] {3, 0, 6, -1, 1, 1},
+				new int[] {2, 0, 10, -7, 1, 1}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 3;
 	}

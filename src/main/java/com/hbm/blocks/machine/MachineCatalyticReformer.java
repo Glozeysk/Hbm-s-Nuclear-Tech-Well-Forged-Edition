@@ -87,6 +87,15 @@ public class MachineCatalyticReformer extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {3, -3, 1, 0, -1, 2},
+				new int[] {6, -3, 1, 1, 2, 0}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 1;
 	}

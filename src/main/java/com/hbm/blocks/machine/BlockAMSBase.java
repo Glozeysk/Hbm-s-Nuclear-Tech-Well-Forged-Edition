@@ -3,6 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityAMSBase;
@@ -37,6 +38,11 @@ public class BlockAMSBase extends BlockContainer implements IMultiBlock {
 		return new TileEntityAMSBase();
 	}
 	
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		return MultiblockPlacement.create(this, world, pos, EnumFacing.NORTH, 0, MultiblockHandler.AMSBaseDimension);
+	}
+
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if(world.isRemote)

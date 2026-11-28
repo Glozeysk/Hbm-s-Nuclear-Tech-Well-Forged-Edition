@@ -4,7 +4,9 @@ import java.util.Random;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.world.MultiblockPlacementBoundary;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.TileEntityProxyCombo;
@@ -22,10 +24,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class MachineITER extends BlockDummyable {
 
@@ -220,6 +226,35 @@ public class MachineITER extends BlockDummyable {
 			this.makeExtra(world, x + (int)vec.xCoord, y, z + (int)vec.zCoord);
 			this.makeExtra(world, x + (int)vec.xCoord, y + 4, z + (int)vec.zCoord);
 		}
+	}
+
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		ForgeDirection dir = getDirectionFromPlayer(player).getOpposite();
+		int o = getOffset();
+		int x = pos.getX() + dir.offsetX * o;
+		int y = pos.getY();
+		int z = pos.getZ() + dir.offsetZ * o;
+		boolean valid = checkRequirement(world, pos.getX(), pos.getY(), pos.getZ(), dir, o);
+		BlockPos core = new BlockPos(x, y + height, z);
+		AxisAlignedBB bounds = new AxisAlignedBB(x - 7, y, z - 7, x + 8, y + 5, z + 8);
+		return new MultiblockPlacement(this, core, dir, dir.ordinal() + offset, new int[] {2, 2, 7, 7, 7, 7}, valid, bounds);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void drawPlacementHighlight(EntityPlayer player, float interp) {
+		RayTraceResult mop = player.rayTrace(5.0D, interp);
+		if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK || mop.sideHit == null) {
+			return;
+		}
+
+		BlockPos placedPos = mop.getBlockPos().offset(mop.sideHit);
+		MultiblockPlacement placement = getPlacementPreview(player.world, placedPos, player);
+		boolean canPlace = placement.valid
+				&& player.world.getBlockState(placedPos).getBlock().isReplaceable(player.world, placedPos)
+				&& canPlaceBlockAt(player.world, placedPos);
+		MultiblockPlacementBoundary.drawPlacement(player, interp, placement, canPlace, false);
 	}
 
 	@Override

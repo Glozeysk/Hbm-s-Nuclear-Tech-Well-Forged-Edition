@@ -5,6 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
@@ -82,6 +83,11 @@ public class MachineOilWell extends BlockContainer implements IMultiBlock {
 		return false;
 	}
 	
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		return MultiblockPlacement.create(this, world, pos, EnumFacing.NORTH, 0, MultiblockHandler.wellDimension);
+	}
+
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if(world.isRemote)

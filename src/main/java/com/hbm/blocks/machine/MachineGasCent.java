@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
@@ -130,6 +131,12 @@ public class MachineGasCent extends BlockContainer implements IMultiBlock {
 	@Override
 	protected BlockStateContainer createBlockState() {
 		return new BlockStateContainer(this, new IProperty[] { FACING });
+	}
+
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		EnumFacing facing = player.getHorizontalFacing().getOpposite();
+		return MultiblockPlacement.create(this, world, pos, facing, facing.getIndex(), MultiblockHandler.centDimension);
 	}
 
 	@Override

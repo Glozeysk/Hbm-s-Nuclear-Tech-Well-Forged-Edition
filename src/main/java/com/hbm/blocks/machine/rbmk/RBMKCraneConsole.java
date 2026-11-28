@@ -66,6 +66,14 @@ public class RBMKCraneConsole extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {0, 0, 0, 1, 1, 1}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 1;
 	}

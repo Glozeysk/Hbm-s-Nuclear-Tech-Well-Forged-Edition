@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.hbm.blocks.generic.ItemBlockStorageCrate;
 import com.hbm.handler.*;
+import com.hbm.render.world.MultiblockPlacementBoundary;
 import com.hbm.items.tool.ItemToolAbility;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -20,6 +21,7 @@ import org.lwjgl.util.glu.Project;
 import baubles.api.BaublesApi;
 
 import com.google.common.collect.Queues;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.TrappedBrick.Trap;
@@ -38,6 +40,7 @@ import com.hbm.interfaces.ICustomSelectionBox;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.interfaces.IHoldableWeapon;
 import com.hbm.interfaces.IItemHUD;
+import com.hbm.interfaces.IMultiBlock;
 import com.hbm.interfaces.IPostRender;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.inventory.AssemblerRecipes;
@@ -173,6 +176,7 @@ import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
@@ -1937,8 +1941,10 @@ public class ModEventHandlerClient {
 
 	@SubscribeEvent
 	public void drawBlockSelectionBox(DrawBlockHighlightEvent evt){
-		if(evt.getTarget().typeOfHit == RayTraceResult.Type.BLOCK){
-			BlockPos pos = evt.getTarget().getBlockPos();
+		RayTraceResult target = evt.getTarget();
+
+		if(target != null && target.typeOfHit == RayTraceResult.Type.BLOCK){
+			BlockPos pos = target.getBlockPos();
 			IBlockState state =  Minecraft.getMinecraft().world.getBlockState(pos);
 			Block block = state.getBlock();
 			if(block instanceof ICustomSelectionBox){
@@ -1952,12 +1958,41 @@ public class ModEventHandlerClient {
 	            double d3 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTicks;
                 double d4 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTicks;
                 double d5 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTicks;
-				if(((ICustomSelectionBox)block).renderBox(Minecraft.getMinecraft().world, player, state, evt.getTarget().getBlockPos(), pos.getX()-d3, pos.getY()-d4, pos.getZ()-d5, partialTicks)){
+				if(((ICustomSelectionBox)block).renderBox(Minecraft.getMinecraft().world, player, state, target.getBlockPos(), pos.getX()-d3, pos.getY()-d4, pos.getZ()-d5, partialTicks)){
 					evt.setCanceled(true);
 				}
 				GlStateManager.depthMask(true);
 	            GlStateManager.enableTexture2D();
 	            GlStateManager.disableBlend();
+			}
+		}
+
+		EntityPlayer player = evt.getPlayer();
+		ItemStack held = player.getHeldItemMainhand();
+
+		if(!held.isEmpty() && held.getItem() instanceof ItemBlock){
+			Block heldBlock = Block.getBlockFromItem(held.getItem());
+
+			if(heldBlock instanceof BlockDummyable){
+				((BlockDummyable) heldBlock).drawPlacementHighlight(player, evt.getPartialTicks());
+				evt.setCanceled(true);
+				return;
+			}
+
+			if(heldBlock instanceof IMultiBlock && target != null && target.typeOfHit == RayTraceResult.Type.BLOCK && target.sideHit != null){
+				World world = player.world;
+				BlockPos hitPos = target.getBlockPos();
+				IBlockState hitState = world.getBlockState(hitPos);
+				BlockPos placedPos = hitState.getBlock().isReplaceable(world, hitPos) ? hitPos : hitPos.offset(target.sideHit);
+				MultiblockPlacement placement = ((IMultiBlock) heldBlock).getPlacementPreview(world, placedPos, player);
+
+				if(placement != null){
+					boolean canPlace = placement.valid
+							&& world.getBlockState(placedPos).getBlock().isReplaceable(world, placedPos)
+							&& heldBlock.canPlaceBlockAt(world, placedPos);
+					MultiblockPlacementBoundary.drawPlacement(player, evt.getPartialTicks(), placement, canPlace);
+					evt.setCanceled(true);
+				}
 			}
 		}
 	}

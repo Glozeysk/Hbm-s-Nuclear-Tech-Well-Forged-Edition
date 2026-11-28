@@ -5,6 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
@@ -18,6 +19,7 @@ import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -89,6 +91,29 @@ public class MachineChemplant extends BlockContainer implements IMultiBlock {
 		return new BlockStateContainer(this, new IProperty[] { FACING });
 	}
 	
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+		EnumFacing facing;
+		int[] dimensions;
+
+		if(i == 0) {
+			facing = EnumFacing.EAST;
+			dimensions = MultiblockHandler.chemplantDimensionEast;
+		} else if(i == 1) {
+			facing = EnumFacing.SOUTH;
+			dimensions = MultiblockHandler.chemplantDimensionSouth;
+		} else if(i == 2) {
+			facing = EnumFacing.WEST;
+			dimensions = MultiblockHandler.chemplantDimensionWest;
+		} else {
+			facing = EnumFacing.NORTH;
+			dimensions = MultiblockHandler.chemplantDimensionNorth;
+		}
+
+		return MultiblockPlacement.create(this, world, pos, facing, facing.getIndex(), dimensions);
+	}
+
 	@Override
 	public int getMetaFromState(IBlockState state) {
 		return state.getValue(FACING);

@@ -46,6 +46,16 @@ public class MachineFrackingTower extends BlockDummyable {
     }
 
     @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+                getDimensions(),
+                new int[] {1, 0, 3, 3, 3, 3, 0, 2, 0},
+                new int[] {10, -4, 2, 2, 2, 2},
+                new int[] {24, -9, 1, 1, 1, 1}
+        };
+    }
+
+    @Override
     public int getOffset() {
         return 0;
     }

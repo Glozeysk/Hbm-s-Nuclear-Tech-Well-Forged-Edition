@@ -5,6 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
@@ -196,6 +197,24 @@ public class MachineRadGen extends BlockContainer implements IMultiBlock {
 		return new BlockStateContainer(this, new IProperty[]{FACING});
 	}
 	
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		EnumFacing facing = player.getHorizontalFacing().getOpposite();
+		int[] dimensions;
+
+		if(facing == EnumFacing.EAST) {
+			dimensions = MultiblockHandler.radGenDimensionEast;
+		} else if(facing == EnumFacing.SOUTH) {
+			dimensions = MultiblockHandler.radGenDimensionSouth;
+		} else if(facing == EnumFacing.WEST) {
+			dimensions = MultiblockHandler.radGenDimensionWest;
+		} else {
+			dimensions = MultiblockHandler.radGenDimensionNorth;
+		}
+
+		return MultiblockPlacement.create(this, world, pos, facing, facing.getIndex(), dimensions);
+	}
+
 	@Override
 	public int getMetaFromState(IBlockState state) {
 		return ((EnumFacing)state.getValue(FACING)).getIndex();

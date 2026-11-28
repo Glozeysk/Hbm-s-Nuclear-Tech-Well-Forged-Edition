@@ -40,6 +40,16 @@ public class MachineExcavator extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {-1, 3, 3, -2, 3, -2},
+				new int[] {-1, 3, 3, -2, -2, 3},
+				new int[] {-1, 3, -2, 3, 3, 3}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 3;
 	}

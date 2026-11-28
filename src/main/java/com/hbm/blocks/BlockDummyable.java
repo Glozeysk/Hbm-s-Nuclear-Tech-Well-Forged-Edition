@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Random;
 
 import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.world.MultiblockPlacementBoundary;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
@@ -28,9 +30,12 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BlockDummyable extends BlockContainer {
@@ -147,30 +152,9 @@ public abstract class BlockDummyable extends BlockContainer {
 		EntityPlayer pl = (EntityPlayer) player;
 		EnumHand hand = pl.getHeldItemMainhand() == itemStack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 		
-		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		int o = -getOffset();
 		pos = new BlockPos(pos.getX(), pos.getY() + getHeightOffset(), pos.getZ());
-		
-		ForgeDirection dir = ForgeDirection.NORTH;
-		
-		if(i == 0)
-		{
-			dir = ForgeDirection.getOrientation(2);
-		}
-		if(i == 1)
-		{
-			dir = ForgeDirection.getOrientation(5);
-		}
-		if(i == 2)
-		{
-			dir = ForgeDirection.getOrientation(3);
-		}
-		if(i == 3)
-		{
-			dir = ForgeDirection.getOrientation(4);
-		}
-		
-		dir = getDirModified(dir);
+		ForgeDirection dir = getDirModified(getDirectionFromPlayer(pl));
 		
 		int x = pos.getX();
 		int y = pos.getY();
@@ -205,6 +189,72 @@ public abstract class BlockDummyable extends BlockContainer {
 
     	super.onBlockPlacedBy(world, pos, state, player, itemStack);
     }
+
+	public static ForgeDirection getDirectionFromPlayer(EntityPlayer player) {
+	int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+
+	if(i == 0)
+		return ForgeDirection.getOrientation(2);
+	if(i == 1)
+		return ForgeDirection.getOrientation(5);
+	if(i == 2)
+		return ForgeDirection.getOrientation(3);
+	return ForgeDirection.getOrientation(4);
+	}
+
+	public int[][] getAllDimensions() {
+	return new int[][] { getDimensions() };
+	}
+
+	public double[][] getAABBExtras() {
+	return new double[0][0];
+	}
+
+	/**
+	 * CE's placement boundary renderer. Draws the exposed edges of every
+	 * occupied block, including machines that consist of multiple volumes.
+	 */
+	@SideOnly(Side.CLIENT)
+	public void drawPlacementHighlight(EntityPlayer player, float interp) {
+	RayTraceResult mop = player.rayTrace(5.0D, interp);
+	if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK || mop.sideHit == null) {
+		return;
+	}
+
+	int o = -getOffset();
+	int pY = mop.getBlockPos().getY() + getHeightOffset();
+	ForgeDirection facing = getDirModified(getDirectionFromPlayer(player));
+	ForgeDirection sideHit = ForgeDirection.getOrientation(mop.sideHit.getIndex());
+
+	BlockPos origin = new BlockPos(
+			mop.getBlockPos().getX() + facing.offsetX * o + sideHit.offsetX,
+			pY + sideHit.offsetY,
+			mop.getBlockPos().getZ() + facing.offsetZ * o + sideHit.offsetZ);
+
+	boolean canPlace = checkRequirement(player.world,
+			mop.getBlockPos().getX() + sideHit.offsetX,
+			pY + sideHit.offsetY,
+			mop.getBlockPos().getZ() + sideHit.offsetZ,
+			facing, o);
+
+	MultiblockPlacementBoundary.draw(player, interp, origin, facing, getAllDimensions(), getAABBExtras(), canPlace, true);
+	}
+
+	/**
+	 * Client-side preview data for where this multiblock would be placed.
+	 * Uses the same direction, offset and space check as {@link #onBlockPlacedBy}.
+	 */
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos placedPos, EntityPlayer player) {
+	ForgeDirection dir = getDirModified(getDirectionFromPlayer(player));
+	int o = -getOffset();
+	int x = placedPos.getX();
+	int y = placedPos.getY() + getHeightOffset();
+	int z = placedPos.getZ();
+	BlockPos core = new BlockPos(x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o);
+	boolean valid = checkRequirement(world, x, y, z, dir, o);
+	int[] rotatedDimensions = MultiblockHandlerXR.rotate(getDimensions(), dir.toEnumFacing());
+	return new MultiblockPlacement(this, core, dir, dir.ordinal() + offset, rotatedDimensions, valid);
+	}
 
     protected boolean standardOpenBehavior(World world, int x, int y, int z, EntityPlayer player, int id) {
 		

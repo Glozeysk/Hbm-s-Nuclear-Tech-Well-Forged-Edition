@@ -5,6 +5,7 @@ import java.util.Random;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.dummy.DummyBlockBase;
 import com.hbm.handler.MultiblockHandler;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
@@ -263,6 +264,25 @@ public class MachinePumpjack extends BlockContainer implements IMultiBlock {
 	@Override
 	protected BlockStateContainer createBlockState() {
 		return new BlockStateContainer(this, new IProperty[] { FACING });
+	}
+
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+		EnumFacing facing = player.getHorizontalFacing().getOpposite();
+		int[] dimensions;
+
+		if(i == 0) {
+			dimensions = MultiblockHandler.pumpjackDimensionEast;
+		} else if(i == 1) {
+			dimensions = MultiblockHandler.pumpjackDimensionSouth;
+		} else if(i == 2) {
+			dimensions = MultiblockHandler.pumpjackDimensionWest;
+		} else {
+			dimensions = MultiblockHandler.pumpjackDimensionNorth;
+		}
+
+		return MultiblockPlacement.create(this, world, pos, facing, facing.getIndex(), dimensions);
 	}
 
 	@Override

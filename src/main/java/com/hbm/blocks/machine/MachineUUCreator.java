@@ -61,6 +61,17 @@ public class MachineUUCreator extends BlockDummyable {
 	public int[] getDimensions() {
 		return new int[] {2, 0, 3, 3, 1, 1};
 	}
+
+	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {2, 0, 2, 2, 2, -2},
+				new int[] {2, 0, 2, 2, -2, 2},
+				new int[] {2, 0, 1, 1, 3, -3},
+				new int[] {2, 0, 1, 1, -3, 3}
+		};
+	}
 	
 	@Override
 	public int getOffset() {

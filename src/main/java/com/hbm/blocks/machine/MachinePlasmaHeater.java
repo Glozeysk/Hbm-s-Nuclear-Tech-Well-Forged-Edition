@@ -47,6 +47,15 @@ public class MachinePlasmaHeater extends BlockDummyable {
 	}
 
 	@Override
+	public int[][] getAllDimensions() {
+		return new int[][] {
+				getDimensions(),
+				new int[] {4, -3, 2, 1, 1, 1},
+				new int[] {0, 1, 10, -8, 0, 0, 0, 2, 0}
+		};
+	}
+
+	@Override
 	public int getOffset() {
 		return 1;
 	}

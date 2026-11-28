@@ -5,7 +5,9 @@ import java.util.Random;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.handler.MultiblockPlacement;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.world.MultiblockPlacementBoundary;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.TileEntityProxyCombo;
@@ -23,8 +25,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class SoyuzLauncher extends BlockDummyable {
 
@@ -152,6 +158,33 @@ public class SoyuzLauncher extends BlockDummyable {
 	public int[] getDimensions() {
 		// because we'll implement our own gnarly behavior here
 		return new int[] { 0, 0, 0, 0, 0, 0 };
+	}
+
+	@Override
+	public MultiblockPlacement getPlacementPreview(World world, BlockPos pos, EntityPlayer player) {
+		ForgeDirection dir = ForgeDirection.EAST;
+		int o = -getOffset();
+		boolean valid = checkRequirement(world, pos.getX(), pos.getY(), pos.getZ(), dir, o);
+		BlockPos core = new BlockPos(pos.getX(), pos.getY() + height, pos.getZ());
+		AxisAlignedBB bounds = new AxisAlignedBB(pos.getX() - 6, pos.getY() - 4, pos.getZ() - 6,
+				pos.getX() + 7, pos.getY() + 7, pos.getZ() + 7);
+		return new MultiblockPlacement(this, core, dir, dir.ordinal() + offset, new int[] {6, 4, 6, 6, 6, 6}, valid, bounds);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void drawPlacementHighlight(EntityPlayer player, float interp) {
+		RayTraceResult mop = player.rayTrace(5.0D, interp);
+		if(mop == null || mop.typeOfHit != RayTraceResult.Type.BLOCK || mop.sideHit == null) {
+			return;
+		}
+
+		BlockPos placedPos = mop.getBlockPos().offset(mop.sideHit);
+		MultiblockPlacement placement = getPlacementPreview(player.world, placedPos, player);
+		boolean canPlace = placement.valid
+				&& player.world.getBlockState(placedPos).getBlock().isReplaceable(player.world, placedPos)
+				&& canPlaceBlockAt(player.world, placedPos);
+		MultiblockPlacementBoundary.drawPlacement(player, interp, placement, canPlace, false);
 	}
 
 	@Override
